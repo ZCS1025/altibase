@@ -23,6 +23,8 @@
 /* PROJ-1573 XA */
 #include <ulxXaConnection.h>
 #include <ulnDataSource.h>
+#include <ulnConv.h>
+#include <ulsdDistTxInfo.h>
 
 /*
  * ULN_SFID_82
@@ -124,7 +126,7 @@ ACI_RC ulnSFID_83(ulnFnContext *aFnContext)
 
 /*
  * ULN_SFID_84
- * SQLSetConnectAttr(), DBC ìƒíƒœ ì „ì´í•¨ìˆ˜ : C6 ìƒíƒœ
+ * SQLSetConnectAttr(), DBC »óÅÂ ÀüÀÌÇÔ¼ö : C6 »óÅÂ
  *      --[3] and [6]
  *      C5[8]
  *      (08002)[4]
@@ -311,13 +313,13 @@ static acp_sint32_t ulnAttrLength(void *aValuePtr, acp_sint32_t aLength)
     return aLength;
 }
 
-static ACI_RC ulnSetConnAttrConnType(ulnFnContext *aFnContext, ulnConnType aConnType)
+ACI_RC ulnSetConnAttrConnType(ulnFnContext *aFnContext, ulnConnType aConnType)
 {
     ulnDbc *sDbc = aFnContext->mHandle.mDbc;
 
-    if (ulnDbcGetConnType(sDbc) == ULN_CONNTYPE_INVALID) // ì„¤ì •ë˜ì—ˆìœ¼ë©´ ë¬´ì‹œ
+    if (ulnDbcGetConnType(sDbc) == ULN_CONNTYPE_INVALID) // ¼³Á¤µÇ¾úÀ¸¸é ¹«½Ã
     {
-        // ì„¤ì •ë˜ì–´ ìˆì§€ ì•Šì„ ê²½ìš°ì—ë§Œ ìˆ˜í–‰
+        // ¼³Á¤µÇ¾î ÀÖÁö ¾ÊÀ» °æ¿ì¿¡¸¸ ¼öÇà
 
         switch (aConnType)
         {
@@ -400,14 +402,17 @@ static ACI_RC ulnSetConnAttrCheckValue(ulnFnContext  *aFnContext,
     ulnMetricPrefixInt *sAllowedMIntList;
 
     /*
-     * BUGBUG : ì´ í•¨ìˆ˜ì— ë“¤ì–´ì˜¤ëŠ” ëª¨ë“  String íƒ€ì… ì†ì„± ì„¸íŒ…ì˜ aValuePtr ì€
-     *          null terminated ê°€ ë³´ì¥ë˜ì–´ì•¼ í•œë‹¤.
+     * BUGBUG : ÀÌ ÇÔ¼ö¿¡ µé¾î¿À´Â ¸ğµç String Å¸ÀÔ ¼Ó¼º ¼¼ÆÃÀÇ aValuePtr Àº
+     *          null terminated °¡ º¸ÀåµÇ¾î¾ß ÇÑ´Ù.
      */
-
-    acp_slong_t sValue = (acp_slong_t)aValuePtr;
+ 
+    // PROJ-2727
+    // TRX_UPDATE_MAX_LOGSIZE ULONG value·Î ÀÎÇØ
+    // acp_slong_t => acp_ulong_t º¯°æ
+    acp_ulong_t sValue = (acp_ulong_t)aValuePtr;
 
     /*
-     * ë²”ìœ„ ê²€ì‚¬ ë° ê¸¸ì´ ì²´í¬, ê·¸ë¦¬ê³  optional feature not implemented ì²´í¬
+     * ¹üÀ§ °Ë»ç ¹× ±æÀÌ Ã¼Å©, ±×¸®°í optional feature not implemented Ã¼Å©
      */
     switch (gUlnConnAttrTable[aConnAttrID].mAttrType)
     {
@@ -416,8 +421,8 @@ static ACI_RC ulnSetConnAttrCheckValue(ulnFnContext  *aFnContext,
             sAllowedMIntList = (ulnMetricPrefixInt *)gUlnConnAttrTable[aConnAttrID].mCheck;
             ACI_TEST_RAISE(sAllowedMIntList == NULL, LABEL_NOT_IMPLEMENTED);
 
-            ACI_TEST_RAISE((sValue < gUlnConnAttrTable[aConnAttrID].mMinValue) ||
-                           (sValue > gUlnConnAttrTable[aConnAttrID].mMaxValue),
+            ACI_TEST_RAISE((sValue < (acp_uint64_t)gUlnConnAttrTable[aConnAttrID].mMinValue) ||
+                           (sValue > (acp_uint64_t)gUlnConnAttrTable[aConnAttrID].mMaxValue),
                            LABEL_INVALID_ATTR_VALUE);
             break;
 
@@ -429,7 +434,7 @@ static ACI_RC ulnSetConnAttrCheckValue(ulnFnContext  *aFnContext,
 
             while (sAllowedDIntList->mKey != NULL)
             {
-                if (sAllowedDIntList->mValue == sValue)
+                if (sAllowedDIntList->mValue == (acp_sint32_t)sValue)
                 {
                     break;
                 }
@@ -501,8 +506,8 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
                              acp_sint32_t   aLength)
 {
     /*
-     * BUGBUG : ì´ í•¨ìˆ˜ì— ë“¤ì–´ì˜¤ëŠ” ëª¨ë“  String íƒ€ì… ì†ì„± ì„¸íŒ…ì˜ aValuePtr ì€
-     *          null terminated ê°€ ë³´ì¥ë˜ì–´ì•¼ í•œë‹¤.
+     * BUGBUG : ÀÌ ÇÔ¼ö¿¡ µé¾î¿À´Â ¸ğµç String Å¸ÀÔ ¼Ó¼º ¼¼ÆÃÀÇ aValuePtr Àº
+     *          null terminated °¡ º¸ÀåµÇ¾î¾ß ÇÑ´Ù.
      */
 
     acp_slong_t  sValue = (acp_slong_t)aValuePtr;
@@ -510,9 +515,16 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
     acp_bool_t   sIsXaConnection = ulnIsXaConnection(sDbc);
     acp_char_t   sNlsUse[20];
     acp_sint32_t sNlsUseLen;
+    acp_slong_t  sOldValue;
+
+#ifdef COMPILE_SHARDCLI
+    /* BUG-47272 */
+    ACI_TEST_CONT( ulsdIsSetConnectAttr( aFnContext, aConnAttrID ) 
+                   == ACP_FALSE, NO_NEED_WORK );
+#endif
 
     /*
-     * ë²”ìœ„ ê²€ì‚¬ ë° ê¸¸ì´ ì²´í¬, ê·¸ë¦¬ê³  optional feature not implemented ì²´í¬
+     * ¹üÀ§ °Ë»ç ¹× ±æÀÌ Ã¼Å©, ±×¸®°í optional feature not implemented Ã¼Å©
      */
 
     ACI_TEST(ulnSetConnAttrCheckValue(aFnContext, aConnAttrID, aValuePtr, aLength)
@@ -521,8 +533,8 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
     /* 
      * BUG-36256 Improve property's communication
      *
-     * ì„œë²„ì—ì„œ ì§€ì›ë˜ì§€ ì•ŠëŠ” í”„ë¡œí¼í‹°ëŠ” ì„œë²„ì— ìš”ì²­ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
-     * ì¦‰ Onì„ í•´ë„ í•­ìƒ Off ëœë‹¤.
+     * ¼­¹ö¿¡¼­ Áö¿øµÇÁö ¾Ê´Â ÇÁ·ÎÆÛÆ¼´Â ¼­¹ö¿¡ ¿äÃ»À» ÇÏÁö ¾Ê´Â´Ù.
+     * Áï OnÀ» ÇØµµ Ç×»ó Off µÈ´Ù.
      */
     ACI_TEST_RAISE(ulnConnAttrArrHasId(&sDbc->mUnsupportedProperties,
                                        aConnAttrID) == ACI_SUCCESS,
@@ -532,13 +544,13 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
     {
         /*
          * =================================================================
-         * Connection String ì´ë‚˜ ODBC.INI ë¥¼ í†µí•´ì„œë§Œ ì„¤ì •í•  ìˆ˜ ìˆëŠ” ì†ì„±ë“¤
+         * Connection String ÀÌ³ª ODBC.INI ¸¦ ÅëÇØ¼­¸¸ ¼³Á¤ÇÒ ¼ö ÀÖ´Â ¼Ó¼ºµé
          * =================================================================
          */
 
         /*
          * --------------------------------------
-         * String ì†ì„±ë“¤ : null ì²´í¬ëŠ” ì´ë¯¸ ì´ë£¨ì–´ì¡ŒìŒ
+         * String ¼Ó¼ºµé : null Ã¼Å©´Â ÀÌ¹Ì ÀÌ·ç¾îÁ³À½
          * --------------------------------------
          */
 
@@ -574,7 +586,7 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
 
         /*
          * ---------------------------------------
-         * acp_uint32_t, Bool ì†ì„±ë“¤
+         * acp_uint32_t, Bool ¼Ó¼ºµé
          * ---------------------------------------
          */
 
@@ -613,24 +625,24 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
 
         /*
          * =================================================================================
-         * Connection String, ODBC.INI, SQLSetConnectAttr ì–´ëŠê²ƒìœ¼ë¡œë“  ì„¤ì •í•  ìˆ˜ ìˆëŠ” ì†ì„±ë“¤
+         * Connection String, ODBC.INI, SQLSetConnectAttr ¾î´À°ÍÀ¸·Îµç ¼³Á¤ÇÒ ¼ö ÀÖ´Â ¼Ó¼ºµé
          * =================================================================================
          */
 
         /*
          * --------------------------------------
-         * String ì†ì„±ë“¤
+         * String ¼Ó¼ºµé
          * --------------------------------------
          */
 
         case ULN_CONN_ATTR_NLS_USE:
             /* ------------------------------------------------
-             *  1. ì´ë¯¸ ì—°ê²°ëœ ìƒíƒœì´ê±°ë‚˜,
-             *  2. ì´ˆê¸° ì—°ê²°String í˜¹ì€ DSN ìœ¼ë¡œ ë¶€í„° ì½ì–´ì˜¬ ë•Œ ì´ˆê¸°ìƒíƒœì¼ ê²½ìš°
-             *     ì—ë§Œ ì„¤ì •ê°€ëŠ¥í•˜ë‹¤.
+             *  1. ÀÌ¹Ì ¿¬°áµÈ »óÅÂÀÌ°Å³ª,
+             *  2. ÃÊ±â ¿¬°áString È¤Àº DSN À¸·Î ºÎÅÍ ÀĞ¾î¿Ã ¶§ ÃÊ±â»óÅÂÀÏ °æ¿ì
+             *     ¿¡¸¸ ¼³Á¤°¡´ÉÇÏ´Ù.
              *
-             *     ===> ulnSendConnectAttr() ì„ í˜¸ì¶œí•˜ì§€ ì•ŠëŠ”ë‹¤.
-             *          (PROJ-1579 NCHARì—ì„œ í˜¸ì¶œí•˜ëŠ” ê²ƒìœ¼ë¡œ ë³€ê²½ë¨)
+             *     ===> ulnSendConnectAttr() À» È£ÃâÇÏÁö ¾Ê´Â´Ù.
+             *          (PROJ-1579 NCHAR¿¡¼­ È£ÃâÇÏ´Â °ÍÀ¸·Î º¯°æµÊ)
              * ----------------------------------------------*/
             ACI_TEST_RAISE(aValuePtr == NULL, ERR_HY090);
 
@@ -640,14 +652,14 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
             acpCStrToUpper(sNlsUse, sNlsUseLen);
 
             //BUG-22684
-            // Client Charactersetì„  mClientCharsetLangModuleì— ì €ì¥í•œë‹¤.
+            // Client CharactersetÀ»  mClientCharsetLangModule¿¡ ÀúÀåÇÑ´Ù.
             ACI_TEST_RAISE(mtlModuleByName((const mtlModule **)&(sDbc->mClientCharsetLangModule),
                                            sNlsUse,
                                            sNlsUseLen)
                            != ACI_SUCCESS, LABEL_CHARACTERSET_NOT_FOUND);
 
             // bug-26661: nls_use not applied to nls module for ut
-            // nls_use ê°’ì„ UTì—ì„œ ì‚¬ìš©í•  gNlsModuleForUTì—ë„ ì ìš©
+            // nls_use °ªÀ» UT¿¡¼­ »ç¿ëÇÒ gNlsModuleForUT¿¡µµ Àû¿ë
             ACI_TEST_RAISE(mtlModuleByName((const mtlModule **)&gNlsModuleForUT,
                                            sNlsUse,
                                            sNlsUseLen)
@@ -657,7 +669,7 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
                            LABEL_NOT_ENOUGH_MEMORY);
 
             // PROJ-1579 NCHAR
-            // ì„œë²„ì— ALTIBASE_NLS_USE(í´ë¼ì´ì–¸íŠ¸ ìºë¦­í„° ì…‹) ì •ë³´ë¥¼ ì•Œë ¤ì¤€ë‹¤.
+            // ¼­¹ö¿¡ ALTIBASE_NLS_USE(Å¬¶óÀÌ¾ğÆ® Ä³¸¯ÅÍ ¼Â) Á¤º¸¸¦ ¾Ë·ÁÁØ´Ù.
             ACI_TEST(ulnSendConnectAttr(aFnContext, ULN_PROPERTY_NLS, sDbc->mNlsLangString)
                      != ACI_SUCCESS);
             break;
@@ -702,7 +714,7 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
 
         /*
          * --------------------------------
-         * Integer, discrete integer ì†ì„±ë“¤
+         * Integer, discrete integer ¼Ó¼ºµé
          * --------------------------------
          */
 
@@ -712,7 +724,7 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
             break;
 
         case ULN_CONN_ATTR_LOGIN_TIMEOUT:
-            //BUG-24574 [ODBC] SQLSetConnectAttr(dbc, SQL_ATTR_LOGIN_TIMEOUT, 0, 0); í–ˆì„ë•Œ ì ‘ì† ì‹¤íŒ¨
+            //BUG-24574 [ODBC] SQLSetConnectAttr(dbc, SQL_ATTR_LOGIN_TIMEOUT, 0, 0); ÇßÀ»¶§ Á¢¼Ó ½ÇÆĞ
             if (sValue != 0)
             {
                 sDbc->mAttrLoginTimeout = (acp_uint32_t)sValue;
@@ -728,6 +740,15 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
             ACI_TEST_RAISE(ulnIsXaActive(sDbc) == ACP_TRUE, LABEL_CANNOT_BE_SET_NOW);
             ACI_TEST(ulnSendConnectAttr(aFnContext, ULN_PROPERTY_AUTOCOMMIT, (void *)sValue) != ACI_SUCCESS);
             sDbc->mAttrAutoCommit = (acp_uint8_t)sValue;
+
+            /* PROJ-2733-DistTxInfo autocommit offÀÌ¸é DistTxInfo¸¦ ÃÊ±âÈ­ */
+            if (sDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_OFF)
+            {
+                ulsdInitDistTxInfo(sDbc);
+
+                /* TASK-7219 Non-shard DML */
+                ulnDbcInitStmtExecSeqForShardTx(sDbc);
+            }
             break;
 
         case ULN_CONN_ATTR_CONNECTION_TIMEOUT:
@@ -754,7 +775,7 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
 
         case ULN_CONN_ATTR_CONNECTION_POOLING:
             /*
-             * BUGBUG : ENV ì˜ ì„¤ì •ì— ë§ê²Œ ê³ ë ¤í•´ì•¼ í•œë‹¤.
+             * BUGBUG : ENV ÀÇ ¼³Á¤¿¡ ¸Â°Ô °í·ÁÇØ¾ß ÇÑ´Ù.
              */
             sDbc->mAttrConnPooling = (acp_uint8_t)sValue;
             break;
@@ -900,15 +921,30 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
         case ULN_CONN_ATTR_NLS_CHARACTERSET_VALIDATION:
             sDbc->mNlsCharactersetValidation = (acp_uint32_t)sValue;
             break;
+
         /*
          * ====================================================
-         * SQLSetConnectAttr() ì„ í†µí•´ì„œë§Œ ì„¤ì •ê°€ëŠ¥í•œ ì†ì„±ë“¤
+         * SQLSetConnectAttr() À» ÅëÇØ¼­¸¸ ¼³Á¤°¡´ÉÇÑ ¼Ó¼ºµé
          * ====================================================
          */
 
         case ULN_CONN_ATTR_MESSAGE_CALLBACK:
-            ulnRegisterServerMessageCallback(sDbc, (ulnServerMessageCallbackStruct *)aValuePtr);
+            sOldValue = (sDbc->mMessageCallback != NULL) ? (acp_slong_t)ACP_TRUE : (acp_slong_t)ACP_FALSE;
+
+            /* BUG-46019 MESSAGE_CALLBACKÀº ulnSendConnectAttr() ÀÌÀü¿¡ °ªÀ» ¼³Á¤ÇØ¾ß ÇÑ´Ù. */
+            ulnRegisterMessageCallback(sDbc, (ulnMessageCallbackStruct *)aValuePtr);
+
+            sValue = (sDbc->mMessageCallback != NULL) ? (acp_slong_t)ACP_TRUE : (acp_slong_t)ACP_FALSE;
+
+            /* BUG-46019 ÇÊ¿ä¿¡ µû¶ó ¼­¹ö¿¡ Äİ¹é µî·Ï ¿©ºÎ¸¦ Àü´ŞÇÑ´Ù. */
+            if (sOldValue != sValue)
+            {
+                ACI_TEST(ulnSendConnectAttr(aFnContext,
+                                            ULN_PROPERTY_MESSAGE_CALLBACK,
+                                            (void *)sValue) != ACI_SUCCESS);
+            }
             break;
+
         //PROJ-1645 UL Failover.
         case ULN_CONN_ATTR_FAILOVER_CALLBACK:
             ulnDbcSetFailoverCallbackContext(sDbc,(SQLFailOverCallbackContext*) aValuePtr);
@@ -916,13 +952,13 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
 
         /*
          * =====================================================================
-         * ì•„ì§ êµ¬í˜„í•˜ì§€ ì•Šì•˜ê±°ë‚˜ ì§€ì›í•˜ì§€ ì•ŠëŠ” ì†ì„±ë“¤ : ìœ—ìª½ì—ì„œ ì—ëŸ¬ ë‚´ì–´ë²„ë¦¼.
+         * ¾ÆÁ÷ ±¸ÇöÇÏÁö ¾Ê¾Ò°Å³ª Áö¿øÇÏÁö ¾Ê´Â ¼Ó¼ºµé : À­ÂÊ¿¡¼­ ¿¡·¯ ³»¾î¹ö¸².
          * =====================================================================
          */
 
         case ULN_CONN_ATTR_URL:
             break;
-        case ULN_CONN_ATTR_ODBC_CURSORS: /* odbc 3.0 ì—ì„œëŠ” ì“¸ ìˆ˜ ì—†ë‹¤. stmt ì†ì„± */
+        case ULN_CONN_ATTR_ODBC_CURSORS: /* odbc 3.0 ¿¡¼­´Â ¾µ ¼ö ¾ø´Ù. stmt ¼Ó¼º */
             sDbc->mAttrOdbcCursors = (acp_uint32_t)sValue;
             break;
 
@@ -1040,11 +1076,6 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
             sDbc->mAttrPDODeferProtocols = (acp_uint32_t)sValue;
             break;
 
-        /*
-         * Warning : ì•ìœ¼ë¡œ ì¶”ê°€ë˜ëŠ” ì„œë²„-í´ë¼ì´ì–¸íŠ¸ í”„ë¡œí¼í‹°ëŠ” ë°˜ë“œì‹œ
-         *           ulnSetConnectAttrOff()ì— ì¶”ê°€ë˜ì–´ì•¼ í•œë‹¤.
-         */
-
         /* PROJ-2638 shard native linker */
         case ULN_CONN_ATTR_SHARD_LINKER_TYPE:
             sDbc->mShardDbcCxt.mShardLinkerType = (acp_uint8_t)sValue;
@@ -1056,12 +1087,18 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
             /* Do Nothing. */
             break;
 
-        /* BUG-46090 Meta Node SMN ì „íŒŒ */
+        /* BUG-46090 Meta Node SMN ÀüÆÄ */
         case ULN_CONN_ATTR_SHARD_META_NUMBER:
-            /* For Sharding. */
-            /* Do Nothing. */
-            break;
+            ulnDbcSetShardMetaNumber( sDbc, (acp_uint64_t)sValue );
 
+            ACI_TEST( ulnSendConnectAttr( aFnContext,
+                                          ULN_PROPERTY_SHARD_META_NUMBER,
+                                          (void*)sValue )
+                      != ACI_SUCCESS );
+
+            ulnDbcSetSentShardMetaNumber( sDbc, (acp_uint64_t)sValue );
+            break;
+ 
         /* PROJ-2638 shard native linker */
         case ULN_CONN_ATTR_SHARD_NODE_NAME:
             ACI_TEST_RAISE( aLength > ULSD_MAX_NODE_NAME_LEN, LABEL_NOT_ENOUGH_MEMORY );
@@ -1102,6 +1139,394 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
             sDbc->mShardDbcCxt.mShardSessionType = (acp_uint8_t)sValue;
             break;
 
+        /* BUG-47257 */
+        case ULN_CONN_ATTR_GLOBAL_TRANSACTION_LEVEL:
+            ACI_TEST( ulnSendConnectAttr( aFnContext,
+                                          ULN_PROPERTY_GLOBAL_TRANSACTION_LEVEL,
+                                          (void*)sValue )
+                      != ACI_SUCCESS );
+            sDbc->mAttrGlobalTransactionLevel = (acp_uint8_t)sValue;
+            break;
+            
+            // PROJ-2727 add connect attr
+        case ULN_CONN_ATTR_COMMIT_WRITE_WAIT_MODE:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_COMMIT_WRITE_WAIT_MODE,
+                                         (void *)sValue )
+                     != ACI_SUCCESS);
+            sDbc->mCommitWriteWaitMode = (acp_uint32_t)sValue;
+            break;
+
+        case ULN_CONN_ATTR_ST_OBJECT_BUFFER_SIZE:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_ST_OBJECT_BUFFER_SIZE,
+                                         (void *)sValue )
+                     != ACI_SUCCESS);
+            sDbc->mSTObjBufSize = (acp_uint32_t)sValue;
+            break;
+            
+        case ULN_CONN_ATTR_TRX_UPDATE_MAX_LOGSIZE:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_TRX_UPDATE_MAX_LOGSIZE,
+                                         (void *)sValue )
+                     != ACI_SUCCESS);
+            sDbc->mUpdateMaxLogSize = (acp_uint64_t)sValue;
+            break;
+
+        case ULN_CONN_ATTR_PARALLEL_DML_MODE:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_PARALLEL_DML_MODE,
+                                         (void *)sValue )
+                     != ACI_SUCCESS);
+            sDbc->mParallelDmlMode = (acp_uint32_t)sValue;
+            break;
+
+        case ULN_CONN_ATTR_NLS_NCHAR_CONV_EXCP:
+                        ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_NLS_NCHAR_CONV_EXCP,
+                                         (void *)sValue )
+                     != ACI_SUCCESS);
+            sDbc->mNlsNcharConvExcp = (acp_uint32_t)sValue;
+            break;
+            
+        case ULN_CONN_ATTR_AUTO_REMOTE_EXEC:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_AUTO_REMOTE_EXEC,
+                                         (void *)sValue )
+                     != ACI_SUCCESS);
+            sDbc->mAutoRemoteExec = (acp_uint32_t)sValue;
+            break;
+            
+        case ULN_CONN_ATTR_TRCLOG_DETAIL_PREDICATE:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_TRCLOG_DETAIL_PREDICATE,
+                                         (void *)sValue )
+                     != ACI_SUCCESS);
+            sDbc->mTrclogDetailPredicate = (acp_uint32_t)sValue;
+            break;
+            
+        case ULN_CONN_ATTR_OPTIMIZER_DISK_INDEX_COST_ADJ:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_OPTIMIZER_DISK_INDEX_COST_ADJ,
+                                         (void *)sValue )
+                     != ACI_SUCCESS);
+            sDbc->mOptimizerDiskIndexCostAdj = (acp_uint32_t)sValue;
+            break;
+            
+        case ULN_CONN_ATTR_OPTIMIZER_MEMORY_INDEX_COST_ADJ:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_OPTIMIZER_MEMORY_INDEX_COST_ADJ,
+                                         (void *)sValue )
+                     != ACI_SUCCESS);
+            sDbc->mOptimizerMemoryIndexCostAdj = (acp_uint32_t)sValue;
+            break;
+
+            //
+        case ULN_CONN_ATTR_QUERY_REWRITE_ENABLE:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_QUERY_REWRITE_ENABLE,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mQueryRewriteEnable = (acp_uint32_t)sValue;
+            break;
+            
+        case ULN_CONN_ATTR_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mDblinkRemoteStatementAutoCommit = (acp_uint32_t)sValue;
+            break;
+            
+        case ULN_CONN_ATTR_RECYCLEBIN_ENABLE:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_RECYCLEBIN_ENABLE,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mRecyclebinEnable = (acp_uint32_t)sValue;
+            break;
+            
+        case ULN_CONN_ATTR___USE_OLD_SORT:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY___USE_OLD_SORT,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mUseOldSort = (acp_uint32_t)sValue;
+            break;
+            
+        case ULN_CONN_ATTR_ARITHMETIC_OPERATION_MODE:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_ARITHMETIC_OPERATION_MODE,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mArithmeticOpMode = (acp_uint32_t)sValue;
+            break;
+            
+        case ULN_CONN_ATTR_RESULT_CACHE_ENABLE:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_RESULT_CACHE_ENABLE,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mResultCacheEnable = (acp_uint32_t)sValue;
+            break;
+            
+        case ULN_CONN_ATTR_TOP_RESULT_CACHE_MODE:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_TOP_RESULT_CACHE_MODE,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mTopResultCacheMode = (acp_uint32_t)sValue;
+            break;
+
+        case ULN_CONN_ATTR_OPTIMIZER_AUTO_STATS:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_OPTIMIZER_AUTO_STATS,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mOptimizerAutoStats = (acp_uint32_t)sValue;
+            break;
+            
+        case ULN_CONN_ATTR___OPTIMIZER_TRANSITIVITY_OLD_RULE:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY___OPTIMIZER_TRANSITIVITY_OLD_RULE,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mOptimizerTransitivityOldRule = (acp_uint32_t)sValue;
+            break;
+            
+        case ULN_CONN_ATTR_OPTIMIZER_PERFORMANCE_VIEW:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_OPTIMIZER_PERFORMANCE_VIEW,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mOptimizerPerformanceView = (acp_uint32_t)sValue;
+            break;
+            
+        case ULN_CONN_ATTR_REPLICATION_DDL_SYNC:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_REPLICATION_DDL_SYNC,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mReplicationDDLSync = (acp_uint32_t)sValue;
+            break;
+            
+        case ULN_CONN_ATTR_REPLICATION_DDL_SYNC_TIMEOUT:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_REPLICATION_DDL_SYNC_TIMEOUT,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mReplicationDDLSyncTimeout = (acp_uint32_t)sValue;
+            break;
+            
+        case ULN_CONN_ATTR___PRINT_OUT_ENABLE:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY___PRINT_OUT_ENABLE,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mPrintOutEnable = (acp_uint32_t)sValue;
+            break;
+            
+        case ULN_CONN_ATTR_TRCLOG_DETAIL_SHARD:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_TRCLOG_DETAIL_SHARD,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mTrclogDetailShard = (acp_uint32_t)sValue;
+            break;
+            
+        case ULN_CONN_ATTR_SERIAL_EXECUTE_MODE:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_SERIAL_EXECUTE_MODE,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mSerialExecuteMode = (acp_uint32_t)sValue;
+            break;
+            
+        case ULN_CONN_ATTR_TRCLOG_DETAIL_INFORMATION:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_TRCLOG_DETAIL_INFORMATION,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mTrcLogDetailInformation = (acp_uint32_t)sValue;
+            break;
+            
+        case ULN_CONN_ATTR___OPTIMIZER_DEFAULT_TEMP_TBS_TYPE:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY___OPTIMIZER_DEFAULT_TEMP_TBS_TYPE,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mOptimizerDefaultTempTbsType = (acp_uint32_t)sValue;
+            break;
+
+        case ULN_CONN_ATTR_NORMALFORM_MAXIMUM:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_NORMALFORM_MAXIMUM,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mNormalFormMaximum = (acp_uint32_t)sValue;
+            break;
+
+        case ULN_CONN_ATTR___REDUCE_PARTITION_PREPARE_MEMORY:
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY___REDUCE_PARTITION_PREPARE_MEMORY,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mReducePartPrepareMemory = (acp_uint32_t)sValue;
+            break;
+            
+            // STRING
+        case ULN_CONN_ATTR_NLS_TERRITORY:
+            ACI_TEST_RAISE(aValuePtr == NULL, ERR_HY090);
+            ACI_TEST_RAISE(ulnDbcSetNlsTerriroty( sDbc,
+                                                  (acp_char_t *)aValuePtr,
+                                                  aLength )
+                           != ACI_SUCCESS, LABEL_NOT_ENOUGH_MEMORY );
+
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_NLS_TERRITORY,
+                                         sDbc->mNlsTerritory )
+                     != ACI_SUCCESS );
+            break;
+            
+        case ULN_CONN_ATTR_NLS_ISO_CURRENCY:
+            ACI_TEST_RAISE(aValuePtr == NULL, ERR_HY090);
+            ACI_TEST_RAISE(ulnNlsISOCurrency( sDbc,
+                                              (acp_char_t *)aValuePtr,
+                                              aLength)
+                           != ACI_SUCCESS, LABEL_NOT_ENOUGH_MEMORY );
+
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_NLS_ISO_CURRENCY,
+                                         sDbc->mNlsISOCurrency )
+                     != ACI_SUCCESS );
+            break;
+            
+        case ULN_CONN_ATTR_NLS_CURRENCY:
+            ACI_TEST_RAISE(aValuePtr == NULL, ERR_HY090);
+            ACI_TEST_RAISE(ulnNlsCurrency( sDbc,
+                                           (acp_char_t *)aValuePtr,
+                                           aLength)
+                           != ACI_SUCCESS, LABEL_NOT_ENOUGH_MEMORY );
+
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_NLS_CURRENCY,
+                                         sDbc->mNlsCurrency )
+                     != ACI_SUCCESS );
+            break;
+            
+        case ULN_CONN_ATTR_NLS_NUMERIC_CHARACTERS:
+            ACI_TEST_RAISE(aValuePtr == NULL, ERR_HY090);
+            ACI_TEST_RAISE(ulnNlsNumChar( sDbc,
+                                          (acp_char_t *)aValuePtr,
+                                          aLength)
+                           != ACI_SUCCESS, LABEL_NOT_ENOUGH_MEMORY );
+
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY_NLS_NUMERIC_CHARACTERS,
+                                         sDbc->mNlsNumChar )
+                     != ACI_SUCCESS );
+            break;
+           
+        case ULN_CONN_ATTR_TRANSACTIONAL_DDL:
+            ACI_TEST( ulnSendConnectAttr( aFnContext, 
+                                          ULN_PROPERTY_TRANSACTIONAL_DDL, 
+                                          (void *)sValue ) 
+                      != ACI_SUCCESS );
+            sDbc->mTransactionalDDL = (acp_uint32_t)sValue;
+            break;
+
+        case ULN_CONN_ATTR_SHARD_INTERNAL_LOCAL_OPERATION:
+            ACI_TEST( ulnSendConnectAttr( aFnContext,
+                                          ULN_PROPERTY_SHARD_INTERNAL_LOCAL_OPERATION,
+                                          (void*)sValue )
+                != ACI_SUCCESS );
+            break;
+
+        case ULN_CONN_ATTR_INVOKE_USER:
+            ACI_TEST_RAISE(aValuePtr == NULL, ERR_HY090);
+            ACI_TEST(ulnSendConnectAttr(aFnContext, ULN_PROPERTY_INVOKE_USER, (void *)sValue) != ACI_SUCCESS);
+            break;
+
+        case ULN_CONN_ATTR_GLOBAL_DDL:
+            ACI_TEST(ulnSendConnectAttr(aFnContext, ULN_PROPERTY_GLOBAL_DDL, (void *)sValue) != ACI_SUCCESS);
+            sDbc->mGlobalDDL = (acp_uint32_t)sValue;
+            break;
+
+        case ULN_CONN_ATTR_SHARD_STATEMENT_RETRY:
+            ACI_TEST( ulnSendConnectAttr( aFnContext,
+                                          ULN_PROPERTY_SHARD_STATEMENT_RETRY,
+                                          (void*)sValue )
+                      != ACI_SUCCESS );
+            ulnDbcSetShardStatementRetry( sDbc, (acp_uint8_t)sValue );
+            break;
+
+        case ULN_CONN_ATTR_INDOUBT_FETCH_TIMEOUT:
+            ACI_TEST( ulnSendConnectAttr( aFnContext,
+                                          ULN_PROPERTY_INDOUBT_FETCH_TIMEOUT,
+                                          (void*)sValue )
+                      != ACI_SUCCESS );
+            ulnDbcSetIndoubtFetchTimeout( sDbc, (acp_uint32_t)sValue );
+            break;
+ 
+        case ULN_CONN_ATTR_INDOUBT_FETCH_METHOD:
+            ACI_TEST( ulnSendConnectAttr( aFnContext,
+                                          ULN_PROPERTY_INDOUBT_FETCH_METHOD,
+                                          (void*)sValue )
+                      != ACI_SUCCESS );
+            ulnDbcSetIndoubtFetchMethod( sDbc, (acp_uint8_t)sValue );
+            break;
+
+        case ULN_CONN_ATTR_SHARD_COORD_FIX_CTRL_CALLBACK:
+            ACI_TEST_RAISE( sDbc->mShardDbcCxt.mShardSessionType != ULSD_SESSION_TYPE_COORD,
+                            LABEL_CANNOT_BE_SET_NOW );
+            ulnDbcSetShardCoordFixCtrlContext( sDbc, (ulnShardCoordFixCtrlContext*) aValuePtr);
+            break;
+
+        case ULN_CONN_ATTR___OPTIMIZER_PLAN_HASH_OR_SORT_METHOD: /* BUG-48132 */
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY___OPTIMIZER_PLAN_HASH_OR_SORT_METHOD,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mPlanHashOrSortMethod = (acp_uint32_t)sValue;
+            break;
+        case ULN_CONN_ATTR___OPTIMIZER_BUCKET_COUNT_MAX: /* BUG-48161 */
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY___OPTIMIZER_BUCKET_COUNT_MAX,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mBucketCountMax = (acp_uint32_t)sValue;
+            break;
+
+        case ULN_CONN_ATTR_DDL_LOCK_TIMEOUT:
+            ACI_TEST( ulnSendConnectAttr( aFnContext,
+                                          ULN_PROPERTY_DDL_LOCK_TIMEOUT,
+                                          (void*)sValue )
+                      != ACI_SUCCESS );
+            ulnDbcSetDDLLockTimeout( sDbc, (acp_uint32_t)sValue );
+            break;
+        case ULN_CONN_ATTR___OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION: /* BUG-48348 */ 
+            ACI_TEST(ulnSendConnectAttr( aFnContext,
+                                         ULN_PROPERTY___OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION,
+                                         (void *)sValue )
+                     != ACI_SUCCESS );
+            sDbc->mEliminateCommonSubexpression = (acp_uint32_t)sValue;
+            break;
+
+        case ULN_CONN_ATTR_REBUILD_SHARD_META_NUMBER:
+            ACI_TEST( ulnSendConnectAttr( aFnContext,
+                                          ULN_PROPERTY_REBUILD_SHARD_META_NUMBER,
+                                          (void*)sValue )
+                      != ACI_SUCCESS );
+
+            ulnDbcSetSentRebuildShardMetaNumber( sDbc, (acp_uint64_t)sValue );
+            break;
+
+            
+        /*
+         * Warning : Á¦Ç° ¸±¸®Áî ÀÌÈÄ Ãß°¡µÇ´Â ¼­¹ö-Å¬¶óÀÌ¾ğÆ® ÇÁ·ÎÆÛÆ¼´Â ¹İµå½Ã
+         *           ulnSetConnectAttrOff()¿¡ Ãß°¡µÇ¾î¾ß ÇÑ´Ù.
+         */
+
         default:
             if (aConnAttrID >= ULN_CONN_ATTR_MAX)
             {
@@ -1114,7 +1539,7 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
             break;
 
         /*
-         * Note : compiler warning ì´ ë‚˜ì§€ ì•Šì•„ì•¼ í•œë‹¤. ë§Œì•½ warning ë‚˜ë©´ ë­”ê°€ í•˜ë‚˜ ë¹ ì§„ê²ƒì„.
+         * Note : compiler warning ÀÌ ³ªÁö ¾Ê¾Æ¾ß ÇÑ´Ù. ¸¸¾à warning ³ª¸é ¹º°¡ ÇÏ³ª ºüÁø°ÍÀÓ.
          */
     }
 
@@ -1147,20 +1572,20 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
 
 /*
  * Note :
- *      ulnSetConnAttrByConnString() ì—ì„œ í˜¸ì¶œë˜ëŠ” ulnSetConnAttrById
- *          NTS guarantee    : OK. í•­ìƒ NTS
- *          aAttrValueLength : í•­ìƒ string ì˜ ê¸¸ì´. ì–‘ìˆ˜ í˜¹ì€ 0
+ *      ulnSetConnAttrByConnString() ¿¡¼­ È£ÃâµÇ´Â ulnSetConnAttrById
+ *          NTS guarantee    : OK. Ç×»ó NTS
+ *          aAttrValueLength : Ç×»ó string ÀÇ ±æÀÌ. ¾ç¼ö È¤Àº 0
  *
- *      ulnSetConnAttrByProfileFunc() ì—ì„œ í˜¸ì¶œë˜ëŠ” ulnSetConnAttrById
- *          NTS guarantee    : ?. NTS ì¸ì§€ ì•„ë‹Œì§€ odbc ë¬¸ì„œì—ì„œ ì´ì•¼ê¸° ì•ˆí•¨.
- *          aAttrValueLength : í•­ìƒ string ì˜ ê¸¸ì´. ì–‘ìˆ˜. ??
+ *      ulnSetConnAttrByProfileFunc() ¿¡¼­ È£ÃâµÇ´Â ulnSetConnAttrById
+ *          NTS guarantee    : ?. NTS ÀÎÁö ¾Æ´ÑÁö odbc ¹®¼­¿¡¼­ ÀÌ¾ß±â ¾ÈÇÔ.
+ *          aAttrValueLength : Ç×»ó string ÀÇ ±æÀÌ. ¾ç¼ö. ??
  */
 /*
- * BUGBUG : ulnConnAttrProcess*** í•¨ìˆ˜ë“¤ì€
- *              1. aAttrValue ì— NULL í¬ì¸í„°ê°€ ì•ˆë“¤ì–´ì˜¨ë‹¤ëŠ” ê²ƒ.
- *              2. aAttrValue ì— NTS ê°€ ë“¤ì–´ì˜¨ë‹¤ëŠ” ê²ƒ
- *              3. aAttrValueLength ì— ì–‘ìˆ˜ì˜ ìœ íš¨í•œ ê°’ì´ ë“¤ì–´ì˜¨ë‹¤ëŠ” ê²ƒ
- *          ì„ ë°˜ë“œì‹œ ë³´ì¥í•  ê²ƒ.
+ * BUGBUG : ulnConnAttrProcess*** ÇÔ¼öµéÀº
+ *              1. aAttrValue ¿¡ NULL Æ÷ÀÎÅÍ°¡ ¾Èµé¾î¿Â´Ù´Â °Í.
+ *              2. aAttrValue ¿¡ NTS °¡ µé¾î¿Â´Ù´Â °Í
+ *              3. aAttrValueLength ¿¡ ¾ç¼öÀÇ À¯È¿ÇÑ °ªÀÌ µé¾î¿Â´Ù´Â °Í
+ *          À» ¹İµå½Ã º¸ÀåÇÒ °Í.
  */
 static ACI_RC ulnConnAttrProcessIntAttr(ulnFnContext  *aFnContext,
                                         ulnConnAttrID  aConnAttr,
@@ -1189,7 +1614,7 @@ static ACI_RC ulnConnAttrProcessIntAttr(ulnFnContext  *aFnContext,
 
     sValue = (acp_sint64_t)sSel * sSign; /* BUG-44151 */
 
-    /* K, M, G, sec, hoursì™€ ê°™ì€ ë‹¨ìœ„ ë³€í™˜ ë¬¸ì ì²˜ë¦¬ */
+    /* K, M, G, sec, hours¿Í °°Àº ´ÜÀ§ º¯È¯ ¹®ÀÚ Ã³¸® */
     sPosLen = ulnParseIndexOfNonWhitespace(aAttrValue, aAttrValueLength, (acp_sint32_t)(sCurr - aAttrValue));
     if (sPosLen < aAttrValueLength)
     {
@@ -1213,12 +1638,12 @@ static ACI_RC ulnConnAttrProcessIntAttr(ulnFnContext  *aFnContext,
     }
 
     /*
-     * Note : ë²”ìœ„ ì²´í¬ëŠ” ulnSetConnAttr ì—ì„œ í•œë‹¤.
+     * Note : ¹üÀ§ Ã¼Å©´Â ulnSetConnAttr ¿¡¼­ ÇÑ´Ù.
      */
 
     /*
      * BUG-28980 [CodeSonar]strncpy Length Unreasonable
-     * aAttrValueLengthëŠ” ì‚¬ìš©ë  ì¼ì´ ì—†ìœ¼ë‚˜ ê²½ê³  ì œê±°ë¥¼ ìœ„í•´
+     * aAttrValueLength´Â »ç¿ëµÉ ÀÏÀÌ ¾øÀ¸³ª °æ°í Á¦°Å¸¦ À§ÇØ
      */
     ACI_TEST(ulnSetConnAttr(aFnContext,
                             aConnAttr,
@@ -1270,16 +1695,16 @@ static ACI_RC ulnConnAttrProcessDiscreteIntAttr(ulnFnContext  *aFnContext,
     }
 
     /*
-     * ì„¤ì • ê°€ëŠ¥í•œ í‚¤ì›Œë“œ (ulnConnAttributre.cpp íŒŒì¼ì˜ í…Œì´ë¸”ë“¤ì—ì„œ ì •ì˜í•´ ë‘” í‚¤ì›Œë“œ) ê°€
-     * ì•„ë‹ˆë©´, ULN_CONN_ATTR_INVALID_VALUE ê°€ sValue ì— ì„¸íŒ…ë¨.
+     * ¼³Á¤ °¡´ÉÇÑ Å°¿öµå (ulnConnAttributre.cpp ÆÄÀÏÀÇ Å×ÀÌºíµé¿¡¼­ Á¤ÀÇÇØ µĞ Å°¿öµå) °¡
+     * ¾Æ´Ï¸é, ULN_CONN_ATTR_INVALID_VALUE °¡ sValue ¿¡ ¼¼ÆÃµÊ.
      *
-     * ì—ëŸ¬ëŠ” ulnSetConnAttr() í•¨ìˆ˜ì—ì„œ ë²”ìœ„ ì²´í¬í•˜ë©´ì„œ ë°œìƒ.
+     * ¿¡·¯´Â ulnSetConnAttr() ÇÔ¼ö¿¡¼­ ¹üÀ§ Ã¼Å©ÇÏ¸é¼­ ¹ß»ı.
      */
 
     sValue = sAllowedPair->mValue;
     /*
      * BUG-28980 [CodeSonar]strncpy Length Unreasonable
-     * aAttrValueLengthëŠ” ì‚¬ìš©ë  ì¼ì´ ì—†ìœ¼ë‚˜ ê²½ê³  ì œê±°ë¥¼ ìœ„í•´
+     * aAttrValueLength´Â »ç¿ëµÉ ÀÏÀÌ ¾øÀ¸³ª °æ°í Á¦°Å¸¦ À§ÇØ
      */
     ACI_TEST(ulnSetConnAttr(aFnContext,
                             aConnAttr,
@@ -1287,7 +1712,7 @@ static ACI_RC ulnConnAttrProcessDiscreteIntAttr(ulnFnContext  *aFnContext,
                             ACI_SIZEOF(acp_slong_t)) != ACI_SUCCESS);
 
     /*
-     * Note : ë²”ìœ„ ì²´í¬ëŠ” ulnSetConnAttr() ì—ì„œ í•œë‹¤.
+     * Note : ¹üÀ§ Ã¼Å©´Â ulnSetConnAttr() ¿¡¼­ ÇÑ´Ù.
      */
 
     return ACI_SUCCESS;
@@ -1337,8 +1762,8 @@ static ACI_RC ulnConnAttrProcessStringAttr(ulnFnContext  *aFnContext,
     if (sReservedWordList->mKey == NULL)
     {
         /*
-         * ë§¤ì¹˜ë˜ëŠ” ë¬¸ìì—´ì´ ì—†ì–´ì„œ ì…ë ¥ë°›ì€ ë¬¸ìì—´ì„ ê·¸ëŒ€ë¡œ ì„¸íŒ…í• ë ¤ê³  í•˜ëŠ”ë°,
-         * ì…ë ¥ë°›ì€ ë¬¸ìì—´ì´ NULL ì´ë‚˜ "" ì´ë©´, NULL ì„ ì„¸íŒ…í•œë‹¤.
+         * ¸ÅÄ¡µÇ´Â ¹®ÀÚ¿­ÀÌ ¾ø¾î¼­ ÀÔ·Â¹ŞÀº ¹®ÀÚ¿­À» ±×´ë·Î ¼¼ÆÃÇÒ·Á°í ÇÏ´Âµ¥,
+         * ÀÔ·Â¹ŞÀº ¹®ÀÚ¿­ÀÌ NULL ÀÌ³ª "" ÀÌ¸é, NULL À» ¼¼ÆÃÇÑ´Ù.
          */
         if (aAttrValue != NULL)
         {
@@ -1351,7 +1776,7 @@ static ACI_RC ulnConnAttrProcessStringAttr(ulnFnContext  *aFnContext,
     else
     {
         /*
-         * ë§¤ì¹˜ë˜ëŠ” ë¬¸ìì—´ì´ ìˆì–´ì„œ í™•ì¥ì„ í•œë‹¤.
+         * ¸ÅÄ¡µÇ´Â ¹®ÀÚ¿­ÀÌ ÀÖ¾î¼­ È®ÀåÀ» ÇÑ´Ù.
          */
         aAttrValue = (acp_char_t *)(sReservedWordList->mValue);
     }
@@ -1386,7 +1811,7 @@ static ACI_RC ulnConnAttrProcessUpperCaseStringAttr(ulnFnContext  *aFnContext,
     const mtlModule *sDefaultModule;// = mtlDefaultModule();
 
     //BUG-22684
-    // Connectionì´ ì´ë£¨ì–´ì§€ê¸° ì „ì— í•¨ìˆ˜ê°€ í˜¸ì¶œë  ê²½ìš°ì—ëŠ” sDbsê°€ NULLì´ê¸° ë•Œë¬¸ì— ì´ë•ŒëŠ” default Moduleì„ ì‚¬ìš©í•˜ë„ë¡ í•œë‹¤.
+    // ConnectionÀÌ ÀÌ·ç¾îÁö±â Àü¿¡ ÇÔ¼ö°¡ È£ÃâµÉ °æ¿ì¿¡´Â sDbs°¡ NULLÀÌ±â ¶§¹®¿¡ ÀÌ¶§´Â default ModuleÀ» »ç¿ëÇÏµµ·Ï ÇÑ´Ù.
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
     ACI_TEST( sDbc == NULL );           //BUG-28623 [CodeSonar]Null Pointer Dereference
@@ -1496,9 +1921,9 @@ ACI_RC ulnSetConnAttrById(ulnFnContext  *aFnContext,
         case ULN_CONN_ATTR_TYPE_CALLBACK:
         case ULN_CONN_ATTR_TYPE_POINTER:
             /*
-             * Note : í¬ì¸í„°í˜• attribute (callback ë“±) ëŠ” connection string ì´ë‚˜
-             *        profile string ìœ¼ë¡œ ì„¸íŒ…í•  ìˆ˜ ì—†ë‹¤.
-             *        ì˜¤ì§ SQLSetConnectAttr() ë¡œë§Œ ì„¸íŒ…í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì´ í•¨ìˆ˜ë¥¼ íƒ€ì§€ ì•ŠëŠ”ë‹¤.
+             * Note : Æ÷ÀÎÅÍÇü attribute (callback µî) ´Â connection string ÀÌ³ª
+             *        profile string À¸·Î ¼¼ÆÃÇÒ ¼ö ¾ø´Ù.
+             *        ¿ÀÁ÷ SQLSetConnectAttr() ·Î¸¸ ¼¼ÆÃÇÒ ¼ö ÀÖÀ¸¹Ç·Î ÀÌ ÇÔ¼ö¸¦ Å¸Áö ¾Ê´Â´Ù.
              */
             ACI_RAISE(LABEL_MEM_MAN_ERR);
             break;
@@ -1603,7 +2028,7 @@ acp_sint32_t ulnCallbackSetConnAttr( void                         *aContext,
             break;
 
         case ULN_CONNSTR_PARSE_EVENT_ERROR:
-            /* ì°¸ì¡° ë¬¸ìê°€ ì—†ìœ¼ë©´ '?'ë¡œ */
+            /* ÂüÁ¶ ¹®ÀÚ°¡ ¾øÀ¸¸é '?'·Î */
             ACI_TEST( ulnError(sFnContext, ulERR_ABORT_INVALID_CONNECTION_STR_FORM,
                                aPos, (aKey == NULL) ? '?' : aKey[0])
                       != ACI_SUCCESS );
@@ -1642,13 +2067,13 @@ ACI_RC ulnSetConnAttrByProfileFunc(ulnFnContext  *aFnContext,
     {
         /*
          * unix-odbc
-         *      setupSQLGetPrivateProfileString() ì—ì„œ dlsym() ì„ í†µí•´ ì–»ì–´ì˜¨ í•¨ìˆ˜ë¥¼ í˜¸ì¶œ.
+         *      setupSQLGetPrivateProfileString() ¿¡¼­ dlsym() À» ÅëÇØ ¾ò¾î¿Â ÇÔ¼ö¸¦ È£Ãâ.
          *
          * sqlcli
-         *      ì´ í•¨ìˆ˜ ì»´íŒŒì¼ ì•ˆë¨.
-         *      ì´ í•¨ìˆ˜ ëŒ€ì‹  ì•„ë˜ìª½ì˜ ì•„ë¬´ê²ƒë„ ì•ˆí•˜ëŠ” ë²„ì ¼ì´ ì»´íŒŒì¼ë¨.
+         *      ÀÌ ÇÔ¼ö ÄÄÆÄÀÏ ¾ÈµÊ.
+         *      ÀÌ ÇÔ¼ö ´ë½Å ¾Æ·¡ÂÊÀÇ ¾Æ¹«°Íµµ ¾ÈÇÏ´Â ¹öÁ¯ÀÌ ÄÄÆÄÀÏµÊ.
          *
-         * ìì„¸í•œ ê²ƒì€ gSQLConnectModule ì„ tag ë¡œ ì°ì–´ë³´ë„ë¡.
+         * ÀÚ¼¼ÇÑ °ÍÀº gSQLConnectModule À» tag ·Î Âï¾îº¸µµ·Ï.
          */
         sSize = gPrivateProfileFuncPtr(aDSNString,
                                        (acp_char_t *)(gUlnConnAttrMap_PROFILE[i].mKey),
@@ -1662,9 +2087,9 @@ ACI_RC ulnSetConnAttrByProfileFunc(ulnFnContext  *aFnContext,
             sConnAttr = gUlnConnAttrMap_PROFILE[i].mConnAttrID;
 
             /*
-             * BUGBUG : null-terminating í•˜ëŠ” ë¶€ë¶„ì´ ì£¼ì„ì²˜ë¦¬ë˜ì–´ ìˆì—ˆìŒ.
-             *          SQLGetPrivateProfileString() ì´ null terminated string ì„ ì¤€ë‹¤ëŠ” ë³´ì¥ì´...
-             *          ë¬¸ì„œì— ì½ì–´ë´ë„ ì–¸ê¸‰ì´ ì—†ë˜ë°...
+             * BUGBUG : null-terminating ÇÏ´Â ºÎºĞÀÌ ÁÖ¼®Ã³¸®µÇ¾î ÀÖ¾úÀ½.
+             *          SQLGetPrivateProfileString() ÀÌ null terminated string À» ÁØ´Ù´Â º¸ÀåÀÌ...
+             *          ¹®¼­¿¡ ÀĞ¾îºÁµµ ¾ğ±ŞÀÌ ¾ø´øµ¥...
              */
 
             ACI_TEST(ulnSetConnAttrById(aFnContext,
@@ -1709,7 +2134,7 @@ ACI_RC ulnSetConnAttrBySQLConstant(ulnFnContext *aFnContext,
     acp_sint32_t  sRealLength;
 
     /*
-     * ulnConnAttrID ì–»ì–´ì˜¤ê¸°
+     * ulnConnAttrID ¾ò¾î¿À±â
      */
 
     sConnAttr = ulnGetConnAttrIDfromSQL_ATTR_ID(aSQLConstant);
@@ -1720,11 +2145,11 @@ ACI_RC ulnSetConnAttrBySQLConstant(ulnFnContext *aFnContext,
         gUlnConnAttrTable[sConnAttr].mAttrType == ULN_CONN_ATTR_TYPE_UPPERCASE_STRING)
     {
         /*
-         * Note : SQLSetConnectAttr() ì—ì„œë„ string ìœ¼ë¡œ ì„¸íŒ…í•˜ëŠ” ì†ì„±ë“¤ì€
-         *        ê³µí†µë˜ëŠ” ê¸¸ì´, reserved word ì²´í¬ ë“±ì„ ìˆ˜í–‰í•˜ê¸° ìœ„í•´ì„œ
-         *        ulnSetConnAttrById() í•¨ìˆ˜ë¥¼ í†µí•´ì„œ ulnSetConnAttr() ì„ í˜¸ì¶œí•´ì•¼ í•œë‹¤.
+         * Note : SQLSetConnectAttr() ¿¡¼­µµ string À¸·Î ¼¼ÆÃÇÏ´Â ¼Ó¼ºµéÀº
+         *        °øÅëµÇ´Â ±æÀÌ, reserved word Ã¼Å© µîÀ» ¼öÇàÇÏ±â À§ÇØ¼­
+         *        ulnSetConnAttrById() ÇÔ¼ö¸¦ ÅëÇØ¼­ ulnSetConnAttr() À» È£ÃâÇØ¾ß ÇÑ´Ù.
          *
-         * sRealLength ëŠ” ìŒìˆ˜ì—¬ì„œëŠ” ì•ˆë¨.
+         * sRealLength ´Â À½¼ö¿©¼­´Â ¾ÈµÊ.
          */
         ACI_TEST_RAISE(aValuePtr == NULL, LABEL_INVALID_USE_OF_NULL);
 
@@ -1739,7 +2164,7 @@ ACI_RC ulnSetConnAttrBySQLConstant(ulnFnContext *aFnContext,
     else
     {
         /*
-         * string ì´ ì•„ë‹Œ ì¼ë°˜ì ì¸ connection attribute ì„¸íŒ…í•˜ê¸°
+         * string ÀÌ ¾Æ´Ñ ÀÏ¹İÀûÀÎ connection attribute ¼¼ÆÃÇÏ±â
          */
         ACI_TEST(ulnSetConnAttr(aFnContext,
                                 sConnAttr,
@@ -1776,11 +2201,11 @@ ACI_RC ulnSetConnAttrBySQLConstant(ulnFnContext *aFnContext,
 
 
 /*
- * Note : 64 ë¹„íŠ¸ odbc ê³ ë ¤
+ * Note : 64 ºñÆ® odbc °í·Á
  *
  * When the Attribute parameter has one of the following values,
  * a 64-bit value is passed in Value:
- *      SQL_ATTR_QUIET_MODE  --> ì‚¬ìš©í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ ë¬´ì‹œ
+ *      SQL_ATTR_QUIET_MODE  --> »ç¿ëÇÏÁö ¾ÊÀ¸¹Ç·Î ¹«½Ã
  *
  * When the Option parameter has one of the following values,
  * a 64-bit value is passed in *Value:
@@ -1789,7 +2214,7 @@ ACI_RC ulnSetConnAttrBySQLConstant(ulnFnContext *aFnContext,
  *      SQL_ROWSET_SIZE
  *      SQL_KEYSET_SIZE
  *
- *      ìƒê¸° ëª¨ë“  ì—°ê²° ì†ì„±ë“¤ì„ í˜„ì¬ëŠ” ì“°ì§€ ì•ŠìŒ.
+ *      »ó±â ¸ğµç ¿¬°á ¼Ó¼ºµéÀ» ÇöÀç´Â ¾²Áö ¾ÊÀ½.
  */
 
 SQLRETURN ulnSetConnectAttr(ulnDbc *aDbc, acp_sint32_t aSQL_ATTR_ID, void *aValuePtr, acp_sint32_t aLength)
@@ -1848,24 +2273,57 @@ SQLRETURN ulnSetConnectAttr(ulnDbc *aDbc, acp_sint32_t aSQL_ATTR_ID, void *aValu
     return ULN_FNCONTEXT_GET_RC(&sFnContext);
 }
 
-/*
- * Meaningless callback
- */
-
 ACI_RC ulnCallbackDBPropertySetResult(cmiProtocolContext *aProtocolContext,
                                       cmiProtocol        *aProtocol,
                                       void               *aServiceSession,
                                       void               *aUserContext)
 {
-    ACP_UNUSED(aProtocolContext);
+    cmiProtocolContext        *sCtx       = aProtocolContext;
+    ulnFnContext              *sFnContext = (ulnFnContext *)aUserContext;
+    ulnDbc                    *sDbc       = NULL;
+    acp_uint16_t               sPropertyID;
+    acp_uint64_t               sSCN       = 0;
+    acp_uint8_t                sGTxLevel  = ACP_UINT8_MAX;
+
     ACP_UNUSED(aProtocol);
     ACP_UNUSED(aServiceSession);
-    ACP_UNUSED(aUserContext);
 
-    /*
-     * ë‚´ìš© ì—†ìŒ.
-     */
+    /* PROJ-2733-Protocol */
+    CMI_RD2(sCtx, &sPropertyID);
+
+    ULN_FNCONTEXT_GET_DBC( sFnContext, sDbc );
+
+    switch (sPropertyID)
+    {
+        case CMP_DB_PROPERTY_GLOBAL_TRANSACTION_LEVEL:
+            CMI_RD1(sCtx, sGTxLevel);
+            CMI_RD8(sCtx, &sSCN);
+
+            /* PROJ-2733-DistTxInfo */
+            if (ulsdIsGCTx(sGTxLevel) == ACP_TRUE)
+            {
+                if (sSCN > 0)
+                {
+                    ulsdUpdateSCN(sDbc, &sSCN);
+                }
+            }
+            break;
+
+        default:
+            /* non-reachable */
+            ACI_TEST_RAISE(sPropertyID >= CMP_DB_PROPERTY_MAX, LABEL_INVALID_ATTR_VALUE);  
+            break;
+    }
+
     return ACI_SUCCESS;
+
+    ACI_EXCEPTION(LABEL_INVALID_ATTR_VALUE);
+    {
+        ulnError(sFnContext, ulERR_ABORT_INVALID_ATTRIBUTE_VALUE);
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
 }
 
 /**
@@ -1876,14 +2334,14 @@ ACI_RC ulnCallbackDBPropertySetResult(cmiProtocolContext *aProtocolContext,
  * @aDbc        : Object
  * @aPropertyID : Property ID
  *
- * aPropertyIDë¥¼ Off í•œë‹¤.
- * ë¦´ë¦¬ì¦ˆ ì´í›„ ì¶”ê°€ë˜ëŠ” ì„œë²„-í´ë¼ì´ì–¸íŠ¸ í”„ë¡œí¼í‹°ëŠ” ëª¨ë‘ ì¶”ê°€ë˜ì–´ì•¼ í•œë‹¤.
- * (ULN_PROPERTY_LOB_CACHE_THRESHOLDëŠ” ìƒ˜í”Œ)
+ * aPropertyID¸¦ Off ÇÑ´Ù.
+ * ¸±¸®Áî ÀÌÈÄ Ãß°¡µÇ´Â ¼­¹ö-Å¬¶óÀÌ¾ğÆ® ÇÁ·ÎÆÛÆ¼´Â ¸ğµÎ Ãß°¡µÇ¾î¾ß ÇÑ´Ù.
+ * (ULN_PROPERTY_LOB_CACHE_THRESHOLD´Â »ùÇÃ)
  *
- * tagê°„ í•˜ìœ„ ë²„ì „ì˜ ì„œë²„ì— ìƒìœ„ë²„ì „ì˜ í´ë¼ì´ì–¸íŠ¸ê°€ ì ‘ì†í•˜ëŠ” ê²½ìš° ì„œë²„ì—ì„œ
- * ì§€ì›ë˜ì§€ ì•ŠëŠ” í”„ë¡œí¼í‹°ëŠ” ê°•ì œë¡œ êº¼ì•¼ í•œë‹¤. ë§Œì•½ ë°˜ë“œì‹œ ì§€ì›ë˜ì–´ì•¼ í•œë‹¤ë©´
- * INCOMPATIBLE_PROPERTYë¥¼ ë°œìƒì‹œì¼œì•¼ í•œë‹¤. tagê°„ì—ëŠ” í˜¸í™˜ì´ ë˜ë„ë¡ ìƒˆë¡œìš´
- * í”„ë¡œí¼í‹°ëŠ” ë°˜ë“œì‹œ Off ì†ì„±ì„ ê°€ì ¸ì•¼ í•œë‹¤.
+ * tag°£ ÇÏÀ§ ¹öÀüÀÇ ¼­¹ö¿¡ »óÀ§¹öÀüÀÇ Å¬¶óÀÌ¾ğÆ®°¡ Á¢¼ÓÇÏ´Â °æ¿ì ¼­¹ö¿¡¼­
+ * Áö¿øµÇÁö ¾Ê´Â ÇÁ·ÎÆÛÆ¼´Â °­Á¦·Î ²¨¾ß ÇÑ´Ù. ¸¸¾à ¹İµå½Ã Áö¿øµÇ¾î¾ß ÇÑ´Ù¸é
+ * INCOMPATIBLE_PROPERTY¸¦ ¹ß»ı½ÃÄÑ¾ß ÇÑ´Ù. tag°£¿¡´Â È£È¯ÀÌ µÇµµ·Ï »õ·Î¿î
+ * ÇÁ·ÎÆÛÆ¼´Â ¹İµå½Ã Off ¼Ó¼ºÀ» °¡Á®¾ß ÇÑ´Ù.
  */
 ACI_RC ulnSetConnectAttrOff(ulnFnContext  *aFnContext,
                             ulnDbc        *aDbc,
@@ -1916,7 +2374,7 @@ ACI_RC ulnSetConnectAttrOff(ulnFnContext  *aFnContext,
             aDbc->mShardDbcCxt.mShardPin = ULSD_SHARD_PIN_INVALID;
             break;
 
-        /* BUG-46090 Meta Node SMN ì „íŒŒ */
+        /* BUG-46090 Meta Node SMN ÀüÆÄ */
         case ULN_PROPERTY_SHARD_META_NUMBER:
             sConnAttrID = ULN_CONN_ATTR_SHARD_META_NUMBER;
             aDbc->mShardDbcCxt.mShardMetaNumber = 0;
@@ -1936,23 +2394,41 @@ ACI_RC ulnSetConnectAttrOff(ulnFnContext  *aFnContext,
 
         case ULN_PROPERTY_SHARD_SESSION_TYPE:
             sConnAttrID = ULN_CONN_ATTR_SHARD_SESSION_TYPE;
-            aDbc->mShardDbcCxt.mShardSessionType = ULSD_SESSION_TYPE_EXTERNAL;
+            aDbc->mShardDbcCxt.mShardSessionType = ULSD_SESSION_TYPE_USER;
             break;
 
-        /*
-         * ìƒˆë¡œìš´ í”„ë¡œí¼í‹° ì¶”ê°€ì‹œ ì•„ë˜ì™€ ê°™ì€ ì½”ë“œëŠ” ê°€ëŠ¥í•œ
-         * ë§Œë“¤ì–´ì§€ì§€ ì•Šì•„ì•¼ í•œë‹¤.
-        case ULN_PRPOERTY_???_PROPERTY:
-            sConnAttrID = ULN_CONN_ATTR_???;
-            ACI_RAISE(LABEL_ABORT_INCOMPATIBLE_PROPERTY);
+        case ULN_PROPERTY_MESSAGE_CALLBACK:  /* BUG-46019 */
+            sConnAttrID = ULN_CONN_ATTR_MESSAGE_CALLBACK;
+            /* MessageCallbackÀº ÀÌ¹Ì ¼³Á¤µÇ¾î ÀÖ´Ù. */
             break;
-         */
 
         /* BUG-46092 */
         case ULN_PROPERTY_SHARD_CLIENT_CONNECTION_REPORT:
             sConnAttrID = ULN_CONN_ATTR_SHARD_CLIENT_CONNECTION_REPORT;
             ACI_RAISE( LABEL_ABORT_INCOMPATIBLE_PROPERTY );
             break;
+
+        case ULN_PROPERTY_GLOBAL_TRANSACTION_LEVEL:
+            sConnAttrID = ULN_CONN_ATTR_GLOBAL_TRANSACTION_LEVEL;
+            ACI_RAISE( LABEL_ABORT_INCOMPATIBLE_PROPERTY );
+            break;
+            
+        case ULN_PROPERTY_REBUILD_SHARD_META_NUMBER:
+            sConnAttrID = ULN_CONN_ATTR_REBUILD_SHARD_META_NUMBER;
+            ACI_RAISE( LABEL_ABORT_INCOMPATIBLE_PROPERTY );
+            break;
+            
+        /* Warning : ÇÁ·ÎÆÛÆ¼´Â º» ÄÚ¸àÆ® À§¿¡ Ãß°¡ÇÒ °Í.
+                     Á¦Ç° ¸±¸®Áî ÀÌÈÄ Ãß°¡µÈ System, Session ÇÁ·ÎÆÛÆ¼¸¸ Ãß°¡ÇÒ °Í. */
+
+        /*
+         * »õ·Î¿î ÇÁ·ÎÆÛÆ¼ Ãß°¡½Ã ¾Æ·¡¿Í °°Àº ÄÚµå´Â °¡´ÉÇÑ
+         * ¸¸µé¾îÁöÁö ¾Ê¾Æ¾ß ÇÑ´Ù.
+        case ULN_PRPOERTY_???_PROPERTY:
+            sConnAttrID = ULN_CONN_ATTR_???;
+            ACI_RAISE(LABEL_ABORT_INCOMPATIBLE_PROPERTY);
+            break;
+         */
 
         default:
             ACI_RAISE(LABEL_ABORT_INCOMPATIBLE_PROPERTY);
@@ -1987,3 +2463,365 @@ ACI_RC ulnSetConnectAttrOff(ulnFnContext  *aFnContext,
 
     return ACI_FAILURE;
 }
+
+// PROJ-2727
+// QUERY¸¦ ÀÌ¿ëÇÑ connect attributeº¯°æ ½Ã dbc¿¡ º¯°æ µÈ attribute¸¦ ¼³Á¤
+// ex> SQLExecDirect(stmt, "ALTER SESSION SET OPTIMIZER_MODE = 1");
+ACI_RC ulnSetConnAttributeToDbc( ulnFnContext * aFnContext,
+                                 ulnStmt      * aStmt )
+{
+    ulnDbc      *sDbc;
+    acp_uint64_t sAttributeCVal = 0;
+
+    ULN_FNCONTEXT_GET_DBC( aFnContext, sDbc );
+        
+    if ( ulnStmtGetStatementType( aStmt ) == ULN_STMT_SET_SESSION_PROPERTY )
+    {
+        if (( (ULN_FNCONTEXT_GET_RC(aFnContext)) == SQL_SUCCESS ) ||
+            ( (ULN_FNCONTEXT_GET_RC(aFnContext)) == SQL_SUCCESS_WITH_INFO ))
+        {
+            if (( (aStmt->mAttributeID) == ULN_PROPERTY_DATE_FORMAT ) ||
+                ( (aStmt->mAttributeID) == ULN_PROPERTY_TIME_ZONE ) ||
+                ( (aStmt->mAttributeID) == ULN_PROPERTY_NLS_TERRITORY ) ||
+                ( (aStmt->mAttributeID) == ULN_PROPERTY_NLS_ISO_CURRENCY ) ||
+                ( (aStmt->mAttributeID) == ULN_PROPERTY_NLS_CURRENCY ) ||
+                ( (aStmt->mAttributeID) == ULN_PROPERTY_NLS_NUMERIC_CHARACTERS ))
+            {
+                sDbc->mAttributeCVal = 0;
+                ulnDbcSetStringAttr( &sDbc->mAttributeCStr,
+                                     (acp_char_t *)aStmt->mAttributeStr,
+                                     aStmt->mAttributeLen );
+                sDbc->mAttributeCLen = aStmt->mAttributeLen;                
+            }
+            else
+            {
+                sAttributeCVal =  (acp_uint64_t)ulncStrToSLong(  (const acp_char_t *)aStmt->mAttributeStr,
+                                                                 (acp_char_t **)NULL,
+                                                                 10 );
+                sDbc->mAttributeCVal = sAttributeCVal;
+                sDbc->mAttributeCStr = NULL;
+                sDbc->mAttributeCLen = 0;                
+            }
+            
+            switch ( aStmt->mAttributeID )
+            {
+                case ULN_PROPERTY_DATE_FORMAT:
+                    sDbc->mAttributeCID = ALTIBASE_DATE_FORMAT;
+                    ACI_TEST_RAISE(ulnDbcSetDateFormat( sDbc,
+                                                        (acp_char_t *)aStmt->mAttributeStr,
+                                                        aStmt->mAttributeLen )
+                                   != ACI_SUCCESS, LABEL_NOT_ENOUGH_MEMORY);
+                    break;
+                    
+                case ULN_PROPERTY_QUERY_TIMEOUT:
+                    sDbc->mAttributeCID     = SQL_ATTR_QUERY_TIMEOUT;
+                    sDbc->mAttrQueryTimeout = sAttributeCVal;                    
+                    break;
+                    
+                case ULN_PROPERTY_DDL_TIMEOUT:
+                    sDbc->mAttributeCID   = ALTIBASE_DDL_TIMEOUT;
+                    sDbc->mAttrDdlTimeout = sAttributeCVal;                   
+                    break;
+
+                case ULN_PROPERTY_FETCH_TIMEOUT:
+                    sDbc->mAttributeCID     = ALTIBASE_FETCH_TIMEOUT;
+                    sDbc->mAttrFetchTimeout = sAttributeCVal;                    
+                    break;
+                    
+                case ULN_PROPERTY_UTRANS_TIMEOUT:
+                    sDbc->mAttributeCID       = ALTIBASE_UTRANS_TIMEOUT;
+                    sDbc->mAttrUtransTimeout = sAttributeCVal;
+                    break;
+
+                case ULN_PROPERTY_IDLE_TIMEOUT:
+                    sDbc->mAttributeCID    = ALTIBASE_IDLE_TIMEOUT;
+                    sDbc->mAttrIdleTimeout = sAttributeCVal;                    
+                    break;
+                    
+                case ULN_PROPERTY_OPTIMIZER_MODE:
+                    sDbc->mAttributeCID      = ALTIBASE_OPTIMIZER_MODE;
+                    sDbc->mAttrOptimizerMode = sAttributeCVal;                    
+                    break;
+                    
+                case ULN_PROPERTY_HEADER_DISPLAY_MODE:
+                    sDbc->mAttributeCID          = ALTIBASE_HEADER_DISPLAY_MODE;
+                    sDbc->mAttrHeaderDisplayMode = sAttributeCVal;
+                    break;
+                    
+                case ULN_PROPERTY_NORMALFORM_MAXIMUM:
+                    sDbc->mAttributeCID      = ALTIBASE_NORMALFORM_MAXIMUM;
+                    sDbc->mNormalFormMaximum = sAttributeCVal;                    
+                    break;
+                    
+                case ULN_PROPERTY___OPTIMIZER_DEFAULT_TEMP_TBS_TYPE:
+                    sDbc->mAttributeCID                = ALTIBASE___OPTIMIZER_DEFAULT_TEMP_TBS_TYPE;
+                    sDbc->mOptimizerDefaultTempTbsType = sAttributeCVal;
+                    break;
+
+                case ULN_PROPERTY_COMMIT_WRITE_WAIT_MODE:
+                    sDbc->mAttributeCID        = ALTIBASE_COMMIT_WRITE_WAIT_MODE;
+                    sDbc->mCommitWriteWaitMode = sAttributeCVal;                    
+                    break;
+
+                case ULN_PROPERTY_ST_OBJECT_BUFFER_SIZE:
+                    sDbc->mAttributeCID = ALTIBASE_ST_OBJECT_BUFFER_SIZE;
+                    sDbc->mSTObjBufSize = sAttributeCVal;                    
+                    break;
+                
+                case ULN_PROPERTY_TRX_UPDATE_MAX_LOGSIZE:
+                    sDbc->mAttributeCID     = ALTIBASE_TRX_UPDATE_MAX_LOGSIZE;
+                    sDbc->mUpdateMaxLogSize = sAttributeCVal;                    
+                    break;
+                    
+                case ULN_PROPERTY_PARALLEL_DML_MODE:
+                    sDbc->mAttributeCID    = ALTIBASE_PARALLEL_DML_MODE;
+                    sDbc->mParallelDmlMode = sAttributeCVal;                    
+                    break;
+                    
+                case ULN_PROPERTY_NLS_NCHAR_CONV_EXCP:
+                    sDbc->mAttributeCID     = ALTIBASE_NLS_NCHAR_CONV_EXCP;
+                    sDbc->mNlsNcharConvExcp = sAttributeCVal;                    
+                    break;
+                    
+                case ULN_PROPERTY_AUTO_REMOTE_EXEC:
+                    sDbc->mAttributeCID   = ALTIBASE_AUTO_REMOTE_EXEC;
+                    sDbc->mAutoRemoteExec = sAttributeCVal;                    
+                    break;
+     
+                case ULN_PROPERTY_MAX_STATEMENTS_PER_SESSION:
+                    sDbc->mAttributeCID                = ALTIBASE_MAX_STATEMENTS_PER_SESSION;
+                    sDbc->mAttrMaxStatementsPerSession = sAttributeCVal;                    
+                    break;
+                    
+                case ULN_PROPERTY_TRCLOG_DETAIL_PREDICATE:
+                    sDbc->mAttributeCID          = ALTIBASE_TRCLOG_DETAIL_PREDICATE;
+                    sDbc->mTrclogDetailPredicate = sAttributeCVal;                    
+                    break;
+                                        
+                case ULN_PROPERTY_OPTIMIZER_DISK_INDEX_COST_ADJ:
+                    sDbc->mAttributeCID              = ALTIBASE_OPTIMIZER_DISK_INDEX_COST_ADJ;
+                    sDbc->mOptimizerDiskIndexCostAdj = sAttributeCVal;
+                    break;
+                    
+                case ULN_PROPERTY_OPTIMIZER_MEMORY_INDEX_COST_ADJ:
+                    sDbc->mAttributeCID                = ALTIBASE_OPTIMIZER_MEMORY_INDEX_COST_ADJ;
+                    sDbc->mOptimizerMemoryIndexCostAdj = sAttributeCVal;
+                    break;
+                    
+                case ULN_PROPERTY_NLS_TERRITORY:
+                    sDbc->mAttributeCID = ALTIBASE_NLS_TERRITORY;
+                    ACI_TEST_RAISE(ulnDbcSetNlsTerriroty( sDbc,
+                                                          (acp_char_t *)aStmt->mAttributeStr,
+                                                          aStmt->mAttributeLen )
+                                   != ACI_SUCCESS, LABEL_NOT_ENOUGH_MEMORY);
+                    break;
+                    
+                case ULN_PROPERTY_NLS_ISO_CURRENCY:
+                    sDbc->mAttributeCID = ALTIBASE_NLS_ISO_CURRENCY;
+                    ACI_TEST_RAISE(ulnNlsISOCurrency( sDbc,
+                                                      (acp_char_t *)aStmt->mAttributeStr,
+                                                      aStmt->mAttributeLen )
+                                   != ACI_SUCCESS, LABEL_NOT_ENOUGH_MEMORY );
+                    break;
+                    
+                case ULN_PROPERTY_NLS_CURRENCY:
+                    sDbc->mAttributeCID = ALTIBASE_NLS_CURRENCY;
+                    ACI_TEST_RAISE(ulnNlsCurrency( sDbc,
+                                                   (acp_char_t *)aStmt->mAttributeStr,
+                                                   aStmt->mAttributeLen )
+                                   != ACI_SUCCESS, LABEL_NOT_ENOUGH_MEMORY );
+                    break;
+                    
+                case ULN_PROPERTY_NLS_NUMERIC_CHARACTERS:
+                    sDbc->mAttributeCID = ALTIBASE_NLS_NUMERIC_CHARACTERS;
+                    ACI_TEST_RAISE(ulnNlsNumChar( sDbc,
+                                                  (acp_char_t *)aStmt->mAttributeStr,
+                                                  aStmt->mAttributeLen )
+                                   != ACI_SUCCESS, LABEL_NOT_ENOUGH_MEMORY );
+                    break;
+                    
+                case ULN_PROPERTY_TIME_ZONE:
+                    sDbc->mAttributeCID = ALTIBASE_TIME_ZONE;
+                    ACI_TEST_RAISE( ulnDbcSetTimezoneSring( sDbc,
+                                                            (acp_char_t *)aStmt->mAttributeStr,
+                                                            aStmt->mAttributeLen )
+                                    != ACI_SUCCESS, LABEL_NOT_ENOUGH_MEMORY );                    
+                    break;
+                    
+                case ULN_PROPERTY_LOB_CACHE_THRESHOLD:
+                    sDbc->mAttributeCID          = ALTIBASE_LOB_CACHE_THRESHOLD;
+                    sDbc->mAttrLobCacheThreshold = sAttributeCVal;                    
+                    break;
+                    
+                case ULN_PROPERTY_QUERY_REWRITE_ENABLE:
+                    sDbc->mAttributeCID       = ALTIBASE_QUERY_REWRITE_ENABLE;
+                    sDbc->mQueryRewriteEnable = sAttributeCVal;                    
+                    break;
+                    
+                case ULN_PROPERTY_GLOBAL_TRANSACTION_LEVEL:
+                    sDbc->mAttributeCID               = ALTIBASE_GLOBAL_TRANSACTION_LEVEL;
+                    sDbc->mAttrGlobalTransactionLevel = sAttributeCVal;
+
+                    /* BUG-48109 ALTER SESSIONÀ¸·Î GTx¸¦ º¯°æÇÑ °æ¿ì ALTER SESSION ½ÇÇà½Ã ºĞ»êÁ¤º¸°¡
+                                 ¼³Á¤µÇ¾ú±â ¶§¹®¿¡ Level¿¡ »ó°ü¾øÀÌ ÃÊ±âÈ­ ÇØ¾ß ÇÑ´Ù. */
+                    ulsdInitDistTxInfo( sDbc );
+                    break;
+                    
+                case ULN_PROPERTY_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT:
+                    sDbc->mAttributeCID                    = ALTIBASE_DBLINK_REMOTE_STATEMENT_AUTOCOMMIT;
+                    sDbc->mDblinkRemoteStatementAutoCommit = sAttributeCVal;                    
+                    break;
+                    
+                case ULN_PROPERTY_RECYCLEBIN_ENABLE:
+                    sDbc->mAttributeCID     = ALTIBASE_RECYCLEBIN_ENABLE;
+                    sDbc->mRecyclebinEnable = sAttributeCVal;                    
+                    break;
+                    
+                case ULN_PROPERTY___USE_OLD_SORT:
+                    sDbc->mAttributeCID = ALTIBASE___USE_OLD_SORT;
+                    sDbc->mUseOldSort   = sAttributeCVal;
+                    break;
+
+                case ULN_PROPERTY_ARITHMETIC_OPERATION_MODE:
+                    sDbc->mAttributeCID     = ALTIBASE_ARITHMETIC_OPERATION_MODE;
+                    sDbc->mArithmeticOpMode = sAttributeCVal;                    
+                    break;
+                    
+                case ULN_PROPERTY_RESULT_CACHE_ENABLE:
+                    sDbc->mAttributeCID      = ALTIBASE_RESULT_CACHE_ENABLE;
+                    sDbc->mResultCacheEnable = sAttributeCVal;                    
+                    break;
+                    
+                case ULN_PROPERTY_TOP_RESULT_CACHE_MODE:
+                    sDbc->mAttributeCID       = ALTIBASE_TOP_RESULT_CACHE_MODE;
+                    sDbc->mTopResultCacheMode = sAttributeCVal;                    
+                    break;
+
+                case ULN_PROPERTY_OPTIMIZER_AUTO_STATS:
+                    sDbc->mAttributeCID       = ALTIBASE_OPTIMIZER_AUTO_STATS;
+                    sDbc->mOptimizerAutoStats = sAttributeCVal;                    
+                    break;
+                    
+                case ULN_PROPERTY___OPTIMIZER_TRANSITIVITY_OLD_RULE:
+                    sDbc->mAttributeCID                 = ALTIBASE___OPTIMIZER_TRANSITIVITY_OLD_RULE;
+                    sDbc->mOptimizerTransitivityOldRule = sAttributeCVal;                    
+                    break;
+                    
+                case ULN_PROPERTY_OPTIMIZER_PERFORMANCE_VIEW:
+                    sDbc->mAttributeCID             = ALTIBASE_OPTIMIZER_PERFORMANCE_VIEW;
+                    sDbc->mOptimizerPerformanceView = sAttributeCVal;                    
+                    break;
+                    
+                case ULN_PROPERTY_REPLICATION_DDL_SYNC:
+                    sDbc->mAttributeCID       = ALTIBASE_REPLICATION_DDL_SYNC;
+                    sDbc->mReplicationDDLSync = sAttributeCVal;
+                    break;
+                    
+                case ULN_PROPERTY_REPLICATION_DDL_SYNC_TIMEOUT:
+                    sDbc->mAttributeCID              = ALTIBASE_REPLICATION_DDL_SYNC_TIMEOUT;
+                    sDbc->mReplicationDDLSyncTimeout = sAttributeCVal;
+                    break;
+                    
+                case ULN_PROPERTY___PRINT_OUT_ENABLE:
+                    sDbc->mAttributeCID   = ALTIBASE___PRINT_OUT_ENABLE;
+                    sDbc->mPrintOutEnable = sAttributeCVal;
+                    break;
+                    
+                case ULN_PROPERTY_TRCLOG_DETAIL_SHARD:
+                    sDbc->mAttributeCID      = ALTIBASE_TRCLOG_DETAIL_SHARD;
+                    sDbc->mTrclogDetailShard = sAttributeCVal;
+                    break;
+                    
+                case ULN_PROPERTY_SERIAL_EXECUTE_MODE:
+                    sDbc->mAttributeCID      = ALTIBASE_SERIAL_EXECUTE_MODE;
+                    sDbc->mSerialExecuteMode = sAttributeCVal;                    
+                    break;
+                    
+                case ULN_PROPERTY_TRCLOG_DETAIL_INFORMATION:
+                    sDbc->mAttributeCID            = ALTIBASE_TRCLOG_DETAIL_INFORMATION;
+                    sDbc->mTrcLogDetailInformation = sAttributeCVal;                    
+                    break;
+                    
+                case ULN_PROPERTY___REDUCE_PARTITION_PREPARE_MEMORY:
+                    sDbc->mAttributeCID            = ALTIBASE___REDUCE_PARTITION_PREPARE_MEMORY;
+                    sDbc->mReducePartPrepareMemory = sAttributeCVal;                    
+                    break;
+ 
+                case ULN_PROPERTY_TRANSACTIONAL_DDL:
+                    sDbc->mAttributeCID     = ALTIBASE_TRANSACTIONAL_DDL;
+                    sDbc->mTransactionalDDL = sAttributeCVal;                    
+                    break;
+
+                case ULN_PROPERTY_GLOBAL_DDL:
+                    sDbc->mAttributeCID     = ALTIBASE_GLOBAL_DDL;
+                    sDbc->mGlobalDDL        = sAttributeCVal;                    
+                    break;
+
+                case ULN_PROPERTY_INVOKE_USER:
+                    // BUG-47862 Internal use only.
+                    // Do nothing.
+                    break;
+
+                case ULN_PROPERTY_SHARD_STATEMENT_RETRY:
+                    sDbc->mAttributeCID            = ALTIBASE_SHARD_STATEMENT_RETRY;
+                    ulnDbcSetShardStatementRetry( sDbc, (acp_uint8_t)sAttributeCVal );
+                    break;
+                    
+                case ULN_PROPERTY_INDOUBT_FETCH_TIMEOUT:
+                    sDbc->mAttributeCID            = ALTIBASE_INDOUBT_FETCH_TIMEOUT;
+                    ulnDbcSetIndoubtFetchTimeout( sDbc, (acp_uint32_t)sAttributeCVal );
+                    break;
+
+                case ULN_PROPERTY_INDOUBT_FETCH_METHOD:
+                    sDbc->mAttributeCID            = ALTIBASE_INDOUBT_FETCH_METHOD;
+                    ulnDbcSetIndoubtFetchMethod( sDbc, (acp_uint8_t)sAttributeCVal );
+                    break;
+                case ULN_PROPERTY___OPTIMIZER_PLAN_HASH_OR_SORT_METHOD: /* BUG-48132 */
+                    sDbc->mAttributeCID         = ALTIBASE___OPTIMIZER_PLAN_HASH_OR_SORT_METHOD;
+                    sDbc->mPlanHashOrSortMethod = sAttributeCVal;
+                    break;
+                case ULN_PROPERTY___OPTIMIZER_BUCKET_COUNT_MAX: /* BUG-48161 */
+                    sDbc->mAttributeCID   = ALTIBASE___OPTIMIZER_BUCKET_COUNT_MAX;
+                    sDbc->mBucketCountMax = sAttributeCVal;
+                    break;
+                case ULN_PROPERTY_DDL_LOCK_TIMEOUT:
+                    sDbc->mAttributeCID            = ALTIBASE_DDL_LOCK_TIMEOUT;
+                    ulnDbcSetDDLLockTimeout( sDbc, (acp_sint32_t)sAttributeCVal );
+                    break;
+                case ULN_PROPERTY___OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION: /* BUG-48348 */ 
+                    sDbc->mAttributeCID                 = ALTIBASE___OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION;
+                    sDbc->mEliminateCommonSubexpression = sAttributeCVal;
+                    break;
+                default:
+                    ACI_RAISE( ATTRIBUTE_INVALID );
+                    break;
+                    
+            }
+        }
+        else
+        {
+            // nothing to do
+        }
+    }
+    else
+    {
+        // nothing to do
+    }
+    
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION(LABEL_NOT_ENOUGH_MEMORY)
+    {
+        ulnError(aFnContext, ulERR_FATAL_MEMORY_ALLOC_ERROR, "ulnSetConnAttributeForDbc");
+    }
+    ACI_EXCEPTION( ATTRIBUTE_INVALID )
+    {
+        ulnError( aFnContext, ulERR_ABORT_SHARD_ERROR,
+                  "ulnSetConnAttributeForDbc",
+                  "Attribute is invalid." );
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+

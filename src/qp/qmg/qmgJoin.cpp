@@ -16,14 +16,14 @@
  
 
 /***********************************************************************
- * $Id: qmgJoin.cpp 85317 2019-04-25 00:20:11Z donovan.seo $
+ * $Id: qmgJoin.cpp 90192 2021-03-12 02:01:03Z jayce.park $
  *
  * Description :
- *     Join Graphë¥¼ ìœ„í•œ ìˆ˜í–‰ í•¨ìˆ˜
+ *     Join Graph¸¦ À§ÇÑ ¼öÇà ÇÔ¼ö
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -46,6 +46,7 @@
 #include <qmgSelection.h>
 #include <qmgPartition.h>
 #include <qcgPlan.h>
+#include <qmo.h>
 
 IDE_RC
 qmgJoin::init( qcStatement * aStatement,
@@ -55,15 +56,15 @@ qmgJoin::init( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : Inner Joinì— ëŒ€ì‘í•˜ëŠ” qmgJoin Graphì˜ ì´ˆê¸°í™”
+ * Description : Inner Join¿¡ ´ëÀÀÇÏ´Â qmgJoin GraphÀÇ ÃÊ±âÈ­
  *
  * Implementation :
- *    (1) qmgJoinì„ ìœ„í•œ ê³µê°„ í• ë‹¹
- *    (2) graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìë£Œ êµ¬ì¡° ) ì´ˆê¸°í™”
- *    (3) qmgJoinì˜ onCondition ì²˜ë¦¬
- *    (4) í•˜ìœ„ graphì˜ ìƒì„± ë° ì´ˆê¸°í™”
- *    (5) graph.optimizeì™€ graph.makePlan ì„¤ì •
- *    (6) out ì„¤ì •
+ *    (1) qmgJoinÀ» À§ÇÑ °ø°£ ÇÒ´ç
+ *    (2) graph( ¸ğµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶ ) ÃÊ±âÈ­
+ *    (3) qmgJoinÀÇ onCondition Ã³¸®
+ *    (4) ÇÏÀ§ graphÀÇ »ı¼º ¹× ÃÊ±âÈ­
+ *    (5) graph.optimize¿Í graph.makePlan ¼³Á¤
+ *    (6) out ¼³Á¤
  *
  ***********************************************************************/
 
@@ -75,7 +76,7 @@ qmgJoin::init( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgJoin::init::__FT__" );
 
     //---------------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //---------------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -83,15 +84,15 @@ qmgJoin::init( qcStatement * aStatement,
     IDE_DASSERT( aFrom != NULL );
 
     //---------------------------------------------------
-    // Join Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
+    // Join Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
     //---------------------------------------------------
 
-    // qmgJoinì„ ìœ„í•œ ê³µê°„ í• ë‹¹
+    // qmgJoinÀ» À§ÇÑ °ø°£ ÇÒ´ç
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmgJOIN),
                                              (void**) &sMyGraph )
               != IDE_SUCCESS );
 
-    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
+    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
 
     sMyGraph->graph.type = QMG_INNER_JOIN;
@@ -106,20 +107,20 @@ qmgJoin::init( qcStatement * aStatement,
     sMyGraph->graph.printGraph = qmgJoin::printGraph;
 
     //---------------------------------------------------
-    // Join Graph ë§Œì„ ìœ„í•œ ìë£Œ êµ¬ì¡° ì´ˆê¸°í™”
+    // Join Graph ¸¸À» À§ÇÑ ÀÚ·á ±¸Á¶ ÃÊ±âÈ­
     //---------------------------------------------------
 
-    // on condition CNFë¥¼ ìœ„í•œ ê³µê°„ í• ë‹¹ ë° ìë£Œ êµ¬ì¡° ì´ˆê¸°í™”
+    // on condition CNF¸¦ À§ÇÑ °ø°£ ÇÒ´ç ¹× ÀÚ·á ±¸Á¶ ÃÊ±âÈ­
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF( qmoCNF ),
                                              (void**) & sMyGraph->onConditionCNF )
               != IDE_SUCCESS );
 
-    // To Fix PR-12743 NNF Filterì§€ì›
+    // To Fix PR-12743 NNF FilterÁö¿ø
     IDE_TEST( qmoCrtPathMgr::decideNormalType( aStatement,
                                                aFrom,
                                                aFrom->onCondition,
                                                aQuerySet->SFWGH->hints,
-                                               ID_TRUE, // CNF Onlyì„
+                                               ID_TRUE, // CNF OnlyÀÓ
                                                & sNormalType )
               != IDE_SUCCESS );
 
@@ -171,7 +172,7 @@ qmgJoin::init( qcStatement * aStatement,
     sMyGraph->graph.left = sMyGraph->onConditionCNF->baseGraph[0];
     sMyGraph->graph.right = sMyGraph->onConditionCNF->baseGraph[1];
 
-    // BUG-45296 rownum Pred ì„ left outer ì˜ ì˜¤ë¥¸ìª½ìœ¼ë¡œ ë‚´ë¦¬ë©´ ì•ˆë©ë‹ˆë‹¤.
+    // BUG-45296 rownum Pred À» left outer ÀÇ ¿À¸¥ÂÊÀ¸·Î ³»¸®¸é ¾ÈµË´Ï´Ù.
     sMyGraph->graph.left->flag &= ~QMG_ROWNUM_PUSHED_MASK;
     sMyGraph->graph.left->flag |= QMG_ROWNUM_PUSHED_FALSE;
     
@@ -179,12 +180,12 @@ qmgJoin::init( qcStatement * aStatement,
     sMyGraph->graph.right->flag |= QMG_ROWNUM_PUSHED_FALSE;
 
     // To Fix BUG-8439
-    // Disk/Memory ì •ë³´ ì„¤ì •
+    // Disk/Memory Á¤º¸ ¼³Á¤
     switch(  aQuerySet->SFWGH->hints->interResultType )
     {
         case QMO_INTER_RESULT_TYPE_NOT_DEFINED :
-            // ì¤‘ê°„ ê²°ê³¼ Type Hintê°€ ì—†ëŠ” ê²½ìš°,
-            // left ë˜ëŠ” rightê°€ diskì´ë©´ disk
+            // Áß°£ °á°ú Type Hint°¡ ¾ø´Â °æ¿ì,
+            // left ¶Ç´Â right°¡ diskÀÌ¸é disk
             if ( ( ( sMyGraph->graph.left->flag & QMG_GRAPH_TYPE_MASK )
                    == QMG_GRAPH_TYPE_DISK ) ||
                  ( ( sMyGraph->graph.right->flag & QMG_GRAPH_TYPE_MASK )
@@ -212,24 +213,24 @@ qmgJoin::init( qcStatement * aStatement,
             break;
     }
 
-    // join method ì´ˆê¸°í™”
+    // join method ÃÊ±âÈ­
     sMyGraph->joinMethods = NULL;
 
-    // joinable predicate / non joinable predicate ì´ˆê¸°í™”
+    // joinable predicate / non joinable predicate ÃÊ±âÈ­
     sMyGraph->joinablePredicate = NULL;
     sMyGraph->nonJoinablePredicate = NULL;
     sMyGraph->pushedDownPredicate = NULL;
 
-    // bucket count, hash temp table count ì´ˆê¸°í™”
+    // bucket count, hash temp table count ÃÊ±âÈ­
     sMyGraph->hashBucketCnt = 0;
     sMyGraph->hashTmpTblCnt = 0;
 
-    // PROJ-2242 joinOrderFactor, joinSize ì´ˆê¸°í™”
+    // PROJ-2242 joinOrderFactor, joinSize ÃÊ±âÈ­
     sMyGraph->firstRowsFactor = QMO_COST_FIRST_ROWS_FACTOR_DEFAULT;
     sMyGraph->joinOrderFactor = 0;
     sMyGraph->joinSize        = 0;
 
-    // out ì„¤ì •
+    // out ¼³Á¤
     *aGraph = (qmgGraph *)sMyGraph;
 
     return IDE_SUCCESS;
@@ -248,14 +249,14 @@ qmgJoin::init( qcStatement * /* aStatement*/,
 {
 /***********************************************************************
  *
- * Description : Join Relationì— ëŒ€ì‘í•˜ëŠ” qmgJoin Graphì˜ ì´ˆê¸°í™”
+ * Description : Join Relation¿¡ ´ëÀÀÇÏ´Â qmgJoin GraphÀÇ ÃÊ±âÈ­
  *
  * Implementation :
- *    (1) graph( ëª¨ë“  Graphë¥¼ ìœ„í•œ ê³µí†µ ìë£Œ êµ¬ì¡° ) ì´ˆê¸°í™”
- *    (2) graph.type ì„¤ì •
- *    (3) graph.leftì„ aLeftGraphë¡œ, graph.rightë¥¼ aRightGraphë¡œ ì„¤ì •
- *    (4) graph.dependencies ì„¤ì •
- *    (5) graph.optimizeì™€ graph.makePlan ì„¤ì •
+ *    (1) graph( ¸ğµç Graph¸¦ À§ÇÑ °øÅë ÀÚ·á ±¸Á¶ ) ÃÊ±âÈ­
+ *    (2) graph.type ¼³Á¤
+ *    (3) graph.leftÀ» aLeftGraph·Î, graph.right¸¦ aRightGraph·Î ¼³Á¤
+ *    (4) graph.dependencies ¼³Á¤
+ *    (5) graph.optimize¿Í graph.makePlan ¼³Á¤
  *
  ***********************************************************************/
 
@@ -265,7 +266,7 @@ qmgJoin::init( qcStatement * /* aStatement*/,
     IDU_FIT_POINT_FATAL( "qmgJoin::init::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_FT_ASSERT( aLeftGraph != NULL );
@@ -273,18 +274,18 @@ qmgJoin::init( qcStatement * /* aStatement*/,
     IDE_FT_ASSERT( aGraph != NULL );
 
     //---------------------------------------------------
-    // Join Graphë¥¼ ìœ„í•œ ê¸°ë³¸ ì´ˆê¸°í™”
+    // Join Graph¸¦ À§ÇÑ ±âº» ÃÊ±âÈ­
     //---------------------------------------------------
 
     sMyGraph = (qmgJOIN *) aGraph;
 
-    // Graph ê³µí†µ ì •ë³´ì˜ ì´ˆê¸°í™”
+    // Graph °øÅë Á¤º¸ÀÇ ÃÊ±âÈ­
     IDE_TEST( qmg::initGraph( & sMyGraph->graph ) != IDE_SUCCESS );
     sMyGraph->graph.type = QMG_INNER_JOIN;
     sMyGraph->graph.left = aLeftGraph;
     sMyGraph->graph.right = aRightGraph;
 
-    // BUG-45296 rownum Pred ì„ left outer ì˜ ì˜¤ë¥¸ìª½ìœ¼ë¡œ ë‚´ë¦¬ë©´ ì•ˆë©ë‹ˆë‹¤.
+    // BUG-45296 rownum Pred À» left outer ÀÇ ¿À¸¥ÂÊÀ¸·Î ³»¸®¸é ¾ÈµË´Ï´Ù.
     sMyGraph->graph.left->flag &= ~QMG_ROWNUM_PUSHED_MASK;
     sMyGraph->graph.left->flag |= QMG_ROWNUM_PUSHED_FALSE;
     
@@ -302,17 +303,17 @@ qmgJoin::init( qcStatement * /* aStatement*/,
     qtc::dependencySetWithDep( & sMyGraph->graph.depInfo,
                                & sOrDependencies );
 
-    // Graphì˜ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ì„¤ì •
+    // GraphÀÇ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼³Á¤
     sMyGraph->graph.optimize = qmgJoin::optimize;
     sMyGraph->graph.makePlan = qmgJoin::makePlan;
     sMyGraph->graph.printGraph = qmgJoin::printGraph;
 
-    // Disk/Memory ì •ë³´ ì„¤ì •
+    // Disk/Memory Á¤º¸ ¼³Á¤
     switch(  sMyGraph->graph.myQuerySet->SFWGH->hints->interResultType )
     {
         case QMO_INTER_RESULT_TYPE_NOT_DEFINED :
-            // ì¤‘ê°„ ê²°ê³¼ Type Hintê°€ ì—†ëŠ” ê²½ìš°,
-            // left ë˜ëŠ” rightê°€ diskì´ë©´ disk
+            // Áß°£ °á°ú Type Hint°¡ ¾ø´Â °æ¿ì,
+            // left ¶Ç´Â right°¡ diskÀÌ¸é disk
             if ( ( ( aLeftGraph->flag & QMG_GRAPH_TYPE_MASK )
                    == QMG_GRAPH_TYPE_DISK ) ||
                  ( ( aRightGraph->flag & QMG_GRAPH_TYPE_MASK )
@@ -341,7 +342,7 @@ qmgJoin::init( qcStatement * /* aStatement*/,
     }
 
     //---------------------------------------------------
-    // Join Graph ë§Œì„ ìœ„í•œ ìë£Œ êµ¬ì¡° ì´ˆê¸°í™”
+    // Join Graph ¸¸À» À§ÇÑ ÀÚ·á ±¸Á¶ ÃÊ±âÈ­
     //---------------------------------------------------
 
     sMyGraph->onConditionCNF = NULL;
@@ -363,7 +364,7 @@ qmgJoin::init( qcStatement * /* aStatement*/,
     }
     else
     {
-        // join ordering ê³¼ì •ì—ì„œ ê³„ì‚°ëœ ìƒíƒœ
+        // join ordering °úÁ¤¿¡¼­ °è»êµÈ »óÅÂ
     }
     sMyGraph->firstRowsFactor = QMO_COST_FIRST_ROWS_FACTOR_DEFAULT;
 
@@ -379,20 +380,20 @@ qmgJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- * Description : qmgJoin Graphì˜ ìµœì í™”
+ * Description : qmgJoin GraphÀÇ ÃÖÀûÈ­
  *
  * Implementation :
- *    (1) Inner Joinì¸ ê²½ìš°, ë‹¤ìŒì„ ìˆ˜í–‰
- *        A. subqueryì˜ ì²˜ë¦¬
- *        B. on Conditionìœ¼ë¡œ Transitive Predicate ìƒì„±
- *        C. on Condition Predicateì˜ ë¶„ë¥˜
- *        D. left graphì˜ ìµœì í™” ìˆ˜í–‰
- *        E. right graphì˜ ìµœì í™” ìˆ˜í–‰
- *    (2) Join Method ì˜ ì´ˆê¸°í™”
- *    (3) Join Method ì„ íƒ
- *    (4) Join Method ê²°ì • í›„ ì²˜ë¦¬
- *    (5) ê³µí†µ ë¹„ìš© ì •ë³´ì˜ ì„¤ì •
- *    (6) Preserved Order, DISK/MEMORY ì„¤ì •
+ *    (1) Inner JoinÀÎ °æ¿ì, ´ÙÀ½À» ¼öÇà
+ *        A. subqueryÀÇ Ã³¸®
+ *        B. on ConditionÀ¸·Î Transitive Predicate »ı¼º
+ *        C. on Condition PredicateÀÇ ºĞ·ù
+ *        D. left graphÀÇ ÃÖÀûÈ­ ¼öÇà
+ *        E. right graphÀÇ ÃÖÀûÈ­ ¼öÇà
+ *    (2) Join Method ÀÇ ÃÊ±âÈ­
+ *    (3) Join Method ¼±ÅÃ
+ *    (4) Join Method °áÁ¤ ÈÄ Ã³¸®
+ *    (5) °øÅë ºñ¿ë Á¤º¸ÀÇ ¼³Á¤
+ *    (6) Preserved Order, DISK/MEMORY ¼³Á¤
  *
  ***********************************************************************/
 
@@ -403,26 +404,37 @@ qmgJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     IDU_FIT_POINT_FATAL( "qmgJoin::optimize::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //------------------------------------------
 
     sMyGraph = (qmgJOIN*)aGraph;
 
+    if ( sMyGraph->graph.myPredicate != NULL )
+    {
+        /* TASK-7219 Non-shard DML */
+        IDE_TEST( qmo::removeOutRefPredPushedForce( & sMyGraph->graph.myPredicate )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
     if ( sMyGraph->onConditionCNF != NULL )
     {
         //------------------------------------------
-        // Inner Join ì¸ ê²½ìš°
-        //    - Transitive Predicate ìƒì„±
-        //    - onCondition Predicateì˜ ë¶„ë¥˜
-        //    - left graphì˜ ìµœì í™” ìˆ˜í–‰
-        //    - right graphì˜ ìµœì í™” ìˆ˜í–‰
+        // Inner Join ÀÎ °æ¿ì
+        //    - Transitive Predicate »ı¼º
+        //    - onCondition PredicateÀÇ ºĞ·ù
+        //    - left graphÀÇ ÃÖÀûÈ­ ¼öÇà
+        //    - right graphÀÇ ÃÖÀûÈ­ ¼öÇà
         //------------------------------------------
 
         IDE_TEST( qmoCnfMgr::generateTransitivePred4OnCondition(
@@ -440,6 +452,19 @@ qmgJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                 sLowerPredicate,
                 sMyGraph->graph.myFrom->joinType )
             != IDE_SUCCESS );
+
+        if ( ( sMyGraph->graph.flag & QMG_JOIN_ONLY_NL_MASK )
+               == QMG_JOIN_ONLY_NL_TRUE )
+        {
+            sMyGraph->graph.left->flag &= ~QMG_JOIN_ONLY_NL_MASK;
+            sMyGraph->graph.left->flag |= QMG_JOIN_ONLY_NL_TRUE;
+            sMyGraph->graph.right->flag &= ~QMG_JOIN_ONLY_NL_MASK;
+            sMyGraph->graph.right->flag |= QMG_JOIN_ONLY_NL_TRUE;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
 
         IDE_TEST( sMyGraph->graph.left->optimize( aStatement,
                                                   sMyGraph->graph.left )
@@ -471,14 +496,14 @@ qmgJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         }
 
         //------------------------------------------
-        // Subqueryì˜ Graph ìƒì„±
+        // SubqueryÀÇ Graph »ı¼º
         //------------------------------------------
         // To fix BUG-19813
-        // on condition ì— ë‚¨ì•„ìˆëŠ” predicateì´ mypredicateì— ë¶™ê¸° ì „ì—
-        // ë¨¼ì € subquery graphë¥¼ ìƒì„±í•´ì•¼ í•¨
-        // :on condition predicateì€
-        // qmoCnfMgr::optimizeSubQ4OnConditioní•¨ìˆ˜ì— ì˜í•´ ì´ë¯¸ subquery graphë¥¼
-        // ìƒì„±í•˜ì˜€ê¸° ë•Œë¬¸
+        // on condition ¿¡ ³²¾ÆÀÖ´Â predicateÀÌ mypredicate¿¡ ºÙ±â Àü¿¡
+        // ¸ÕÀú subquery graph¸¦ »ı¼ºÇØ¾ß ÇÔ
+        // :on condition predicateÀº
+        // qmoCnfMgr::optimizeSubQ4OnConditionÇÔ¼ö¿¡ ÀÇÇØ ÀÌ¹Ì subquery graph¸¦
+        // »ı¼ºÇÏ¿´±â ¶§¹®
         if ( sMyGraph->graph.myPredicate != NULL )
         {
             IDE_TEST( qmoPred::optimizeSubqueries( aStatement,
@@ -493,11 +518,11 @@ qmgJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         
         //------------------------------------------
         // fix BUG-9972
-        // on Condition CNFì˜ predicate ë¶„ë¥˜ í›„ sMyGraph->graph.myPredicate ì¤‘
-        // one table predicateì€ left ë˜ëŠ” rightì— push selection ëœ í›„
-        // subqueryë¥¼ ë™ë°˜í•œ predicateì¸ ê²½ìš° push selectionë˜ì§€ ì•Šì•„ ë‚¨ì•„ìˆì„ ìˆ˜ ìˆìŒ
-        // on Condition CNFì—ì„œ joinPredicateìœ¼ë¡œ ë¶„ë¥˜ëœ predicate ë° oneTablePredicate
-        // ì„ sMyGraph->graph.myPredicateì— ì—°ê²°ì‹œì¼œ í›„ì— ë™ì¼í•˜ê²Œ ì²˜ë¦¬í•˜ë„ë¡ ì„¤ì •
+        // on Condition CNFÀÇ predicate ºĞ·ù ÈÄ sMyGraph->graph.myPredicate Áß
+        // one table predicateÀº left ¶Ç´Â right¿¡ push selection µÈ ÈÄ
+        // subquery¸¦ µ¿¹İÇÑ predicateÀÎ °æ¿ì push selectionµÇÁö ¾Ê¾Æ ³²¾ÆÀÖÀ» ¼ö ÀÖÀ½
+        // on Condition CNF¿¡¼­ joinPredicateÀ¸·Î ºĞ·ùµÈ predicate ¹× oneTablePredicate
+        // À» sMyGraph->graph.myPredicate¿¡ ¿¬°á½ÃÄÑ ÈÄ¿¡ µ¿ÀÏÇÏ°Ô Ã³¸®ÇÏµµ·Ï ¼³Á¤
         //------------------------------------------
         if( sMyGraph->graph.myPredicate == NULL )
         {
@@ -526,17 +551,17 @@ qmgJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         }
 
         //------------------------------------------
-        // Constant Predicateì˜ ì²˜ë¦¬
+        // Constant PredicateÀÇ Ã³¸®
         //------------------------------------------
 
         // fix BUG-9791
-        // ì˜ˆ) SELECT * FROM T1 INNER JOIN T2 ON 1 = 2;
-        // inner joinì¸ ê²½ìš°ëŠ”, onì ˆì˜ constant filterë¥¼
-        // ì²˜ë¦¬ê°€ëŠ¥í•œ ìµœí•˜ìœ„ left graphì— ë‚´ë¦°ë‹¤.
-        // ( left outer, full outer joinì¸ ê²½ìš°ëŠ”,
-        //   ì¡°ê±´ì— ë§ì§€ ì•ŠëŠ” ë ˆì½”ë“œì— ëŒ€í•´ì„œëŠ” null paddingí•´ì•¼ í•˜ë¯€ë¡œ,
-        //   onì ˆì˜ constant filterë¥¼ ë‚´ë¦´ ìˆ˜ ì—†ê³ ,
-        //   left, full outer join nodeì—ì„œ filterì²˜ë¦¬í•´ì•¼ í•œë‹¤. )
+        // ¿¹) SELECT * FROM T1 INNER JOIN T2 ON 1 = 2;
+        // inner joinÀÎ °æ¿ì´Â, onÀıÀÇ constant filter¸¦
+        // Ã³¸®°¡´ÉÇÑ ÃÖÇÏÀ§ left graph¿¡ ³»¸°´Ù.
+        // ( left outer, full outer joinÀÎ °æ¿ì´Â,
+        //   Á¶°Ç¿¡ ¸ÂÁö ¾Ê´Â ·¹ÄÚµå¿¡ ´ëÇØ¼­´Â null paddingÇØ¾ß ÇÏ¹Ç·Î,
+        //   onÀıÀÇ constant filter¸¦ ³»¸± ¼ö ¾ø°í,
+        //   left, full outer join node¿¡¼­ filterÃ³¸®ÇØ¾ß ÇÑ´Ù. )
         IDE_TEST(
             qmoCnfMgr::pushSelection4ConstantFilter( aStatement,
                                                      (qmgGraph*)sMyGraph,
@@ -546,7 +571,7 @@ qmgJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     else
     {
         //------------------------------------------
-        // Subqueryì˜ Graph ìƒì„±
+        // SubqueryÀÇ Graph »ı¼º
         //------------------------------------------
         
         // To Fix BUG-8219
@@ -567,7 +592,7 @@ qmgJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     {
 
         //------------------------------------------
-        // Join Predicateì˜ ë¶„ë¥˜
+        // Join PredicateÀÇ ºĞ·ù
         //------------------------------------------
 
         IDE_TEST( qmoPred::classifyJoinPredicate( aStatement,
@@ -578,9 +603,9 @@ qmgJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                   != IDE_SUCCESS );
 
         // To fix BUG-26885
-        // DNFì˜ joinì´ ë˜ëŠ” ê²½ìš° materializeë¡œ ì¸í•´ predicate
-        // ì˜ ì°¸ì¡°íŠœí”Œ ìœ„ì¹˜ê°€ ë°”ë€” ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-        // join predicateë¥¼ ë³µì‚¬í•œë‹¤.
+        // DNFÀÇ joinÀÌ µÇ´Â °æ¿ì materialize·Î ÀÎÇØ predicate
+        // ÀÇ ÂüÁ¶Æ©ÇÃ À§Ä¡°¡ ¹Ù²ğ ¼ö ÀÖÀ¸¹Ç·Î
+        // join predicate¸¦ º¹»çÇÑ´Ù.
         if( aGraph->myQuerySet->SFWGH->crtPath->currentNormalType
             == QMO_NORMAL_TYPE_DNF )
         {   
@@ -597,22 +622,22 @@ qmgJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         }
         else
         {
-            // CNFì´ê±°ë‚˜ NNFì¸ ê²½ìš° ë³µì‚¬í•  í•„ìš”ê°€ ì—†ë‹¤.
+            // CNFÀÌ°Å³ª NNFÀÎ °æ¿ì º¹»çÇÒ ÇÊ¿ä°¡ ¾ø´Ù.
             // Nothing To Do
         }
     }
     else
     {
-        // Join Graphì— í•´ë‹¹í•˜ëŠ” Predicateì´ ì—†ëŠ” ê²½ìš°ì„
+        // Join Graph¿¡ ÇØ´çÇÏ´Â PredicateÀÌ ¾ø´Â °æ¿ìÀÓ
 
         // Nothing To Do
     }
 
     //------------------------------------------
-    // Selectivity ì„¤ì •
+    // Selectivity ¼³Á¤
     //------------------------------------------
 
-    // WHERE clause, ON clause ëª¨ë‘ ê³ ë ¤ëœ ìƒíƒœ
+    // WHERE clause, ON clause ¸ğµÎ °í·ÁµÈ »óÅÂ
     IDE_TEST( qmoSelectivity::setJoinSelectivity(
                   aStatement,
                   & sMyGraph->graph,
@@ -621,52 +646,70 @@ qmgJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // Join Methodì˜ ì´ˆê¸°í™”
+    // Join MethodÀÇ ÃÊ±âÈ­
     //------------------------------------------
+    if ( ( sMyGraph->graph.flag & QMG_JOIN_ONLY_NL_MASK )
+         == QMG_JOIN_ONLY_NL_FALSE )
+    {
+        IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmoJoinMethod ) * QMG_INNER_JOIN_METHOD_COUNT,
+                                                   (void **)&sMyGraph->joinMethods )
+                  != IDE_SUCCESS );
 
-    IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmoJoinMethod ) * QMG_INNER_JOIN_METHOD_COUNT,
-                                               (void **)&sMyGraph->joinMethods )
-              != IDE_SUCCESS );
+        // nested loop join methodÀÇ ÃÊ±âÈ­
+        IDE_TEST( qmoJoinMethodMgr::init( aStatement,
+                                          & sMyGraph->graph,
+                                          sMyGraph->firstRowsFactor,
+                                          sMyGraph->graph.myPredicate,
+                                          QMO_JOIN_METHOD_NL,
+                                          &sMyGraph->joinMethods[QMG_INNER_JOIN_METHOD_NESTED] )
+                  != IDE_SUCCESS );
 
-    // nested loop join methodì˜ ì´ˆê¸°í™”
-    IDE_TEST( qmoJoinMethodMgr::init( aStatement,
-                                      & sMyGraph->graph,
-                                      sMyGraph->firstRowsFactor,
-                                      sMyGraph->graph.myPredicate,
-                                      QMO_JOIN_METHOD_NL,
-                                      &sMyGraph->joinMethods[QMG_INNER_JOIN_METHOD_NESTED] )
-              != IDE_SUCCESS );
+        // hash based join methodÀÇ ÃÊ±âÈ­
+        IDE_TEST( qmoJoinMethodMgr::init( aStatement,
+                                          & sMyGraph->graph,
+                                          sMyGraph->firstRowsFactor,
+                                          sMyGraph->graph.myPredicate,
+                                          QMO_JOIN_METHOD_HASH,
+                                          &sMyGraph->joinMethods[QMG_INNER_JOIN_METHOD_HASH] )
+                  != IDE_SUCCESS );
 
-    // hash based join methodì˜ ì´ˆê¸°í™”
-    IDE_TEST( qmoJoinMethodMgr::init( aStatement,
-                                      & sMyGraph->graph,
-                                      sMyGraph->firstRowsFactor,
-                                      sMyGraph->graph.myPredicate,
-                                      QMO_JOIN_METHOD_HASH,
-                                      &sMyGraph->joinMethods[QMG_INNER_JOIN_METHOD_HASH] )
-              != IDE_SUCCESS );
+        // sort based join methodÀÇ ÃÊ±âÈ­
+        IDE_TEST( qmoJoinMethodMgr::init( aStatement,
+                                          & sMyGraph->graph,
+                                          sMyGraph->firstRowsFactor,
+                                          sMyGraph->graph.myPredicate,
+                                          QMO_JOIN_METHOD_SORT,
+                                          &sMyGraph->joinMethods[QMG_INNER_JOIN_METHOD_SORT] )
+                  != IDE_SUCCESS );
 
-    // sort based join methodì˜ ì´ˆê¸°í™”
-    IDE_TEST( qmoJoinMethodMgr::init( aStatement,
-                                      & sMyGraph->graph,
-                                      sMyGraph->firstRowsFactor,
-                                      sMyGraph->graph.myPredicate,
-                                      QMO_JOIN_METHOD_SORT,
-                                      &sMyGraph->joinMethods[QMG_INNER_JOIN_METHOD_SORT] )
-              != IDE_SUCCESS );
+        // merge join methodÀÇ ÃÊ±âÈ­
+        IDE_TEST( qmoJoinMethodMgr::init( aStatement,
+                                          & sMyGraph->graph,
+                                          sMyGraph->firstRowsFactor,
+                                          sMyGraph->graph.myPredicate,
+                                          QMO_JOIN_METHOD_MERGE,
+                                          &sMyGraph->joinMethods[QMG_INNER_JOIN_METHOD_MERGE] )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        IDU_FIT_POINT("qmgJoin::optimize::alloc::joinMethods",
+                      idERR_ABORT_InsufficientMemory);
+        IDE_TEST( QC_QMP_MEM( aStatement )->alloc( ID_SIZEOF( qmoJoinMethod ),
+                                                   (void **)&sMyGraph->joinMethods )
+                  != IDE_SUCCESS );
 
-    // merge join methodì˜ ì´ˆê¸°í™”
-    IDE_TEST( qmoJoinMethodMgr::init( aStatement,
-                                      & sMyGraph->graph,
-                                      sMyGraph->firstRowsFactor,
-                                      sMyGraph->graph.myPredicate,
-                                      QMO_JOIN_METHOD_MERGE,
-                                      &sMyGraph->joinMethods[QMG_INNER_JOIN_METHOD_MERGE] )
-              != IDE_SUCCESS );
-
+        IDE_TEST( qmoJoinMethodMgr::init( aStatement,
+                                          & sMyGraph->graph,
+                                          sMyGraph->firstRowsFactor,
+                                          sMyGraph->graph.myPredicate,
+                                          QMO_JOIN_METHOD_NL,
+                                          &sMyGraph->joinMethods[QMG_INNER_JOIN_METHOD_NESTED] )
+                  != IDE_SUCCESS );
+    }
 
     //------------------------------------------
-    // ê° Join Method ì¤‘ ê°€ì¥ ì¢‹ì€ costì˜ Join Methodë¥¼ ì„ íƒ
+    // °¢ Join Method Áß °¡Àå ÁÁÀº costÀÇ Join Method¸¦ ¼±ÅÃ
     //------------------------------------------
 
     IDE_TEST( qmgJoin::selectJoinMethodCost( aStatement,
@@ -677,15 +720,15 @@ qmgJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
               != IDE_SUCCESS );
 
     //------------------------------------------
-    // ê³µí†µ ë¹„ìš© ì •ë³´ì˜ ì„¤ì •
+    // °øÅë ºñ¿ë Á¤º¸ÀÇ ¼³Á¤
     //------------------------------------------
 
-    // record size ê²°ì •
+    // record size °áÁ¤
     sMyGraph->graph.costInfo.recordSize =
         sMyGraph->graph.left->costInfo.recordSize +
         sMyGraph->graph.right->costInfo.recordSize;
 
-    // ê° qmgJoin ì˜ joinOrderFactor, joinSize ê³„ì‚°
+    // °¢ qmgJoin ÀÇ joinOrderFactor, joinSize °è»ê
     IDE_TEST( qmoSelectivity::setJoinOrderFactor(
                   aStatement,
                   & sMyGraph->graph,
@@ -694,12 +737,12 @@ qmgJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
                   &sMyGraph->joinSize )
               != IDE_SUCCESS );
 
-    // input record count ì„¤ì •
+    // input record count ¼³Á¤
     sMyGraph->graph.costInfo.inputRecordCnt =
         sMyGraph->graph.left->costInfo.outputRecordCnt *
         sMyGraph->graph.right->costInfo.outputRecordCnt;
 
-    // output record count ì„¤ì •
+    // output record count ¼³Á¤
     sMyGraph->graph.costInfo.outputRecordCnt =
         sMyGraph->graph.costInfo.inputRecordCnt *
         sMyGraph->graph.costInfo.selectivity;
@@ -707,7 +750,7 @@ qmgJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     sMyGraph->graph.costInfo.outputRecordCnt =
         IDL_MAX( sMyGraph->graph.costInfo.outputRecordCnt, 1.0 );
 
-    // My Cost ê³„ì‚°
+    // My Cost °è»ê
     sMyGraph->graph.costInfo.myAccessCost =
         sMyGraph->selectedJoinMethod->accessCost;
     sMyGraph->graph.costInfo.myDiskCost =
@@ -715,8 +758,8 @@ qmgJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     sMyGraph->graph.costInfo.myAllCost =
         sMyGraph->selectedJoinMethod->totalCost;
 
-    // Total Cost ê³„ì‚°
-    // Join Graph ìì²´ì˜ CostëŠ” ì´ë¯¸ Childì˜ Costë¥¼ ëª¨ë‘ í¬í•¨í•˜ê³  ìˆë‹¤.
+    // Total Cost °è»ê
+    // Join Graph ÀÚÃ¼ÀÇ Cost´Â ÀÌ¹Ì ChildÀÇ Cost¸¦ ¸ğµÎ Æ÷ÇÔÇÏ°í ÀÖ´Ù.
     sMyGraph->graph.costInfo.totalAccessCost =
         sMyGraph->graph.costInfo.myAccessCost;
     sMyGraph->graph.costInfo.totalDiskCost =
@@ -725,11 +768,11 @@ qmgJoin::optimize( qcStatement * aStatement, qmgGraph * aGraph )
         sMyGraph->graph.costInfo.myAllCost;
 
     //------------------------------------------
-    // Join Methodì˜ ê²°ì • í›„ ì²˜ë¦¬
+    // Join MethodÀÇ °áÁ¤ ÈÄ Ã³¸®
     //------------------------------------------
 
     // To Fix PR-8032
-    // joinPredicateê³¼ nonJoinablePredicateì€ Outputìœ¼ë¡œ ë°›ì•„ì•¼ í•¨.
+    // joinPredicate°ú nonJoinablePredicateÀº OutputÀ¸·Î ¹Ş¾Æ¾ß ÇÔ.
     IDE_TEST(
         qmgJoin::afterJoinMethodDecision( aStatement,
                                           & sMyGraph->graph,
@@ -765,33 +808,33 @@ qmgJoin::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph 
 {
 /***********************************************************************
  *
- * Description : qmgJoinìœ¼ë¡œ ë¶€í„° Plan ì„ ìƒì„±í•œë‹¤.
+ * Description : qmgJoinÀ¸·Î ºÎÅÍ Plan À» »ı¼ºÇÑ´Ù.
  *
  * Implementation :
- *     - qmgJoinìœ¼ë¡œ ë¶€í„° ìƒì„±ê°€ëŠ¥ í•œ Plan
+ *     - qmgJoinÀ¸·Î ºÎÅÍ »ı¼º°¡´É ÇÑ Plan
  *
- *     1.  Nested Loop ê³„ì—´
- *         1.1  Full Nested Loop Joinì˜ ê²½ìš°
- *              - Filterê°€ ì—†ëŠ” ê²½ìš°
+ *     1.  Nested Loop °è¿­
+ *         1.1  Full Nested Loop JoinÀÇ °æ¿ì
+ *              - Filter°¡ ¾ø´Â °æ¿ì
  *
  *                   [JOIN]
  *
- *              - Filterê°€ ìˆëŠ” ê²½ìš° (Rightê°€ SCAN)
+ *              - Filter°¡ ÀÖ´Â °æ¿ì (Right°¡ SCAN)
  *
  *                   [JOIN]
  *                   |    |
- *                        [SCAN]  : SCANì— í¬í•¨ë¨
+ *                        [SCAN]  : SCAN¿¡ Æ÷ÇÔµÊ
  *
- *              - Filterê°€ ìˆëŠ” ê²½ìš° (Rightê°€ SCANì´ ì•„ë‹Œ ê²½ìš°)
+ *              - Filter°¡ ÀÖ´Â °æ¿ì (Right°¡ SCANÀÌ ¾Æ´Ñ °æ¿ì)
  *
  *                   [FILT]
  *                     |
  *                   [JOIN]
- * --> Filterê°€ ìˆëŠ” ê²½ìš° (rightê°€ SCANì¼ë•Œ) Joinì—ì„œ Selectionìœ¼ë¡œ ë‚´ë ¤ì£¼ê¸°
- *     ë•Œë¬¸ì—, Rightê°€ scanì¸ì§€ ì•„ë‹Œì§€ êµ¬ë¶„í•´ì¤„í•„ìš”ê°€ ì—†ë‹¤. ë‹¨ì§€ Filterê°€
- *     ì¡´ì¬ í•˜ëŠ”ì§€ ì•ˆí•˜ëŠ”ì§€ì˜ êµ¬ë¶„ë§Œ í•´ì¤€ë‹¤.
+ * --> Filter°¡ ÀÖ´Â °æ¿ì (right°¡ SCANÀÏ¶§) Join¿¡¼­ SelectionÀ¸·Î ³»·ÁÁÖ±â
+ *     ¶§¹®¿¡, Right°¡ scanÀÎÁö ¾Æ´ÑÁö ±¸ºĞÇØÁÙÇÊ¿ä°¡ ¾ø´Ù. ´ÜÁö Filter°¡
+ *     Á¸Àç ÇÏ´ÂÁö ¾ÈÇÏ´ÂÁöÀÇ ±¸ºĞ¸¸ ÇØÁØ´Ù.
  *
- *         1.2  Full Store Nested Loop Joinì˜ ê²½ìš°
+ *         1.2  Full Store Nested Loop JoinÀÇ °æ¿ì
  *
  *                 ( [FILT] )
  *                     |
@@ -799,16 +842,16 @@ qmgJoin::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph 
  *                   |    |
  *                        [SORT]
  *
- *         1.3  Index Nested Loop Joinì˜ ê²½ìš°
+ *         1.3  Index Nested Loop JoinÀÇ °æ¿ì
  *
  *                   [JOIN]
  *                   |    |
  *                        [SCAN]
  *
- *         1.4  Anti-Outer Nested Loop Joinì˜ ê²½ìš°
- *              - qmgFullOuterë¡œë¶€í„°ë§Œ ìƒì„±ë¨.
+ *         1.4  Anti-Outer Nested Loop JoinÀÇ °æ¿ì
+ *              - qmgFullOuter·ÎºÎÅÍ¸¸ »ı¼ºµÊ.
  *
- *     2.  Sort-based ê³„ì—´
+ *     2.  Sort-based °è¿­
  *
  *                      |
  *                  ( [FILT] )
@@ -817,11 +860,11 @@ qmgJoin::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph 
  *                    |    |
  *              ([SORT])   [SORT]
  *
- *         - Two-Pass Sort Joinì¸ ê²½ìš°, Leftì— SORTê°€ êµ¬ì„±ë˜ë‚˜
- *           Preserved Orderê°€ ìˆë‹¤ë©´ Two-Pass Sort Joinì´ë¼ í•˜ë”ë¼ë„
- *           Leftì— SORTë¥¼ ìƒì„±í•˜ì§€ ì•ŠëŠ”ë‹¤.
+ *         - Two-Pass Sort JoinÀÎ °æ¿ì, Left¿¡ SORT°¡ ±¸¼ºµÇ³ª
+ *           Preserved Order°¡ ÀÖ´Ù¸é Two-Pass Sort JoinÀÌ¶ó ÇÏ´õ¶óµµ
+ *           Left¿¡ SORT¸¦ »ı¼ºÇÏÁö ¾Ê´Â´Ù.
  *
- *     3.  Hash-based ê³„ì—´
+ *     3.  Hash-based °è¿­
  *
  *                      |
  *                  ( [FILT] )
@@ -830,16 +873,16 @@ qmgJoin::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph 
  *                    |    |
  *              ([HASH])   [HASH]
  *
- *         - Two-Pass Hash Joinì¸ ê²½ìš°, Leftì— HASHê°€ êµ¬ì„±ë¨
+ *         - Two-Pass Hash JoinÀÎ °æ¿ì, Left¿¡ HASH°¡ ±¸¼ºµÊ
  *
- *     4.  Merge Join ê³„ì—´
+ *     4.  Merge Join °è¿­
  *
  *                      |
  *                    [MGJN]
  *                    |    |
  *          [SORT,MGJN]    [SORT,MGJN]
  *
- *         - SCANë…¸ë“œì˜ ê²½ìš° í•˜ìœ„ Graphë¡œë¶€í„° ìƒì„±ë¨.
+ *         - SCAN³ëµåÀÇ °æ¿ì ÇÏÀ§ Graph·ÎºÎÅÍ »ı¼ºµÊ.
  *
  ***********************************************************************/
 
@@ -850,7 +893,7 @@ qmgJoin::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph 
     IDU_FIT_POINT_FATAL( "qmgJoin::makePlan::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aGraph != NULL );
@@ -858,7 +901,7 @@ qmgJoin::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph 
     sMyGraph = (qmgJOIN*) aGraph;
 
     //---------------------------------------------------
-    // Current CNFì˜ ë“±ë¡
+    // Current CNFÀÇ µî·Ï
     //---------------------------------------------------
     if ( sMyGraph->graph.myCNF != NULL )
     {
@@ -875,21 +918,21 @@ qmgJoin::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph 
     aGraph->flag |= (aParent->flag & QMG_PARALLEL_IMPOSSIBLE_MASK);
 
     // BUG-38410
-    // SCAN parallel flag ë¥¼ ìì‹ ë…¸ë“œë¡œ ë¬¼ë ¤ì¤€ë‹¤.
+    // SCAN parallel flag ¸¦ ÀÚ½Ä ³ëµå·Î ¹°·ÁÁØ´Ù.
     aGraph->left->flag  |= (aGraph->flag & QMG_PLAN_EXEC_REPEATED_MASK);
     aGraph->right->flag |= (aGraph->flag & QMG_PLAN_EXEC_REPEATED_MASK);
 
-    // Parent planì„ myPlanìœ¼ë¡œ ì¼ë‹¨ ì„¤ì •í•œë‹¤.
+    // Parent planÀ» myPlanÀ¸·Î ÀÏ´Ü ¼³Á¤ÇÑ´Ù.
     sMyGraph->graph.myPlan = aParent->myPlan;
 
     //-----------------------------------------------
-    // NNF Filter ì˜ ì²˜ë¦¬
+    // NNF Filter ÀÇ Ã³¸®
     //-----------------------------------------------
 
-    // TODO: FILTER operatorë¥¼ ë§Œë“¤ì§€ ì•Šê³  JOIN operatorì˜
-    //       filterë¡œ ì²˜ë¦¬ë˜ì–´ì•¼ í•œë‹¤.
+    // TODO: FILTER operator¸¦ ¸¸µéÁö ¾Ê°í JOIN operatorÀÇ
+    //       filter·Î Ã³¸®µÇ¾î¾ß ÇÑ´Ù.
 
-    // ON ì ˆì— ì¡´ì¬í•˜ëŠ” NNF Filter ì²˜ë¦¬
+    // ON Àı¿¡ Á¸ÀçÇÏ´Â NNF Filter Ã³¸®
     if ( sMyGraph->onConditionCNF != NULL )
     {
         if ( sMyGraph->onConditionCNF->nnfFilter != NULL )
@@ -913,7 +956,7 @@ qmgJoin::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph 
         // Nothing To Do
     }
 
-    // WHERE ì ˆì— ì¡´ì¬í•˜ëŠ” NNF Filter ì²˜ë¦¬
+    // WHERE Àı¿¡ Á¸ÀçÇÏ´Â NNF Filter Ã³¸®
     if ( sMyGraph->graph.nnfFilter != NULL )
     {
         //make FILT
@@ -933,7 +976,7 @@ qmgJoin::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph 
     switch( sMyGraph->selectedJoinMethod->flag & QMO_JOIN_METHOD_MASK )
     {
         //---------------------------------------------------
-        // Index Nested Loop Joinì˜ ê²½ìš°
+        // Index Nested Loop JoinÀÇ °æ¿ì
         //---------------------------------------------------
 
         case QMO_JOIN_METHOD_INDEX:
@@ -1018,10 +1061,10 @@ qmgJoin::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph 
     }
 
     //-----------------------------------------------
-    // NNF Filter ì˜ ì²˜ë¦¬
+    // NNF Filter ÀÇ Ã³¸®
     //-----------------------------------------------
 
-    // WHERE ì ˆì— ì¡´ì¬í•˜ëŠ” NNF Filter ì²˜ë¦¬
+    // WHERE Àı¿¡ Á¸ÀçÇÏ´Â NNF Filter Ã³¸®
     if ( sMyGraph->graph.nnfFilter != NULL )
     {
         //make FILT
@@ -1042,7 +1085,7 @@ qmgJoin::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgGraph 
         // Nothing To Do
     }
 
-    // ON ì ˆì— ì¡´ì¬í•˜ëŠ” NNF Filter ì²˜ë¦¬
+    // ON Àı¿¡ Á¸ÀçÇÏ´Â NNF Filter Ã³¸®
     if ( sMyGraph->onConditionCNF != NULL )
     {
         if ( sMyGraph->onConditionCNF->nnfFilter != NULL )
@@ -1087,7 +1130,7 @@ qmgJoin::makeChildPlan( qcStatement     * aStatement,
     IDU_FIT_POINT_FATAL( "qmgJoin::makeChildPlan::__FT__" );
 
     //---------------------------------------------------
-    // í•˜ìœ„ Planì˜ ìƒì„± , Joinì´ë¯€ë¡œ ì–‘ìª½ ëª¨ë‘ ì‹¤í–‰
+    // ÇÏÀ§ PlanÀÇ »ı¼º , JoinÀÌ¹Ç·Î ¾çÂÊ ¸ğµÎ ½ÇÇà
     //---------------------------------------------------
 
     aMyGraph->graph.myPlan = aLeftPlan;
@@ -1105,7 +1148,7 @@ qmgJoin::makeChildPlan( qcStatement     * aStatement,
               != IDE_SUCCESS);
 
     //---------------------------------------------------
-    // Process ìƒíƒœ ì„¤ì •
+    // Process »óÅÂ ¼³Á¤
     //---------------------------------------------------
     aMyGraph->graph.myQuerySet->processPhase = QMS_MAKEPLAN_JOIN;
 
@@ -1126,7 +1169,7 @@ qmgJoin::makeSortRange( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgJoin::makeSortRange::__FT__" );
 
     //---------------------------------------------------
-    // SORTë¥¼ ìœ„í•œ range , HASHë¥¼ ìœ„í•œ filter ìƒì„±
+    // SORT¸¦ À§ÇÑ range , HASH¸¦ À§ÇÑ filter »ı¼º
     //---------------------------------------------------
     if( aMyGraph->joinablePredicate != NULL )
     {
@@ -1135,7 +1178,7 @@ qmgJoin::makeSortRange( qcStatement  * aStatement,
                                           &sCNFRange ) != IDE_SUCCESS );
 
         // To Fix PR-8019
-        // Key Range ìƒì„±ì„ ìœ„í•´ì„œëŠ” DNFí˜•íƒœë¡œ ë³€í™˜í•˜ì—¬ì•¼ í•œë‹¤.
+        // Key Range »ı¼ºÀ» À§ÇØ¼­´Â DNFÇüÅÂ·Î º¯È¯ÇÏ¿©¾ß ÇÑ´Ù.
         IDE_TEST( qmoNormalForm::normalizeDNF( aStatement ,
                                                sCNFRange ,
                                                aRange ) != IDE_SUCCESS );
@@ -1189,7 +1232,7 @@ qmgJoin::makeIndexNLJoin( qcStatement    * aStatement,
     //-----------------------------------------------------
 
     //----------------------------
-    // Top-down ì´ˆê¸°í™”
+    // Top-down ÃÊ±âÈ­
     //----------------------------
 
     //-----------------------
@@ -1197,7 +1240,7 @@ qmgJoin::makeIndexNLJoin( qcStatement    * aStatement,
     //-----------------------
 
     // BUG-43077
-    // viewì•ˆì—ì„œ ì°¸ì¡°í•˜ëŠ” ì™¸ë¶€ ì°¸ì¡° ì»¬ëŸ¼ë“¤ì„ Result descriptorì— ì¶”ê°€í•´ì•¼ í•œë‹¤.
+    // view¾È¿¡¼­ ÂüÁ¶ÇÏ´Â ¿ÜºÎ ÂüÁ¶ ÄÃ·³µéÀ» Result descriptor¿¡ Ãß°¡ÇØ¾ß ÇÑ´Ù.
     if ( (aMyGraph->graph.right->type == QMG_SELECTION ) &&
          (aMyGraph->graph.right->myFrom->tableRef->view != NULL) )
     {
@@ -1219,12 +1262,12 @@ qmgJoin::makeIndexNLJoin( qcStatement    * aStatement,
     aMyGraph->graph.myPlan = sJOIN;
 
     // BUG-38410
-    // ë°˜ë³µ ì‹¤í–‰ ë  ê²½ìš° SCAN Parallel ì„ ê¸ˆì§€í•œë‹¤.
+    // ¹İº¹ ½ÇÇà µÉ °æ¿ì SCAN Parallel À» ±İÁöÇÑ´Ù.
     aMyGraph->graph.right->flag &= ~QMG_PLAN_EXEC_REPEATED_MASK;
     aMyGraph->graph.right->flag |= QMG_PLAN_EXEC_REPEATED_TRUE;
 
     //-----------------------
-    // í•˜ìœ„ plan ìƒì„±
+    // ÇÏÀ§ plan »ı¼º
     //-----------------------
 
     IDE_TEST( makeChildPlan( aStatement,
@@ -1234,7 +1277,7 @@ qmgJoin::makeIndexNLJoin( qcStatement    * aStatement,
               != IDE_SUCCESS );
 
     //----------------------------
-    // Bottom-up ìƒì„±
+    // Bottom-up »ı¼º
     //----------------------------
 
     //-----------------------
@@ -1293,7 +1336,7 @@ IDE_RC qmgJoin::makeInverseIndexNLJoin( qcStatement    * aStatement,
               != IDE_SUCCESS );
 
     //----------------------------
-    // Top-down ì´ˆê¸°í™”
+    // Top-down ÃÊ±âÈ­
     //----------------------------
 
     //-----------------------
@@ -1334,8 +1377,8 @@ IDE_RC qmgJoin::makeInverseIndexNLJoin( qcStatement    * aStatement,
                                        &sLeftHASH ) != IDE_SUCCESS );
 
     // BUG-38410
-    // Hash ë˜ë¯€ë¡œ left ëŠ” í•œë²ˆë§Œ ì‹¤í–‰ë˜ê³  hash ëœ ë‚´ìš©ì„ ì°¸ì¡°í•œë‹¤.
-    // ë”°ë¼ì„œ left ëŠ” SCAN ì— ëŒ€í•œ parallel ì„ í—ˆìš©í•œë‹¤.
+    // Hash µÇ¹Ç·Î left ´Â ÇÑ¹ø¸¸ ½ÇÇàµÇ°í hash µÈ ³»¿ëÀ» ÂüÁ¶ÇÑ´Ù.
+    // µû¶ó¼­ left ´Â SCAN ¿¡ ´ëÇÑ parallel À» Çã¿ëÇÑ´Ù.
     aMyGraph->graph.left->flag &= ~QMG_PLAN_EXEC_REPEATED_MASK;
     aMyGraph->graph.left->flag |= QMG_PLAN_EXEC_REPEATED_FALSE;
 
@@ -1343,7 +1386,7 @@ IDE_RC qmgJoin::makeInverseIndexNLJoin( qcStatement    * aStatement,
     aMyGraph->graph.right->flag |= QMG_PLAN_EXEC_REPEATED_TRUE;
 
     //-----------------------
-    // í•˜ìœ„ plan ìƒì„± (LEFT)
+    // ÇÏÀ§ plan »ı¼º (LEFT)
     //-----------------------
 
     aMyGraph->graph.myPlan = sJOIN;
@@ -1354,7 +1397,7 @@ IDE_RC qmgJoin::makeInverseIndexNLJoin( qcStatement    * aStatement,
               != IDE_SUCCESS );
 
     //----------------------------
-    // Bottom-up ìƒì„±
+    // Bottom-up »ı¼º
     //----------------------------
 
     sMtrFlag = 0;
@@ -1378,7 +1421,7 @@ IDE_RC qmgJoin::makeInverseIndexNLJoin( qcStatement    * aStatement,
         sMtrFlag |= QMO_MAKEHASH_DISK_TEMP_TABLE;
     }
 
-    // isAllAttrKeyë¥¼ TRUEë¡œ ë‘ê¸° ìœ„í•´, makeHASH ì§ì ‘ í˜¸ì¶œí•œë‹¤.
+    // isAllAttrKey¸¦ TRUE·Î µÎ±â À§ÇØ, makeHASH Á÷Á¢ È£ÃâÇÑ´Ù.
     IDE_TEST( qmoOneMtrPlan::makeHASH( 
                   aStatement,
                   aMyGraph->graph.myQuerySet,
@@ -1394,7 +1437,7 @@ IDE_RC qmgJoin::makeInverseIndexNLJoin( qcStatement    * aStatement,
     qmg::setPlanInfo( aStatement, sLeftHASH, &aMyGraph->graph );
 
     //-----------------------
-    // í•˜ìœ„ plan ìƒì„± (RIGHT)
+    // ÇÏÀ§ plan »ı¼º (RIGHT)
     //-----------------------
 
     aMyGraph->graph.myPlan = sJOIN;
@@ -1421,7 +1464,7 @@ IDE_RC qmgJoin::makeInverseIndexNLJoin( qcStatement    * aStatement,
     qmg::setPlanInfo( aStatement, sJOIN, &(aMyGraph->graph) );
 
     //-----------------------
-    // Join Type ì„¤ì •
+    // Join Type ¼³Á¤
     //-----------------------
 
     sJOIN->flag &= ~QMN_PLAN_JOIN_METHOD_TYPE_MASK;
@@ -1470,7 +1513,7 @@ qmgJoin::makeFullNLJoin( qcStatement    * aStatement,
     //-----------------------------------------------------
 
     //----------------------------
-    // Top-down ì´ˆê¸°í™”
+    // Top-down ÃÊ±âÈ­
     //----------------------------
 
     //-----------------------
@@ -1494,7 +1537,7 @@ qmgJoin::makeFullNLJoin( qcStatement    * aStatement,
     //-----------------------
 
     // BUG-43077
-    // viewì•ˆì—ì„œ ì°¸ì¡°í•˜ëŠ” ì™¸ë¶€ ì°¸ì¡° ì»¬ëŸ¼ë“¤ì„ Result descriptorì— ì¶”ê°€í•´ì•¼ í•œë‹¤.
+    // view¾È¿¡¼­ ÂüÁ¶ÇÏ´Â ¿ÜºÎ ÂüÁ¶ ÄÃ·³µéÀ» Result descriptor¿¡ Ãß°¡ÇØ¾ß ÇÑ´Ù.
     if ( (aMyGraph->graph.right->type == QMG_SELECTION ) &&
          (aMyGraph->graph.right->myFrom->tableRef->view != NULL) )
     {
@@ -1517,7 +1560,7 @@ qmgJoin::makeFullNLJoin( qcStatement    * aStatement,
 
     if( aIsStored == ID_TRUE )
     {
-        // Full store nested loop joinì¸ ê²½ìš°
+        // Full store nested loop joinÀÎ °æ¿ì
 
         //-----------------------
         // init right SORT
@@ -1530,25 +1573,25 @@ qmgJoin::makeFullNLJoin( qcStatement    * aStatement,
                   != IDE_SUCCESS );
 
         // BUG-38410
-        // Sort ë˜ë¯€ë¡œ right ëŠ” í•œë²ˆë§Œ ì‹¤í–‰ë˜ê³  sort ëœ ë‚´ìš©ì„ ì°¸ì¡°í•œë‹¤.
-        // ë”°ë¼ì„œ right ëŠ” SCAN ì— ëŒ€í•œ parallel ì„ í—ˆìš©í•œë‹¤.
+        // Sort µÇ¹Ç·Î right ´Â ÇÑ¹ø¸¸ ½ÇÇàµÇ°í sort µÈ ³»¿ëÀ» ÂüÁ¶ÇÑ´Ù.
+        // µû¶ó¼­ right ´Â SCAN ¿¡ ´ëÇÑ parallel À» Çã¿ëÇÑ´Ù.
         aMyGraph->graph.right->flag &= ~QMG_PLAN_EXEC_REPEATED_MASK;
         aMyGraph->graph.right->flag |= QMG_PLAN_EXEC_REPEATED_FALSE;
     }
     else
     {
-        // Full nested loop joinì¸ ê²½ìš°
-        // Right childì˜ parentë¥¼ joinìœ¼ë¡œ ì„¤ì •
+        // Full nested loop joinÀÎ °æ¿ì
+        // Right childÀÇ parent¸¦ joinÀ¸·Î ¼³Á¤
         sSORT = aMyGraph->graph.myPlan;
 
         // BUG-38410
-        // ë°˜ë³µ ì‹¤í–‰ ë  ê²½ìš° SCAN Parallel ì„ ê¸ˆì§€í•œë‹¤.
+        // ¹İº¹ ½ÇÇà µÉ °æ¿ì SCAN Parallel À» ±İÁöÇÑ´Ù.
         aMyGraph->graph.right->flag &= ~QMG_PLAN_EXEC_REPEATED_MASK;
         aMyGraph->graph.right->flag |= QMG_PLAN_EXEC_REPEATED_TRUE;
     }
 
     //-----------------------
-    // í•˜ìœ„ plan ìƒì„±
+    // ÇÏÀ§ plan »ı¼º
     //-----------------------
 
     IDE_TEST( makeChildPlan( aStatement,
@@ -1558,7 +1601,7 @@ qmgJoin::makeFullNLJoin( qcStatement    * aStatement,
               != IDE_SUCCESS );
 
     //----------------------------
-    // Bottom-up ìƒì„±
+    // Bottom-up »ı¼º
     //----------------------------
 
     //-----------------------
@@ -1567,10 +1610,10 @@ qmgJoin::makeFullNLJoin( qcStatement    * aStatement,
 
     if( aIsStored == ID_TRUE )
     {
-        // Full store nested loop joinì¸ ê²½ìš°
+        // Full store nested loop joinÀÎ °æ¿ì
 
         //----------------------------
-        // SORTì˜ ìƒì„±
+        // SORTÀÇ »ı¼º
         //----------------------------
 
         sMtrFlag = 0;
@@ -1581,7 +1624,7 @@ qmgJoin::makeFullNLJoin( qcStatement    * aStatement,
         sMtrFlag &= ~QMO_MAKESORT_PRESERVED_ORDER_MASK;
         sMtrFlag |= QMO_MAKESORT_PRESERVED_FALSE;
 
-        //ì €ì¥ ë§¤ì²´ì˜ ì„ íƒ
+        //ÀúÀå ¸ÅÃ¼ÀÇ ¼±ÅÃ
         sJoinFlag = 0;
 
         sJoinFlag &= ~QMO_JOIN_METHOD_RIGHT_STORAGE_MASK;
@@ -1617,8 +1660,8 @@ qmgJoin::makeFullNLJoin( qcStatement    * aStatement,
     }
     else
     {
-        // Full nested loop joinì¸ ê²½ìš°
-        // Right child graphì˜ operatorë¥¼ right childë¡œ ì„¤ì •
+        // Full nested loop joinÀÎ °æ¿ì
+        // Right child graphÀÇ operator¸¦ right child·Î ¼³Á¤
         sSORT = aMyGraph->graph.right->myPlan;
     }
 
@@ -1701,7 +1744,7 @@ qmgJoin::makeHashJoin( qcStatement     * aStatement,
     moveConstantPred( aMyGraph, aIsInverse );
 
     //----------------------------
-    // Top-down ì´ˆê¸°í™”
+    // Top-down ÃÊ±âÈ­
     //----------------------------
 
     //-----------------------
@@ -1720,7 +1763,7 @@ qmgJoin::makeHashJoin( qcStatement     * aStatement,
     //-----------------------
 
     // BUG-43077
-    // viewì•ˆì—ì„œ ì°¸ì¡°í•˜ëŠ” ì™¸ë¶€ ì°¸ì¡° ì»¬ëŸ¼ë“¤ì„ Result descriptorì— ì¶”ê°€í•´ì•¼ í•œë‹¤.
+    // view¾È¿¡¼­ ÂüÁ¶ÇÏ´Â ¿ÜºÎ ÂüÁ¶ ÄÃ·³µéÀ» Result descriptor¿¡ Ãß°¡ÇØ¾ß ÇÑ´Ù.
     if ( (aMyGraph->graph.right->type == QMG_SELECTION ) &&
          (aMyGraph->graph.right->myFrom->tableRef->view != NULL) )
     {
@@ -1760,7 +1803,7 @@ qmgJoin::makeHashJoin( qcStatement     * aStatement,
 
     if ( aIsTwoPass == ID_TRUE )
     {
-        // Two pass hash joinì¸ ê²½ìš°
+        // Two pass hash joinÀÎ °æ¿ì
 
         //-----------------------
         // init left HASH
@@ -1777,41 +1820,41 @@ qmgJoin::makeHashJoin( qcStatement     * aStatement,
                   != IDE_SUCCESS );
 
         // BUG-38410
-        // Hash ë˜ë¯€ë¡œ left ëŠ” í•œë²ˆë§Œ ì‹¤í–‰ë˜ê³  hash ëœ ë‚´ìš©ë§Œ ì°¸ì¡°í•œë‹¤.
-        // ë”°ë¼ì„œ left ëŠ” SCAN ì— ëŒ€í•œ parallel ì„ í—ˆìš©í•œë‹¤.
+        // Hash µÇ¹Ç·Î left ´Â ÇÑ¹ø¸¸ ½ÇÇàµÇ°í hash µÈ ³»¿ë¸¸ ÂüÁ¶ÇÑ´Ù.
+        // µû¶ó¼­ left ´Â SCAN ¿¡ ´ëÇÑ parallel À» Çã¿ëÇÑ´Ù.
         aMyGraph->graph.left->flag &= ~QMG_PLAN_EXEC_REPEATED_MASK;
         aMyGraph->graph.left->flag |= QMG_PLAN_EXEC_REPEATED_FALSE;
     }
     else
     {
-        // One pass hash joinì¸ ê²½ìš°
-        // Left childì˜ parentë¡œ joinì„ ì„¤ì •í•œë‹¤.
+        // One pass hash joinÀÎ °æ¿ì
+        // Left childÀÇ parent·Î joinÀ» ¼³Á¤ÇÑ´Ù.
         sLeftHASH = sJOIN;
     }
 
     // BUG-38410
-    // Hash ë˜ë¯€ë¡œ right ëŠ” í•œë²ˆë§Œ ì‹¤í–‰ë˜ê³  sort ëœ ë‚´ìš©ë§Œ ì°¸ì¡°í•œë‹¤.
-    // ë”°ë¼ì„œ right ëŠ” SCAN ì— ëŒ€í•œ parallel ì„ í—ˆìš©í•œë‹¤.
+    // Hash µÇ¹Ç·Î right ´Â ÇÑ¹ø¸¸ ½ÇÇàµÇ°í sort µÈ ³»¿ë¸¸ ÂüÁ¶ÇÑ´Ù.
+    // µû¶ó¼­ right ´Â SCAN ¿¡ ´ëÇÑ parallel À» Çã¿ëÇÑ´Ù.
     aMyGraph->graph.right->flag &= ~QMG_PLAN_EXEC_REPEATED_MASK;
     aMyGraph->graph.right->flag |= QMG_PLAN_EXEC_REPEATED_FALSE;
 
     //-----------------------
-    // í•˜ìœ„ plan ìƒì„±
+    // ÇÏÀ§ plan »ı¼º
     //-----------------------
 
     IDE_TEST( makeChildPlan( aStatement,
                              aMyGraph,
-                             sLeftHASH,   // left childì˜ parentëŠ” hash ë˜ëŠ” join
-                             sRightHASH ) // right childì˜ parentëŠ” hash
+                             sLeftHASH,   // left childÀÇ parent´Â hash ¶Ç´Â join
+                             sRightHASH ) // right childÀÇ parent´Â hash
               != IDE_SUCCESS );
 
     //----------------------------
-    // Bottom-up ìƒì„±
+    // Bottom-up »ı¼º
     //----------------------------
 
     if( aIsTwoPass == ID_TRUE )
     {
-        // Two pass hash joinì¸ ê²½ìš°
+        // Two pass hash joinÀÎ °æ¿ì
 
         //-----------------------
         // make left HASH
@@ -1823,11 +1866,11 @@ qmgJoin::makeHashJoin( qcStatement     * aStatement,
         sMtrFlag |= QMO_MAKEHASH_HASH_BASED_JOIN;
 
         // To Fix PR-8032
-        // HASHê°€ ì‚¬ìš©ë˜ëŠ” ìœ„ì¹˜ë¥¼ í‘œê¸°í•´ì•¼í•¨.
+        // HASH°¡ »ç¿ëµÇ´Â À§Ä¡¸¦ Ç¥±âÇØ¾ßÇÔ.
         sMtrFlag &= ~QMO_MAKEHASH_POSITION_MASK;
         sMtrFlag |= QMO_MAKEHASH_POSITION_LEFT;
 
-        //ì €ì¥ ë§¤ì²´ì˜ ì„ íƒ
+        //ÀúÀå ¸ÅÃ¼ÀÇ ¼±ÅÃ
         sJoinFlag = 0;
 
         sJoinFlag &= ~QMO_JOIN_METHOD_LEFT_STORAGE_MASK;
@@ -1846,8 +1889,8 @@ qmgJoin::makeHashJoin( qcStatement     * aStatement,
     }
     else
     {
-        // One pass hash joinì¸ ê²½ìš°
-        // Joinì˜ left childë¡œ left graphì˜ planì„ ì„¤ì •í•œë‹¤.
+        // One pass hash joinÀÎ °æ¿ì
+        // JoinÀÇ left child·Î left graphÀÇ planÀ» ¼³Á¤ÇÑ´Ù.
         sLeftHASH = aMyGraph->graph.left->myPlan;
     }
 
@@ -1861,11 +1904,11 @@ qmgJoin::makeHashJoin( qcStatement     * aStatement,
     sMtrFlag |= QMO_MAKEHASH_HASH_BASED_JOIN;
 
     // To Fix PR-8032
-    // HASHê°€ ì‚¬ìš©ë˜ëŠ” ìœ„ì¹˜ë¥¼ í‘œê¸°í•´ì•¼í•¨.
+    // HASH°¡ »ç¿ëµÇ´Â À§Ä¡¸¦ Ç¥±âÇØ¾ßÇÔ.
     sMtrFlag &= ~QMO_MAKEHASH_POSITION_MASK;
     sMtrFlag |= QMO_MAKEHASH_POSITION_RIGHT;
 
-    //ì €ì¥ ë§¤ì²´ì˜ ì„ íƒ
+    //ÀúÀå ¸ÅÃ¼ÀÇ ¼±ÅÃ
     sJoinFlag = 0;
 
     sJoinFlag &= ~QMO_JOIN_METHOD_RIGHT_STORAGE_MASK;
@@ -1975,7 +2018,7 @@ qmgJoin::makeSortJoin( qcStatement     * aStatement,
     //-----------------------------------------------------
 
     //----------------------------
-    // Top-down ì´ˆê¸°í™”
+    // Top-down ÃÊ±âÈ­
     //----------------------------
 
     //-----------------------
@@ -1993,7 +2036,7 @@ qmgJoin::makeSortJoin( qcStatement     * aStatement,
     //-----------------------
 
     // BUG-43077
-    // viewì•ˆì—ì„œ ì°¸ì¡°í•˜ëŠ” ì™¸ë¶€ ì°¸ì¡° ì»¬ëŸ¼ë“¤ì„ Result descriptorì— ì¶”ê°€í•´ì•¼ í•œë‹¤.
+    // view¾È¿¡¼­ ÂüÁ¶ÇÏ´Â ¿ÜºÎ ÂüÁ¶ ÄÃ·³µéÀ» Result descriptor¿¡ Ãß°¡ÇØ¾ß ÇÑ´Ù.
     if ( (aMyGraph->graph.right->type == QMG_SELECTION ) &&
          (aMyGraph->graph.right->myFrom->tableRef->view != NULL) )
     {
@@ -2004,7 +2047,7 @@ qmgJoin::makeSortJoin( qcStatement     * aStatement,
         sViewQuerySet = NULL;
     }
 
-    // BUG-38049 sSortRangeë¥¼ ì¸ìë¡œ ë„˜ê²¨ì£¼ì–´ì•¼í•¨
+    // BUG-38049 sSortRange¸¦ ÀÎÀÚ·Î ³Ñ°ÜÁÖ¾î¾ßÇÔ
     IDE_TEST( qmoTwoNonPlan::initJOIN(
                   aStatement,
                   aMyGraph->graph.myQuerySet,
@@ -2038,14 +2081,14 @@ qmgJoin::makeSortJoin( qcStatement     * aStatement,
               != IDE_SUCCESS);
 
     // BUG-38410
-    // Sort ë˜ë¯€ë¡œ right ëŠ” í•œë²ˆë§Œ ì‹¤í–‰ë˜ê³  sort ëœ ë‚´ìš©ë§Œ ì°¸ì¡°í•œë‹¤.
-    // ë”°ë¼ì„œ right ëŠ” SCAN ì— ëŒ€í•œ parallel ì„ í—ˆìš©í•œë‹¤.
+    // Sort µÇ¹Ç·Î right ´Â ÇÑ¹ø¸¸ ½ÇÇàµÇ°í sort µÈ ³»¿ë¸¸ ÂüÁ¶ÇÑ´Ù.
+    // µû¶ó¼­ right ´Â SCAN ¿¡ ´ëÇÑ parallel À» Çã¿ëÇÑ´Ù.
     aMyGraph->graph.right->flag &= ~QMG_PLAN_EXEC_REPEATED_MASK;
     aMyGraph->graph.right->flag |= QMG_PLAN_EXEC_REPEATED_FALSE;
 
     if( aIsTwoPass == ID_TRUE )
     {
-        // Two pass sort joinì¸ ê²½ìš°
+        // Two pass sort joinÀÎ °æ¿ì
 
         //-----------------------
         // init left SORT
@@ -2065,35 +2108,35 @@ qmgJoin::makeSortJoin( qcStatement     * aStatement,
                   != IDE_SUCCESS);
 
         // BUG-38410
-        // Sort ë˜ë¯€ë¡œ left ëŠ” í•œë²ˆë§Œ ì‹¤í–‰ë˜ê³  sort ëœ ë‚´ìš©ë§Œ ì°¸ì¡°í•œë‹¤.
-        // ë”°ë¼ì„œ left ëŠ” SCAN ì— ëŒ€í•œ parallel ì„ í—ˆìš©í•œë‹¤.
+        // Sort µÇ¹Ç·Î left ´Â ÇÑ¹ø¸¸ ½ÇÇàµÇ°í sort µÈ ³»¿ë¸¸ ÂüÁ¶ÇÑ´Ù.
+        // µû¶ó¼­ left ´Â SCAN ¿¡ ´ëÇÑ parallel À» Çã¿ëÇÑ´Ù.
         aMyGraph->graph.left->flag &= ~QMG_PLAN_EXEC_REPEATED_MASK;
         aMyGraph->graph.left->flag |= QMG_PLAN_EXEC_REPEATED_FALSE;
     }
     else
     {
-        // One pass sort joinì¸ ê²½ìš°
-        // Left childì˜ parentë¡œ joinì„ ì„¤ì •í•œë‹¤.
+        // One pass sort joinÀÎ °æ¿ì
+        // Left childÀÇ parent·Î joinÀ» ¼³Á¤ÇÑ´Ù.
         sLeftSORT = sJOIN;
     }
 
     //-----------------------
-    // í•˜ìœ„ plan ìƒì„±
+    // ÇÏÀ§ plan »ı¼º
     //-----------------------
 
     IDE_TEST( makeChildPlan( aStatement,
                              aMyGraph,
-                             sLeftSORT,   // left childì˜ parentëŠ” sort ë˜ëŠ” join
-                             sRightSORT ) // right childì˜ parentëŠ” sort
+                             sLeftSORT,   // left childÀÇ parent´Â sort ¶Ç´Â join
+                             sRightSORT ) // right childÀÇ parent´Â sort
               != IDE_SUCCESS );
 
     //----------------------------
-    // Bottom-up ìƒì„±
+    // Bottom-up »ı¼º
     //----------------------------
 
     if( aIsTwoPass == ID_TRUE )
     {
-        // Two pass sort joinì¸ ê²½ìš°
+        // Two pass sort joinÀÎ °æ¿ì
 
         //-----------------------
         // make left SORT
@@ -2107,7 +2150,7 @@ qmgJoin::makeSortJoin( qcStatement     * aStatement,
         sMtrFlag &= ~QMO_MAKESORT_POSITION_MASK;
         sMtrFlag |= QMO_MAKESORT_POSITION_LEFT;
 
-        //ì €ì¥ ë§¤ì²´ì˜ ì„ íƒ
+        //ÀúÀå ¸ÅÃ¼ÀÇ ¼±ÅÃ
         sJoinFlag = 0;
 
         sJoinFlag &= ~QMO_JOIN_METHOD_LEFT_STORAGE_MASK;
@@ -2128,8 +2171,8 @@ qmgJoin::makeSortJoin( qcStatement     * aStatement,
     }
     else
     {
-        // One pass sort joinì¸ ê²½ìš°
-        // Joinì˜ left childë¡œ left graphì˜ planì„ ì„¤ì •í•œë‹¤.
+        // One pass sort joinÀÎ °æ¿ì
+        // JoinÀÇ left child·Î left graphÀÇ planÀ» ¼³Á¤ÇÑ´Ù.
         sLeftSORT = aMyGraph->graph.left->myPlan;
     }
 
@@ -2145,7 +2188,7 @@ qmgJoin::makeSortJoin( qcStatement     * aStatement,
     sMtrFlag &= ~QMO_MAKESORT_POSITION_MASK;
     sMtrFlag |= QMO_MAKESORT_POSITION_RIGHT;
 
-    //ì €ì¥ ë§¤ì²´ì˜ ì„ íƒ
+    //ÀúÀå ¸ÅÃ¼ÀÇ ¼±ÅÃ
     sJoinFlag = 0;
 
     sJoinFlag &= ~QMO_JOIN_METHOD_RIGHT_STORAGE_MASK;
@@ -2243,7 +2286,7 @@ qmgJoin::makeMergeJoin( qcStatement     * aStatement,
     //-----------------------------------------------------
 
     //----------------------------
-    // Top-down ì´ˆê¸°í™”
+    // Top-down ÃÊ±âÈ­
     //----------------------------
 
     //-----------------------
@@ -2281,8 +2324,8 @@ qmgJoin::makeMergeJoin( qcStatement     * aStatement,
               != IDE_SUCCESS);
 
     // BUG-38410
-    // Sort ë˜ë¯€ë¡œ left ëŠ” í•œë²ˆë§Œ ì‹¤í–‰ë˜ê³  sort ëœ ë‚´ìš©ë§Œ ì°¸ì¡°í•œë‹¤.
-    // ë”°ë¼ì„œ left ëŠ” SCAN ì— ëŒ€í•œ parallel ì„ í—ˆìš©í•œë‹¤.
+    // Sort µÇ¹Ç·Î left ´Â ÇÑ¹ø¸¸ ½ÇÇàµÇ°í sort µÈ ³»¿ë¸¸ ÂüÁ¶ÇÑ´Ù.
+    // µû¶ó¼­ left ´Â SCAN ¿¡ ´ëÇÑ parallel À» Çã¿ëÇÑ´Ù.
     aMyGraph->graph.left->flag &= ~QMG_PLAN_EXEC_REPEATED_MASK;
     aMyGraph->graph.left->flag |= QMG_PLAN_EXEC_REPEATED_FALSE;
 
@@ -2311,13 +2354,13 @@ qmgJoin::makeMergeJoin( qcStatement     * aStatement,
               != IDE_SUCCESS);
 
     // BUG-38410
-    // Sort ë˜ë¯€ë¡œ right ëŠ” í•œë²ˆë§Œ ì‹¤í–‰ë˜ê³  sort ëœ ë‚´ìš©ë§Œ ì°¸ì¡°í•œë‹¤.
-    // ë”°ë¼ì„œ right ëŠ” SCAN ì— ëŒ€í•œ parallel ì„ í—ˆìš©í•œë‹¤.
+    // Sort µÇ¹Ç·Î right ´Â ÇÑ¹ø¸¸ ½ÇÇàµÇ°í sort µÈ ³»¿ë¸¸ ÂüÁ¶ÇÑ´Ù.
+    // µû¶ó¼­ right ´Â SCAN ¿¡ ´ëÇÑ parallel À» Çã¿ëÇÑ´Ù.
     aMyGraph->graph.right->flag &= ~QMG_PLAN_EXEC_REPEATED_MASK;
     aMyGraph->graph.right->flag |= QMG_PLAN_EXEC_REPEATED_FALSE;
 
     //-----------------------
-    // í•˜ìœ„ plan ìƒì„±
+    // ÇÏÀ§ plan »ı¼º
     //-----------------------
 
     IDE_TEST( makeChildPlan( aStatement,
@@ -2327,12 +2370,12 @@ qmgJoin::makeMergeJoin( qcStatement     * aStatement,
               != IDE_SUCCESS );
 
     //----------------------------
-    // Bottom-up ìƒì„±
+    // Bottom-up »ı¼º
     //----------------------------
 
     if ( sRightSORT != sMGJN )
     {
-        // Right childì— SORTê°€ ìƒì„±ëœ ê²½ìš°
+        // Right child¿¡ SORT°¡ »ı¼ºµÈ °æ¿ì
 
         //-----------------------
         // make right SORT
@@ -2346,7 +2389,7 @@ qmgJoin::makeMergeJoin( qcStatement     * aStatement,
         sMtrFlag &= ~QMO_MAKESORT_POSITION_MASK;
         sMtrFlag |= QMO_MAKESORT_POSITION_RIGHT;
 
-        //ì €ì¥ ë§¤ì²´ì˜ ì„ íƒ
+        //ÀúÀå ¸ÅÃ¼ÀÇ ¼±ÅÃ
 
         sJoinFlag = 0;
 
@@ -2369,14 +2412,14 @@ qmgJoin::makeMergeJoin( qcStatement     * aStatement,
     }
     else
     {
-        // Right childì— SORTê°€ í•„ìš”ì—†ëŠ” ê²½ìš°
+        // Right child¿¡ SORT°¡ ÇÊ¿ä¾ø´Â °æ¿ì
 
         sRightSORT = aMyGraph->graph.right->myPlan;
     }
 
     if ( sLeftSORT != sMGJN )
     {
-        // Left childì— SORTê°€ ìƒì„±ëœ ê²½ìš°
+        // Left child¿¡ SORT°¡ »ı¼ºµÈ °æ¿ì
 
         //-----------------------
         // make left SORT
@@ -2390,7 +2433,7 @@ qmgJoin::makeMergeJoin( qcStatement     * aStatement,
         sMtrFlag &= ~QMO_MAKESORT_POSITION_MASK;
         sMtrFlag |= QMO_MAKESORT_POSITION_LEFT;
 
-        //ì €ì¥ ë§¤ì²´ì˜ ì„ íƒ
+        //ÀúÀå ¸ÅÃ¼ÀÇ ¼±ÅÃ
 
         sJoinFlag = 0;
 
@@ -2412,7 +2455,7 @@ qmgJoin::makeMergeJoin( qcStatement     * aStatement,
     }
     else
     {
-        // Left childì— SORTê°€ í•„ìš”ì—†ëŠ” ê²½ìš°
+        // Left child¿¡ SORT°¡ ÇÊ¿ä¾ø´Â °æ¿ì
 
         sLeftSORT = aMyGraph->graph.left->myPlan;
     }
@@ -2461,11 +2504,11 @@ qmgJoin::extractFilter( qcStatement   * aStatement,
             QMO_MATERIALIZE_TYPE_VALUE )
         {
             // To fix BUG-24919
-            // normalformìœ¼ë¡œ ë°”ë€ predicateëŠ”
-            // ì„œë¡œ ë™ì¼í•œ ë…¸ë“œë¥¼ ì°¸ì¡°í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-            // ì¤‘ê°„ì— materialized node ê°€ ìˆëŠ” ê²½ìš°
-            // push projectionì´ ì ìš©ì´ ì•ˆë  ìˆ˜ ìˆë‹¤.
-            // ë”°ë¼ì„œ predicateë¥¼ ë³µì‚¬í•´ì„œ ì‚¬ìš©í•œë‹¤.
+            // normalformÀ¸·Î ¹Ù²ï predicate´Â
+            // ¼­·Î µ¿ÀÏÇÑ ³ëµå¸¦ ÂüÁ¶ÇÒ ¼ö ÀÖÀ¸¹Ç·Î
+            // Áß°£¿¡ materialized node °¡ ÀÖ´Â °æ¿ì
+            // push projectionÀÌ Àû¿ëÀÌ ¾ÈµÉ ¼ö ÀÖ´Ù.
+            // µû¶ó¼­ predicate¸¦ º¹»çÇØ¼­ »ç¿ëÇÑ´Ù.
             IDE_TEST( qmoPred::deepCopyPredicate(
                           QC_QMP_MEM(aStatement),
                           aPredicate,
@@ -2574,7 +2617,7 @@ qmgJoin::printGraph( qcStatement  * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Graphë¥¼ êµ¬ì„±í•˜ëŠ” ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤.
+ *    Graph¸¦ ±¸¼ºÇÏ´Â °øÅë Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù.
  *
  *
  * Implementation :
@@ -2591,7 +2634,7 @@ qmgJoin::printGraph( qcStatement  * aStatement,
     IDU_FIT_POINT_FATAL( "qmgJoin::printGraph::__FT__" );
 
     //-----------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //-----------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -2601,7 +2644,7 @@ qmgJoin::printGraph( qcStatement  * aStatement,
     sMyGraph = (qmgJOIN*) aGraph;
 
     //-----------------------------------
-    // Graph ê³µí†µ ì •ë³´ì˜ ì¶œë ¥
+    // Graph °øÅë Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     IDE_TEST( qmg::printGraph( aStatement,
@@ -2611,43 +2654,55 @@ qmgJoin::printGraph( qcStatement  * aStatement,
               != IDE_SUCCESS );
 
     //-----------------------------------
-    // Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
+    // Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     //-----------------------------------
-    // Join Method ì •ë³´ì˜ ì¶œë ¥
+    // Join Method Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     QMG_PRINT_LINE_FEED( i, aDepth, aString );
     iduVarStringAppend( aString,
                         "== Join Method Information ==" );
 
-    IDE_TEST(
-        qmoJoinMethodMgr::printJoinMethod( &sMyGraph->joinMethods[QMG_INNER_JOIN_METHOD_NESTED],
-                                           aDepth,
-                                           aString )
-        != IDE_SUCCESS );
+    if ( ( aGraph->flag & QMG_JOIN_ONLY_NL_MASK )
+         == QMG_JOIN_ONLY_NL_FALSE )
+    {
+        IDE_TEST(
+            qmoJoinMethodMgr::printJoinMethod( &sMyGraph->joinMethods[QMG_INNER_JOIN_METHOD_NESTED],
+                                               aDepth,
+                                               aString )
+            != IDE_SUCCESS );
 
-    IDE_TEST(
-        qmoJoinMethodMgr::printJoinMethod( &sMyGraph->joinMethods[QMG_INNER_JOIN_METHOD_SORT],
-                                           aDepth,
-                                           aString )
-        != IDE_SUCCESS );
+        IDE_TEST(
+            qmoJoinMethodMgr::printJoinMethod( &sMyGraph->joinMethods[QMG_INNER_JOIN_METHOD_SORT],
+                                               aDepth,
+                                               aString )
+            != IDE_SUCCESS );
 
-    IDE_TEST(
-        qmoJoinMethodMgr::printJoinMethod( &sMyGraph->joinMethods[QMG_INNER_JOIN_METHOD_HASH],
-                                           aDepth,
-                                           aString )
-        != IDE_SUCCESS );
+        IDE_TEST(
+            qmoJoinMethodMgr::printJoinMethod( &sMyGraph->joinMethods[QMG_INNER_JOIN_METHOD_HASH],
+                                               aDepth,
+                                               aString )
+            != IDE_SUCCESS );
 
-    IDE_TEST(
-        qmoJoinMethodMgr::printJoinMethod( &sMyGraph->joinMethods[QMG_INNER_JOIN_METHOD_MERGE],
-                                           aDepth,
-                                           aString )
-        != IDE_SUCCESS );
+        IDE_TEST(
+            qmoJoinMethodMgr::printJoinMethod( &sMyGraph->joinMethods[QMG_INNER_JOIN_METHOD_MERGE],
+                                               aDepth,
+                                               aString )
+            != IDE_SUCCESS );
+    }
+    else
+    {
+        IDE_TEST(
+            qmoJoinMethodMgr::printJoinMethod( &sMyGraph->joinMethods[QMG_INNER_JOIN_METHOD_NESTED],
+                                               aDepth,
+                                               aString )
+            != IDE_SUCCESS );
+    }
 
     //-----------------------------------
-    // Subquery Graph ì •ë³´ì˜ ì¶œë ¥
+    // Subquery Graph Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     for ( sPredicate = sMyGraph->joinablePredicate;
@@ -2699,7 +2754,7 @@ qmgJoin::printGraph( qcStatement  * aStatement,
     }
 
     //-----------------------------------
-    // Child Graph ê³ ìœ  ì •ë³´ì˜ ì¶œë ¥
+    // Child Graph °íÀ¯ Á¤º¸ÀÇ Ãâ·Â
     //-----------------------------------
 
     IDE_TEST( aGraph->left->printGraph( aStatement,
@@ -2730,19 +2785,19 @@ qmgJoin::selectJoinMethodCost( qcStatement        * aStatement,
 {
 /***********************************************************************
  *
- * Description : ê°€ì¥ costê°€ ì¢‹ì€ Join Methodë¥¼ ì„ íƒ
+ * Description : °¡Àå cost°¡ ÁÁÀº Join Method¸¦ ¼±ÅÃ
  *
  * Implementation :
- *    (1) ê° Join Methodë“¤ì˜ cost ê³„ì‚°
- *    (2) ê°€ì¥ costê°€ ì¢‹ì€ Join Method ì„ íƒ
- *        - Hintê°€ ì¡´ì¬í•  ê²½ìš°
- *          A. table orderê¹Œì§€ ë§Œì¡±í•˜ëŠ” Join Method ì¤‘ì—ì„œ ê°€ì¥ costê°€ ì¢‹ì€ ê²ƒ
- *             ì„ íƒ
- *          B. table orderê¹Œì§€ ë§Œì¡±í•˜ëŠ” Join Methodê°€ ì—†ëŠ” ê²½ìš°
- *             Join Method Hintë§Œì„ ë§Œì¡±í•˜ëŠ” Join Method ì¤‘ì—ì„œ ê°€ì¥ costê°€
- *             ì¢‹ì€ ê²ƒ ì„ íƒ
- *        - Hintê°€ ì¡´ì¬í•˜ì§€ ì•Šì„ ê²½ìš°
- *          ê°€ì¥ costê°€ ì¢‹ì€ Join Method ì„ íƒ
+ *    (1) °¢ Join MethodµéÀÇ cost °è»ê
+ *    (2) °¡Àå cost°¡ ÁÁÀº Join Method ¼±ÅÃ
+ *        - Hint°¡ Á¸ÀçÇÒ °æ¿ì
+ *          A. table order±îÁö ¸¸Á·ÇÏ´Â Join Method Áß¿¡¼­ °¡Àå cost°¡ ÁÁÀº °Í
+ *             ¼±ÅÃ
+ *          B. table order±îÁö ¸¸Á·ÇÏ´Â Join Method°¡ ¾ø´Â °æ¿ì
+ *             Join Method Hint¸¸À» ¸¸Á·ÇÏ´Â Join Method Áß¿¡¼­ °¡Àå cost°¡
+ *             ÁÁÀº °Í ¼±ÅÃ
+ *        - Hint°¡ Á¸ÀçÇÏÁö ¾ÊÀ» °æ¿ì
+ *          °¡Àå cost°¡ ÁÁÀº Join Method ¼±ÅÃ
  *
  ***********************************************************************/
 
@@ -2756,35 +2811,43 @@ qmgJoin::selectJoinMethodCost( qcStatement        * aStatement,
     IDU_FIT_POINT_FATAL( "qmgJoin::selectJoinMethodCost::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aJoinMethods != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //------------------------------------------
 
     sSelected = NULL;
     sJoinMethodHints = aGraph->myQuerySet->SFWGH->hints->joinMethod;
 
-    switch( aGraph->type )
+    if ( ( aGraph->flag & QMG_JOIN_ONLY_NL_MASK )
+         == QMG_JOIN_ONLY_NL_FALSE )
     {
-        case QMG_INNER_JOIN:
-        case QMG_SEMI_JOIN:
-        case QMG_ANTI_JOIN:
-            sJoinMethodCnt = 4;
-            break;
-        case QMG_LEFT_OUTER_JOIN:
-        case QMG_FULL_OUTER_JOIN:
-            sJoinMethodCnt = 3;
-            break;
-        default:
-            IDE_FT_ASSERT( 0 );
+        switch( aGraph->type )
+        {
+            case QMG_INNER_JOIN:
+            case QMG_SEMI_JOIN:
+            case QMG_ANTI_JOIN:
+                sJoinMethodCnt = 4;
+                break;
+            case QMG_LEFT_OUTER_JOIN:
+            case QMG_FULL_OUTER_JOIN:
+                sJoinMethodCnt = 3;
+                break;
+            default:
+                IDE_FT_ASSERT( 0 );
+        }
+    }
+    else
+    {
+        sJoinMethodCnt = 1;
     }
 
     //------------------------------------------
-    // ê° Join Methodë“¤ì˜ cost ê³„ì‚° ë° ê°€ì¥ costê°€ ì¢‹ì€ Join Method Cost ì„ íƒ
+    // °¢ Join MethodµéÀÇ cost °è»ê ¹× °¡Àå cost°¡ ÁÁÀº Join Method Cost ¼±ÅÃ
     //------------------------------------------
 
     for ( i = 0; i < sJoinMethodCnt; i++ )
@@ -2799,8 +2862,8 @@ qmgJoin::selectJoinMethodCost( qcStatement        * aStatement,
     if ( sJoinMethodHints != NULL )
     {
         //------------------------------------------
-        // Join Method Hintì˜ table orderê¹Œì§€ ë§Œì¡±í•˜ëŠ” Join Methodë“¤ ì¤‘ì—ì„œ
-        // ê°€ì¥ costê°€ ì¢‹ì€ ê²ƒì„ ì„ íƒ
+        // Join Method HintÀÇ table order±îÁö ¸¸Á·ÇÏ´Â Join Methodµé Áß¿¡¼­
+        // °¡Àå cost°¡ ÁÁÀº °ÍÀ» ¼±ÅÃ
         //------------------------------------------
 
         for ( i = 0; i < sJoinMethodCnt; i++ )
@@ -2831,9 +2894,9 @@ qmgJoin::selectJoinMethodCost( qcStatement        * aStatement,
         }
 
         //------------------------------------------
-        // Join Method Hintì˜ table orderê¹Œì§€ ë§Œì¡±í•˜ëŠ” Join Methodê°€ ì—†ëŠ” ê²½ìš°,
-        // Join Method ë§Œì„ ë§Œì¡±í•˜ëŠ” Join Methodë“¤ ì¤‘ì—ì„œ ê°€ì¥ costê°€ ì¢‹ì€ ê²ƒ
-        // ì„ íƒ
+        // Join Method HintÀÇ table order±îÁö ¸¸Á·ÇÏ´Â Join Method°¡ ¾ø´Â °æ¿ì,
+        // Join Method ¸¸À» ¸¸Á·ÇÏ´Â Join Methodµé Áß¿¡¼­ °¡Àå cost°¡ ÁÁÀº °Í
+        // ¼±ÅÃ
         //------------------------------------------
 
         if ( sSelected == NULL )
@@ -2879,8 +2942,8 @@ qmgJoin::selectJoinMethodCost( qcStatement        * aStatement,
     if ( sSelected == NULL )
     {
         //------------------------------------------
-        // Hintê°€ ì¡´ì¬í•˜ì§€ ì•Šê±°ë‚˜,
-        // Hintë¥¼ ë§Œì¡±í•˜ê³  feasibilityê°€ ìˆëŠ” Join Methodê°€ ì—†ëŠ” ê²½ìš°
+        // Hint°¡ Á¸ÀçÇÏÁö ¾Ê°Å³ª,
+        // Hint¸¦ ¸¸Á·ÇÏ°í feasibility°¡ ÀÖ´Â Join Method°¡ ¾ø´Â °æ¿ì
         //------------------------------------------
 
         for ( i = 0; i < sJoinMethodCnt; i++ )
@@ -2959,12 +3022,12 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
 {
 /***********************************************************************
  *
- * Description : Join Method ê²°ì • í›„ ì²˜ë¦¬
+ * Description : Join Method °áÁ¤ ÈÄ Ã³¸®
  *
  * Implementation :
- *    (1) directionì— ë”°ë¥¸ left, right ì¬ì„¤ì •
- *    (2) Join Methodì— ë”°ë¥¸ Predicateì˜ ì²˜ë¦¬
- *    (3) index argumentì˜ ì„¤ì •
+ *    (1) direction¿¡ µû¸¥ left, right Àç¼³Á¤
+ *    (2) Join Method¿¡ µû¸¥ PredicateÀÇ Ã³¸®
+ *    (3) index argumentÀÇ ¼³Á¤
  *
  ***********************************************************************/
 
@@ -2982,8 +3045,8 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
     UInt            sTmpTblCnt;
 
     // To Fix PR-8032
-    // í•¨ìˆ˜ì˜ ì¸ìë¥¼ Inputê³¼ Output ëª¨ë‘ë¥¼ ìœ„í•œ ìš©ë„ë¡œ
-    // ì‚¬ìš©í•˜ë©´ ì•ˆë¨.
+    // ÇÔ¼öÀÇ ÀÎÀÚ¸¦ Input°ú Output ¸ğµÎ¸¦ À§ÇÑ ¿ëµµ·Î
+    // »ç¿ëÇÏ¸é ¾ÈµÊ.
     qmoPredicate  * sPred = NULL;
     qmoPredicate  * sFirstJoinPred = NULL;
     qmoPredicate  * sCurJoinPred = NULL;
@@ -2993,7 +3056,7 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
     IDU_FIT_POINT_FATAL( "qmgJoin::afterJoinMethodDecision::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -3001,13 +3064,13 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
     IDE_DASSERT( aSelectedMethod != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //------------------------------------------
 
     sPredicate = * aPredicate;
 
     //------------------------------------------
-    // Directionì— ë”°ë¥¸ left, right graph ìœ„ì¹˜ ë³´ì •
+    // Direction¿¡ µû¸¥ left, right graph À§Ä¡ º¸Á¤
     //------------------------------------------
 
     if ( ( aSelectedMethod->flag & QMO_JOIN_METHOD_DIRECTION_MASK )
@@ -3023,20 +3086,20 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
     }
 
     //------------------------------------------
-    // Join Methodì— ë”°ë¥¸ Predicateì˜ ì²˜ë¦¬
+    // Join Method¿¡ µû¸¥ PredicateÀÇ Ã³¸®
     //------------------------------------------
 
     switch ( aSelectedMethod->flag & QMO_JOIN_METHOD_MASK )
     {
         case QMO_JOIN_METHOD_FULL_NL :
             // PROJ-1404
-            // ìƒì„±ëœ transitive predicateì´ non-join predicateìœ¼ë¡œ
-            // ì„ íƒëœ ê²½ìš°ëŠ” bad transitive predicateì´ë¯€ë¡œ ì œê±°í•œë‹¤.
+            // »ı¼ºµÈ transitive predicateÀÌ non-join predicateÀ¸·Î
+            // ¼±ÅÃµÈ °æ¿ì´Â bad transitive predicateÀÌ¹Ç·Î Á¦°ÅÇÑ´Ù.
             IDE_TEST( qmoPred::removeTransitivePredicate( & sPredicate,
                                                           ID_TRUE )
                       != IDE_SUCCESS );
 
-            // ì œê±°í•œ predicateì„ ë°˜ì˜í•œë‹¤.
+            // Á¦°ÅÇÑ predicateÀ» ¹İ¿µÇÑ´Ù.
             *aPredicate = sPredicate;
 
             if ( ( ( aGraph->type == QMG_INNER_JOIN ) ||
@@ -3045,12 +3108,12 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
                  ( ( aGraph->right->type == QMG_SELECTION ) ||
                    ( aGraph->right->type == QMG_PARTITION ) ) )
             {
-                // ì¼ë°˜ Joinì´ë©´ì„œ í•˜ìœ„ graphê°€ base tableì— ëŒ€í•œ Graphì¸ ê²½ìš°,
-                // predicateì„ í•˜ìœ„ì— ë‚´ë¦¼
+                // ÀÏ¹İ JoinÀÌ¸é¼­ ÇÏÀ§ graph°¡ base table¿¡ ´ëÇÑ GraphÀÎ °æ¿ì,
+                // predicateÀ» ÇÏÀ§¿¡ ³»¸²
                 if ( sPredicate != NULL )
                 {
-                    // BUG-43929 FULL NL joinì˜ pushedDownPredicateë¥¼ deep copy í•´ì•¼ í•©ë‹ˆë‹¤.
-                    // deep copy í•˜ì§€ ì•Šìœ¼ë©´ setNonJoinPushDownPredicateì—ì„œ í›¼ì†ì´ ë©ë‹ˆë‹¤.
+                    // BUG-43929 FULL NL joinÀÇ pushedDownPredicate¸¦ deep copy ÇØ¾ß ÇÕ´Ï´Ù.
+                    // deep copy ÇÏÁö ¾ÊÀ¸¸é setNonJoinPushDownPredicate¿¡¼­ ÈÑ¼ÕÀÌ µË´Ï´Ù.
                     IDE_TEST( qmoPred::deepCopyPredicate( QC_QMP_MEM(aStatement),
                                                           sPredicate,
                                                           &((qmgJOIN*)aGraph)->pushedDownPredicate )
@@ -3070,7 +3133,7 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
                               != IDE_SUCCESS );
 
                     // fix BUG-12766
-                    // aGraph->graph.myPredicateì„ rightë¡œ ë‚´ë ¸ìœ¼ë¯€ë¡œ
+                    // aGraph->graph.myPredicateÀ» right·Î ³»·ÈÀ¸¹Ç·Î
                     // aGraph->graph.myPredicate = NULL
                     *aPredicate = sPredicate;
                 }
@@ -3085,7 +3148,7 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
             }
             break;
         case QMO_JOIN_METHOD_INDEX :
-            // indexable / non indexable predicateì˜ ë¶„ë¥˜
+            // indexable / non indexable predicateÀÇ ºĞ·ù
             IDE_TEST(
                 qmoPred::separateJoinPred( sPredicate,
                                            aSelectedMethod->joinPredicate,
@@ -3094,8 +3157,8 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
                 != IDE_SUCCESS );
             
             // PROJ-1404
-            // ìƒì„±ëœ transitive predicateì´ non-join predicateìœ¼ë¡œ
-            // ì„ íƒëœ ê²½ìš°ëŠ” bad transitive predicateì´ë¯€ë¡œ ì œê±°í•œë‹¤.
+            // »ı¼ºµÈ transitive predicateÀÌ non-join predicateÀ¸·Î
+            // ¼±ÅÃµÈ °æ¿ì´Â bad transitive predicateÀÌ¹Ç·Î Á¦°ÅÇÑ´Ù.
             IDE_TEST( qmoPred::removeTransitivePredicate( & sNonJoinPred,
                                                           ID_TRUE )
                       != IDE_SUCCESS );
@@ -3104,13 +3167,13 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
                  ( aGraph->type == QMG_SEMI_JOIN ) ||
                  ( aGraph->type == QMG_ANTI_JOIN ) )
             {
-                // joinable predicateì„ rightì— ë‚´ë¦¼
+                // joinable predicateÀ» right¿¡ ³»¸²
                 if ( sJoinPred != NULL )
                 {
                     ((qmgJOIN*)aGraph)->pushedDownPredicate = sJoinPred;
 
                     // PROJ-1502 PARTITIONED DISK TABLE
-                    // push down joinable predicateë¥¼ ë§Œë“ ë‹¤.
+                    // push down joinable predicate¸¦ ¸¸µç´Ù.
                     IDE_TEST( qmoPred::makeJoinPushDownPredicate(
                                   aStatement,
                                   sJoinPred,
@@ -3134,7 +3197,7 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
                     // nothing to do
                 }
 
-                // non joinable predicateì„ rightì— ë‚´ë¦¼
+                // non joinable predicateÀ» right¿¡ ³»¸²
                 if ( sNonJoinPred != NULL )
                 {
                     IDE_TEST( qmoPred::makeNonJoinPushDownPredicate(
@@ -3157,13 +3220,13 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
             }
             else if ( aGraph->type == QMG_LEFT_OUTER_JOIN )
             {
-                // joinable predicateì„ rightì— ë‚´ë¦¼
+                // joinable predicateÀ» right¿¡ ³»¸²
                 if ( sJoinPred != NULL )
                 {
                     ((qmgLOJN*)aGraph)->pushedDownPredicate = sJoinPred;
 
                     // PROJ-1502 PARTITIONED DISK TABLE
-                    // push down joinable predicateë¥¼ ë§Œë“ ë‹¤.
+                    // push down joinable predicate¸¦ ¸¸µç´Ù.
                     IDE_TEST( qmoPred::makeJoinPushDownPredicate(
                                   aStatement,
                                   sJoinPred,
@@ -3196,7 +3259,7 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
 
             break;
         case QMO_JOIN_METHOD_INVERSE_INDEX :
-            // indexable / non indexable predicateì˜ ë¶„ë¥˜
+            // indexable / non indexable predicateÀÇ ºĞ·ù
             IDE_TEST(
                 qmoPred::separateJoinPred( sPredicate,
                                            aSelectedMethod->joinPredicate,
@@ -3205,13 +3268,13 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
                 != IDE_SUCCESS );
             
             // PROJ-1404
-            // ìƒì„±ëœ transitive predicateì´ non-join predicateìœ¼ë¡œ
-            // ì„ íƒëœ ê²½ìš°ëŠ” bad transitive predicateì´ë¯€ë¡œ ì œê±°í•œë‹¤.
+            // »ı¼ºµÈ transitive predicateÀÌ non-join predicateÀ¸·Î
+            // ¼±ÅÃµÈ °æ¿ì´Â bad transitive predicateÀÌ¹Ç·Î Á¦°ÅÇÑ´Ù.
             IDE_TEST( qmoPred::removeTransitivePredicate( & sNonJoinPred,
                                                           ID_TRUE )
                       != IDE_SUCCESS );
 
-            // Inverse Index NLì€ Semi Joinì—ì„œë§Œ ì§€ì›í•œë‹¤.
+            // Inverse Index NLÀº Semi Join¿¡¼­¸¸ Áö¿øÇÑ´Ù.
             IDE_DASSERT( aGraph->type == QMG_SEMI_JOIN );
 
             if ( sJoinPred != NULL )
@@ -3219,7 +3282,7 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
                 ((qmgJOIN*)aGraph)->pushedDownPredicate = sJoinPred;
 
                 // PROJ-1502 PARTITIONED DISK TABLE
-                // push down joinable predicateë¥¼ ë§Œë“ ë‹¤.
+                // push down joinable predicate¸¦ ¸¸µç´Ù.
                 IDE_TEST( qmoPred::makeJoinPushDownPredicate(
                               aStatement,
                               sJoinPred,
@@ -3244,8 +3307,8 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
             }
 
             // PROJ-2385 
-            // non-joinable Predicateì€ ë”°ë¡œ ë³µì‚¬í•œ ë’¤ Rightì— Pushdowní•œë‹¤.
-            // Join Node Filter ìš©ë„ë¡œ í•œ ë²ˆ ë” í•„ìš”í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+            // non-joinable PredicateÀº µû·Î º¹»çÇÑ µÚ Right¿¡ PushdownÇÑ´Ù.
+            // Join Node Filter ¿ëµµ·Î ÇÑ ¹ø ´õ ÇÊ¿äÇÏ±â ¶§¹®ÀÌ´Ù.
             IDE_TEST( qmoPred::deepCopyPredicate( QC_QMP_MEM(aStatement),
                                                   sNonJoinPred,
                                                   &sNonJoinablePredicate )
@@ -3273,18 +3336,18 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
             break;
         case QMO_JOIN_METHOD_FULL_STORE_NL :
             // PROJ-1404
-            // ìƒì„±ëœ transitive predicateì´ non-join predicateìœ¼ë¡œ
-            // ì„ íƒëœ ê²½ìš°ëŠ” bad transitive predicateì´ë¯€ë¡œ ì œê±°í•œë‹¤.
+            // »ı¼ºµÈ transitive predicateÀÌ non-join predicateÀ¸·Î
+            // ¼±ÅÃµÈ °æ¿ì´Â bad transitive predicateÀÌ¹Ç·Î Á¦°ÅÇÑ´Ù.
             IDE_TEST( qmoPred::removeTransitivePredicate( & sPredicate,
                                                           ID_TRUE )
                       != IDE_SUCCESS );
 
-            // ì œê±°í•œ predicateì„ ë°˜ì˜í•œë‹¤.
+            // Á¦°ÅÇÑ predicateÀ» ¹İ¿µÇÑ´Ù.
             *aPredicate = sPredicate;
             
             break;
         case QMO_JOIN_METHOD_ANTI :
-            // indexable / non indexable predicateì˜ ë¶„ë¥˜
+            // indexable / non indexable predicateÀÇ ºĞ·ù
             IDE_TEST(
                 qmoPred::separateJoinPred( sPredicate,
                                            aSelectedMethod->joinPredicate,
@@ -3293,29 +3356,29 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
                 != IDE_SUCCESS );
             
             // PROJ-1404
-            // ìƒì„±ëœ transitive predicateì´ non-join predicateìœ¼ë¡œ
-            // ì„ íƒëœ ê²½ìš°ëŠ” bad transitive predicateì´ë¯€ë¡œ ì œê±°í•œë‹¤.
+            // »ı¼ºµÈ transitive predicateÀÌ non-join predicateÀ¸·Î
+            // ¼±ÅÃµÈ °æ¿ì´Â bad transitive predicateÀÌ¹Ç·Î Á¦°ÅÇÑ´Ù.
             IDE_TEST( qmoPred::removeTransitivePredicate( & sNonJoinPred,
                                                           ID_TRUE )
                       != IDE_SUCCESS );
             
-            // leftë¥¼ ë³µì‚¬í•˜ì—¬ antiRightGraphì— ì—°ê²°
-            // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
-            // leftë¥¼ sAntiRightì— ë³µì‚¬í•˜ëŠ” ë™ì‹œì—
-            // sAntiRightì˜ selectedIndexë¥¼ ë°”ê¾¼ë‹¤.
-            // ì´ ì²˜ë¦¬ë¥¼ qmgSelectionì„ í†µí•´ì„œ í•˜ëŠ” ì´ìœ ëŠ”
-            // selectedIndexë¥¼ ë°”ê¿€ ë•Œ scan decision factorë¥¼
-            // ì²˜ë¦¬í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+            // left¸¦ º¹»çÇÏ¿© antiRightGraph¿¡ ¿¬°á
+            // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+            // left¸¦ sAntiRight¿¡ º¹»çÇÏ´Â µ¿½Ã¿¡
+            // sAntiRightÀÇ selectedIndex¸¦ ¹Ù²Û´Ù.
+            // ÀÌ Ã³¸®¸¦ qmgSelectionÀ» ÅëÇØ¼­ ÇÏ´Â ÀÌÀ¯´Â
+            // selectedIndex¸¦ ¹Ù²Ü ¶§ scan decision factor¸¦
+            // Ã³¸®ÇØ¾ß ÇÏ±â ¶§¹®ÀÌ´Ù.
             IDE_TEST( copyGraphAndAlterSelectedIndex(
                           aStatement,
                           aGraph->left,
                           &sAntiRight,
                           aSelectedMethod->leftIdxInfo->index,
-                          0 ) // sAntiRightì˜ selectedIndexë¥¼ ë°”ê¾¼ë‹¤.
+                          0 ) // sAntiRightÀÇ selectedIndex¸¦ ¹Ù²Û´Ù.
                       != IDE_SUCCESS );
 
             // To Fix BUG-10191
-            // leftì˜ myPredicateì„ ë³µì‚¬í•´ì„œ rightì˜ myPredicateì— ì—°ê²°
+            // leftÀÇ myPredicateÀ» º¹»çÇØ¼­ rightÀÇ myPredicate¿¡ ¿¬°á
             if ( aGraph->left->myPredicate != NULL )
             {
                 IDE_TEST(
@@ -3329,7 +3392,7 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
                 // nothing to do
             }
 
-            // joinable Predicateì„ ë³µì‚¬í•´ì„œ AntiRightì— ë‚´ë¦¼
+            // joinable PredicateÀ» º¹»çÇØ¼­ AntiRight¿¡ ³»¸²
             sPred = sJoinPred;
             while ( sPred != NULL )
             {
@@ -3370,25 +3433,25 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
             // To Fix BUG-8384
             ((qmgFOJN*)aGraph)->antiRightGraph = sAntiRight;
 
-            // rightë¥¼ ë³µì‚¬í•˜ì—¬ antiLeftGraphì— ì—°ê²°
-            // PROJ-1446 Host variableì„ í¬í•¨í•œ ì§ˆì˜ ìµœì í™”
-            // leftë¥¼ sAntiRightì— ë³µì‚¬í•˜ëŠ” ë™ì‹œì—
-            // sAntiRightì˜ selectedIndexë¥¼ ë°”ê¾¼ë‹¤.
-            // ì´ ì²˜ë¦¬ë¥¼ qmgSelectionì„ í†µí•´ì„œ í•˜ëŠ” ì´ìœ ëŠ”
-            // selectedIndexë¥¼ ë°”ê¿€ ë•Œ scan decision factorë¥¼
-            // ì²˜ë¦¬í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+            // right¸¦ º¹»çÇÏ¿© antiLeftGraph¿¡ ¿¬°á
+            // PROJ-1446 Host variableÀ» Æ÷ÇÔÇÑ ÁúÀÇ ÃÖÀûÈ­
+            // left¸¦ sAntiRight¿¡ º¹»çÇÏ´Â µ¿½Ã¿¡
+            // sAntiRightÀÇ selectedIndex¸¦ ¹Ù²Û´Ù.
+            // ÀÌ Ã³¸®¸¦ qmgSelectionÀ» ÅëÇØ¼­ ÇÏ´Â ÀÌÀ¯´Â
+            // selectedIndex¸¦ ¹Ù²Ü ¶§ scan decision factor¸¦
+            // Ã³¸®ÇØ¾ß ÇÏ±â ¶§¹®ÀÌ´Ù.
             IDE_TEST( copyGraphAndAlterSelectedIndex(
                           aStatement,
                           aGraph->right,
                           &sAntiLeft,
                           aSelectedMethod->rightIdxInfo->index,
-                          1 ) // rightì˜ selectedIndexë¥¼ ë°”ê¾¼ë‹¤.
+                          1 ) // rightÀÇ selectedIndex¸¦ ¹Ù²Û´Ù.
                       != IDE_SUCCESS );
 
             // To Fix BUG-8384
             ((qmgFOJN*)aGraph)->antiLeftGraph = sAntiLeft;
 
-            // joinable Predicateì„ Rightì— ë‚´ë¦¼
+            // joinable PredicateÀ» Right¿¡ ³»¸²
             IDE_TEST( qmoPred::makeJoinPushDownPredicate(
                           aStatement,
                           sJoinPred,
@@ -3403,9 +3466,9 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
             
             break;
         case QMO_JOIN_METHOD_ONE_PASS_SORT : // To Fix PR-8032
-        case QMO_JOIN_METHOD_TWO_PASS_SORT : // One-Pass ë˜ëŠ” Two Passë§Œ ê²°ì •ë¨
+        case QMO_JOIN_METHOD_TWO_PASS_SORT : // One-Pass ¶Ç´Â Two Pass¸¸ °áÁ¤µÊ
         case QMO_JOIN_METHOD_INVERSE_SORT  : // PROJ-2385
-            // sort joinable predicate/ non sort joinable predicate ë¶„ë¥˜
+            // sort joinable predicate/ non sort joinable predicate ºĞ·ù
             IDE_TEST(
                 qmoPred::separateJoinPred( sPredicate,
                                            aSelectedMethod->joinPredicate,
@@ -3414,15 +3477,15 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
                 != IDE_SUCCESS );
             
             // PROJ-1404
-            // ìƒì„±ëœ transitive predicateì´ non-join predicateìœ¼ë¡œ
-            // ì„ íƒëœ ê²½ìš°ëŠ” bad transitive predicateì´ë¯€ë¡œ ì œê±°í•œë‹¤.
+            // »ı¼ºµÈ transitive predicateÀÌ non-join predicateÀ¸·Î
+            // ¼±ÅÃµÈ °æ¿ì´Â bad transitive predicateÀÌ¹Ç·Î Á¦°ÅÇÑ´Ù.
             IDE_TEST( qmoPred::removeTransitivePredicate( & sNonJoinPred,
                                                           ID_TRUE )
                       != IDE_SUCCESS );
             break;
 
         case QMO_JOIN_METHOD_MERGE :
-            // sort joinable predicate/ non sort joinable predicate ë¶„ë¥˜
+            // sort joinable predicate/ non sort joinable predicate ºĞ·ù
             IDE_TEST(
                 qmoPred::separateJoinPred( sPredicate,
                                            aSelectedMethod->joinPredicate,
@@ -3431,18 +3494,18 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
                 != IDE_SUCCESS );
 
             // PROJ-1404
-            // ìƒì„±ëœ transitive predicateì´ non-join predicateìœ¼ë¡œ
-            // ì„ íƒëœ ê²½ìš°ëŠ” bad transitive predicateì´ë¯€ë¡œ ì œê±°í•œë‹¤.
+            // »ı¼ºµÈ transitive predicateÀÌ non-join predicateÀ¸·Î
+            // ¼±ÅÃµÈ °æ¿ì´Â bad transitive predicateÀÌ¹Ç·Î Á¦°ÅÇÑ´Ù.
             IDE_TEST( qmoPred::removeTransitivePredicate( & sNonJoinPred,
                                                           ID_TRUE )
                       != IDE_SUCCESS );
             break;
 
         case QMO_JOIN_METHOD_ONE_PASS_HASH : // To Fix PR-8032
-        case QMO_JOIN_METHOD_TWO_PASS_HASH : // One-Pass ë˜ëŠ” Two Passë§Œ ê²°ì •ë¨
+        case QMO_JOIN_METHOD_TWO_PASS_HASH : // One-Pass ¶Ç´Â Two Pass¸¸ °áÁ¤µÊ
         case QMO_JOIN_METHOD_INVERSE_HASH :  // PROJ-2339
 
-            // hash joinable predicate/ non hash joinable predicate ë¶„ë¥˜
+            // hash joinable predicate/ non hash joinable predicate ºĞ·ù
             IDE_TEST(
                 qmoPred::separateJoinPred( sPredicate,
                                            aSelectedMethod->joinPredicate,
@@ -3451,8 +3514,8 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
                 != IDE_SUCCESS );
 
             // PROJ-1404
-            // ìƒì„±ëœ transitive predicateì´ non-join predicateìœ¼ë¡œ
-            // ì„ íƒëœ ê²½ìš°ëŠ” bad transitive predicateì´ë¯€ë¡œ ì œê±°í•œë‹¤.
+            // »ı¼ºµÈ transitive predicateÀÌ non-join predicateÀ¸·Î
+            // ¼±ÅÃµÈ °æ¿ì´Â bad transitive predicateÀÌ¹Ç·Î Á¦°ÅÇÑ´Ù.
             IDE_TEST( qmoPred::removeTransitivePredicate( & sNonJoinPred,
                                                           ID_TRUE )
                       != IDE_SUCCESS );            
@@ -3463,13 +3526,13 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
     }
 
     //------------------------------------------
-    // Index Argument ì„¤ì •
+    // Index Argument ¼³Á¤
     //------------------------------------------
 
     if ( ( aSelectedMethod->flag & QMO_JOIN_METHOD_MASK ) 
          == QMO_JOIN_METHOD_INDEX )
     {
-        // indexable join predicateì€ ê´€ë¦¬ìì— ì˜í•´ ì„¤ì •ë¨
+        // indexable join predicateÀº °ü¸®ÀÚ¿¡ ÀÇÇØ ¼³Á¤µÊ
     }
     else
     {
@@ -3489,7 +3552,7 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
                 // nothing to do
             }
 
-            // ë¹„êµ ì—°ì‚°ì ê° í•˜ìœ„ ë…¸ë“œì— í•´ë‹¹í•˜ëŠ” graphë¥¼ ì°¾ìŒ
+            // ºñ±³ ¿¬»êÀÚ °¢ ÇÏÀ§ ³ëµå¿¡ ÇØ´çÇÏ´Â graph¸¦ Ã£À½
             IDE_TEST( qmoPred::findChildGraph( sNode,
                                                & aGraph->depInfo,
                                                aGraph->left,
@@ -3523,7 +3586,7 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
                     // nothing to do
                 }
 
-                // ë¹„êµ ì—°ì‚°ì ê° í•˜ìœ„ ë…¸ë“œì— í•´ë‹¹í•˜ëŠ” graphë¥¼ ì°¾ìŒ
+                // ºñ±³ ¿¬»êÀÚ °¢ ÇÏÀ§ ³ëµå¿¡ ÇØ´çÇÏ´Â graph¸¦ Ã£À½
                 IDE_TEST( qmoPred::findChildGraph( sNode,
                                                    & aGraph->depInfo,
                                                    aGraph->left,
@@ -3544,26 +3607,30 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
         }
     }
 
+    checkOrValueIndex( aGraph->left );
+    checkOrValueIndex( aGraph->right );
+
     //------------------------------------------
-    // hash bucket countì™€ hash temp table ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
+    // hash bucket count¿Í hash temp table °³¼ö¸¦ ±¸ÇÑ´Ù.
     //------------------------------------------
 
     // To-Fix 8062
-    // Index Argument ê²°ì •í›„ì— ê³„ì‚°í•˜ì—¬ì•¼ í•¨.
-    // hash bucket count,  hash temp table ê°œìˆ˜ ê³„ì‚°
+    // Index Argument °áÁ¤ÈÄ¿¡ °è»êÇÏ¿©¾ß ÇÔ.
+    // hash bucket count,  hash temp table °³¼ö °è»ê
 
     // PROJ-2385
     // Inverse Index NL
     if ( ( aSelectedMethod->flag & QMO_JOIN_METHOD_MASK ) == QMO_JOIN_METHOD_INVERSE_INDEX )
     {
-        IDE_TEST( getBucketCntNTmpTblCnt( aSelectedMethod,
+        IDE_TEST( getBucketCntNTmpTblCnt( aStatement,
+                                          aSelectedMethod,
                                           aGraph,
                                           ID_TRUE, // aIsLeftGraph
                                           & sBucketCnt,
                                           & sTmpTblCnt )
                   != IDE_SUCCESS );
 
-        // Semi Joinì—ì„œë§Œ Inverse Index NL ì§€ì›
+        // Semi Join¿¡¼­¸¸ Inverse Index NL Áö¿ø
         IDE_DASSERT( aGraph->type == QMG_SEMI_JOIN );
 
         ((qmgJOIN *)aGraph)->hashBucketCnt = sBucketCnt;
@@ -3574,7 +3641,8 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
         if ( ( aSelectedMethod->flag & QMO_JOIN_METHOD_HASH ) 
              != QMO_JOIN_METHOD_NONE )
         {
-            IDE_TEST( getBucketCntNTmpTblCnt( aSelectedMethod,
+            IDE_TEST( getBucketCntNTmpTblCnt( aStatement,
+                                              aSelectedMethod,
                                               aGraph,
                                               ID_FALSE, // aIsLeftGraph
                                               & sBucketCnt,
@@ -3604,7 +3672,7 @@ qmgJoin::afterJoinMethodDecision( qcStatement       * aStatement,
         }
         else
         {
-            // Inverse Index NLì´ë‚˜ Hash Joinì´ ì•„ë‹Œ ê²½ìš°ë¡œ Bucket Count ê²°ì •ì´ í•„ìš”ì—†ìŒ.
+            // Inverse Index NLÀÌ³ª Hash JoinÀÌ ¾Æ´Ñ °æ¿ì·Î Bucket Count °áÁ¤ÀÌ ÇÊ¿ä¾øÀ½.
             // Nothing To Do
         }
     }
@@ -3627,28 +3695,28 @@ qmgJoin::makePreservedOrder( qcStatement        * aStatement,
 {
 /***********************************************************************
  *
- * Description : Preserved Orderì˜ ì„¤ì •
+ * Description : Preserved OrderÀÇ ¼³Á¤
  *
  * Implementation :
  *    To Fix PR-11556
- *       Join Predicateì— ëŒ€í•œ Preserved Orderë¥¼ ê³ ë ¤í•˜ì§€ ì•ŠëŠ”ë‹¤.
- *       íš¨ìš©ì„±ì´ ë–¨ì–´ì§€ëŠ” ë°˜ë©´, ë³µì¡ë„ë§Œ ì¦ê°€í•˜ê²Œ ëœë‹¤.
- *       ë‹¤ìŒ ì˜ˆì—ì„œ L1.i1 ê³¼ R1.a1ì´ ë™ì¼í•œ ë° ì´ê±¸ ì‚¬ìš©í• ê¹Œ?
+ *       Join Predicate¿¡ ´ëÇÑ Preserved Order¸¦ °í·ÁÇÏÁö ¾Ê´Â´Ù.
+ *       È¿¿ë¼ºÀÌ ¶³¾îÁö´Â ¹İ¸é, º¹Àâµµ¸¸ Áõ°¡ÇÏ°Ô µÈ´Ù.
+ *       ´ÙÀ½ ¿¹¿¡¼­ L1.i1 °ú R1.a1ÀÌ µ¿ÀÏÇÑ µ¥ ÀÌ°É »ç¿ëÇÒ±î?
  *           - SELECT DISTINCT L1.i1, R1.a1 FROM L1, R1 WHERE L1.i1 = R1.a1;
  *           - SELECT L1.i1, R1.a1 FROM L1, R1 WHERE L1.i1 = R1.a1
  *             GROUP BY L1.i1, R1.a1;
  *           - SELECT * FROM L1, R1 WHERE L1.i1 = R1.a1
  *             GROUP BY L1.i1, R1.a1;
  *       BUGBUG
- *       sort-based joinì€ ë¶€ë“±í˜¸ë„ ê°€ëŠ¥í•˜ë©° ì´ë•Œì—ëŠ” preserved orderë¥¼ ê³ ë ¤í•˜ë©´
- *       ì„±ëŠ¥ ì´ìµì„ ë³¼ìˆ˜ ìˆë‹¤.
+ *       sort-based joinÀº ºÎµîÈ£µµ °¡´ÉÇÏ¸ç ÀÌ¶§¿¡´Â preserved order¸¦ °í·ÁÇÏ¸é
+ *       ¼º´É ÀÌÀÍÀ» º¼¼ö ÀÖ´Ù.
  *
  ***********************************************************************/
 
     IDU_FIT_POINT_FATAL( "qmgJoin::makePreservedOrder::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -3656,7 +3724,7 @@ qmgJoin::makePreservedOrder( qcStatement        * aStatement,
     IDE_DASSERT( aSelectedMethod != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //------------------------------------------
 
     switch( aSelectedMethod->flag & QMO_JOIN_METHOD_MASK )
@@ -3664,8 +3732,8 @@ qmgJoin::makePreservedOrder( qcStatement        * aStatement,
         case QMO_JOIN_METHOD_FULL_NL :
         case QMO_JOIN_METHOD_FULL_STORE_NL :
 
-            // Left Child Graphì˜ Preserved Orderë¥¼ ì´ìš©í•˜ì—¬
-            // Join Graphì˜ preserved orderë¥¼ ê²°ì •í•œë‹¤.
+            // Left Child GraphÀÇ Preserved Order¸¦ ÀÌ¿ëÇÏ¿©
+            // Join GraphÀÇ preserved order¸¦ °áÁ¤ÇÑ´Ù.
             IDE_TEST( makeOrderFromChild( aStatement, 
                                           aGraph,
                                           ID_FALSE ) // aIsRightGraph 
@@ -3673,23 +3741,23 @@ qmgJoin::makePreservedOrder( qcStatement        * aStatement,
             break;
         case QMO_JOIN_METHOD_INDEX :
 
-            // Left Child Graphì˜ Preserved Orderë¥¼ ì´ìš©í•˜ì—¬
-            // Join Graphì˜ preserved orderë¥¼ ê²°ì •í•œë‹¤.
+            // Left Child GraphÀÇ Preserved Order¸¦ ÀÌ¿ëÇÏ¿©
+            // Join GraphÀÇ preserved order¸¦ °áÁ¤ÇÑ´Ù.
             IDE_TEST( makeOrderFromChild( aStatement, 
                                           aGraph,
                                           ID_FALSE ) // aIsRightGraph 
                       != IDE_SUCCESS );
 
             //------------------------------------------
-            // rightì˜ indexì— ë”°ë¥¸ preserved order ìƒì„±
-            //    < rightì˜ preserved orderê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš° >
-            //    - rightì˜ preserved orderì™€ ì„ íƒëœ join methodì˜
-            //      right indexê°€ ê°™ì€ ê²½ìš°, right preserved order ê·¸ëŒ€ë¡œ ì‚¬ìš©
-            //    - rightì˜ preserved orderì™€ ì„ íƒëœ join methodì˜
-            //      right indexê°€ ë‹¤ë¥¸ ê²½ìš°, right preserved order ìƒˆë¡œ ìƒì„±
-            //    < rightì˜ preserved orderê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš° >
-            //      rightì˜ indexì— ë”°ë¥¸ preserved order ìƒì„±í•˜ì—¬
-            //      rightì— ë‚´ë ¤ì¤€ë‹¤.
+            // rightÀÇ index¿¡ µû¸¥ preserved order »ı¼º
+            //    < rightÀÇ preserved order°¡ Á¸ÀçÇÏ´Â °æ¿ì >
+            //    - rightÀÇ preserved order¿Í ¼±ÅÃµÈ join methodÀÇ
+            //      right index°¡ °°Àº °æ¿ì, right preserved order ±×´ë·Î »ç¿ë
+            //    - rightÀÇ preserved order¿Í ¼±ÅÃµÈ join methodÀÇ
+            //      right index°¡ ´Ù¸¥ °æ¿ì, right preserved order »õ·Î »ı¼º
+            //    < rightÀÇ preserved order°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì >
+            //      rightÀÇ index¿¡ µû¸¥ preserved order »ı¼ºÇÏ¿©
+            //      right¿¡ ³»·ÁÁØ´Ù.
             //------------------------------------------
 
             IDE_TEST( makeNewOrder( aStatement,
@@ -3700,8 +3768,8 @@ qmgJoin::makePreservedOrder( qcStatement        * aStatement,
             break;
         case QMO_JOIN_METHOD_INVERSE_INDEX :
             
-            // Left Child Graphì˜ Preserved Orderë¥¼ ë³´ì¡´í•  ìˆ˜ ì—†ë‹¤.
-            // ëŒ€ì‹ , rightì˜ indexì™€ ë¹„êµí•´ ìƒˆ Orderë¥¼ ë§Œë“¤ì–´ì•¼ í•œë‹¤.
+            // Left Child GraphÀÇ Preserved Order¸¦ º¸Á¸ÇÒ ¼ö ¾ø´Ù.
+            // ´ë½Å, rightÀÇ index¿Í ºñ±³ÇØ »õ Order¸¦ ¸¸µé¾î¾ß ÇÑ´Ù.
             aGraph->flag &= ~QMG_PRESERVED_ORDER_MASK;
             aGraph->flag |= QMG_PRESERVED_ORDER_NEVER;
 
@@ -3713,8 +3781,8 @@ qmgJoin::makePreservedOrder( qcStatement        * aStatement,
             break;
         case QMO_JOIN_METHOD_ANTI :
 
-            // Left Child Graphì˜ Preserved Orderë¥¼ ì´ìš©í•˜ì—¬
-            // Join Graphì˜ preserved orderë¥¼ ê²°ì •í•œë‹¤.
+            // Left Child GraphÀÇ Preserved Order¸¦ ÀÌ¿ëÇÏ¿©
+            // Join GraphÀÇ preserved order¸¦ °áÁ¤ÇÑ´Ù.
             IDE_TEST( makeOrderFromChild( aStatement, 
                                           aGraph,
                                           ID_FALSE ) // aIsRightGraph 
@@ -3734,8 +3802,8 @@ qmgJoin::makePreservedOrder( qcStatement        * aStatement,
         case QMO_JOIN_METHOD_ONE_PASS_HASH :
         case QMO_JOIN_METHOD_ONE_PASS_SORT :
 
-            // Left Child Graphì˜ Preserved Orderë¥¼ ì´ìš©í•˜ì—¬
-            // Join Graphì˜ preserved orderë¥¼ ê²°ì •í•œë‹¤.
+            // Left Child GraphÀÇ Preserved Order¸¦ ÀÌ¿ëÇÏ¿©
+            // Join GraphÀÇ preserved order¸¦ °áÁ¤ÇÑ´Ù.
             IDE_TEST( makeOrderFromChild( aStatement, 
                                           aGraph,
                                           ID_FALSE ) // aIsRightGraph 
@@ -3745,7 +3813,7 @@ qmgJoin::makePreservedOrder( qcStatement        * aStatement,
         case QMO_JOIN_METHOD_TWO_PASS_HASH :
         case QMO_JOIN_METHOD_INVERSE_HASH  : // PROJ-2339 
 
-            // Two Pass, Inverse Hash Joinì€ preserverd orderê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            // Two Pass, Inverse Hash JoinÀº preserverd order°¡ Á¸ÀçÇÏÁö ¾Ê´Â´Ù.
             aGraph->flag &= ~QMG_PRESERVED_ORDER_MASK;
             aGraph->flag |= QMG_PRESERVED_ORDER_NEVER;
             break;
@@ -3754,8 +3822,8 @@ qmgJoin::makePreservedOrder( qcStatement        * aStatement,
         case QMO_JOIN_METHOD_INVERSE_SORT :
         case QMO_JOIN_METHOD_MERGE :
 
-            // Join Predicateì„ ì´ìš©í•˜ì—¬ Preserved Orderë¥¼ ìƒì„±í•œë‹¤.
-            // Merge Joinì˜ ê²½ìš° ASCENDINGë§Œì´ ê°€ëŠ¥í•˜ë‹¤.
+            // Join PredicateÀ» ÀÌ¿ëÇÏ¿© Preserved Order¸¦ »ı¼ºÇÑ´Ù.
+            // Merge JoinÀÇ °æ¿ì ASCENDING¸¸ÀÌ °¡´ÉÇÏ´Ù.
             IDE_TEST( makeOrderFromJoin( aStatement,
                                          aGraph,
                                          aSelectedMethod,
@@ -3775,7 +3843,8 @@ qmgJoin::makePreservedOrder( qcStatement        * aStatement,
     return IDE_FAILURE;
 }
 
-IDE_RC qmgJoin::getBucketCntNTmpTblCnt( qmoJoinMethodCost * aSelectedMethod,
+IDE_RC qmgJoin::getBucketCntNTmpTblCnt( qcStatement       * aStatement,
+                                        qmoJoinMethodCost * aSelectedMethod,
                                         qmgGraph          * aGraph,
                                         idBool              aIsLeftGraph,
                                         UInt              * aBucketCnt,
@@ -3783,11 +3852,11 @@ IDE_RC qmgJoin::getBucketCntNTmpTblCnt( qmoJoinMethodCost * aSelectedMethod,
 {
 /***********************************************************************
  *
- * Description : hash bucket countì™€ hash temp table countë¥¼ êµ¬í•˜ëŠ” í•¨ìˆ˜
+ * Description : hash bucket count¿Í hash temp table count¸¦ ±¸ÇÏ´Â ÇÔ¼ö
  *
  * Implementation :
- *    (1) hash bucket countì˜ ì„¤ì •
- *    (2) hash temp table countì˜ ì„¤ì •
+ *    (1) hash bucket countÀÇ ¼³Á¤
+ *    (2) hash temp table countÀÇ ¼³Á¤
  *
  ***********************************************************************/
 
@@ -3799,21 +3868,21 @@ IDE_RC qmgJoin::getBucketCntNTmpTblCnt( qmoJoinMethodCost * aSelectedMethod,
     IDU_FIT_POINT_FATAL( "qmgJoin::getBucketCntNTmpTblCnt::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aSelectedMethod != NULL );
     IDE_DASSERT( aGraph != NULL );
 
     //------------------------------------------
-    // hash bucket count ì„¤ì •
+    // hash bucket count ¼³Á¤
     //------------------------------------------
 
     if ( aGraph->myQuerySet->SFWGH->hints->hashBucketCnt !=
          QMS_NOT_DEFINED_BUCKET_CNT )
     {
         //------------------------------------------
-        // hash bucket count hintê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°
+        // hash bucket count hint°¡ Á¸ÀçÇÏ´Â °æ¿ì
         //------------------------------------------
 
         sBucketCnt = aGraph->myQuerySet->SFWGH->hints->hashBucketCnt;
@@ -3821,17 +3890,17 @@ IDE_RC qmgJoin::getBucketCntNTmpTblCnt( qmoJoinMethodCost * aSelectedMethod,
     else
     {
         //------------------------------------------
-        // hash bucket count hintê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ê²½ìš°
+        // hash bucket count hint°¡ Á¸ÀçÇÏÁö ¾Ê´Â °æ¿ì
         //------------------------------------------
 
         //------------------------------------------
-        // ê¸°ë³¸ bucket count ì„¤ì •
-        // bucket count = í•˜ìœ„ graphì˜ ouput record count / 2
+        // ±âº» bucket count ¼³Á¤
+        // bucket count = ÇÏÀ§ graphÀÇ ouput record count / 2
         //------------------------------------------
 
         // BUG-37778 disk hash temp table size estimate
-        // Hash Join ì˜ bucket ê°¯ìˆ˜ëŠ” ditinct í•˜ê²Œ ë™ì‘í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
-        // ì»¬ëŸ¼ì˜ ndv ë¥¼ ì°¸ì¡°í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
+        // Hash Join ÀÇ bucket °¹¼ö´Â ditinct ÇÏ°Ô µ¿ÀÛÇÏÁö ¾ÊÀ¸¹Ç·Î
+        // ÄÃ·³ÀÇ ndv ¸¦ ÂüÁ¶ÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
 
         // PROJ-2385
         // BUG-40561
@@ -3841,9 +3910,10 @@ IDE_RC qmgJoin::getBucketCntNTmpTblCnt( qmoJoinMethodCost * aSelectedMethod,
 
             if ((aGraph->left->flag & QMG_GRAPH_TYPE_MASK) == QMG_GRAPH_TYPE_MEMORY)
             {
-                // bucketCntê°€ QMC_MEM_HASH_MAX_BUCKET_CNT(10240000)ë¥¼ ë„˜ìœ¼ë©´
-                // QMC_MEM_HASH_MAX_BUCKET_CNT ê°’ìœ¼ë¡œ ë³´ì •í•´ì¤€ë‹¤.
-                sBucketCnt = (UInt)IDL_MIN(sBucketCntTemp, QMC_MEM_HASH_MAX_BUCKET_CNT);
+                // bucketCnt°¡ QMC_MEM_HASH_MAX_BUCKET_CNT(10240000)¸¦ ³ÑÀ¸¸é
+                // QMC_MEM_HASH_MAX_BUCKET_CNT °ªÀ¸·Î º¸Á¤ÇØÁØ´Ù.
+                /* BUG-48161 */
+                sBucketCnt = (UInt)IDL_MIN(sBucketCntTemp, QCG_GET_BUCKET_COUNT_MAX( aStatement ) );
             }
             else
             {
@@ -3856,9 +3926,10 @@ IDE_RC qmgJoin::getBucketCntNTmpTblCnt( qmoJoinMethodCost * aSelectedMethod,
 
             if ((aGraph->right->flag & QMG_GRAPH_TYPE_MASK) == QMG_GRAPH_TYPE_MEMORY)
             {
-                // bucketCntê°€ QMC_MEM_HASH_MAX_BUCKET_CNT(10240000)ë¥¼ ë„˜ìœ¼ë©´
-                // QMC_MEM_HASH_MAX_BUCKET_CNT ê°’ìœ¼ë¡œ ë³´ì •í•´ì¤€ë‹¤.
-                sBucketCnt = (UInt)IDL_MIN(sBucketCntTemp, QMC_MEM_HASH_MAX_BUCKET_CNT);
+                // bucketCnt°¡ QMC_MEM_HASH_MAX_BUCKET_CNT(10240000)¸¦ ³ÑÀ¸¸é
+                // QMC_MEM_HASH_MAX_BUCKET_CNT °ªÀ¸·Î º¸Á¤ÇØÁØ´Ù.
+                /* BUG-48161 */
+                sBucketCnt = (UInt)IDL_MIN(sBucketCntTemp, QCG_GET_BUCKET_COUNT_MAX( aStatement ) );
             }
             else
             {
@@ -3866,7 +3937,7 @@ IDE_RC qmgJoin::getBucketCntNTmpTblCnt( qmoJoinMethodCost * aSelectedMethod,
             }
         }
 
-        //  hash bucket countì˜ ë³´ì •
+        //  hash bucket countÀÇ º¸Á¤
         if ( sBucketCnt < QCU_OPTIMIZER_BUCKET_COUNT_MIN )
         {
             sBucketCnt = QCU_OPTIMIZER_BUCKET_COUNT_MIN;
@@ -3880,18 +3951,18 @@ IDE_RC qmgJoin::getBucketCntNTmpTblCnt( qmoJoinMethodCost * aSelectedMethod,
     *aBucketCnt = sBucketCnt;
 
     //------------------------------------------
-    // hash temp table count ì„¤ì •
+    // hash temp table count ¼³Á¤
     //------------------------------------------
 
     *aTmpTblCnt = 0;
     if ( ( aSelectedMethod->flag & QMO_JOIN_METHOD_MASK ) ==
          QMO_JOIN_METHOD_TWO_PASS_HASH )
     {
-        // two pass hash join methodê°€ ì„ íƒëœ ê²½ìš°
+        // two pass hash join method°¡ ¼±ÅÃµÈ °æ¿ì
         if ( aSelectedMethod->hashTmpTblCntHint
              != QMS_NOT_DEFINED_TEMP_TABLE_CNT )
         {
-            // hash temp table count hintê°€ ì£¼ì–´ì§„ ê²½ìš°, ì´ë¥¼ ë”°ë¦„
+            // hash temp table count hint°¡ ÁÖ¾îÁø °æ¿ì, ÀÌ¸¦ µû¸§
             *aTmpTblCnt = aSelectedMethod->hashTmpTblCntHint;
         }
         else
@@ -3920,8 +3991,8 @@ IDE_RC qmgJoin::getBucketCntNTmpTblCnt( qmoJoinMethodCost * aSelectedMethod,
         else
         {
             // PROJ-2242
-            // hash temp tableì˜ ë©”ëª¨ë¦¬ê³µê°„ì— ì €ì¥ ê°€ëŠ¥í•œ BucketCnt ì˜ ìµœëŒ€ì¹˜ë¥¼ ê³„ì‚°í•œí›„
-            // ì´ BucketCnt ì—ì„œ ë‚˜ëˆˆê°’ì„ ì‚¬ìš©í•œë‹¤.
+            // hash temp tableÀÇ ¸Ş¸ğ¸®°ø°£¿¡ ÀúÀå °¡´ÉÇÑ BucketCnt ÀÇ ÃÖ´ëÄ¡¸¦ °è»êÇÑÈÄ
+            // ÃÑ BucketCnt ¿¡¼­ ³ª´«°ªÀ» »ç¿ëÇÑ´Ù.
             sMaxBucketCnt = smuProperty::getHashAreaSize() *
                 (smuProperty::getTempHashGroupRatio() / 100.0 ) / 8.0;
 
@@ -3955,7 +4026,7 @@ qmgJoin::makeOrderFromChild( qcStatement * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Left ë˜ëŠ” Right Child Graphì˜ Preserved Orderë¥¼ ë³µì‚¬í•œë‹¤.
+ *    Left ¶Ç´Â Right Child GraphÀÇ Preserved Order¸¦ º¹»çÇÑ´Ù.
  *
  * Implementation :
  *
@@ -3970,7 +4041,7 @@ qmgJoin::makeOrderFromChild( qcStatement * aStatement,
     IDU_FIT_POINT_FATAL( "qmgJoin::makeOrderFromChild::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_DASSERT( aStatement != NULL );
@@ -3980,17 +4051,17 @@ qmgJoin::makeOrderFromChild( qcStatement * aStatement,
 
     if ( aIsRightGraph == ID_FALSE )
     {
-        // Right Graphì˜ Orderë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Right GraphÀÇ Order¸¦ »ç¿ëÇÏ´Â °æ¿ì
         sChildGraph = aGraph->left;
     }
     else
     {
-        // Left Graphì˜ Orderë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
+        // Left GraphÀÇ Order¸¦ »ç¿ëÇÏ´Â °æ¿ì
         sChildGraph = aGraph->right;
     }
 
     //------------------------------------------
-    // Preserved Orderë¥¼ ë³µì‚¬í•œë‹¤.
+    // Preserved Order¸¦ º¹»çÇÑ´Ù.
     //------------------------------------------
 
     for ( sChildOrder = sChildGraph->preservedOrder;
@@ -4020,7 +4091,7 @@ qmgJoin::makeOrderFromChild( qcStatement * aStatement,
     }
 
     //------------------------------------------
-    // Join Graphì˜ Preserved Orderì •ë³´ ì„¤ì •
+    // Join GraphÀÇ Preserved OrderÁ¤º¸ ¼³Á¤
     //------------------------------------------
 
     aGraph->preservedOrder = sGraphOrder;
@@ -4045,21 +4116,21 @@ qmgJoin::makeOrderFromJoin( qcStatement        * aStatement,
 /***********************************************************************
  *
  * Description :
- *    Join Predicateìœ¼ë¡œë¶€í„° Preserved Order ìƒì„±
- *    ì•„ë˜ì™€ ê°™ì´ Leftì˜ ì •ë ¬ ìˆœì„œê°€ ë³´ì¥ë˜ëŠ” Join Methodë¥¼ ìœ„í•˜ì—¬
- *    Preserverd Orderë¥¼ ìƒì„±í•œë‹¤.
+ *    Join PredicateÀ¸·ÎºÎÅÍ Preserved Order »ı¼º
+ *    ¾Æ·¡¿Í °°ÀÌ LeftÀÇ Á¤·Ä ¼ø¼­°¡ º¸ÀåµÇ´Â Join Method¸¦ À§ÇÏ¿©
+ *    Preserverd Order¸¦ »ı¼ºÇÑ´Ù.
  *       - Two Pass Sort Join
  *       - Inverse Sort Join  (PROJ-2385)
  *       - Merge Join
  *
  * Implementation :
  *
- *    Left Graphì— ëŒ€í•œ Presererved Orderì™€
- *    Right Graphì— ëŒ€í•œ Preserverd Orderë¥¼ ìƒì„±í•œë‹¤.
+ *    Left Graph¿¡ ´ëÇÑ Presererved Order¿Í
+ *    Right Graph¿¡ ´ëÇÑ Preserverd Order¸¦ »ı¼ºÇÑ´Ù.
  *
- *    ìì‹ ì— ëŒ€í•œ Preserverd OrderëŠ” ë‹¤ìŒ ì¤‘ í•˜ë‚˜ë¥¼ ê²°ì •í•œë‹¤.
- *       - Left Graphë¡œë¶€í„° ì–»ì„ ìˆ˜ ìˆëŠ” ê²½ìš°(ìµœëŒ€í•œ í™œìš©)
- *       - ì—†ëŠ” ê²½ìš°, ìì‹ ì˜ Graphì—ë§Œ ìƒì„±
+ *    ÀÚ½Å¿¡ ´ëÇÑ Preserverd Order´Â ´ÙÀ½ Áß ÇÏ³ª¸¦ °áÁ¤ÇÑ´Ù.
+ *       - Left Graph·ÎºÎÅÍ ¾òÀ» ¼ö ÀÖ´Â °æ¿ì(ÃÖ´ëÇÑ È°¿ë)
+ *       - ¾ø´Â °æ¿ì, ÀÚ½ÅÀÇ Graph¿¡¸¸ »ı¼º
  *
  ***********************************************************************/
 
@@ -4076,7 +4147,7 @@ qmgJoin::makeOrderFromJoin( qcStatement        * aStatement,
     IDU_FIT_POINT_FATAL( "qmgJoin::makeOrderFromJoin::__FT__" );
 
     //------------------------------------------
-    // ì í•©ì„± ê²€ì‚¬
+    // ÀûÇÕ¼º °Ë»ç
     //------------------------------------------
 
     IDE_FT_ASSERT( aStatement != NULL );
@@ -4085,7 +4156,7 @@ qmgJoin::makeOrderFromJoin( qcStatement        * aStatement,
     IDE_FT_ASSERT( aJoinablePredicate != NULL );
 
     //------------------------------------------
-    // ê¸°ë³¸ ì´ˆê¸°í™”
+    // ±âº» ÃÊ±âÈ­
     //------------------------------------------
 
     sNode = aJoinablePredicate->node;
@@ -4112,7 +4183,7 @@ qmgJoin::makeOrderFromJoin( qcStatement        * aStatement,
     }
 
     //--------------------------------------------
-    // Join Predicateì— ëŒ€í•œ Preserved Order ìƒì„±
+    // Join Predicate¿¡ ´ëÇÑ Preserved Order »ı¼º
     //--------------------------------------------
 
     IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmgPreservedOrder),
@@ -4126,12 +4197,12 @@ qmgJoin::makeOrderFromJoin( qcStatement        * aStatement,
     sLeftOrder = sNewOrder;
 
     //--------------------------------------------
-    // Left Graphì— ëŒ€í•œ Preserved Order ìƒì„±
+    // Left Graph¿¡ ´ëÇÑ Preserved Order »ı¼º
     //--------------------------------------------
 
     // fix BUG-9737
-    // merge joinì¼ ê²½ìš° left childì™€ right childë¥¼ ë¶„ë¦¬ì‹œì¼œ
-    // preserved orderìƒì„±
+    // merge joinÀÏ °æ¿ì left child¿Í right child¸¦ ºĞ¸®½ÃÄÑ
+    // preserved order»ı¼º
 
     if ( ( aSelectedMethod->flag &
            QMO_JOIN_METHOD_USE_LEFT_PRES_ORDER_MASK ) ==
@@ -4141,7 +4212,7 @@ qmgJoin::makeOrderFromJoin( qcStatement        * aStatement,
         if ( aGraph->left->preservedOrder == NULL )
         {
             // To Fix PR-8110
-            // ì›í•˜ëŠ” Childë§Œì„ ì…ë ¥ ì¸ìë¡œ ì‚¬ìš©í•´ì•¼ í•¨.
+            // ¿øÇÏ´Â Child¸¸À» ÀÔ·Â ÀÎÀÚ·Î »ç¿ëÇØ¾ß ÇÔ.
             IDE_TEST( qmg::setOrder4Child( aStatement,
                                            sNewOrder,
                                            aGraph->left )
@@ -4154,7 +4225,7 @@ qmgJoin::makeOrderFromJoin( qcStatement        * aStatement,
                  QMG_DIRECTION_NOT_DEFINED )
             {
                 // To Fix PR-8110
-                // ì›í•˜ëŠ” Childë§Œì„ ì…ë ¥ ì¸ìë¡œ ì‚¬ìš©í•´ì•¼ í•¨.
+                // ¿øÇÏ´Â Child¸¸À» ÀÔ·Â ÀÎÀÚ·Î »ç¿ëÇØ¾ß ÇÔ.
                 IDE_TEST( qmg::setOrder4Child( aStatement,
                                                sNewOrder,
                                                aGraph->left )
@@ -4173,12 +4244,12 @@ qmgJoin::makeOrderFromJoin( qcStatement        * aStatement,
     }
 
     //--------------------------------------------
-    // Right Graphì— ëŒ€í•œ Preserved Order ìƒì„±
+    // Right Graph¿¡ ´ëÇÑ Preserved Order »ı¼º
     //--------------------------------------------
 
     // fix BUG-9737
-    // merge joinì¼ ê²½ìš° left childì™€ right childë¥¼ ë¶„ë¦¬ì‹œì¼œ
-    // preserved orderìƒì„±
+    // merge joinÀÏ °æ¿ì left child¿Í right child¸¦ ºĞ¸®½ÃÄÑ
+    // preserved order»ı¼º
     if( QTC_IS_COLUMN( aStatement, sRightNode ) == ID_TRUE )
     {
         IDE_TEST( QC_QMP_MEM(aStatement)->alloc( ID_SIZEOF(qmgPreservedOrder),
@@ -4200,7 +4271,7 @@ qmgJoin::makeOrderFromJoin( qcStatement        * aStatement,
             if ( aGraph->right->preservedOrder == NULL )
             {
                 // To Fix PR-8110
-                // ì›í•˜ëŠ” Childë§Œì„ ì…ë ¥ ì¸ìë¡œ ì‚¬ìš©í•´ì•¼ í•¨.
+                // ¿øÇÏ´Â Child¸¸À» ÀÔ·Â ÀÎÀÚ·Î »ç¿ëÇØ¾ß ÇÔ.
                 IDE_TEST( qmg::setOrder4Child( aStatement,
                                                sNewOrder,
                                                aGraph->right )
@@ -4210,7 +4281,7 @@ qmgJoin::makeOrderFromJoin( qcStatement        * aStatement,
             else
             {
                 // To Fix PR-8110
-                // ì›í•˜ëŠ” Childë§Œì„ ì…ë ¥ ì¸ìë¡œ ì‚¬ìš©í•´ì•¼ í•¨.
+                // ¿øÇÏ´Â Child¸¸À» ÀÔ·Â ÀÎÀÚ·Î »ç¿ëÇØ¾ß ÇÔ.
                 if ( aGraph->right->preservedOrder->direction ==
                      QMG_DIRECTION_NOT_DEFINED )
                 {
@@ -4237,7 +4308,7 @@ qmgJoin::makeOrderFromJoin( qcStatement        * aStatement,
     }
 
     //--------------------------------------------
-    // Join Graphì— ëŒ€í•œ Preserved Order ìƒì„±
+    // Join Graph¿¡ ´ëÇÑ Preserved Order »ı¼º
     //--------------------------------------------
 
     // PROJ-2385 Inverse Sort
@@ -4246,7 +4317,7 @@ qmgJoin::makeOrderFromJoin( qcStatement        * aStatement,
     {
         if ( sCanUseFromRightGraph == ID_TRUE )
         {
-            // Right Graphì˜ Preserved Orderë¥¼ ìµœëŒ€í•œ í™œìš©í•  ìˆ˜ ìˆëŠ” ê²½ìš°
+            // Right GraphÀÇ Preserved Order¸¦ ÃÖ´ëÇÑ È°¿ëÇÒ ¼ö ÀÖ´Â °æ¿ì
             IDE_TEST( makeOrderFromChild( aStatement, 
                                           aGraph, 
                                           ID_TRUE ) // aIsRightGraph
@@ -4254,7 +4325,7 @@ qmgJoin::makeOrderFromJoin( qcStatement        * aStatement,
         }
         else
         {
-            // Right Graphì—ëŠ” ë³„ë„ì˜ Preserved Orderê°€ ì—†ëŠ” ê²½ìš°
+            // Right Graph¿¡´Â º°µµÀÇ Preserved Order°¡ ¾ø´Â °æ¿ì
             aGraph->preservedOrder = sRightOrder;
         }
     }
@@ -4263,7 +4334,7 @@ qmgJoin::makeOrderFromJoin( qcStatement        * aStatement,
         // Two-Pass Sort, Merge
         if ( sCanUseFromLeftGraph == ID_TRUE )
         {
-            // Left Graphì˜ Preserved Orderë¥¼ ìµœëŒ€í•œ í™œìš©í•  ìˆ˜ ìˆëŠ” ê²½ìš°
+            // Left GraphÀÇ Preserved Order¸¦ ÃÖ´ëÇÑ È°¿ëÇÒ ¼ö ÀÖ´Â °æ¿ì
             IDE_TEST( makeOrderFromChild( aStatement, 
                                           aGraph,
                                           ID_FALSE ) // aIsRightGraph 
@@ -4271,7 +4342,7 @@ qmgJoin::makeOrderFromJoin( qcStatement        * aStatement,
         }
         else
         {
-            // Left Graphì—ëŠ” ë³„ë„ì˜ Preserved Orderê°€ ì—†ëŠ” ê²½ìš°
+            // Left Graph¿¡´Â º°µµÀÇ Preserved Order°¡ ¾ø´Â °æ¿ì
             aGraph->preservedOrder = sLeftOrder;
         }
     }
@@ -4283,8 +4354,8 @@ qmgJoin::makeOrderFromJoin( qcStatement        * aStatement,
     }
     else
     {
-        /* BUG-43697 Inverse Sortì´ë©´, Right Graphì˜ Preserved Orderê°€ NULLì´ ë  ìˆ˜ ìˆë‹¤.
-         * ì´ ê²½ìš°ì—ëŠ” Preserved Orderë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. 
+        /* BUG-43697 Inverse SortÀÌ¸é, Right GraphÀÇ Preserved Order°¡ NULLÀÌ µÉ ¼ö ÀÖ´Ù.
+         * ÀÌ °æ¿ì¿¡´Â Preserved Order¸¦ »ç¿ëÇÏÁö ¾Ê´Â´Ù. 
          */
         aGraph->flag &= ~QMG_PRESERVED_ORDER_MASK;
         aGraph->flag |= QMG_PRESERVED_ORDER_NEVER;
@@ -4304,7 +4375,7 @@ qmgJoin::makeNewOrder( qcStatement       * aStatement,
 {
 /***********************************************************************
  *
- * Description : ìƒˆë¡œìš´ Preserved Orderì˜ ìƒì„± ë° ì„¤ì •
+ * Description : »õ·Î¿î Preserved OrderÀÇ »ı¼º ¹× ¼³Á¤
  *
  * Implementation :
  *
@@ -4349,7 +4420,7 @@ qmgJoin::makeNewOrder4Selection( qcStatement        * aStatement,
 {
 /***********************************************************************
  *
- * Description : ìƒˆë¡œìš´ Preserved Orderì˜ ìƒì„± ë° ì„¤ì •
+ * Description : »õ·Î¿î Preserved OrderÀÇ »ı¼º ¹× ¼³Á¤
  *
  * Implementation :
  *
@@ -4376,7 +4447,7 @@ qmgJoin::makeNewOrder4Selection( qcStatement        * aStatement,
                  SMI_COLUMN_ID_MAXIMUM ) ) )
         {
             //------------------------------------------
-            // preserved orderì™€ ì„ íƒëœ join methodì˜ right indexê°€ ê°™ì€ ê²½ìš°
+            // preserved order¿Í ¼±ÅÃµÈ join methodÀÇ right index°¡ °°Àº °æ¿ì
             //------------------------------------------
 
             sNeedNewChildOrder = ID_FALSE;
@@ -4394,9 +4465,9 @@ qmgJoin::makeNewOrder4Selection( qcStatement        * aStatement,
     if ( sNeedNewChildOrder == ID_TRUE )
     {
         //------------------------------------------
-        // - preserved orderê°€ ì—†ëŠ” ê²½ìš°
-        // - preserved orderê°€ ìˆê³ 
-        //   ì„ íƒëœ methodê°€ ì‚¬ìš©í•˜ëŠ” indexê°€ ë‹¤ë¥¸ ê²½ìš°
+        // - preserved order°¡ ¾ø´Â °æ¿ì
+        // - preserved order°¡ ÀÖ°í
+        //   ¼±ÅÃµÈ method°¡ »ç¿ëÇÏ´Â index°¡ ´Ù¸¥ °æ¿ì
         //------------------------------------------
 
         // To Fix BUG-9631
@@ -4457,14 +4528,14 @@ IDE_RC qmgJoin::makeNewOrder4Partition( qcStatement        * aStatement,
 /***********************************************************************
  *
  *  Description : PROJ-1502 PARTITIONED DISK TABLE
- *                partitioned tableì€ preserved orderê°€ ì—†ë‹¤.
- *                TODO1502: í–¥í›„ preserved orderë¥¼ ë§Œë“¤ ì—¬ì§€ëŠ” ìˆìŒ.
- *                í•˜ì§€ë§Œ, children(selection) graphì— ëŒ€í•´ì„œëŠ”
- *                preserved orderê°€ ìˆìœ¼ë¯€ë¡œ, ì´ë¥¼ ë°”ê¿”ì¤€ë‹¤.
+ *                partitioned tableÀº preserved order°¡ ¾ø´Ù.
+ *                TODO1502: ÇâÈÄ preserved order¸¦ ¸¸µé ¿©Áö´Â ÀÖÀ½.
+ *                ÇÏÁö¸¸, children(selection) graph¿¡ ´ëÇØ¼­´Â
+ *                preserved order°¡ ÀÖÀ¸¹Ç·Î, ÀÌ¸¦ ¹Ù²ãÁØ´Ù.
  *
  *                PROJ-1624 global non-partitioned index
- *                index table scanì¸ ê²½ìš° preserved orderê°€ ìˆìœ¼ë¯€ë¡œ,
- *                ì´ë¥¼ ë°”ê¿”ì¤€ë‹¤.
+ *                index table scanÀÎ °æ¿ì preserved order°¡ ÀÖÀ¸¹Ç·Î,
+ *                ÀÌ¸¦ ¹Ù²ãÁØ´Ù.
  *
  *  Implementation :
  *
@@ -4477,7 +4548,7 @@ IDE_RC qmgJoin::makeNewOrder4Partition( qcStatement        * aStatement,
     IDE_DASSERT( aGraph->type == QMG_PARTITION );
 
     // PROJ-1624 global non-partitioned index
-    // global indexëŠ” partitioned tableì—ë§Œ ìƒì„±ë˜ì–´ ìˆë‹¤.
+    // global index´Â partitioned table¿¡¸¸ »ı¼ºµÇ¾î ÀÖ´Ù.
     if ( aSelectedIndex->indexPartitionType == QCM_NONE_PARTITIONED_INDEX )
     {
         IDE_TEST( makeNewOrder4Selection( aStatement,
@@ -4510,8 +4581,8 @@ qmgJoin::finalizePreservedOrder( qmgGraph * aGraph )
 {
 /***********************************************************************
  *
- *  Description : Preserved Orderì˜ directionì„ ê²°ì •í•œë‹¤.
- *                directionì´ NOT_DEFINED ì¼ ê²½ìš°ì—ë§Œ í˜¸ì¶œí•˜ì—¬ì•¼ í•œë‹¤.
+ *  Description : Preserved OrderÀÇ directionÀ» °áÁ¤ÇÑ´Ù.
+ *                directionÀÌ NOT_DEFINED ÀÏ °æ¿ì¿¡¸¸ È£ÃâÇÏ¿©¾ß ÇÑ´Ù.
  *
  *  Implementation :
  *    
@@ -4576,7 +4647,7 @@ qmgJoin::finalizePreservedOrder( qmgGraph * aGraph )
 
             if ( sIsSamePrevOrderWithChild == ID_TRUE )
             {
-                // Child graphì˜ Preserved order directionì„ ë³µì‚¬í•œë‹¤.
+                // Child graphÀÇ Preserved order directionÀ» º¹»çÇÑ´Ù.
                 IDE_TEST( qmg::copyPreservedOrderDirection(
                               aGraph->preservedOrder,
                               aGraph->left->preservedOrder )
@@ -4584,17 +4655,17 @@ qmgJoin::finalizePreservedOrder( qmgGraph * aGraph )
             }
             else
             {
-                // í•˜ìœ„ preserved orderë¥¼ ë”°ë¥´ì§€ ì•Šê³ 
-                // ìƒˆë¡œ preserved orderë¥¼ ìƒì„±í•œ ê²½ìš°,
-                // Preserved Orderì˜ directionì„ acsendingìœ¼ë¡œ ì„¤ì •
+                // ÇÏÀ§ preserved order¸¦ µû¸£Áö ¾Ê°í
+                // »õ·Î preserved order¸¦ »ı¼ºÇÑ °æ¿ì,
+                // Preserved OrderÀÇ directionÀ» acsendingÀ¸·Î ¼³Á¤
                 
                 sPreservedOrder = aGraph->preservedOrder;
 
-                // ì²«ë²ˆì§¸ ì¹¼ëŸ¼ì€ ascendingìœ¼ë¡œ ì„¤ì •
+                // Ã¹¹øÂ° Ä®·³Àº ascendingÀ¸·Î ¼³Á¤
                 sPreservedOrder->direction = QMG_DIRECTION_ASC;
                 sPrevDirection = QMG_DIRECTION_ASC;
 
-                // ë‘ë²ˆì§¸ ì¹¼ëŸ¼ì€ ì´ì „ ì¹¼ëŸ¼ì˜ direction ì •ë³´ì— ë”°ë¼ ìˆ˜í–‰í•¨
+                // µÎ¹øÂ° Ä®·³Àº ÀÌÀü Ä®·³ÀÇ direction Á¤º¸¿¡ µû¶ó ¼öÇàÇÔ
                 for ( sPreservedOrder = sPreservedOrder->next;
                       sPreservedOrder != NULL;
                       sPreservedOrder = sPreservedOrder->next )
@@ -4608,7 +4679,7 @@ qmgJoin::finalizePreservedOrder( qmgGraph * aGraph )
                             sPreservedOrder->direction = sPrevDirection;
                             break;
                         case QMG_DIRECTION_DIFF_WITH_PREV :
-                            // directionì´ ì´ì „ ì¹¼ëŸ¼ì˜ directionê³¼ ë‹¤ë¥¼ ê²½ìš°
+                            // directionÀÌ ÀÌÀü Ä®·³ÀÇ direction°ú ´Ù¸¦ °æ¿ì
                             if ( sPrevDirection == QMG_DIRECTION_ASC )
                             {
                                 sPreservedOrder->direction = QMG_DIRECTION_DESC;
@@ -4669,7 +4740,7 @@ qmgJoin::setJoinPushDownPredicate( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description : push-down join predicateë¥¼ ë°›ì•„ì„œ ê·¸ë˜í”„ì— ì—°ê²°.
+ * Description : push-down join predicate¸¦ ¹Ş¾Æ¼­ ±×·¡ÇÁ¿¡ ¿¬°á.
  *
  * Implementation :
  *
@@ -4715,7 +4786,7 @@ qmgJoin::setNonJoinPushDownPredicate( qcStatement   * aStatement,
 {
 /***********************************************************************
  *
- * Description : push-down non-join predicateë¥¼ ë°›ì•„ì„œ ìì‹ ì˜ ê·¸ë˜í”„ì— ì—°ê²°.
+ * Description : push-down non-join predicate¸¦ ¹Ş¾Æ¼­ ÀÚ½ÅÀÇ ±×·¡ÇÁ¿¡ ¿¬°á.
  *
  * Implementation :
  *
@@ -4761,8 +4832,8 @@ qmgJoin::alterSelectedIndex( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : ìƒìœ„ graphì— ì˜í•´ access methodê°€ ë°”ë€ ê²½ìš°
- *               selection graphì˜ sdfë¥¼ disable ì‹œí‚¨ë‹¤.
+ * Description : »óÀ§ graph¿¡ ÀÇÇØ access method°¡ ¹Ù²ï °æ¿ì
+ *               selection graphÀÇ sdf¸¦ disable ½ÃÅ²´Ù.
  *
  * Implementation :
  *
@@ -4811,9 +4882,9 @@ qmgJoin::copyGraphAndAlterSelectedIndex( qcStatement * aStatement,
 {
 /***********************************************************************
  *
- * Description : ìƒìœ„ JOIN graphì—ì„œ ANTIë¡œ ì²˜ë¦¬í•  ë•Œ
- *               í•˜ìœ„ SELT graphë¥¼ ë³µì‚¬í•˜ëŠ”ë° ì´ë•Œ ì´ í•¨ìˆ˜ë¥¼
- *               í†µí•´ì„œ ë³µì‚¬í•˜ë„ë¡ í•´ì•¼ ì•ˆì „í•˜ë‹¤.
+ * Description : »óÀ§ JOIN graph¿¡¼­ ANTI·Î Ã³¸®ÇÒ ¶§
+ *               ÇÏÀ§ SELT graph¸¦ º¹»çÇÏ´Âµ¥ ÀÌ¶§ ÀÌ ÇÔ¼ö¸¦
+ *               ÅëÇØ¼­ º¹»çÇÏµµ·Ï ÇØ¾ß ¾ÈÀüÇÏ´Ù.
  *
  * Implementation :
  *
@@ -4865,10 +4936,10 @@ IDE_RC qmgJoin::randomSelectJoinMethod ( qcStatement        * aStatement,
 /****************************************************************************************
  *
  * Description : TASK-6744
- *               ê° Join Typeì—ì„œ ì„ íƒ ê°€ëŠ¥í•œ join methodë“¤ ì¤‘ì—ì„œ 
- *               randomí•˜ê²Œ í•˜ë‚˜ ì„ íƒ 
+ *               °¢ Join Type¿¡¼­ ¼±ÅÃ °¡´ÉÇÑ join methodµé Áß¿¡¼­ 
+ *               randomÇÏ°Ô ÇÏ³ª ¼±ÅÃ 
  *               
- *     << join methodì˜ ìµœëŒ€ ê°œìˆ˜ >>
+ *     << join methodÀÇ ÃÖ´ë °³¼ö >>
  *         - Inner Join      : 16
  *         - Semi Join       : 11
  *         - Anti Join       : 10
@@ -4876,8 +4947,8 @@ IDE_RC qmgJoin::randomSelectJoinMethod ( qcStatement        * aStatement,
  *         - Full Outer Join : 12 
  *               
  * Implementation :
- *     1. ëª¨ë“  join methodë“¤ ì¤‘ì—ì„œ ì„ íƒ ê°€ëŠ¥í•œ join methodë¥¼ ì°¾ì•„ì„œ ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
- *     2. ëª¨ë“ˆëŸ¬ ì—°ì‚°ì„ í†µí•´ì„œ join methodë¥¼ randomí•˜ê²Œ ì„ íƒ
+ *     1. ¸ğµç join methodµé Áß¿¡¼­ ¼±ÅÃ °¡´ÉÇÑ join method¸¦ Ã£¾Æ¼­ °³¼ö¸¦ ±¸ÇÑ´Ù.
+ *     2. ¸ğµâ·¯ ¿¬»êÀ» ÅëÇØ¼­ join method¸¦ randomÇÏ°Ô ¼±ÅÃ
  *
  ****************************************************************************************/
 
@@ -4895,13 +4966,13 @@ IDE_RC qmgJoin::randomSelectJoinMethod ( qcStatement        * aStatement,
     ULong sStage4 = 0;
     ULong sStage5 = 0;
 
-    // ë°°ì—´ ì´ˆê¸°í™”
+    // ¹è¿­ ÃÊ±âÈ­
     for ( i = 0 ; i < 16 ; i++ )
     {
         sFeasibilityJoinMethod[i] = NULL;
     }
 
-    // ëª¨ë“  join method ì¤‘ì—ì„œ ì„ íƒ ê°€ëŠ¥í•œ join method ë° join methodì˜ ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤. 
+    // ¸ğµç join method Áß¿¡¼­ ¼±ÅÃ °¡´ÉÇÑ join method ¹× join methodÀÇ °³¼ö¸¦ ±¸ÇÑ´Ù. 
     for ( i = 0 ; i < aJoinMethodCnt ; i++ )
     {
         sJoinMethod = &aJoinMethods[i];
@@ -4922,7 +4993,7 @@ IDE_RC qmgJoin::randomSelectJoinMethod ( qcStatement        * aStatement,
         }
     }
 
-    // join method ì„ íƒ
+    // join method ¼±ÅÃ
     aStatement->mRandomPlanInfo->mTotalNumOfCases = aStatement->mRandomPlanInfo->mTotalNumOfCases + sFeasibilityJoinMethodCnt;
 
     // using well random number generator
@@ -4991,5 +5062,48 @@ void qmgJoin::moveConstantPred( qmgJOIN * aMyGraph, idBool aIsInverse )
     }
 
     IDE_EXCEPTION_CONT( normal_exit );
+}
+
+void qmgJoin::checkOrValueIndex( qmgGraph * aGraph )
+{
+    qmoPredicate  * sTemp = NULL;
+    qmgChildren   * sChild = NULL;
+
+    if ( aGraph != NULL )
+    {
+        if ( aGraph->type == QMG_SELECTION )
+        {
+            for ( sTemp = aGraph->myPredicate; sTemp != NULL; sTemp = sTemp->next )
+            {
+                if ( ( sTemp->flag & QMO_PRED_OR_VALUE_INDEX_MASK )
+                     == QMO_PRED_OR_VALUE_INDEX_TRUE )
+                {
+                    sTemp->flag &= ~QMO_PRED_JOIN_OR_VALUE_INDEX_MASK;
+                    sTemp->flag |= QMO_PRED_JOIN_OR_VALUE_INDEX_TRUE;
+                }
+            }
+        }
+        else if ( aGraph->type == QMG_PARTITION )
+        {
+            for ( sChild = ((qmgPARTITION *)aGraph)->graph.children;
+                  sChild != NULL;
+                  sChild = sChild->next )
+            {
+                for ( sTemp = sChild->childGraph->myPredicate; sTemp != NULL; sTemp = sTemp->next )
+                {
+                    if ( ( sTemp->flag & QMO_PRED_OR_VALUE_INDEX_MASK )
+                         == QMO_PRED_OR_VALUE_INDEX_TRUE )
+                    {
+                        sTemp->flag &= ~QMO_PRED_JOIN_OR_VALUE_INDEX_MASK;
+                        sTemp->flag |= QMO_PRED_JOIN_OR_VALUE_INDEX_TRUE;
+                    }
+                }
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
 }
 

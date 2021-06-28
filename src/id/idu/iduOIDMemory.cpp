@@ -6,12 +6,12 @@
 /***********************************************************************
  * $Id: iduOIDMemory.cpp 67683 2014-11-24 10:39:13Z djin $
  *
- *  BUG-22877 ë™ì‹œì„± ë¬¸ì œë¡œ allocê³¼ free ë³„ë„ë¡œ ìˆë˜ mutexë¥¼ í•˜ë‚˜ë¡œ ì¤„ì˜€ë‹¤.
- *  ê¸°ì¡´ì— ë‘ mutexë¡œ ì œì–´í•˜ê¸° ìœ„í•´ allock listì˜ ì²« pageë¥¼ freeí•˜ì§€
- *  ì•Šê³  ë‚¨ê²¨ ë‘ì—ˆë‹¤ê°€, freeí•  ìˆ˜ ìˆê²Œ ë˜ì—ˆì„ ë•Œ ëª¨ì•„ì„œ shrinkí•˜ì˜€ìœ¼ë‚˜,
- *  ì´ì œ ì²« pageë„ ë¬´ì¡°ê±´ freeí•˜ì—¬ ë‚¨ê²¨ì§€ëŠ” pageê°€ ì—†ìœ¼ë¯€ë¡œ
- *  í•œ pageì”©ë§Œ freeëœë‹¤. shrink()ë¥¼ ì œê±°í•˜ê³  memFree()ì—ì„œ
- *  ì§ì ‘ pageë¥¼ freeí•˜ë„ë¡ ë³€ê²½í•˜ì˜€ë‹¤.
+ *  BUG-22877 µ¿½Ã¼º ¹®Á¦·Î alloc°ú free º°µµ·Î ÀÖ´ø mutex¸¦ ÇÏ³ª·Î ÁÙ¿´´Ù.
+ *  ±âÁ¸¿¡ µÎ mutex·Î Á¦¾îÇÏ±â À§ÇØ allock listÀÇ Ã¹ page¸¦ freeÇÏÁö
+ *  ¾Ê°í ³²°Ü µÎ¾ú´Ù°¡, freeÇÒ ¼ö ÀÖ°Ô µÇ¾úÀ» ¶§ ¸ğ¾Æ¼­ shrinkÇÏ¿´À¸³ª,
+ *  ÀÌÁ¦ Ã¹ pageµµ ¹«Á¶°Ç freeÇÏ¿© ³²°ÜÁö´Â page°¡ ¾øÀ¸¹Ç·Î
+ *  ÇÑ page¾¿¸¸ freeµÈ´Ù. shrink()¸¦ Á¦°ÅÇÏ°í memFree()¿¡¼­
+ *  Á÷Á¢ page¸¦ freeÇÏµµ·Ï º¯°æÇÏ¿´´Ù.
  **********************************************************************/
 
 #include <idl.h>
@@ -35,10 +35,10 @@ iduOIDMemory::~iduOIDMemory()
 }
 
 /******************************************************************************
- * Description : ë§´ë²„ ë³€ìˆ˜ ì´ˆê¸°í™”
+ * Description : ¸É¹ö º¯¼ö ÃÊ±âÈ­
  * aIndex     - [IN] Memory Client Index
- * aElemSize  - [IN] elementì˜ í•˜ë‚˜ì˜ í¬ê¸°
- * aElemCount - [IN] í•œ pageë‹¹ elementì˜ ìˆ˜
+ * aElemSize  - [IN] elementÀÇ ÇÏ³ªÀÇ Å©±â
+ * aElemCount - [IN] ÇÑ page´ç elementÀÇ ¼ö
  ******************************************************************************/
 IDE_RC iduOIDMemory::initialize(iduMemoryClientIndex aIndex,
                                 vULong               aElemSize,
@@ -83,7 +83,7 @@ IDE_RC iduOIDMemory::initialize(iduMemoryClientIndex aIndex,
 }
 
 /******************************************************************************
- * Description : ë©¤ë²„ ë³€ìˆ˜ ì¢…ë£Œ ë° ë©”ëª¨ë¦¬ í—¤ì œ
+ * Description : ¸â¹ö º¯¼ö Á¾·á ¹× ¸Ş¸ğ¸® ÇìÁ¦
  ******************************************************************************/
 IDE_RC iduOIDMemory::destroy()
 {
@@ -92,7 +92,7 @@ IDE_RC iduOIDMemory::destroy()
     iduOIDMemFreePage  * sNxtFreePage;
     iduOIDMemFreePage  * sCurFreePage;
 
-    // alloc page list ë©”ëª¨ë¦¬ í—¤ì œ
+    // alloc page list ¸Ş¸ğ¸® ÇìÁ¦
     sCurAllocPage = mAllocPageHeader.prev;
 
     while( sCurAllocPage != &mAllocPageHeader )
@@ -106,7 +106,7 @@ IDE_RC iduOIDMemory::destroy()
     mAllocPageHeader.next = &mAllocPageHeader;
     mAllocPageHeader.prev = &mAllocPageHeader;
 
-    // free page list ë©”ëª¨ë¦¬ í—¤ì œ
+    // free page list ¸Ş¸ğ¸® ÇìÁ¦
     sCurFreePage = mFreePageHeader.next;
 
     while( sCurFreePage != NULL )
@@ -137,8 +137,8 @@ IDE_RC iduOIDMemory::destroy()
 
 
 /******************************************************************************
- * Description : aMemì— ë©”ëª¨ë¦¬ í• ë‹¹
- * aMem  - [OUT] í• ë‹¹ë°›ì€ ë©”ëª¨ë¦¬ì£¼ì†Œë¥¼ ë°˜í™˜
+ * Description : aMem¿¡ ¸Ş¸ğ¸® ÇÒ´ç
+ * aMem  - [OUT] ÇÒ´ç¹ŞÀº ¸Ş¸ğ¸®ÁÖ¼Ò¸¦ ¹İÈ¯
  ******************************************************************************/
 IDE_RC iduOIDMemory::alloc(void ** aMem)
 {
@@ -148,13 +148,13 @@ IDE_RC iduOIDMemory::alloc(void ** aMem)
     sHeaderSize = idlOS::align( sizeof(iduOIDMemAllocPage), sizeof(SDouble) );
     *aMem = NULL;
 
-    // 1. Lock íšë“
+    // 1. Lock È¹µæ
     IDE_ASSERT( lockMtx() == IDE_SUCCESS );
     sState = 1;
 
     while( *aMem == NULL )
     {
-        // 2. alloc page listì— free itemì´ ìˆëŠ”ì§€ í™•ì¸
+        // 2. alloc page list¿¡ free itemÀÌ ÀÖ´ÂÁö È®ÀÎ
         if( (mAllocPageHeader.next != &mAllocPageHeader) &&
             (mAllocPageHeader.next->allocIncCount < mItemCnt) )
         {
@@ -165,15 +165,15 @@ IDE_RC iduOIDMemory::alloc(void ** aMem)
         }
         else
         {
-            // 2. alloc page listì— pageê°€ í•˜ë‚˜ë„ ì—†ê±°ë‚˜
-            //    pageê°€ ìˆë”ë¼ê³  free itemì´ ì—†ì„ ê²½ìš°,
-            //    kernel or free page listë¡œ ë¶€í„° ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹ë°›ëŠ”ë‹¤.
+            // 2. alloc page list¿¡ page°¡ ÇÏ³ªµµ ¾ø°Å³ª
+            //    page°¡ ÀÖ´õ¶ó°í free itemÀÌ ¾øÀ» °æ¿ì,
+            //    kernel or free page list·Î ºÎÅÍ ¸Ş¸ğ¸®¸¦ ÇÒ´ç¹Ş´Â´Ù.
             IDE_TEST( grow() != IDE_SUCCESS );
         }
 
     } //while
 
-    // 3. Lock í•´ì œ
+    // 3. Lock ÇØÁ¦
     sState = 0;
     IDE_ASSERT( unlockMtx() == IDE_SUCCESS );
 
@@ -190,8 +190,8 @@ IDE_RC iduOIDMemory::alloc(void ** aMem)
 }
 
 /******************************************************************************
- * Description : aMemì˜ ë©”ëª¨ë¦¬ ë°˜ë‚©
- * aMem  - [IN] ë°˜ë‚©í•  element ë©”ëª¨ë¦¬ì£¼ì†Œ
+ * Description : aMemÀÇ ¸Ş¸ğ¸® ¹İ³³
+ * aMem  - [IN] ¹İ³³ÇÒ element ¸Ş¸ğ¸®ÁÖ¼Ò
  ******************************************************************************/
 IDE_RC iduOIDMemory::memfree(void * aMem)
 {
@@ -204,42 +204,42 @@ IDE_RC iduOIDMemory::memfree(void * aMem)
     sMemItem  = (iduOIDMemItem *)((SChar *)aMem + mElemSize);
     sFreePage = sMemItem->myPage;
 
-    // 1. í•´ë‹¹ pageì˜ freeIncCount ì¦ê°€.
+    // 1. ÇØ´ç pageÀÇ freeIncCount Áõ°¡.
     sFreePage->freeIncCount++;
 
-    // 2 í•´ë‹¹ pageì˜ freeIncCountì™€ mItemCnt ë¹„êµ
+    // 2 ÇØ´ç pageÀÇ freeIncCount¿Í mItemCnt ºñ±³
     if( sFreePage->freeIncCount == mItemCnt )
     {
         // remove from alloc page list
         sFreePage->next->prev = sFreePage->prev;
         sFreePage->prev->next = sFreePage->next;
 
-        // count ì €ì¥
+        // count ÀúÀå
         mPageCntInAllocLst--;
 
-        // free page countê°€
-        // IDU_OID_MEMORY_AUTOFREE_LIMIT ì´ìƒì´ë©´ kernelë¡œ ë°˜ë‚©.
+        // free page count°¡
+        // IDU_OID_MEMORY_AUTOFREE_LIMIT ÀÌ»óÀÌ¸é kernel·Î ¹İ³³.
 
         if( mPageCntInFreeLst > IDU_OID_MEMORY_AUTOFREE_LIMIT )
         {
-            // lockì¡ê³  freeí•˜ëŠ” ê²ƒì„ í”¼í•˜ê¸° ìœ„í•´ ë³„ë„ë¡œ ì €ì¥í•´
-            // ë‘ì—ˆë‹¤ê°€ ì´í›„ì— lockì„ í’€ê³  free í•œë‹¤.
+            // lockÀâ°í freeÇÏ´Â °ÍÀ» ÇÇÇÏ±â À§ÇØ º°µµ·Î ÀúÀåÇØ
+            // µÎ¾ú´Ù°¡ ÀÌÈÄ¿¡ lockÀ» Ç®°í free ÇÑ´Ù.
             sFreePage2OS = (iduOIDMemFreePage*)sFreePage;
         }
         else
         {
-            //  free page listì— ì—°ê²°
+            //  free page list¿¡ ¿¬°á
             ((iduOIDMemFreePage*)sFreePage)->next
                                  = mFreePageHeader.next;
             mFreePageHeader.next = (iduOIDMemFreePage*)sFreePage;
 
-            // count ì €ì¥
+            // count ÀúÀå
             mPageCntInFreeLst++;
         }
     }
     else
     {
-        // í•´ë‹¹ pageì— ì•„ì§ free ë˜ì§€ ì•Šì€ Itemë“¤ì´ ë‚¨ì•„ ìˆë‹¤.
+        // ÇØ´ç page¿¡ ¾ÆÁ÷ free µÇÁö ¾ÊÀº ItemµéÀÌ ³²¾Æ ÀÖ´Ù.
         IDE_ASSERT( sFreePage->freeIncCount < mItemCnt );
     }
 
@@ -260,7 +260,7 @@ IDE_RC iduOIDMemory::memfree(void * aMem)
 }
 
 /******************************************************************************
- * Description : mFreePageHeader or kernelë¡œë¶€í„° ë©”ëª¨ë¦¬ í• ë‹¹.
+ * Description : mFreePageHeader or kernel·ÎºÎÅÍ ¸Ş¸ğ¸® ÇÒ´ç.
  ******************************************************************************/
 void iduOIDMemory::dumpState(SChar * aBuffer, UInt aBufferSize)
 {
@@ -298,7 +298,7 @@ ULong iduOIDMemory::getMemorySize()
 }
 
 /******************************************************************************
- * Description : mFreePageHeader or kernelë¡œë¶€í„° ë©”ëª¨ë¦¬ í• ë‹¹.
+ * Description : mFreePageHeader or kernel·ÎºÎÅÍ ¸Ş¸ğ¸® ÇÒ´ç.
  ******************************************************************************/
 IDE_RC iduOIDMemory::grow()
 {
@@ -309,27 +309,27 @@ IDE_RC iduOIDMemory::grow()
 
     sPageHeaderSize = idlOS::align( sizeof(iduOIDMemAllocPage), sizeof(SDouble) );
 
-    // 1. free page listì— í˜ì´ì§€ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ê²€ì‚¬.
+    // 1. free page list¿¡ ÆäÀÌÁö°¡ Á¸ÀçÇÏ´ÂÁö °Ë»ç.
     if( mFreePageHeader.next != NULL )
     {
-        // 2. alloc page listì— í• ë‹¹í•  page ì£¼ì†Œì €ì¥ & free page listì—ì„œ page ì œê±°
+        // 2. alloc page list¿¡ ÇÒ´çÇÒ page ÁÖ¼ÒÀúÀå & free page list¿¡¼­ page Á¦°Å
         sMemPage = (iduOIDMemAllocPage*)mFreePageHeader.next;
         mFreePageHeader.next = mFreePageHeader.next->next;
 
-        // count ì €ì¥
+        // count ÀúÀå
         IDE_ASSERT( mPageCntInFreeLst > 0 );
         mPageCntInFreeLst--;
     }
     else
     {
-        // 2. free page listì— í˜ì´ì§€ê°€ í•˜ë‚˜ë§Œ ì¡´ì¬í•  ê²½ìš°, ì»¤ë„ë¡œë¶€í„° í• ë‹¹.
+        // 2. free page list¿¡ ÆäÀÌÁö°¡ ÇÏ³ª¸¸ Á¸ÀçÇÒ °æ¿ì, Ä¿³Î·ÎºÎÅÍ ÇÒ´ç.
         IDE_TEST(iduMemMgr::malloc(mIndex,
                                    mPageSize,
                                    (void**)&sMemPage,
                                    IDU_MEM_FORCE)
                  != IDE_SUCCESS);
 
-        // ê° elementë“¤ì˜ iduMemItem ì´ˆê¸°í™”
+        // °¢ elementµéÀÇ iduMemItem ÃÊ±âÈ­
         for( i = 0; i < mItemCnt; i++ )
         {
             sMemItem = (iduOIDMemItem *)((UChar *)sMemPage + sPageHeaderSize
@@ -338,7 +338,7 @@ IDE_RC iduOIDMemory::grow()
         }
     }
 
-    // 3. alloc page listì— ì—°ê²°
+    // 3. alloc page list¿¡ ¿¬°á
     sMemPage->freeIncCount  = 0;
     sMemPage->allocIncCount = 0;
     sMemPage->next = mAllocPageHeader.next;
@@ -347,7 +347,7 @@ IDE_RC iduOIDMemory::grow()
     mAllocPageHeader.next->prev = sMemPage;
     mAllocPageHeader.next = sMemPage;
 
-    // count ì €ì¥
+    // count ÀúÀå
     mPageCntInAllocLst++;
 
     return IDE_SUCCESS;

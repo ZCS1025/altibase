@@ -146,7 +146,7 @@ IDE_RC utOraField::bindColumn(SInt aType, void* aLinks)
 /*
     if( mLinks != NULL )
     {
-        // Locator, Descriptorê°€ ìžˆìœ¼ë©´ ì‚¬ìš©í•œë‹¤.
+        // Locator, Descriptor°¡ ÀÖÀ¸¸é »ç¿ëÇÑ´Ù.
         sBind = mLinks;
     }
     else

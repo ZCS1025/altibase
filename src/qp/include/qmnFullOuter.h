@@ -21,25 +21,25 @@
  * Description :
  *     FOJN(Full Outer JoiN) Node
  *
- *     ê´€ê³„í˜• ëª¨ë¸ì—ì„œ Full Outer Joinë¥¼ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
- *     ë‹¤ì–‘í•œ Join Methodë“¤ì€ í•˜ìœ„ ë…¸ë“œì˜ í˜•íƒœì— ë”°ë¼ ê²°ì •ëœë‹¤.
+ *     °ü°èÇü ¸ğµ¨¿¡¼­ Full Outer Join¸¦ ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
+ *     ´Ù¾çÇÑ Join MethodµéÀº ÇÏÀ§ ³ëµåÀÇ ÇüÅÂ¿¡ µû¶ó °áÁ¤µÈ´Ù.
  *  
- *     ë‹¤ìŒê³¼ ê°™ì€ ê¸°ëŠ¥ì„ ìœ„í•´ ì‚¬ìš©ëœë‹¤.
- *         - Nested Loop Join ê³„ì—´
- *         - Sort-based Join ê³„ì—´
- *         - Hash-based Join ê³„ì—´
+ *     ´ÙÀ½°ú °°Àº ±â´ÉÀ» À§ÇØ »ç¿ëµÈ´Ù.
+ *         - Nested Loop Join °è¿­
+ *         - Sort-based Join °è¿­
+ *         - Hash-based Join °è¿­
  *
- *     Full Outer Joinì€ í¬ê²Œ ë‹¤ìŒê³¼ ê°™ì€ ë‘ ë‹¨ê³„ë¡œ ìˆ˜í–‰ëœë‹¤.
+ *     Full Outer JoinÀº Å©°Ô ´ÙÀ½°ú °°Àº µÎ ´Ü°è·Î ¼öÇàµÈ´Ù.
  *         - Left Outer Join Phase
- *             : Left Outer Joinê³¼ ë™ì¼í•˜ë‚˜, ë§Œì¡±í•˜ëŠ” Right Rowì— ëŒ€í•˜ì—¬
- *               Hit Flagì„ Settingí•˜ì—¬ ë‹¤ìŒ Phaseì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ ì¤€ë¹„í•œë‹¤.
+ *             : Left Outer Join°ú µ¿ÀÏÇÏ³ª, ¸¸Á·ÇÏ´Â Right Row¿¡ ´ëÇÏ¿©
+ *               Hit FlagÀ» SettingÇÏ¿© ´ÙÀ½ Phase¿¡ ´ëÇÑ Ã³¸®¸¦ ÁØºñÇÑ´Ù.
  *         - Right Outer Join Phase
- *             : Right Rowì¤‘ Hit ë˜ì§€ ì•Šì€ Rowë§Œ ê³¨ë¼ Leftì— ëŒ€í•œ
- *               Null Paddingì„ ìˆ˜í–‰í•œë‹¤.
+ *             : Right RowÁß Hit µÇÁö ¾ÊÀº Row¸¸ °ñ¶ó Left¿¡ ´ëÇÑ
+ *               Null PaddingÀ» ¼öÇàÇÑ´Ù.
  *           
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -55,7 +55,7 @@
 //-----------------
 
 // qmncFOJN.flag
-// Right Child Planì˜ ì¢…ë¥˜
+// Right Child PlanÀÇ Á¾·ù
 #define QMNC_FOJN_RIGHT_CHILD_MASK         (0x00000001)
 #define QMNC_FOJN_RIGHT_CHILD_HASH         (0x00000000)
 #define QMNC_FOJN_RIGHT_CHILD_SORT         (0x00000001)
@@ -73,7 +73,7 @@
 typedef struct qmncFOJN
 {
     //---------------------------------
-    // Code ì˜ì—­ ê³µí†µ ì •ë³´
+    // Code ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmnPlan        plan;
@@ -81,27 +81,27 @@ typedef struct qmncFOJN
     UInt           planID;
 
     //---------------------------------
-    // FOJN ê³ ìœ  ì •ë³´
+    // FOJN °íÀ¯ Á¤º¸
     //---------------------------------
 
-    qtcNode      * filter;     // ON Condition ë‚´ì˜ Filter ì¡°ê±´
+    qtcNode      * filter;     // ON Condition ³»ÀÇ Filter Á¶°Ç
 
 } qmncFOJN;
 
 typedef struct qmndFOJN
 {
     //---------------------------------
-    // Data ì˜ì—­ ê³µí†µ ì •ë³´
+    // Data ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
     qmndPlan            plan;
     doItFunc            doIt;        
     UInt              * flag;
 
     //---------------------------------
-    // FOJN ê³ ìœ  ì •ë³´
+    // FOJN °íÀ¯ Á¤º¸
     //---------------------------------
     
-    setHitFlagFunc      setHitFlag;  // Child(HASH, SORT)ì— ë”°ë¥¸ í•¨ìˆ˜
+    setHitFlagFunc      setHitFlag;  // Child(HASH, SORT)¿¡ µû¸¥ ÇÔ¼ö
 
 } qmndFOJN;
 
@@ -113,11 +113,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ìˆ˜í–‰ í•¨ìˆ˜
+    // ¼öÇà ÇÔ¼ö
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -126,7 +126,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan ì •ë³´ ì¶œë ¥
+    // Plan Á¤º¸ Ãâ·Â
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -137,27 +137,27 @@ public:
     // mapping by doIt() function pointer
     //------------------------
 
-    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨
+    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
 
-    // Left Outer Join Phase : ìƒˆë¡œìš´ Left Rowì— ëŒ€í•œ ì²˜ë¦¬
+    // Left Outer Join Phase : »õ·Î¿î Left Row¿¡ ´ëÇÑ Ã³¸®
     static IDE_RC doItLeftHitPhase( qcTemplate * aTemplate,
                                     qmnPlan    * aPlan,
                                     qmcRowFlag * aFlag );
 
-    // Left Outer Join Phase : ìƒˆë¡œìš´ Right Rowì— ëŒ€í•œ ì²˜ë¦¬
+    // Left Outer Join Phase : »õ·Î¿î Right Row¿¡ ´ëÇÑ Ã³¸®
     static IDE_RC doItRightHitPhase( qcTemplate * aTemplate,
                                      qmnPlan    * aPlan,
                                      qmcRowFlag * aFlag );
 
-    // Right Outer Join Phase : ìµœì´ˆ ìˆ˜í–‰ í•¨ìˆ˜
+    // Right Outer Join Phase : ÃÖÃÊ ¼öÇà ÇÔ¼ö
     static IDE_RC doItFirstNonHitPhase( qcTemplate * aTemplate,
                                         qmnPlan    * aPlan,
                                         qmcRowFlag * aFlag );
 
-    // Right Outer Join Phase : ë‹¤ìŒ ìˆ˜í–‰ í•¨ìˆ˜
+    // Right Outer Join Phase : ´ÙÀ½ ¼öÇà ÇÔ¼ö
     static IDE_RC doItNextNonHitPhase( qcTemplate * aTemplate,
                                        qmnPlan    * aPlan,
                                        qmcRowFlag * aFlag );
@@ -165,10 +165,10 @@ public:
 private:
 
     //------------------------
-    // ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
+    // ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
     //------------------------
 
-    // ìµœì´ˆ ì´ˆê¸°í™”
+    // ÃÖÃÊ ÃÊ±âÈ­
     static IDE_RC firstInit( qmncFOJN   * aCodePlan,
                              qmndFOJN   * aDataPlan );
 

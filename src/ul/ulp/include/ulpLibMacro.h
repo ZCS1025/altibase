@@ -18,7 +18,7 @@
 #define _ULP_LIB_MACRO_ 1
 
 /* ulpLibInterface */
-#define ULP_LIB_INTER_FUNC_MAX (28)
+#define ULP_LIB_INTER_FUNC_MAX (31)
 
 /* ulpLibHash */
 #define MAX_NUM_CONN_HASH_TAB_ROW (33)
@@ -130,5 +130,8 @@ volatile acp_uint32_t vstSeed = 0;\
 #define ENV_ALTIBASE_DATE_FORMAT  "ALTIBASE_DATE_FORMAT"
 
 #define IS_DYNAMIC_VARIABLE( aSqlstmt )  ((aSqlstmt)->numofhostvar == 1) && ((aSqlstmt)->hostvalue[0].mType == H_SQLDA)
+
+/* TASK-7218 Handling Multiple Errors */
+#define MULTI_ERROR_INIT_SIZE (4)
 
 #endif

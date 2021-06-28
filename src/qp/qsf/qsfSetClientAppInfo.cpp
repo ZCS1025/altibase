@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsfSetClientAppInfo.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qsfSetClientAppInfo.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <idl.h>
@@ -47,7 +47,7 @@ static IDE_RC qsfEstimate( mtcNode*     aNode,
 mtfModule qsfSetClientInfoModule = {
     1|MTC_NODE_OPERATOR_MISC,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     qsfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -85,7 +85,7 @@ IDE_RC qsfEstimate( mtcNode*     aNode,
     
     sStatement = ((qcTemplate*)aTemplate)->stmt;
     
-    // ë°˜ë“œì‹œ psm ë‚´ë¶€ì—ì„œë§Œ ì‚¬ìš©.
+    // ¹Ýµå½Ã psm ³»ºÎ¿¡¼­¸¸ »ç¿ë.
     IDE_TEST_RAISE( ( sStatement->spvEnv->createProc == NULL ) &&
                     ( sStatement->spvEnv->createPkg == NULL ),
                     ERR_NOT_ALLOWED );

@@ -50,7 +50,7 @@ public class FetchSizeTest extends AltibaseTestCase
 
     public void testSize(int sMaxRow, int sFetchRowSize, int aExpSelectCount, int aExpCmFetchCount) throws SQLException
     {
-        PreparedStatement sCheckStmt = connection().prepareStatement("SELECT COUNT FROM V$DB_PROTOCOL WHERE OP_NAME = 'CMP_OP_DB_FetchV2'");
+        PreparedStatement sCheckStmt = connection().prepareStatement("SELECT COUNT FROM V$DB_PROTOCOL WHERE OP_NAME = 'CMP_OP_DB_FetchV3'");
 
         int sBeforeCount = ((Number)executeScalar(sCheckStmt)).intValue();
 

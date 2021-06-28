@@ -19,11 +19,11 @@
  * $Id: qmgInsert.h 53265 2012-05-18 00:05:06Z seo0jun $
  *
  * Description :
- *     Insert Graphë¥¼ ìœ„í•œ ì •ì˜
+ *     Insert Graph¸¦ À§ÇÑ Á¤ÀÇ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -34,20 +34,20 @@
 #include <qmgDef.h>
 
 //---------------------------------------------------
-// Insert Graphì˜ Define ìƒìˆ˜
+// Insert GraphÀÇ Define »ó¼ö
 //---------------------------------------------------
 
 
 //---------------------------------------------------
-// Insert Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ ìë£Œ êµ¬ì¡°
+// Insert Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÀÚ·á ±¸Á¶
 //---------------------------------------------------
 
 typedef struct qmgINST
 {
-    qmgGraph             graph;    // ê³µí†µ Graph ì •ë³´
+    qmgGraph             graph;    // °øÅë Graph Á¤º¸
 
     //---------------------------------
-    // insert ê´€ë ¨ ì •ë³´
+    // insert °ü·Ã Á¤º¸
     //---------------------------------
     
     struct qmsTableRef * tableRef;
@@ -68,7 +68,7 @@ typedef struct qmgINST
     // direct-path insert
     qmsHints           * hints;
 
-    // sequence ì •ë³´
+    // sequence Á¤º¸
     qcParseSeqCaches   * nextValSeqs;
     
     // multi-table insert
@@ -81,14 +81,14 @@ typedef struct qmgINST
     ULong                lockWaitMicroSec;
     
     //---------------------------------
-    // constraint ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
+    // constraint Ã³¸®¸¦ À§ÇÑ Á¤º¸
     //---------------------------------
     
     qcmParentInfo      * parentConstraints;
     qdConstraintSpec   * checkConstrList;
 
     //---------------------------------
-    // return into ì²˜ë¦¬ë¥¼ ìœ„í•œ ì •ë³´
+    // return into Ã³¸®¸¦ À§ÇÑ Á¤º¸
     //---------------------------------
     
     /* PROJ-1584 DML Return Clause */
@@ -104,34 +104,34 @@ typedef struct qmgINST
 } qmgINST;
 
 //---------------------------------------------------
-// Insert Graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// Insert Graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmgInsert
 {
 public:
-    // Graph ì˜ ì´ˆê¸°í™”
+    // Graph ÀÇ ÃÊ±âÈ­
     static IDE_RC  init( qcStatement      * aStatement,
                          qmmInsParseTree  * aParseTree,
                          qmgGraph         * aChildGraph,
                          qmgGraph        ** aGraph );
 
-    // Graphì˜ ìµœì í™” ìˆ˜í–‰
+    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
-    // Graphì˜ Plan Tree ìƒì„±
+    // GraphÀÇ Plan Tree »ı¼º
     static IDE_RC  makePlan( qcStatement    * aStatement,
                              const qmgGraph * aParent,
                              qmgGraph       * aGraph );
 
-    // Graphì˜ ê³µí†µ ì •ë³´ë¥¼ ì¶œë ¥í•¨.
+    // GraphÀÇ °øÅë Á¤º¸¸¦ Ãâ·ÂÇÔ.
     static IDE_RC  printGraph( qcStatement  * aStatement,
                                qmgGraph     * aGraph,
                                ULong          aDepth,
                                iduVarString * aString );
 
 private:
-    /* PROJ-2464 hybrid partitioned table ì§€ì› */
+    /* PROJ-2464 hybrid partitioned table Áö¿ø */
     static void   fixHint( qmnPlan * aPlan );
 };
 

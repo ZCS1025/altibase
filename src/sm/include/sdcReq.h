@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: sdcReq.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: sdcReq.h 86118 2019-09-04 01:01:19Z justin.kwon $
  **********************************************************************/
 
 #ifndef _O_SDC_REQ_H_
@@ -74,10 +74,12 @@ class sdcReqFunc
         };
         static IDE_RC waitLockForTrans( void    * aTrans,
                                         smTID     aWaitTransID,
+                                        scSpaceID aSpaceID,
                                         ULong     aLockWaitTime )
         {
             return smxTransMgr::waitForTrans( aTrans,
                                               aWaitTransID,
+                                              aSpaceID,
                                               aLockWaitTime );
         };
         static void * getTransByTID( smTID aTID )

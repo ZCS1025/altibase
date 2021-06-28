@@ -52,6 +52,7 @@ private:
     smTID                   mGroupTransID;
     smSN                    mBeginSN;
     smSN                    mEndSN;
+    smTID                   mEndTransID;
 
 
     rpdTransSlotNode      * mTransSlotTable;
@@ -119,7 +120,8 @@ public:
 
     smSN            getEndSN( void );
 
-    idBool          isLastTrans( smSN   aEndSN );
+    idBool          isLastTrans( smTID  aTransID,
+                                 smSN   aEndSN );
 
     idBool          isThisTransaction( smTID    aTransID,
                                        smSN     aSN );

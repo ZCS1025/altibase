@@ -1,5 +1,5 @@
 #
-# $Id: rp_objs.mk 84983 2019-03-08 11:08:24Z yoonhee.kim $
+# $Id: rp_objs.mk 90266 2021-03-19 05:23:09Z returns $
 #
 
 
@@ -10,7 +10,8 @@ RPC_SRCS = $(RP_DIR)/rpc/rpcExecute.cpp \
 		   $(RP_DIR)/rpc/rpcDDLSyncManager.cpp \
 		   $(RP_DIR)/rpc/rpcDDLASyncManager.cpp \
 		   $(RP_DIR)/rpc/rpcResourceManager.cpp \
-		   $(RP_DIR)/rpc/rpcValidate.cpp
+		   $(RP_DIR)/rpc/rpcValidate.cpp 	\
+		   $(RP_DIR)/rpc/rpcReceiverList.cpp
 
 RPD_SRCS = $(RP_DIR)/rpd/rpdLogAnalyzer.cpp \
            $(RP_DIR)/rpd/rpdMeta.cpp \
@@ -26,7 +27,12 @@ RPD_SRCS = $(RP_DIR)/rpd/rpdLogAnalyzer.cpp \
            $(RP_DIR)/rpd/rpdAnalyzedTransTable.cpp \
            $(RP_DIR)/rpd/rpdReplicatedTransGroup.cpp \
            $(RP_DIR)/rpd/rpdDelayedLogQueue.cpp	\
-		   $(RP_DIR)/rpd/rpdConvertSQL.cpp
+           $(RP_DIR)/rpd/rpdConvertSQL.cpp \
+           $(RP_DIR)/rpd/rpdXLogfileMgr.cpp \
+           $(RP_DIR)/rpd/rpdXLogfileFlusher.cpp \
+           $(RP_DIR)/rpd/rpdXLogfileCreater.cpp 	\
+		   $(RP_DIR)/rpd/rpdLockTableManager.cpp	\
+		   ${RP_DIR}/rpd/rpdStatistics.cpp
 
 RPS_SRCS = $(RP_DIR)/rps/rpsSmExecutor.cpp		\
 		   $(RP_DIR)/rps/rpsSQLExecutor.cpp
@@ -50,8 +56,9 @@ RPX_SRCS = $(RP_DIR)/rpx/rpxReceiver.cpp \
 		   $(RP_DIR)/rpx/rpxPJChild.cpp \
 		   $(RP_DIR)/rpx/rpxReplicator.cpp \
 		   $(RP_DIR)/rpx/rpxSync.cpp \
-		   $(RP_DIR)/rpx/rpxAheadAnalyzer.cpp 
-
+		   $(RP_DIR)/rpx/rpxAheadAnalyzer.cpp \
+		   $(RP_DIR)/rpx/rpxTempSender.cpp \
+		   $(RP_DIR)/rpx/rpxXLogTransfer.cpp 
 RPI_SRCS = $(RP_DIR)/rpi/rpi.cpp
 
 RPI_STUB_SRCS = $(RP_DIR)/rpi/rpistub.cpp 

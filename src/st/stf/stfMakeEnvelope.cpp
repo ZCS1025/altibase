@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: stfMakeEnvelope.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: stfMakeEnvelope.cpp 90194 2021-03-12 04:22:26Z donovan.seo $
  **********************************************************************/
 
 #include <mte.h>
@@ -15,6 +15,11 @@
 #include <mtv.h>
 #include <stfFunctions.h>
 #include <mtdTypes.h>
+#include <stfBasic.h>
+
+extern mtdModule mtdDouble;
+extern mtdModule mtdInteger;
+extern mtdModule stdGeometry;
 
 extern mtfModule stfMakeEnvelope;
 
@@ -32,7 +37,7 @@ static IDE_RC stfMakeEnvelopeEstimate( mtcNode     * aNode,
 mtfModule stfMakeEnvelope = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     stfMakeEnvelopeFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -46,6 +51,12 @@ IDE_RC stfMakeEnvelopeCalculate( mtcNode     * aNode,
                                  void        * aInfo,
                                  mtcTemplate * aTemplate );
 
+IDE_RC stfMakeEnvelopeCalculate5Args( mtcNode     * aNode,
+                                      mtcStack    * aStack,
+                                      SInt          aRemain,
+                                      void        * aInfo,
+                                      mtcTemplate * aTemplate );
+
 static const mtcExecute stfExecute = {
     mtf::calculateNA,
     mtf::calculateNA,
@@ -58,48 +69,57 @@ static const mtcExecute stfExecute = {
     mtk::extractRangeNA
 };
 
+
+static const mtcExecute stfExecute5Args = {
+    mtf::calculateNA,
+    mtf::calculateNA,
+    mtf::calculateNA,
+    mtf::calculateNA,
+    stfMakeEnvelopeCalculate5Args,
+    NULL,
+    mtx::calculateNA,
+    mtk::estimateRangeNA,
+    mtk::extractRangeNA
+};
+
 IDE_RC stfMakeEnvelopeEstimate( mtcNode     * aNode,
                                 mtcTemplate * aTemplate,
                                 mtcStack    * aStack,
                                 SInt       /* aRemain */,
                                 mtcCallBack * aCallBack )
 {
-    mtcNode* sNode;
-    ULong    sLflag;
-
-    extern mtdModule mtdDouble;
-    extern mtdModule stdGeometry;
-
-    const mtdModule* sModules[4];
-
-    sModules[0] = & mtdDouble;
-    sModules[1] = & mtdDouble;
-    sModules[2] = & mtdDouble;
-    sModules[3] = & mtdDouble;
-
-    aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
+    const mtdModule* sModules[5];
 
     IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_QUANTIFIER_MASK ) ==
                     MTC_NODE_QUANTIFIER_TRUE,
                     ERR_NOT_AGGREGATION );
 
-    IDE_TEST_RAISE( ( aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK ) != 4,
+    IDE_TEST_RAISE( ( ( (aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK) < 4) ||
+                      ( (aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK) > 5)),
                     ERR_INVALID_FUNCTION_ARGUMENT );
 
-    for( sNode  = aNode->arguments, sLflag = MTC_NODE_INDEX_UNUSABLE;
-         sNode != NULL;
-         sNode  = sNode->next )
+    if ( (aNode->lflag & MTC_NODE_ARGUMENT_COUNT_MASK) == 4 )
+    { 
+        sModules[0] = & mtdDouble;
+        sModules[1] = & mtdDouble;
+        sModules[2] = & mtdDouble;
+        sModules[3] = & mtdDouble;
+
+        aTemplate->rows[aNode->table].execute[aNode->column] = stfExecute;
+    }
+    else
     {
-        if( ( sNode->lflag & MTC_NODE_COMPARISON_MASK ) ==
-            MTC_NODE_COMPARISON_TRUE )
-        {
-            sNode->lflag &= ~(MTC_NODE_INDEX_MASK);
-        }
-        sLflag |= sNode->lflag & MTC_NODE_INDEX_MASK;
+        // BUG-47919 add SRID argument in ST_MAKEENVELOPE function
+        sModules[0] = & mtdDouble;
+        sModules[1] = & mtdDouble;
+        sModules[2] = & mtdDouble;
+        sModules[3] = & mtdDouble;
+        sModules[4] = & mtdInteger;
+
+        aTemplate->rows[aNode->table].execute[aNode->column] = stfExecute5Args;
     }
 
-    aNode->lflag &= ~(MTC_NODE_INDEX_MASK);
-    aNode->lflag |= sLflag;
+    aStack[0].column = aTemplate->rows[aNode->table].columns + aNode->column;
 
     IDE_TEST( mtf::makeConversionNodes( aNode,
                                         aNode->arguments,
@@ -109,9 +129,8 @@ IDE_RC stfMakeEnvelopeEstimate( mtcNode     * aNode,
                                         sModules )
               != IDE_SUCCESS );
 
-    aTemplate->rows[aNode->table].execute[aNode->column] = stfExecute;
-
     // MAKEENVELOPE(x1 y1, x2 y2) -> POLYGON((x1 y1, x2 y1, x2 y2, x1 y2, x1 y1))
+    // STD_POLY2D_SIZE == STD_POLY2D_EXT_SIZE
     IDE_TEST( mtc::initializeColumn( aStack[0].column,
                                      & stdGeometry,
                                      1,
@@ -161,4 +180,64 @@ IDE_RC stfMakeEnvelopeCalculate(
 
     return IDE_FAILURE;
 }
- 
+
+IDE_RC stfMakeEnvelopeCalculate5Args(
+    mtcNode*     aNode,
+    mtcStack*    aStack,
+    SInt         aRemain,
+    void*        aInfo,
+    mtcTemplate* aTemplate )
+{
+    stdGeometryHeader     * sRet;
+    mtdDoubleType         * sX1;
+    mtdDoubleType         * sY1;
+    mtdDoubleType         * sX2;
+    mtdDoubleType         * sY2;
+    mtdIntegerType        * sSRID;  
+
+    IDE_TEST( mtf::postfixCalculate( aNode,
+                                     aStack,
+                                     aRemain,
+                                     aInfo,
+                                     aTemplate )
+              != IDE_SUCCESS );
+
+    sRet  = (stdGeometryHeader *)aStack[0].value;
+    sX1   = (mtdDoubleType *)aStack[1].value;
+    sY1   = (mtdDoubleType *)aStack[2].value;
+    sX2   = (mtdDoubleType *)aStack[3].value;
+    sY2   = (mtdDoubleType *)aStack[4].value;
+    sSRID = (mtdIntegerType *)aStack[5].value;
+
+    if ( ( mtdDouble.isNull( NULL, sX1 ) == ID_TRUE ) ||
+         ( mtdDouble.isNull( NULL, sY1 ) == ID_TRUE ) ||
+         ( mtdDouble.isNull( NULL, sX2 ) == ID_TRUE ) ||
+         ( mtdDouble.isNull( NULL, sY2 ) == ID_TRUE ) || 
+         ( mtdInteger.isNull( NULL, sSRID ) == ID_TRUE ) )
+    {
+        aStack[0].column->module->null( aStack[0].column,
+                                        aStack[0].value );
+    }
+    else
+    {
+        IDE_TEST( stfBasic::getRectangle( aTemplate,
+                                          * sX1,
+                                          * sY1,
+                                          * sX2,
+                                          * sY2,
+                                          sRet )
+                  != IDE_SUCCESS );
+
+        // sRet´Â NULLÀÏ ¼ö ¾ø´Ù.
+        IDE_TEST( stfBasic::setSRID( sRet,
+                                     aStack[0].column->precision,
+                                     *sSRID )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}

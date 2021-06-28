@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfEqualAny.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfEqualAny.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -53,7 +53,7 @@ mtfModule mtfEqualAny = {
       MTC_NODE_GROUP_ANY|
       MTC_NODE_PRINT_FMT_INFIX,
     //~(MTC_NODE_INDEX_MASK),
-    ~0,        // A4ì—ì„œëŠ” Node Transformì— ì˜í•´ ì¸ë±ìŠ¤ ì‚¬ìš©í•  ìˆ˜ ìžˆìŒ
+    ~0,        // A4¿¡¼­´Â Node Transform¿¡ ÀÇÇØ ÀÎµ¦½º »ç¿ëÇÒ ¼ö ÀÖÀ½
     1.0/3.0,  // TODO : default selectivity 
     mtfEqualAnyFunctionName,
     &mtfNotEqualAll,
@@ -216,10 +216,10 @@ IDE_RC mtfEqualAnyEstimate( mtcNode     * aNode,
                                 ERR_CONVERSION_NOT_APPLICABLE );
 
                 // To Fix PR-15213
-                // ìž…ë ¥ ì¸ìžì— ëŒ€í•œ ê²€ì‚¬ëŠ”
-                // QPì—ì„œ ì ìš©í•˜ëŠ” ë‹¤ì–‘í•œ Tipë“¤ì— ëŒ€í•œ ì²˜ë¦¬ë¥¼ í•  ìˆ˜ ì—†ë‹¤.
-                // Conversion Target ì¸ìžì— ëŒ€í•œ ê²€ì‚¬ë¡œ
-                // íƒ€ìž…ì˜ ìœ íš¨ì„± ê²€ì‚¬ë¥¼ í•œë‹¤.
+                // ÀÔ·Â ÀÎÀÚ¿¡ ´ëÇÑ °Ë»ç´Â
+                // QP¿¡¼­ Àû¿ëÇÏ´Â ´Ù¾çÇÑ Tipµé¿¡ ´ëÇÑ Ã³¸®¸¦ ÇÒ ¼ö ¾ø´Ù.
+                // Conversion Target ÀÎÀÚ¿¡ ´ëÇÑ °Ë»ç·Î
+                // Å¸ÀÔÀÇ À¯È¿¼º °Ë»ç¸¦ ÇÑ´Ù.
                 IDE_TEST_RAISE( mtf::isEquiValidType( sTarget ) != ID_TRUE,
                                 ERR_CONVERSION_NOT_APPLICABLE );
                 

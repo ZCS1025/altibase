@@ -18,9 +18,6 @@
 /***********************************************************************
  * $Id:
  **********************************************************************/
-#include <idl.h>
-#include <idu.h>
-#include <ideErrorMgr.h>
 #include <smDef.h>
 
 SChar *gFileName;
@@ -41,11 +38,11 @@ IDE_RC hex2Int( SChar aHex, UInt *aResult );
 
 /******************************************************************************
  * Description :
- *  DB íŒŒì¼ì˜ íŠ¹ì • ìœ„ì¹˜ë¥¼ ë³€ê²½í•˜ëŠ” í”„ë¡œê·¸ë¨ì´ë‹¤.
- *  Bit, Byte, String ë‹¨ìœ„ë¡œ ë³€ê²½ì´ ê°€ëŠ¥í•˜ë‹¤.
+ *  DB ÆÄÀÏÀÇ Æ¯Á¤ À§Ä¡¸¦ º¯°æÇÏ´Â ÇÁ·Î±×·¥ÀÌ´Ù.
+ *  Bit, Byte, String ´ÜÀ§·Î º¯°æÀÌ °¡´ÉÇÏ´Ù.
  *
- *  aArgc - [IN]  ì¸ìì˜ ìˆ˜
- *  aArgv - [IN]  ì¸ìì˜ í¬ì¸í„° ë°°ì—´
+ *  aArgc - [IN]  ÀÎÀÚÀÇ ¼ö
+ *  aArgv - [IN]  ÀÎÀÚÀÇ Æ÷ÀÎÅÍ ¹è¿­
  ******************************************************************************/
 int main( SInt aArgc, SChar* aArgv[] )
 {
@@ -79,17 +76,17 @@ int main( SInt aArgc, SChar* aArgv[] )
     switch( gEditMode )
     {
         case '1':
-            // DB íŒŒì¼ì„ bit ë‹¨ìœ„ë¡œ ë³€ê²½
+            // DB ÆÄÀÏÀ» bit ´ÜÀ§·Î º¯°æ
             IDE_TEST( writeBit( &sFile ) != IDE_SUCCESS );
             break;
 
         case '8':
-            // DB íŒŒì¼ì„ byte ë‹¨ìœ„ë¡œ ë³€ê²½
+            // DB ÆÄÀÏÀ» byte ´ÜÀ§·Î º¯°æ
             IDE_TEST( writeByte( &sFile ) != IDE_SUCCESS );
             break;
 
         case 's':
-            // DB íŒŒì¼ì„ string ë‹¨ìœ„ë¡œ ë³€ê²½
+            // DB ÆÄÀÏÀ» string ´ÜÀ§·Î º¯°æ
             IDE_TEST( writeString( &sFile ) != IDE_SUCCESS );
             break;
 
@@ -142,10 +139,10 @@ int main( SInt aArgc, SChar* aArgv[] )
 
 /******************************************************************************
  * Description :
- *  í”„ë¡œê·¸ë¨ì´ ë„˜ê²¨ ë°›ì€ ì¸ìë¥¼ íŒŒì‹±í•´ì„œ ì „ì—­ ë³€ìˆ˜ì— ì§€ì •í•œë‹¤.
+ *  ÇÁ·Î±×·¥ÀÌ ³Ñ°Ü ¹ŞÀº ÀÎÀÚ¸¦ ÆÄ½ÌÇØ¼­ Àü¿ª º¯¼ö¿¡ ÁöÁ¤ÇÑ´Ù.
  *
- *  aArgc - [IN]  ì¸ìì˜ ìˆ˜
- *  aArgv - [IN]  ì¸ìì˜ í¬ì¸í„° ë°°ì—´
+ *  aArgc - [IN]  ÀÎÀÚÀÇ ¼ö
+ *  aArgv - [IN]  ÀÎÀÚÀÇ Æ÷ÀÎÅÍ ¹è¿­
  ******************************************************************************/
 IDE_RC parseArgs( UInt aArgc, SChar **aArgv )
 {
@@ -153,8 +150,8 @@ IDE_RC parseArgs( UInt aArgc, SChar **aArgv )
 
     sOpr = idlOS::getopt( aArgc, aArgv, "m:o:p:f:i:c:d:" );
 
-    // parseArgsì˜ í˜¸ì¶œë¶€ì—ì„œ ì—ëŸ¬ë¥¼ ì°ëŠ”ë‹¤.
-    // ì—¬ê¸°ì„œ ì„¤ì •ì€ ë¶ˆí•„ìš”.
+    // parseArgsÀÇ È£ÃâºÎ¿¡¼­ ¿¡·¯¸¦ Âï´Â´Ù.
+    // ¿©±â¼­ ¼³Á¤Àº ºÒÇÊ¿ä.
     IDE_TEST( sOpr == EOF );
 
     gEditCnt  = 1;
@@ -176,35 +173,35 @@ IDE_RC parseArgs( UInt aArgc, SChar **aArgv )
                 break;
 
             case 'f':
-                // f - ë³€ê²½í•  ëŒ€ìƒ íŒŒì¼ì˜ file name
+                // f - º¯°æÇÒ ´ë»ó ÆÄÀÏÀÇ file name
                 gFileName = optarg;
                 break;
 
             case 'p':
-                // p - ë³€ê²½í•  DB íŒŒì¼ ë‚´ì˜ page id
+                // p - º¯°æÇÒ DB ÆÄÀÏ ³»ÀÇ page id
                 gPageID = idlOS::atoi( optarg );
                 break;
 
             case 'o':
-                // o - ë³€ê²½í•  pageë‚´ì˜ offset
+                // o - º¯°æÇÒ page³»ÀÇ offset
                 gOffset = idlOS::atoi( optarg );
                 break;
 
             case 'd':
-                // d - offsetì— ë®ì–´ ì“¸ ë°ì´í„°
-                //     modeì— ë”°ë¼ bit, byte, stringì´ ì˜¬ìˆ˜ìˆë‹¤.
+                // d - offset¿¡ µ¤¾î ¾µ µ¥ÀÌÅÍ
+                //     mode¿¡ µû¶ó bit, byte, stringÀÌ ¿Ã¼öÀÖ´Ù.
                 gEditData = optarg;
                 gEditLen = idlOS::strlen( gEditData );
                 break;
 
             case 'c':
-                // ë°˜ë³µ íšŸìˆ˜ (ìƒëµê°€ëŠ¥, default 1)
+                // ¹İº¹ È½¼ö (»ı·«°¡´É, default 1)
                 gEditCnt = idlOS::atoi( optarg );
                 break;
 
             case 'i':
-                // i - í•´ë‹¹ offsetì˜ byteë‚´ì˜ idxë‹¤. 0~7ì˜ ê°’ì„ê°€ì§€ë©°
-                //     bit modeì—ì„œë§Œ ì‚¬ìš©í•œë‹¤. (ìƒëµê°€ëŠ¥, default 0)
+                // i - ÇØ´ç offsetÀÇ byte³»ÀÇ idx´Ù. 0~7ÀÇ °ªÀ»°¡Áö¸ç
+                //     bit mode¿¡¼­¸¸ »ç¿ëÇÑ´Ù. (»ı·«°¡´É, default 0)
                 gBitIdx = idlOS::atoi( optarg );
                 break;
 
@@ -215,7 +212,7 @@ IDE_RC parseArgs( UInt aArgc, SChar **aArgv )
     }
     while( ( sOpr = idlOS::getopt( aArgc, aArgv, "m:o:p:f:i:c:d:" ) ) != EOF ) ;
 
-    // ì¸ìê°’ë“¤ì„ ê²€ì¦í•œë‹¤.
+    // ÀÎÀÚ°ªµéÀ» °ËÁõÇÑ´Ù.
     IDE_TEST_RAISE( gFileName == NULL, invalid_argument_filename );
 
     IDE_TEST_RAISE( idlOS::access( gFileName, F_OK ) != 0,
@@ -235,8 +232,8 @@ IDE_RC parseArgs( UInt aArgc, SChar **aArgv )
     IDE_TEST_RAISE( ( gEditMode == '8' ) && ( ( gEditLen % 2 ) == 1 ),
                     invalid_argument_datalen );
 
-    // ì²«ë²ˆì§¸ pageëŠ” file hdr pageë¡œ ì œì™¸í•´ì•¼ í•œë‹¤.
-    // ë‘ë²ˆì§¸ page(offset 0x2000)ê°€ pid 0 ì´ ëœë‹¤.
+    // Ã¹¹øÂ° page´Â file hdr page·Î Á¦¿ÜÇØ¾ß ÇÑ´Ù.
+    // µÎ¹øÂ° page(offset 0x2000)°¡ pid 0 ÀÌ µÈ´Ù.
     gOffset += SD_PAGE_SIZE * gPageID + SD_PAGE_SIZE ;
 
     return IDE_SUCCESS;
@@ -283,7 +280,7 @@ IDE_RC parseArgs( UInt aArgc, SChar **aArgv )
 
 /******************************************************************************
  * Description :
- *  í”„ë¡œê·¸ë¨ì˜ ì‚¬ìš©ë²•ì„ ì‚¬ìš©ìì—ê²Œ ì¶œë ¥í•œë‹¤.
+ *  ÇÁ·Î±×·¥ÀÇ »ç¿ë¹ıÀ» »ç¿ëÀÚ¿¡°Ô Ãâ·ÂÇÑ´Ù.
  ******************************************************************************/
 void usage()
 {
@@ -304,9 +301,9 @@ void usage()
 
 /******************************************************************************
  * Description :
- *  bit ë‹¨ìœ„ë¡œ offsetì´ ê°€ë¦¬í‚¤ëŠ” ê³³ì˜ ë°ì´í„°ë¥¼ ë³€ê²½í•œë‹¤.
+ *  bit ´ÜÀ§·Î offsetÀÌ °¡¸®Å°´Â °÷ÀÇ µ¥ÀÌÅÍ¸¦ º¯°æÇÑ´Ù.
  *
- *  aFp - [IN]  ë³€ê²½í•  DB íŒŒì¼ì˜ íŒŒì¼ í¬ì¸í„°
+ *  aFp - [IN]  º¯°æÇÒ DB ÆÄÀÏÀÇ ÆÄÀÏ Æ÷ÀÎÅÍ
  ******************************************************************************/
 IDE_RC writeBit( iduFile * sFile )
 {
@@ -322,10 +319,10 @@ IDE_RC writeBit( iduFile * sFile )
                                  ID_SIZEOF( SChar ) )
                     != IDE_SUCCESS, err_write_fail );
 
-    // gEditCnt - gEditDataë¥¼ gEditCnt ìˆ˜ ë§Œí¼ ë°˜ë³µí•´ì„œ ë°˜ì˜í•œë‹¤.
+    // gEditCnt - gEditData¸¦ gEditCnt ¼ö ¸¸Å­ ¹İº¹ÇØ¼­ ¹İ¿µÇÑ´Ù.
     for( i = 0 ; i < gEditCnt ; i++ )
     {
-        // gEditLen - gEditDataì˜ ê¸¸ì´
+        // gEditLen - gEditDataÀÇ ±æÀÌ
         for( j = 0 ; j < gEditLen ; j++ )
         {
             if( gEditData[j] == '0' )
@@ -352,7 +349,7 @@ IDE_RC writeBit( iduFile * sFile )
 
             if( ( gBitIdx % 8 ) == 7 )
             {
-                // í•œ Byteë¥¼ ë„˜ì–´ê°ˆ ë•Œ ë§ˆë‹¤ DBíŒŒì¼ì— ë°˜ì˜í•œë‹¤.
+                // ÇÑ Byte¸¦ ³Ñ¾î°¥ ¶§ ¸¶´Ù DBÆÄÀÏ¿¡ ¹İ¿µÇÑ´Ù.
 
                 IDE_TEST_RAISE( sFile->write( NULL, /*idvSQL*/
                                               gOffset,
@@ -361,7 +358,7 @@ IDE_RC writeBit( iduFile * sFile )
                                 != IDE_SUCCESS, err_write_fail );
                 gOffset++;
 
-                // ìë™ìœ¼ë¡œ ë‹¤ìŒ offsetìœ¼ë¡œ ë„˜ì–´ê°€ë¯€ë¡œ seek í•  í•„ìš”ëŠ” ì—†ë‹¤.
+                // ÀÚµ¿À¸·Î ´ÙÀ½ offsetÀ¸·Î ³Ñ¾î°¡¹Ç·Î seek ÇÒ ÇÊ¿ä´Â ¾ø´Ù.
                 IDE_TEST_RAISE( sFile->read( NULL, /*idvSQL*/
                                              gOffset,
                                              &sTempBuf,
@@ -379,7 +376,7 @@ IDE_RC writeBit( iduFile * sFile )
 
     if( ( gBitIdx % 8 ) != 0 )
     {
-         // ë‚¨ì€ Dataë¥¼ DBíŒŒì¼ì— ë°˜ì˜í•œë‹¤.
+         // ³²Àº Data¸¦ DBÆÄÀÏ¿¡ ¹İ¿µÇÑ´Ù.
 
         IDE_TEST_RAISE( sFile->write( NULL, /*idvSQL*/
                                       gOffset,
@@ -411,9 +408,9 @@ IDE_RC writeBit( iduFile * sFile )
 
 /******************************************************************************
  * Description :
- *  byte ë‹¨ìœ„ë¡œ offsetì´ ê°€ë¦¬í‚¤ëŠ” ê³³ì˜ ë°ì´í„°ë¥¼ ë³€ê²½í•œë‹¤.
+ *  byte ´ÜÀ§·Î offsetÀÌ °¡¸®Å°´Â °÷ÀÇ µ¥ÀÌÅÍ¸¦ º¯°æÇÑ´Ù.
  *
- *  aFp - [IN]  ë³€ê²½í•  DB íŒŒì¼ì˜ íŒŒì¼ í¬ì¸í„°
+ *  aFp - [IN]  º¯°æÇÒ DB ÆÄÀÏÀÇ ÆÄÀÏ Æ÷ÀÎÅÍ
  ******************************************************************************/
 IDE_RC writeByte( iduFile * sFile )
 {
@@ -427,8 +424,8 @@ IDE_RC writeByte( iduFile * sFile )
     {
         for( j = 2 ; j <= gEditLen ; j += 2 )
         {
-            // gEditDataì—ëŠ” 0~9,A~F ê¹Œì§€ì˜ ê°’ì´ ë“¤ì–´ìˆë‹¤.
-            // ë‘ê°œì”© ë¬¶ì–´ byteê°’ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
+            // gEditData¿¡´Â 0~9,A~F ±îÁöÀÇ °ªÀÌ µé¾îÀÖ´Ù.
+            // µÎ°³¾¿ ¹­¾î byte°ªÀ¸·Î º¯°æÇÑ´Ù.
 
             IDE_TEST( hex2Int( gEditData[j-2],
                                &sConvByte[0] )
@@ -462,10 +459,10 @@ IDE_RC writeByte( iduFile * sFile )
 
 /******************************************************************************
  * Description :
- *  Hex ë¬¸ìë¥¼ ë„˜ê²¨ë°›ì•„ Intê°’ìœ¼ë¡œ ë³€ê²½í•œë‹¤.
+ *  Hex ¹®ÀÚ¸¦ ³Ñ°Ü¹Ş¾Æ Int°ªÀ¸·Î º¯°æÇÑ´Ù.
  *
- *  aHex    - [IN]  0~9,A~Fì˜ ë³€ê²½ char
- *  aResult - [OUT] aHexë¥¼ Intë¡œ ë³€ê²½í•œ ê°’
+ *  aHex    - [IN]  0~9,A~FÀÇ º¯°æ char
+ *  aResult - [OUT] aHex¸¦ Int·Î º¯°æÇÑ °ª
  ******************************************************************************/
 IDE_RC hex2Int( SChar  aHex ,
                 UInt * aResult )
@@ -507,9 +504,9 @@ IDE_RC hex2Int( SChar  aHex ,
 
 /******************************************************************************
  * Description :
- *  string ë‹¨ìœ„ë¡œ offsetì´ ê°€ë¦¬í‚¤ëŠ” ê³³ì˜ ë°ì´í„°ë¥¼ ë³€ê²½í•œë‹¤.
+ *  string ´ÜÀ§·Î offsetÀÌ °¡¸®Å°´Â °÷ÀÇ µ¥ÀÌÅÍ¸¦ º¯°æÇÑ´Ù.
  *
- *  aFp - [IN]  ë³€ê²½í•  DB íŒŒì¼ì˜ íŒŒì¼ í¬ì¸í„°
+ *  aFp - [IN]  º¯°æÇÒ DB ÆÄÀÏÀÇ ÆÄÀÏ Æ÷ÀÎÅÍ
  ******************************************************************************/
 
 IDE_RC writeString( iduFile * sFile )

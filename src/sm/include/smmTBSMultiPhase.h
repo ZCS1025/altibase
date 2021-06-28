@@ -30,99 +30,99 @@
 #include <smu.h>
 
 /*
-  [ì°¸ê³ ] SMMì•ˆì—ì„œì˜ Fileê°„ì˜ Layerë° ì—­í• ì€ ë‹¤ìŒê³¼ ê°™ë‹¤.
-         í•˜ìœ„ Layerì˜ ì½”ë“œì—ì„œëŠ” ìƒìœ„ Layerì˜ ì½”ë“œë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.
+  [Âü°í] SMM¾È¿¡¼­ÀÇ File°£ÀÇ Layer¹× ¿ªÇÒÀº ´ÙÀ½°ú °°´Ù.
+         ÇÏÀ§ LayerÀÇ ÄÚµå¿¡¼­´Â »óÀ§ LayerÀÇ ÄÚµå¸¦ »ç¿ëÇÒ ¼ö ¾ø´Ù.
 
   ----------------------------------------------------------------------------
-  smmTBSCreate          ; Create Tablespace êµ¬í˜„
-  smmTBSDrop            ; Drop Tablespace êµ¬í˜„
-  smmTBSAlterAutoExtend ; Alter Tablespace Auto Extend êµ¬í˜„
-  smmTBSAlterChkptPath  ; Alter Tablespace Add/Rename/Drop Checkpoint Pathêµ¬í˜„
-  smmTBSAlterDiscard    ; Alter Tablespace Discard êµ¬í˜„
-  smmTBSStartupShutdown ; Startup, Shutdownì‹œì˜ Tablespaceê´€ë ¨ ì²˜ë¦¬ë¥¼ êµ¬í˜„
+  smmTBSCreate          ; Create Tablespace ±¸Çö
+  smmTBSDrop            ; Drop Tablespace ±¸Çö
+  smmTBSAlterAutoExtend ; Alter Tablespace Auto Extend ±¸Çö
+  smmTBSAlterChkptPath  ; Alter Tablespace Add/Rename/Drop Checkpoint Path±¸Çö
+  smmTBSAlterDiscard    ; Alter Tablespace Discard ±¸Çö
+  smmTBSStartupShutdown ; Startup, Shutdown½ÃÀÇ Tablespace°ü·Ã Ã³¸®¸¦ ±¸Çö
   ----------------------------------------------------------------------------
-  smmTBSChkptPath  ; Tablespaceì˜ Checkpoint Path ê´€ë¦¬
-  smmTBSMultiPhase ; Tablespaceì˜ ë‹¤ë‹¨ê³„ ì´ˆê¸°í™”
+  smmTBSChkptPath  ; TablespaceÀÇ Checkpoint Path °ü¸®
+  smmTBSMultiPhase ; TablespaceÀÇ ´Ù´Ü°è ÃÊ±âÈ­
   ----------------------------------------------------------------------------
-  smmManager       ; Tablespaceì˜ ë‚´ë¶€ êµ¬í˜„ 
-  smmFPLManager    ; Tablespace Free Page Listì˜ ë‚´ë¶€ êµ¬í˜„
-  smmExpandChunk   ; Chunkì˜ ë‚´ë¶€êµ¬ì¡° êµ¬í˜„
+  smmManager       ; TablespaceÀÇ ³»ºÎ ±¸Çö 
+  smmFPLManager    ; Tablespace Free Page ListÀÇ ³»ºÎ ±¸Çö
+  smmExpandChunk   ; ChunkÀÇ ³»ºÎ±¸Á¶ ±¸Çö
   ----------------------------------------------------------------------------
   
-  c.f> Memory Tablespaceì˜ Alter Online/Offlineì€ smp layerì— êµ¬í˜„ë˜ì–´ ìˆë‹¤.
+  c.f> Memory TablespaceÀÇ Alter Online/OfflineÀº smp layer¿¡ ±¸ÇöµÇ¾î ÀÖ´Ù.
 */
 
 
 /*
-    smmTBSMultiPhase ; Tablespaceì˜ ë‹¤ë‹¨ê³„ ì´ˆê¸°í™” êµ¬í˜„
+    smmTBSMultiPhase ; TablespaceÀÇ ´Ù´Ü°è ÃÊ±âÈ­ ±¸Çö
 
     ------------------------------------------------------------------------
-    Tablespaceì˜ ë‹¤ë‹¨ê³„ ì´ˆê¸°í™”/íŒŒê´´
+    TablespaceÀÇ ´Ù´Ü°è ÃÊ±âÈ­/ÆÄ±«
     ------------------------------------------------------------------------   
     
-    TablespaceëŠ” ìƒíƒœì— ë”°ë¼ ë‹¤ìŒê³¼ ê°™ì´ ë‹¤ë‹¨ê³„ë¡œ
-    ì´ˆê¸°í™”ë¥¼ ì§„í–‰í•œë‹¤.
+    Tablespace´Â »óÅÂ¿¡ µû¶ó ´ÙÀ½°ú °°ÀÌ ´Ù´Ü°è·Î
+    ÃÊ±âÈ­¸¦ ÁøÇàÇÑ´Ù.
 
-    ìƒìœ„ ë‹¨ê³„ë¡œì˜ ì´ˆê¸°í™”ë¥¼ ìœ„í•´ì„œëŠ” í•˜ìœ„ ë‹¨ê³„ì˜ ì´ˆê¸°í™”ê°€ í•„ìˆ˜ì ì´ë‹¤.
-    (ex> 2. MEDIAë‹¨ê³„ë¡œ ì´ˆê¸°í™”ë¥¼ ìœ„í•´ì„œëŠ” 1.STATEë‹¨ê³„ì˜ ì´ˆê¸°í™”ê°€ í•„ìˆ˜)
+    »óÀ§ ´Ü°è·ÎÀÇ ÃÊ±âÈ­¸¦ À§ÇØ¼­´Â ÇÏÀ§ ´Ü°èÀÇ ÃÊ±âÈ­°¡ ÇÊ¼öÀûÀÌ´Ù.
+    (ex> 2. MEDIA´Ü°è·Î ÃÊ±âÈ­¸¦ À§ÇØ¼­´Â 1.STATE´Ü°èÀÇ ÃÊ±âÈ­°¡ ÇÊ¼ö)
     
     1. STATE  - State Phase
-       ê°€ëŠ¥í•œ ë™ì‘ :
-         - Tablespaceì˜ Stateì— ì ‘ê·¼ ê°€ëŠ¥
-         - ë™ì‹œì„± ì œì–´ë¥¼ ìœ„í•œ Lockê³¼ Mutexë¥¼ ì‚¬ìš©ê°€ëŠ¥
+       °¡´ÉÇÑ µ¿ÀÛ :
+         - TablespaceÀÇ State¿¡ Á¢±Ù °¡´É
+         - µ¿½Ã¼º Á¦¾î¸¦ À§ÇÑ Lock°ú Mutex¸¦ »ç¿ë°¡´É
          
-       ì´ˆê¸°í™” :
-         - Tablespaceì˜ Attributeì´ˆê¸°í™”
-         - Tablespaceì˜ Lock, Mutexì´ˆê¸°í™”
+       ÃÊ±âÈ­ :
+         - TablespaceÀÇ AttributeÃÊ±âÈ­
+         - TablespaceÀÇ Lock, MutexÃÊ±âÈ­
        
     2. MEDIA  - Media Phase
-       ê°€ëŠ¥í•œ ë™ì‘ :
-         - Tablespaceì˜ DB File íŒŒì¼ì— ì½ê¸°/ì“°ê¸° ê°€ëŠ¥
+       °¡´ÉÇÑ µ¿ÀÛ :
+         - TablespaceÀÇ DB File ÆÄÀÏ¿¡ ÀĞ±â/¾²±â °¡´É
          
-       ì´ˆê¸°í™” :
-         - DB File ê°ì²´ ì´ˆê¸°í™”, Open
+       ÃÊ±âÈ­ :
+         - DB File °´Ã¼ ÃÊ±âÈ­, Open
     
     3. PAGE   - Page Phase
-       ê°€ëŠ¥í•œ ë™ì‘ :
-         - Prepare/Restore (DB File => Page Memoryë¡œì˜ ë°ì´í„° ë¡œë“œ )
-         - Tablespaceì˜ Page ì ‘ê·¼/í• ë‹¹/ë°˜ë‚© ê°€ëŠ¥
+       °¡´ÉÇÑ µ¿ÀÛ :
+         - Prepare/Restore (DB File => Page Memory·ÎÀÇ µ¥ÀÌÅÍ ·Îµå )
+         - TablespaceÀÇ Page Á¢±Ù/ÇÒ´ç/¹İ³³ °¡´É
          
-       ì´ˆê¸°í™” :
-         - PCH* Arrayí• ë‹¹
-         - Page Memory Poolí• ë‹¹
-         - Free Page List, Chunk ê´€ë¦¬ì ì´ˆê¸°í™”
+       ÃÊ±âÈ­ :
+         - PCH* ArrayÇÒ´ç
+         - Page Memory PoolÇÒ´ç
+         - Free Page List, Chunk °ü¸®ÀÚ ÃÊ±âÈ­
 
     ------------------------------------------------------------------------
-    Tablespace Stateë³„ ì´ˆê¸°í™” ë‹¨ê³„
+    Tablespace Stateº° ÃÊ±âÈ­ ´Ü°è
     ------------------------------------------------------------------------   
     A. ONLINE
-       ì´ˆê¸°í™” ë‹¨ê³„ : PAGE
-       ì´ìœ  : Pageì˜ í• ë‹¹ë° ë°˜ë‚©, Page Dataì˜ ì ‘ê·¼ì´ ê°€ëŠ¥í•´ì•¼í•¨
+       ÃÊ±âÈ­ ´Ü°è : PAGE
+       ÀÌÀ¯ : PageÀÇ ÇÒ´ç¹× ¹İ³³, Page DataÀÇ Á¢±ÙÀÌ °¡´ÉÇØ¾ßÇÔ
        
     B. OFFLINE
-       ì´ˆê¸°í™” ë‹¨ê³„ : MEDIA
-       ì´ìœ  : Checkpointë§ˆë‹¤ DB Fileì˜ Headerì— RedoLSNì„ ê°±ì‹ í•´ì•¼í•¨
+       ÃÊ±âÈ­ ´Ü°è : MEDIA
+       ÀÌÀ¯ : Checkpoint¸¶´Ù DB FileÀÇ Header¿¡ RedoLSNÀ» °»½ÅÇØ¾ßÇÔ
        
     C. DISCARDED
-       ì´ˆê¸°í™” ë‹¨ê³„ : MEDIA
-       ì´ìœ  : ì—¬ëŸ¬ Transactionì´ ë™ì‹œì— DISCARDëœ Tablespaceì— ì ‘ê·¼ê°€ëŠ¥
-               Discardëœ Tablespaceì— Drop Tablespaceë¥¼ ì œì™¸í•œ
-               ëª¨ë“  DML/DDLì˜ ìˆ˜í–‰ì´ ê±°ì ˆë˜ë¯€ë¡œ,
-               Tablespaceì˜ ìƒíƒœë§Œ ì¡°íšŒí•  ìˆ˜ ìˆìœ¼ë©´ ëœë‹¤.
+       ÃÊ±âÈ­ ´Ü°è : MEDIA
+       ÀÌÀ¯ : ¿©·¯ TransactionÀÌ µ¿½Ã¿¡ DISCARDµÈ Tablespace¿¡ Á¢±Ù°¡´É
+               DiscardµÈ Tablespace¿¡ Drop Tablespace¸¦ Á¦¿ÜÇÑ
+               ¸ğµç DML/DDLÀÇ ¼öÇàÀÌ °ÅÀıµÇ¹Ç·Î,
+               TablespaceÀÇ »óÅÂ¸¸ Á¶È¸ÇÒ ¼ö ÀÖÀ¸¸é µÈ´Ù.
                
-               Drop Tablespaceê°€ ê°€ëŠ¥í•˜ê¸° ë•Œë¬¸ì—, DB Fileê°ì²´ì— ì ‘ê·¼ì´
-               ê°€ëŠ¥í•´ì•¼ í•˜ë©°, ì´ë¥¼ ìœ„í•´ MEDIAë‹¨ê³„ê¹Œì§€ ì´ˆê¸°í™”ê°€
-               ë˜ì–´ìˆì–´ì•¼ í•œë‹¤.
+               Drop Tablespace°¡ °¡´ÉÇÏ±â ¶§¹®¿¡, DB File°´Ã¼¿¡ Á¢±ÙÀÌ
+               °¡´ÉÇØ¾ß ÇÏ¸ç, ÀÌ¸¦ À§ÇØ MEDIA´Ü°è±îÁö ÃÊ±âÈ­°¡
+               µÇ¾îÀÖ¾î¾ß ÇÑ´Ù.
        
     D. DROPPED
-       ì´ˆê¸°í™” ë‹¨ê³„ : STATE
-       ì´ìœ  : ì—¬ëŸ¬ Transactionì´ ë™ì‹œì— DROPëœ Tablespaceì— ì ‘ê·¼ê°€ëŠ¥
-               Dropëœ Tablespaceì— ëª¨ë“  DML/DDLì˜ ìˆ˜í–‰ì´ ê±°ì ˆë˜ë¯€ë¡œ,
-               Tablespaceì˜ ìƒíƒœë§Œ ì¡°íšŒí•  ìˆ˜ ìˆìœ¼ë©´ ëœë‹¤.
+       ÃÊ±âÈ­ ´Ü°è : STATE
+       ÀÌÀ¯ : ¿©·¯ TransactionÀÌ µ¿½Ã¿¡ DROPµÈ Tablespace¿¡ Á¢±Ù°¡´É
+               DropµÈ Tablespace¿¡ ¸ğµç DML/DDLÀÇ ¼öÇàÀÌ °ÅÀıµÇ¹Ç·Î,
+               TablespaceÀÇ »óÅÂ¸¸ Á¶È¸ÇÒ ¼ö ÀÖÀ¸¸é µÈ´Ù.
     
 
     ------------------------------------------------------------------------   
-    Meta/Serviceìƒíƒœì—ì„œì˜ Tablespace Nodeì˜ ìƒíƒœì „ì´
+    Meta/Service»óÅÂ¿¡¼­ÀÇ Tablespace NodeÀÇ »óÅÂÀüÀÌ
     ------------------------------------------------------------------------   
      - ONLINE => OFFLINE
         [ PAGE => MEDIA ] finiPAGE
@@ -136,7 +136,7 @@
      - OFFLINE => DROPPED
         [ STATE => PAGE ] initMEDIA, initPAGE
     ------------------------------------------------------------------------   
-    Controlìƒíƒœì—ì„œì˜ Tablespace Nodeì˜ ìƒíƒœì „ì´
+    Control»óÅÂ¿¡¼­ÀÇ Tablespace NodeÀÇ »óÅÂÀüÀÌ
      - ONLINE => DISCARDED
         [ PAGE => STATE ] finiPAGE, finiMEDIA
        
@@ -150,46 +150,46 @@
 class smmTBSMultiPhase
 {
 public :
-    // ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
+    // »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
     smmTBSMultiPhase();
 
     
-    // STATE Phase ë¡œë¶€í„° Tablespaceì˜ ìƒíƒœì— ë”°ë¼
-    // í•„ìš”í•œ ë‹¨ê²Œê¹Œì§€ ë‹¤ë‹¨ê³„ ì´ˆê¸°í™”
+    // STATE Phase ·ÎºÎÅÍ TablespaceÀÇ »óÅÂ¿¡ µû¶ó
+    // ÇÊ¿äÇÑ ´Ü°Ô±îÁö ´Ù´Ü°è ÃÊ±âÈ­
     static IDE_RC initTBS( smmTBSNode * aTBSNode,
                            smiTableSpaceAttr * aTBSAttr );
     
-    // Server Shutdownì‹œì— Tablespaceì˜ ìƒíƒœì— ë”°ë¼
-    // Tablespaceì˜ ì´ˆê¸°í™”ëœ ë‹¨ê³„ë“¤ì„ íŒŒê´´í•œë‹¤.
+    // Server Shutdown½Ã¿¡ TablespaceÀÇ »óÅÂ¿¡ µû¶ó
+    // TablespaceÀÇ ÃÊ±âÈ­µÈ ´Ü°èµéÀ» ÆÄ±«ÇÑ´Ù.
     static IDE_RC finiTBS( smmTBSNode * aTBSNode );
     
-    // PAGE, MEDIA Phaseë¡œë¶€í„° STATE Phase ë¡œ ì „ì´
+    // PAGE, MEDIA Phase·ÎºÎÅÍ STATE Phase ·Î ÀüÀÌ
     static IDE_RC finiToStatePhase( smmTBSNode * aTBSNode );
 
-    // ë‹¤ë‹¨ê³„ í•´ì œë¥¼ í†µí•´ MEDIAë‹¨ê³„ë¡œ ì „ì´
+    // ´Ù´Ü°è ÇØÁ¦¸¦ ÅëÇØ MEDIA´Ü°è·Î ÀüÀÌ
     static IDE_RC finiToMediaPhase( UInt         aTBSState,
                                     smmTBSNode * aTBSNode );
     
-    // Tablespaceì˜ STATEë‹¨ê³„ë¥¼ ì´ˆê¸°í™”
+    // TablespaceÀÇ STATE´Ü°è¸¦ ÃÊ±âÈ­
     static IDE_RC initStatePhase( smmTBSNode * aTBSNode,
                                   smiTableSpaceAttr * aTBSAttr );
 
-    // STATEë‹¨ê³„ê¹Œì§€ ì´ˆê¸°í™”ëœ Tablespaceì˜ ë‹¤ë‹¨ê³„ì´ˆê¸°í™”
+    // STATE´Ü°è±îÁö ÃÊ±âÈ­µÈ TablespaceÀÇ ´Ù´Ü°èÃÊ±âÈ­
     static IDE_RC initFromStatePhase( smmTBSNode * aTBSNode );
     
-    // Tablespaceì˜ MEDIAë‹¨ê³„ë¥¼ ì´ˆê¸°í™”
+    // TablespaceÀÇ MEDIA´Ü°è¸¦ ÃÊ±âÈ­
     static IDE_RC initMediaPhase( smmTBSNode * aTBSNode );
 
-    // Tablespaceì˜ PAGEë‹¨ê³„ë¥¼ ì´ˆê¸°í™”
+    // TablespaceÀÇ PAGE´Ü°è¸¦ ÃÊ±âÈ­
     static IDE_RC initPagePhase( smmTBSNode * aTBSNode );
 
-    // Tablespaceì˜ STATEë‹¨ê³„ë¥¼ íŒŒê´´
+    // TablespaceÀÇ STATE´Ü°è¸¦ ÆÄ±«
     static IDE_RC finiStatePhase( smmTBSNode * aTBSNode );
 
-    // Tablespaceì˜ MEDIAë‹¨ê³„ë¥¼ íŒŒê´´
+    // TablespaceÀÇ MEDIA´Ü°è¸¦ ÆÄ±«
     static IDE_RC finiMediaPhase( smmTBSNode * aTBSNode );
 
-    // Tablespaceì˜ PAGEë‹¨ê³„ë¥¼ íŒŒê´´
+    // TablespaceÀÇ PAGE´Ü°è¸¦ ÆÄ±«
     static IDE_RC finiPagePhase( smmTBSNode * aTBSNode );
 };
 

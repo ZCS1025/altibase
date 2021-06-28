@@ -28,16 +28,23 @@
 #include <smlDef.h>
 #include <smu.h>
 #include <smlLockMgr.h>
+#include <iddRBTree.h>
 
 class smlFT
 {
 private:
-    // TBL,TBS,DBFÏóê LockNodeÎ•º FixedTableÏùò RecordÎ°ú ÏÉùÏÑ±ÌïúÎã§. 
-    static IDE_RC getLockItemNodes(void                 *aHeader,
+    // TBL,TBS,DBFø° LockNode∏¶ FixedTable¿« Record∑Œ ª˝º∫«—¥Ÿ. 
+    static IDE_RC getLockItemNodes( void                 *aHeader,
                                     iduFixedTableMemory *aMemory,
-                                    smlLockItem         *aLockItem);
+                                    smlLockItem         *aLockItem );
+    static IDE_RC getLockNodesFromTrans( idvSQL              *aStatistics,
+                                         void                *aHeader,
+                                         iduFixedTableMemory *aMemory,
+                                         smiLockItemType      aLockTableType,
+                                         iddRBTree           *aLockItemTree );
 
 public:
+    static SInt compLockItemID( const void* aLeft, const void* aRight );
 
     // X$LOCK
     static  IDE_RC  buildRecordForLockTBL(idvSQL      *aStatistics,
@@ -63,6 +70,16 @@ public:
                                           void        *aDumpObj,
                                           iduFixedTableMemory *aMemory);
 
+    /* X$LOCK_RECORD */
+    static IDE_RC  buildRecordForLockRecord( idvSQL              * aStatistics,
+                                             void                * aHeader,
+                                             void                * aDumpObj,
+                                             iduFixedTableMemory * aMemory );
+    /* X$DIST_LOCK_WAIT */
+    static IDE_RC  buildRecordForDistLockWait( idvSQL              * aStatistics,
+                                               void                * aHeader,
+                                               void                * aDumpObj,
+                                               iduFixedTableMemory * aMemory );
 };
 
 #endif

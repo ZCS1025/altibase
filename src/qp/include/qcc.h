@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcc.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qcc.h 88963 2020-10-19 03:33:18Z jake.jang $
  **********************************************************************/
 #ifndef _O_QCC_H_
 #define  _O_QCC_H_  1
@@ -39,6 +39,8 @@ public:
 
     // dummy exection
     static IDE_RC execute( qcStatement * aStatement );
+    // execution error function
+    static IDE_RC executeError(qcStatement * aStatement);
 
 };
 

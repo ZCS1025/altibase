@@ -41,7 +41,7 @@ IDE_RC mmcStatement::initialize(mmcStmtID      aStatementID,
                                 mmcStatement * aParentStmt)
 {
     /*
-     * Statement Info Ï¥àÍ∏∞Ìôî
+     * Statement Info √ ±‚»≠
      */
 
     mInfo.mStmt                 = this;
@@ -75,7 +75,6 @@ IDE_RC mmcStatement::initialize(mmcStmtID      aStatementID,
                            aSession->getShardPIN() );
     mInfo.mShardSessionType = aSession->getShardSessionType();
     mInfo.mShardQueryType = SDI_QUERY_TYPE_NONE;
-    mInfo.mCallShardAnalyzeProtocol = ID_FALSE;
 
     setQueryStartTime(0);
     setFetchStartTime(0);
@@ -92,7 +91,7 @@ IDE_RC mmcStatement::initialize(mmcStmtID      aStatementID,
     //PROJ-1436 SQL Plan Cache.
     mPCB = NULL;
     /*
-     * QCISTATEMENT Ï¥àÍ∏∞Ìôî
+     * QCISTATEMENT √ ±‚»≠
      */
 
     idlOS::memset(&mQciStmt, 0, ID_SIZEOF(mQciStmt));
@@ -108,7 +107,7 @@ IDE_RC mmcStatement::initialize(mmcStmtID      aStatementID,
                                       &mInfo.mStatistics) != IDE_SUCCESS);
 
     /*
-     * Statement List Ï¥àÍ∏∞Ìôî
+     * Statement List √ ±‚»≠
      */
 
     IDU_LIST_INIT_OBJ(&mStmtListNodeForParent, this);
@@ -116,7 +115,7 @@ IDE_RC mmcStatement::initialize(mmcStmtID      aStatementID,
     IDU_LIST_INIT_OBJ(&mFetchListNode, this);
 
     /*
-     * Mutex Ï¥àÍ∏∞Ìôî
+     * Mutex √ ±‚»≠
      */
 
     /* PROJ-2109 : Remove the bottleneck of alloc/free stmts. */
@@ -126,7 +125,7 @@ IDE_RC mmcStatement::initialize(mmcStmtID      aStatementID,
               != IDE_SUCCESS );
 
     /*
-     * Í∏∞ÌÉÄ Î©§Î≤Ñ Î≥ÄÏàò Ï¥àÍ∏∞Ìôî
+     * ±‚≈∏ ∏‚πˆ ∫Øºˆ √ ±‚»≠
      */
 
     mSession             = aSession;
@@ -141,18 +140,22 @@ IDE_RC mmcStatement::initialize(mmcStmtID      aStatementID,
     mExecutingTrans            = NULL;
     mIsShareTransSmiStmtLocked = ID_FALSE;
 
+    /* BUG-47238 */
+    mInfo.mFlag &= ~MMC_STMT_NEED_UNLOCK_MASK;
+    mInfo.mFlag |= MMC_STMT_NEED_UNLOCK_FALSE;
+
     /* BUG-33196 Statement type need to be initialized in MM module */
     mStmtType           = QCI_STMT_MASK_MAX;
 
     mAtomicInfo.mAtomicExecuteSuccess = ID_TRUE;
     mAtomicInfo.mIsCursorOpen         = ID_FALSE;
-    // BUG-23054 mmcStatement::setAtomicLastErrorCode() ÏóêÏÑú Valgrind BUG Î∞úÏÉùÌï©ÎãàÎã§.
+    // BUG-23054 mmcStatement::setAtomicLastErrorCode() ø°º≠ Valgrind BUG πﬂª˝«’¥œ¥Ÿ.
     mAtomicInfo.mAtomicLastErrorCode  = idERR_IGNORE_NoError;
 
     IDU_LIST_INIT( &mChildStmtList );
     
     /*
-     * Plan String Ï¥àÍ∏∞Ìôî
+     * Plan String √ ±‚»≠
      */
 
     IDE_TEST(iduVarStringInitialize(getPlanString(),
@@ -161,10 +164,10 @@ IDE_RC mmcStatement::initialize(mmcStmtID      aStatementID,
 
 
     // PROJ-1386 Dynamic-SQL
-    // parent statementÏùò childÎ°ú Îß§Îã¨Í∏∞
+    // parent statement¿« child∑Œ ∏≈¥ﬁ±‚
     if( isRootStmt() == ID_TRUE )
     {        
-        // rootÎäî sessionÏóê Îã¨Í∏∞
+        // root¥¬ sessionø° ¥ﬁ±‚
         aSession->lockForStmtList();
         
         IDU_LIST_ADD_LAST(aSession->getStmtList(), getStmtListNode());
@@ -182,6 +185,9 @@ IDE_RC mmcStatement::initialize(mmcStmtID      aStatementID,
 
     mInfo.mCursorHold = MMC_STMT_CURSOR_HOLD_ON;
     mInfo.mKeysetMode = MMC_STMT_KEYSETMODE_OFF;
+
+    /* TASK-7219 Non-shard DML */
+    mInfo.mShardPartialExecType = SDI_SHARD_PARTIAL_EXEC_TYPE_NONE;
 
     /* BUG-46892 */
     mInfo.mMathTempMem = (ULong)0;
@@ -215,6 +221,11 @@ IDE_RC mmcStatement::initialize(mmcStmtID      aStatementID,
 
     /* BUG-46092 */
     sdiStatementManager::initializeStatement( &mSdStmt );
+
+    clearGCTxStmtInfo();
+    linkGCTxStmtInfo();
+
+    mInfo.mRebuildCount = 0;
 
     return IDE_SUCCESS;
     IDE_EXCEPTION_END;
@@ -263,6 +274,8 @@ IDE_RC mmcStatement::finalize()
     freeAllRemoteStatement( CMP_DB_FREE_DROP );
     sdiStatementManager::finalizeStatement( &mSdStmt );
 
+    unlinkGCTxStmtInfo();
+
     /* PROJ-2109 : Remove the bottleneck of alloc/free stmts. */
     /* Free the mutex from the mutex pool in mmcSession. */
     IDE_ASSERT( getSession()->getMutexPool()->freeMutexFromPool(mQueryMutex)
@@ -278,6 +291,7 @@ IDE_RC mmcStatement::finalize()
     }
 
     /* PROJ-2701 Online Data Rebuild: for Statement Serialize */
+    IDE_DASSERT( mIsShareTransSmiStmtLocked == ID_FALSE );
     mIsShareTransSmiStmtLocked = ID_FALSE;
     mExecutingTrans = NULL;
 
@@ -341,43 +355,36 @@ IDE_RC mmcStatement::clearPlanTreeText()
 }
 
 /* PROJ-2598 Shard pilot(shard Analyze)
- * shard analyze protocolÏóê ÏùòÌï¥ shard queryÎ•º Î∂ÑÏÑùÌïúÎã§.
- * prepare protocolÏù¥ query planÏùÑ ÏÉùÏÑ±ÌïòÎìØ
- * analyze protocolÏùÄ analysis reportÎ•º ÏÉùÏÑ±ÌïúÎã§.
+ * shard analyze protocolø° ¿««ÿ shard query∏¶ ∫–ºÆ«—¥Ÿ.
+ * prepare protocol¿Ã query plan¿ª ª˝º∫«œµÌ
+ * analyze protocol¿∫ analysis report∏¶ ª˝º∫«—¥Ÿ.
  */
 IDE_RC mmcStatement::shardAnalyze(SChar *aQueryString, UInt aQueryLen)
 {
-    setBindState(MMC_STMT_BIND_NONE);
-    setQueryString(aQueryString, aQueryLen);
-
     /* BUG-45823 */
     setShardQueryType( SDI_QUERY_TYPE_NONE );
-    setCallShardAnalyzeProtocol( ID_FALSE );
+    mSession->setCallByShardAnalyzeProtocol( ID_TRUE );
 
-    /* BUG-15658 */
-    IDE_TEST(qci::refineStackSize(getQciStmt()) != IDE_SUCCESS);
-
-    IDE_TEST(parse(aQueryString) != IDE_SUCCESS);
-
-    while (qci::shardAnalyze(getQciStmt()) != IDE_SUCCESS)
-    {
-        IDE_TEST(ideIsRebuild() != IDE_SUCCESS);
-
-        IDE_TEST(qci::clearStatement(getQciStmt(),
-                                     getSmiStmt(),
-                                     QCI_STMT_STATE_INITIALIZED)
-                 != IDE_SUCCESS);
-
-        IDE_TEST(parse(aQueryString) != IDE_SUCCESS);
-    }
+    /* TASK-7219 Analyzer/Transformer/Executor º∫¥…∞≥º±
+     *
+     * Soft analysis
+     *
+     * Preparation ∞˙¡§¡ﬂø°
+     * Shard analysis result∞° ª˝º∫µ«æÓ
+     * plan cacheø° µÓ∑œ µ«µµ∑œ ∫Ø∞Ê
+     */
+    IDE_TEST( prepare( aQueryString, aQueryLen )
+              != IDE_SUCCESS );
 
     /* BUG-45823 */
     setShardQueryType( sdi::getQueryType( getQciStmt() ) );
-    setCallShardAnalyzeProtocol( ID_TRUE );
+    mSession->setCallByShardAnalyzeProtocol( ID_FALSE );
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    mSession->setCallByShardAnalyzeProtocol( ID_FALSE );
 
     return IDE_FAILURE;
 }
@@ -394,8 +401,8 @@ IDE_RC mmcStatement::prepare(SChar *aQueryString, UInt aQueryLen)
     /* PROJ-2223 Altibase Auditing */
     idvAuditTrail           *sAuditTrail;
 
-    /* BUG-44853 Plan Cache ÏòàÏô∏ Ï≤òÎ¶¨Í∞Ä Î∂ÄÏ°±ÌïòÏó¨, ÎπÑÏ†ïÏÉÅ Ï¢ÖÎ£åÍ∞Ä Î∞úÏÉùÌï† Ïàò ÏûàÏäµÎãàÎã§.
-     * QMP MemoryÏôÄ Shared TemplateÏùÑ Ï¥àÍ∏∞ÌôîÌïúÎã§.
+    /* BUG-44853 Plan Cache øπø‹ √≥∏Æ∞° ∫Œ¡∑«œø©, ∫Ò¡§ªÛ ¡æ∑·∞° πﬂª˝«“ ºˆ ¿÷Ω¿¥œ¥Ÿ.
+     * QMP MemoryøÕ Shared Template¿ª √ ±‚»≠«—¥Ÿ.
      */
     sPlanCacheContext.mPlanCacheInMode = QCI_SQL_PLAN_CACHE_IN_OFF;
     sPlanCacheContext.mSharedPlanMemory = NULL;
@@ -412,18 +419,18 @@ IDE_RC mmcStatement::prepare(SChar *aQueryString, UInt aQueryLen)
         releasePlanCacheObject();
     }
 
-    // BUG-21204 : V$SESSTAT Ï§ë QUERY_PARSE, QUERY_VALIDATE, QUERY_OPTIMIZEÎäî
-    //             prepareÏóêÏÑú accumTimeÏùÑ Ï¥àÍ∏∞ÌôîÌï¥Ïïº ÌïúÎã§
+    // BUG-21204 : V$SESSTAT ¡ﬂ QUERY_PARSE, QUERY_VALIDATE, QUERY_OPTIMIZE¥¬
+    //             prepareø°º≠ accumTime¿ª √ ±‚»≠«ÿæﬂ «—¥Ÿ
     sStatistics = getStatistics();
     
     idvManager::initPrepareAccumTime(sStatistics );
 
-    // bug-23991: prepared ÌõÑ execute ÎßàÎã§ PVO time Í∞íÏù¥ Í∑∏ÎåÄÎ°ú ÎÇ®Ïùå
-    // TIMED_STATISTICS ÏÜçÏÑ±Ïù¥ 1Ïù∏ Í≤ΩÏö∞Îßå(ON) ÏàòÌñâÎê®.
-    // statement ÏãúÏûë ÏãúÏ†ê(execute)ÏóêÏÑú PVO time Í∞íÏùÑ clearÏãúÌÇ¨ÏßÄ Ïó¨Î∂ÄÎ•º
-    // Í≤∞Ï†ïÌïòÍ∏∞ ÏúÑÌï¥ÏÑú mTimedStatistics flagÎ•º ÏÉàÎ°ú Ï∂îÍ∞ÄÌïòÍ≥†
-    // prepaedÍ∞Ä ÏàòÌñâÎêòÎ©¥ trueÎ°ú ÏÑ∏ÌåÖÌïòÏó¨ beginStmt()ÏóêÏÑú PVO timeÍ∞íÎì§ÏùÄ
-    // clearÌïòÏßÄ ÏïäÎèÑÎ°ù ÌïúÎã§
+    // bug-23991: prepared »ƒ execute ∏∂¥Ÿ PVO time ∞™¿Ã ±◊¥Î∑Œ ≥≤¿Ω
+    // TIMED_STATISTICS º”º∫¿Ã 1¿Œ ∞ÊøÏ∏∏(ON) ºˆ«‡µ .
+    // statement Ω√¿€ Ω√¡°(execute)ø°º≠ PVO time ∞™¿ª clearΩ√≈≥¡ˆ ø©∫Œ∏¶
+    // ∞·¡§«œ±‚ ¿ß«ÿº≠ mTimedStatistics flag∏¶ ªı∑Œ √ﬂ∞°«œ∞Ì
+    // prepaed∞° ºˆ«‡µ«∏È true∑Œ ºº∆√«œø© beginStmt()ø°º≠ PVO time∞™µÈ¿∫
+    // clear«œ¡ˆ æ µµ∑œ «—¥Ÿ
     if (iduProperty::getTimedStatistics() == IDV_TIMED_STATISTICS_ON)
     {
         setPreparedTimeExist(ID_TRUE);
@@ -435,11 +442,16 @@ IDE_RC mmcStatement::prepare(SChar *aQueryString, UInt aQueryLen)
     setBindState(MMC_STMT_BIND_NONE);
     setQueryString(aQueryString, aQueryLen);
 
-    /* BUG-45823 */
-    if ( getCallShardAnalyzeProtocol() == ID_FALSE )
+    /* TASK-7219 Analyzer/Transformer/Executor º∫¥…∞≥º± */
+    if ( mSession->getCallByShardAnalyzeProtocol() == ID_TRUE )
     {
         setShardQueryType( SDI_QUERY_TYPE_NONE );
     }
+
+    /* TASK-7219 Non-shard DML */
+    IDE_TEST( qci::setShardPartialExecType( getQciStmt(),
+                                            getShardPartialExecType() )
+              != IDE_SUCCESS );
 
     /*
      * BUG-15658
@@ -491,7 +503,7 @@ IDE_RC mmcStatement::prepare(SChar *aQueryString, UInt aQueryLen)
             {
                 sPlanCacheContext.mPlanCacheInMode = QCI_SQL_PLAN_CACHE_IN_ON;
             }
-            
+
             IDE_TEST(hardPrepare(sPCB,
                                  &sPlanCacheContext) != IDE_SUCCESS);
 
@@ -542,7 +554,7 @@ IDE_RC mmcStatement::prepare(SChar *aQueryString, UInt aQueryLen)
     if ( getStmtType() == QCI_STMT_DEQUEUE ||
          getStmtType() == QCI_STMT_ENQUEUE )
     {
-        /* BUG-46163 DEQUEUE, ENQUEUEÎäî simplequery Ï†úÏô∏ */
+        /* BUG-46163 DEQUEUE, ENQUEUE¥¬ simplequery ¡¶ø‹ */
         setSimpleQuery( ID_FALSE );
     }
     else
@@ -686,7 +698,7 @@ IDE_RC mmcStatement::execute(SLong *aAffectedRowCount, SLong *aFecthedRowCount)
     }
     /* << BUG-39352 */
 
-    /* PROJ-2473 SNMP ÏßÄÏõê */
+    /* PROJ-2473 SNMP ¡ˆø¯ */
     mSession->resetSessionFailureCount();
 
     return IDE_SUCCESS;
@@ -697,10 +709,11 @@ IDE_RC mmcStatement::execute(SLong *aAffectedRowCount, SLong *aFecthedRowCount)
                             IDV_OPTM_INDEX_QUERY_EXECUTE );
 
         // fix BUG-30891
-        // retry, rebuild ÏóêÎü¨Îäî execute failure countÎ•º Ï¶ùÍ∞ÄÏãúÌÇ§ÏßÄ ÏïäÏùå
+        // retry, rebuild ø°∑Ø¥¬ execute failure count∏¶ ¡ı∞°Ω√≈∞¡ˆ æ ¿Ω
         switch (ideGetErrorCode() & E_ACTION_MASK)
         {
             case E_ACTION_RETRY:
+                IDE_DASSERT( ideGetErrorCode() != smERR_RETRY_Row_Retry ); 
             case E_ACTION_REBUILD:
                 break;
             default:
@@ -711,9 +724,9 @@ IDE_RC mmcStatement::execute(SLong *aAffectedRowCount, SLong *aFecthedRowCount)
                 sSessionFailureCount = iduProperty::getSNMPAlarmSessionFailureCount();
 
                 /* 
-                 * PROJ-2473 SNMP ÏßÄÏõê
+                 * PROJ-2473 SNMP ¡ˆø¯
                  *
-                 * Ïó∞ÏÜçÏúºÎ°ú sSessionFailureCount Ïã§Ìå®Í∞Ä ÏùºÏñ¥ÎÇòÎ©¥ trapÎ•º Î≥¥ÎÇ∏Îã§.
+                 * ø¨º”¿∏∑Œ sSessionFailureCount Ω«∆–∞° ¿œæÓ≥™∏È trap∏¶ ∫∏≥Ω¥Ÿ.
                  */
                 if ((sSessionFailureCount > 0) &&
                     (mSession->addSessionFailureCount() >= sSessionFailureCount))
@@ -747,13 +760,16 @@ IDE_RC mmcStatement::execute(SLong *aAffectedRowCount, SLong *aFecthedRowCount)
     return IDE_FAILURE;
 }
 
-IDE_RC mmcStatement::doHardRebuild(mmcPCB                   *aPCB,
+IDE_RC mmcStatement::doHardRebuild(mmcPCB                  *aPCB,
                                    qciSQLPlanCacheContext  *aPlanCacheContext)
 {
     cmiProtocolContext *sCtx       = mSession->getTask()->getProtocolContext();
     mmcTransObj        *sTrans;
     smiTrans           *sSmiTrans;
     SChar              *sSQLText;
+    UInt sStmtRetryMax    = mSession->getShardStatementRetry();
+    UInt sRebuildRetryMax = SDI_SHARD_RETRY_LOOP_MAX;
+    smiDistTxInfo sDistTxInfo;
 
     sTrans = mSession->allocTrans(this);
     sSmiTrans = mmcTrans::getSmiTrans(sTrans);
@@ -766,19 +782,36 @@ IDE_RC mmcStatement::doHardRebuild(mmcPCB                   *aPCB,
     {
         sSQLText = getQueryString();
     }
+
+    /* BUG-48282 : Shard TX¿« HARD REBUILDΩ√ø°µµ ∫–ªÍ¡§∫∏∞° º≥¡§µ«æÓæﬂ «—¥Ÿ. */
+    buildSmiDistTxInfo( &sDistTxInfo );
+
     while (qci::hardRebuild(getQciStmt(),
                             getSmiStmt(),
                             sSmiTrans->getStatement(),
                             aPlanCacheContext,
                             sSQLText,
-                            getQueryLen()) != IDE_SUCCESS)
+                            getQueryLen(),
+                            &sDistTxInfo) != IDE_SUCCESS)
     {
+        IDE_TEST( mSession->processShardRetryError( this,
+                                                    &sStmtRetryMax,
+                                                    &sRebuildRetryMax )
+                  != IDE_SUCCESS );
+
         IDE_TEST(ideIsRebuild() != IDE_SUCCESS);
+
+        if ( ( getQciStmt()->flag & QCI_STMT_REBUILD_EXEC_MASK )
+             == QCI_STMT_REBUILD_EXEC_FAILURE )
+        {
+            IDE_TEST(qci::clearStatement4Reprepare(getQciStmt(),
+                                                   sSmiTrans->getStatement()) != IDE_SUCCESS);
+        }
 
         if ((cmiGetLinkImpl(sCtx) == CMI_LINK_IMPL_IPCDA) && (isSimpleQuery() == ID_TRUE))
         {
-            /* BUG-46756 IPCDA simpleQuery exeucte ÏãúÏóêÎäî mmcStatementÎ•º ÏÇ¨Ïö©ÌïòÏßÄ ÏïäÎäîÎã§.
-             * smiTransÎ•º ÏßÅÏ†ë begin, end ÌïúÎã§. */
+            /* BUG-46756 IPCDA simpleQuery exeucte Ω√ø°¥¬ mmcStatement∏¶ ªÁøÎ«œ¡ˆ æ ¥¬¥Ÿ.
+             * BUG-47029 smiStatement∏¶ ¡˜¡¢ begin, end «—¥Ÿ. */
         }
         else
         {
@@ -809,8 +842,8 @@ IDE_RC mmcStatement::rebuild()
     sStatistics = getStatistics();
     IDV_SESS_ADD_DIRECT(mSession->getStatistics(), IDV_STAT_INDEX_REBUILD_COUNT, 1);
 
-    /* BUG-44853 Plan Cache ÏòàÏô∏ Ï≤òÎ¶¨Í∞Ä Î∂ÄÏ°±ÌïòÏó¨, ÎπÑÏ†ïÏÉÅ Ï¢ÖÎ£åÍ∞Ä Î∞úÏÉùÌï† Ïàò ÏûàÏäµÎãàÎã§.
-     * QMP MemoryÏôÄ Shared TemplateÏùÑ Ï¥àÍ∏∞ÌôîÌïúÎã§.
+    /* BUG-44853 Plan Cache øπø‹ √≥∏Æ∞° ∫Œ¡∑«œø©, ∫Ò¡§ªÛ ¡æ∑·∞° πﬂª˝«“ ºˆ ¿÷Ω¿¥œ¥Ÿ.
+     * QMP MemoryøÕ Shared Template¿ª √ ±‚»≠«—¥Ÿ.
      */
     sPlanCacheContext.mPlanCacheInMode = QCI_SQL_PLAN_CACHE_IN_OFF;
     sPlanCacheContext.mSharedPlanMemory = NULL;
@@ -820,13 +853,20 @@ IDE_RC mmcStatement::rebuild()
     IDE_TEST(qci::clearStatement4Reprepare(getQciStmt(),
                                            getSmiStmt()) != IDE_SUCCESS);
 
+    /* TASK-7219 Non-shard DML */
+    IDE_TEST( qci::setShardPartialExecType( getQciStmt(),
+                                            getShardPartialExecType() )
+              != IDE_SUCCESS );
+
     /* PROJ-2701 Sharding online date rebuild
-     * Rebuild coordinatorÏàòÌñâÏùÑ ÏúÑÌïú planÏùÄ plan cacheÎ•º ÏÇ¨Ïö©ÌïòÏßÄ ÏïäÎäîÎã§.
-     * Shard rebuild planÏùÄ bind Í∞íÏóê Îî∞ÎùºÏÑú planÏù¥ Í∞ÅÍ∏∞ Îã§Î•º Ïàò ÏûàÍ∏∞ ÎïåÎ¨∏Ïóê
-     * StatementÎßàÎã§ privateÌïòÍ≤å ÏÇ¨Ïö©ÌïúÎã§.
-     */
-    if( ( mPCB == NULL ) ||
-        ( sdi::isRebuildCoordinator( &getQciStmt()->statement ) == ID_TRUE ) )
+     * Rebuild coordinatorºˆ«‡¿ª ¿ß«— plan¿∫ plan cache∏¶ ªÁøÎ«œ¡ˆ æ ¥¬¥Ÿ.
+     * Shard rebuild plan¿∫ bind ∞™ø° µ˚∂Ûº≠ plan¿Ã ∞¢±‚ ¥Ÿ∏¶ ºˆ ¿÷±‚ ∂ßπÆø°
+     * Statement∏∂¥Ÿ private«œ∞‘ ªÁøÎ«—¥Ÿ.
+     * -> PROJ-2745
+     *  ¥ı¿ÃªÛ Rebuild Coordinator ∏¶ ª˝º∫«œ¡ˆ æ ∞Ì
+     *  Shard Coordinator ∞° æ∆¥œ∂Û∏È SMN ¬˜¿Ãø° ¿««— rebuild ∏¶ ºˆ«‡«œ¡ˆ æ ±‚ ∂ßπÆø°
+     *  soft prepare ∏¶ «„øÎ«—¥Ÿ. */
+    if ( mPCB == NULL )
     {
         sPlanCacheContext.mPlanCacheInMode =QCI_SQL_PLAN_CACHE_IN_OFF ;
         //fix BUG-30855 It needs to describe soft prepare time in detail for problem tracking.
@@ -839,7 +879,7 @@ IDE_RC mmcStatement::rebuild()
     else
     {
         //soft-rebuild;
-        // ÏÉàÎ°úÏö¥ planÏùÑ recompileÌï¥Ïïº ÌïòÎäî Í≤ΩÏö∞Ïù¥Îã§.
+        // ªı∑ŒøÓ plan¿ª recompile«ÿæﬂ «œ¥¬ ∞ÊøÏ¿Ã¥Ÿ.
         //fix BUG-27360 Code-Sonar UMR sPCB can be uninitialized mememory.
         IDV_SQL_OPTIME_BEGIN(sStatistics,IDV_OPTM_INDEX_CREATE_NEW_CHILD_PCO_BY_REBUILD_AT_EXEC);
         //fix BUG-31376 Reducing s-latch duration of parent PCO while perform soft prepare .
@@ -867,10 +907,10 @@ IDE_RC mmcStatement::rebuild()
         }//if
         else
         {
-            //winner,hard-prepareÍ∞Ä ÌïÑÏöî
+            //winner,hard-prepare∞° « ø‰
             sNeedHardPrepare = ID_TRUE;
         }//else
-        //fix BUG-24364 valgrind direct executeÏúºÎ°ú ÏàòÌñâÏãúÌÇ® statementÏùò  plan cacheÏ†ïÎ≥¥Î•º resetÏãúÏºúÏïºÌï®.
+        //fix BUG-24364 valgrind direct execute¿∏∑Œ ºˆ«‡Ω√≈≤ statement¿«  plan cache¡§∫∏∏¶ resetΩ√ƒ—æﬂ«‘.
         releasePlanCacheObject();
         if(sNeedHardPrepare == ID_FALSE)
         {
@@ -888,7 +928,7 @@ IDE_RC mmcStatement::rebuild()
             //hard-prepare need.
             if(sPCB == NULL)
             {
-                // hard-rebuild winner statementÍ∞Ä sql-plan cache check-inÏù¥ Ïã§Ìå®Ìïú Í≤ΩÏö∞.
+                // hard-rebuild winner statement∞° sql-plan cache check-in¿Ã Ω«∆–«— ∞ÊøÏ.
                 sPlanCacheContext.mPlanCacheInMode =  QCI_SQL_PLAN_CACHE_IN_OFF;
                 //fix BUG-30855 It needs to describe soft prepare time in detail for problem tracking.
                 IDV_SQL_OPTIME_BEGIN(sStatistics,IDV_OPTM_INDEX_PLAN_HARD_REBUILD);
@@ -899,7 +939,7 @@ IDE_RC mmcStatement::rebuild()
             }
             else
             {
-                //sql-plan cache check-inÌïÑÏöî.
+                //sql-plan cache check-in« ø‰.
                 sPlanCacheContext.mPlanCacheInMode = QCI_SQL_PLAN_CACHE_IN_ON;
                 //fix BUG-30855 It needs to describe soft prepare time in detail for problem tracking.
                 IDV_SQL_OPTIME_BEGIN(sStatistics,IDV_OPTM_INDEX_PLAN_HARD_REBUILD);
@@ -908,7 +948,7 @@ IDE_RC mmcStatement::rebuild()
                                ErrorNeedGCPcb);
                 IDV_SQL_OPTIME_END(sStatistics,IDV_OPTM_INDEX_PLAN_HARD_REBUILD);
 
-                /* cache in off Ïùº Ïàò ÏûàÎã§. */
+                /* cache in off ¿œ ºˆ ¿÷¥Ÿ. */
                 if ( sPlanCacheContext.mPlanCacheInMode == QCI_SQL_PLAN_CACHE_IN_ON )
                 {
                     IDV_SQL_OPTIME_BEGIN( sStatistics, IDV_OPTM_INDEX_PLANCACHE_CHECK_IN_BY_HARD_REBUILD );
@@ -919,16 +959,16 @@ IDE_RC mmcStatement::rebuild()
                     IDV_SQL_OPTIME_END( sStatistics, IDV_OPTM_INDEX_PLANCACHE_CHECK_IN_BY_HARD_REBUILD );
                     if ( sSuccess == ID_TRUE )
                     {
-                        /* BUG-44853 Plan Cache ÏòàÏô∏ Ï≤òÎ¶¨Í∞Ä Î∂ÄÏ°±ÌïòÏó¨, ÎπÑÏ†ïÏÉÅ Ï¢ÖÎ£åÍ∞Ä Î∞úÏÉùÌï† Ïàò ÏûàÏäµÎãàÎã§.
-                         * QMP MemoryÏôÄ Shared TemplateÏùÑ Ï¥àÍ∏∞ÌôîÌïúÎã§.
+                        /* BUG-44853 Plan Cache øπø‹ √≥∏Æ∞° ∫Œ¡∑«œø©, ∫Ò¡§ªÛ ¡æ∑·∞° πﬂª˝«“ ºˆ ¿÷Ω¿¥œ¥Ÿ.
+                         * QMP MemoryøÕ Shared Template¿ª √ ±‚»≠«—¥Ÿ.
                          */
                         sPlanCacheContext.mSharedPlanMemory = NULL;
                         sPlanCacheContext.mPrepPrivateTemplate = NULL;
 
                         /*fix BUG-30434 VAL] mmcPCB::getChildPCO Invalid read of size 8
-                          check In Ïù¥ ÏÑ±Í≥µÌïú caseÏóê ÌïúÌïòÏó¨ child PCOÎ•º Ï∞∏Ï°∞ÌïòÏó¨Ïïº ÌïúÎã§.
-                          check InÏù¥  Ïã§Ìå®Ìïú Í≤ΩÏö∞Îäî cache replaceÏóê ÏùòÌïòÏó¨ victimÏù¥ ÎêòÏñ¥
-                          child PCOÍ∞Ä Ìï¥Ï†úÎê†Ïàò ÏûàÍ∏∞ÎïåÎ¨∏Ïù¥Îã§.*/
+                          check In ¿Ã º∫∞¯«— caseø° «—«œø© child PCO∏¶ ¬¸¡∂«œø©æﬂ «—¥Ÿ.
+                          check In¿Ã  Ω«∆–«— ∞ÊøÏ¥¬ cache replaceø° ¿««œø© victim¿Ã µ«æÓ
+                          child PCO∞° «ÿ¡¶µ…ºˆ ¿÷±‚∂ßπÆ¿Ã¥Ÿ.*/
                         sChildPCO = sPCB->getChildPCO();
                         IDE_TEST_RAISE(qci::clonePrivateTemplate(getQciStmt(),
                                                                  sChildPCO->getSharedPlan(),
@@ -945,8 +985,8 @@ IDE_RC mmcStatement::rebuild()
                                                        sPlanCacheContext.mSharedPlanMemory,
                                                        QCI_SQL_PLAN_CACHE_IN_FAILURE);
 
-                        /* BUG-44853 Plan Cache ÏòàÏô∏ Ï≤òÎ¶¨Í∞Ä Î∂ÄÏ°±ÌïòÏó¨, ÎπÑÏ†ïÏÉÅ Ï¢ÖÎ£åÍ∞Ä Î∞úÏÉùÌï† Ïàò ÏûàÏäµÎãàÎã§.
-                         * qci::makePlanCacheInfo()ÏóêÏÑú ÎßåÎì† QMP MemoryÏôÄ Shared TemplateÏùÑ Ï†úÍ±∞ÌïúÎã§.
+                        /* BUG-44853 Plan Cache øπø‹ √≥∏Æ∞° ∫Œ¡∑«œø©, ∫Ò¡§ªÛ ¡æ∑·∞° πﬂª˝«“ ºˆ ¿÷Ω¿¥œ¥Ÿ.
+                         * qci::makePlanCacheInfo()ø°º≠ ∏∏µÁ QMP MemoryøÕ Shared Template¿ª ¡¶∞≈«—¥Ÿ.
                          */
                         sPlanCacheContext.mSharedPlanMemory = NULL;
 
@@ -974,13 +1014,13 @@ IDE_RC mmcStatement::rebuild()
 
     /* PROJ-2701 Sharding online data rebuild
      *
-     * Shard rebuildÏóê ÏùòÌïú coordinating planÏùò Í≤ΩÏö∞
-     * Ïã§Ï†ú DMLÏùÑ ÏàòÌñâÌïòÏßÄ ÏïäÍ≥†, data nodeÎ°ú Ï†ÑÎã¨/Í≤∞Í≥º Ï∑®Ìï©Îßå Ìï† Í≤É Ïù¥Í∏∞ ÎïåÎ¨∏Ïóê
-     * SMI_STATEMENT_SELF_TRUEÍ∞Ä ÏïÑÎãàÎ©¥ smiStatementÎ•º Îã§Ïãú beginÌï¥ÏïºÌïúÎã§.
+     * Shard rebuildø° ¿««— coordinating plan¿« ∞ÊøÏ
+     * Ω«¡¶ DML¿ª ºˆ«‡«œ¡ˆ æ ∞Ì, data node∑Œ ¿¸¥ﬁ/∞·∞˙ √Î«’∏∏ «“ ∞Õ ¿Ã±‚ ∂ßπÆø°
+     * SMI_STATEMENT_SELF_TRUE∞° æ∆¥œ∏È smiStatement∏¶ ¥ŸΩ√ begin«ÿæﬂ«—¥Ÿ.
      *
      */
     if ( ( sdi::hasShardCoordPlan( &((getQciStmt())->statement) ) == ID_TRUE ) &&
-         ( ( getSmiStmt()->mFlag & SMI_STATEMENT_SELF_MASK ) == SMI_STATEMENT_SELF_FALSE ) )
+         ( ( mInfo.mFlag & MMC_STMT_NEED_UNLOCK_MASK ) == MMC_STMT_NEED_UNLOCK_FALSE ) )
     {
         IDE_TEST(endStmt(MMC_EXECUTION_FLAG_REBUILD) != IDE_SUCCESS);
         IDE_TEST(beginStmt() != IDE_SUCCESS);
@@ -1038,13 +1078,13 @@ IDE_RC mmcStatement::rebuild()
     
     if(mPCB != NULL)
     {
-        //fix BUG-24364 valgrind direct executeÏúºÎ°ú ÏàòÌñâÏãúÌÇ® statementÏùò  plan cacheÏ†ïÎ≥¥Î•º resetÏãúÏºúÏïºÌï®.
+        //fix BUG-24364 valgrind direct execute¿∏∑Œ ºˆ«‡Ω√≈≤ statement¿«  plan cache¡§∫∏∏¶ resetΩ√ƒ—æﬂ«‘.
         releasePlanCacheObject();
 
     }    
 
-    /* BUG-44853 Plan Cache ÏòàÏô∏ Ï≤òÎ¶¨Í∞Ä Î∂ÄÏ°±ÌïòÏó¨, ÎπÑÏ†ïÏÉÅ Ï¢ÖÎ£åÍ∞Ä Î∞úÏÉùÌï† Ïàò ÏûàÏäµÎãàÎã§.
-     * qci::makePlanCacheInfo()ÏóêÏÑú ÎßåÎì† QMP MemoryÏôÄ Shared TemplateÏùÑ Ï†úÍ±∞ÌïúÎã§.
+    /* BUG-44853 Plan Cache øπø‹ √≥∏Æ∞° ∫Œ¡∑«œø©, ∫Ò¡§ªÛ ¡æ∑·∞° πﬂª˝«“ ºˆ ¿÷Ω¿¥œ¥Ÿ.
+     * qci::makePlanCacheInfo()ø°º≠ ∏∏µÁ QMP MemoryøÕ Shared Template¿ª ¡¶∞≈«—¥Ÿ.
      */
     if ( sPlanCacheContext.mPlanCacheInMode == QCI_SQL_PLAN_CACHE_IN_ON )
     {
@@ -1072,6 +1112,129 @@ IDE_RC mmcStatement::rebuild()
     {
         /* Nothing to do */
     }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC mmcStatement::checkShardRebuildStatus( idBool * aRebuildDetected )
+{
+    qciSQLPlanCacheContext  sPlanCacheContext;
+
+    *aRebuildDetected = ID_FALSE;
+
+    if ( mSession->detectShardMetaChange() == ID_TRUE )
+    {
+        /* SMN ∫Ø∞Ê¿ª ∞®¡ˆ «ﬂ¥Ÿ.
+         * HardPrepare ºˆ«‡«ÿº≠ ¿ÁΩ√µµ «“¡ˆ ø©∫Œ∏¶ ∆«¥‹«œ¿⁄.
+         * -> continue
+         */
+        *aRebuildDetected = ID_TRUE;
+    }
+    else
+    {
+        if ( mSession->isShardUserSession() == ID_FALSE )
+        {
+            if ( ( mSession->getInfo()->mShardInternalLocalOperation == SDI_INTERNAL_OP_FAILBACK ) ||
+                 ( mSession->getInfo()->mShardInternalLocalOperation == SDI_INTERNAL_OP_FAILOVER ) )
+            {
+                /* Failback¿∫ «„øÎ */
+            }
+            else
+            {
+                IDE_TEST_RAISE( mSession->getShardMetaNumber() > sdi::getSMNForDataNode(),
+                                InvalidSMN );
+            }
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+
+    IDE_TEST_CONT( *aRebuildDetected == ID_FALSE, END_OF_FUNC );
+
+    IDE_TEST( qci::clearStatement4Reprepare( getQciStmt(),
+                                             getSmiStmt() )
+              != IDE_SUCCESS );
+
+    //Plan cache ø°º≠ ∞°¡Æø¬ PCB ∏¶ «ÿ¡¶«—¥Ÿ. (unfix)
+    if(mPCB != NULL)
+    {
+        releasePlanCacheObject();
+        IDU_FIT_POINT( "mmcStatement::reprepare::SLEEP::AFTER::releasePlanCacheObject" );
+    }
+
+    sPlanCacheContext.mPlanCacheInMode = QCI_SQL_PLAN_CACHE_IN_OFF;
+
+    IDE_TEST_RAISE(hardPrepare((mmcPCB*)NULL,
+                               &sPlanCacheContext) !=  IDE_SUCCESS, ErrorHardPrepare);
+
+    IDE_EXCEPTION_CONT( END_OF_FUNC );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION(ErrorHardPrepare);
+    {
+        getQciStmt()->flag &= ~QCI_STMT_REHARDPREPARE_EXEC_MASK;
+        getQciStmt()->flag |= QCI_STMT_REHARDPREPARE_EXEC_FAILURE;
+
+        qci::setPrivateArea(getQciStmt());
+
+        clearStmt(MMC_STMT_BIND_NONE);
+    }
+    IDE_EXCEPTION( InvalidSMN )
+    {
+        IDE_SET( ideSetErrorCode( mmERR_ABORT_INTERNAL_SERVER_ERROR_ARG,
+                                  "Shard meta change is not propagated" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    setQueryStartTime(0);
+
+    if ((ideGetErrorCode() & E_ACTION_MASK) == E_ACTION_FATAL)
+    {
+        ideLog::logErrorMsg(IDE_SERVER_0);
+        IDE_CALLBACK_FATAL("fatal error code occurred in mmcStatement::checkShardRebuildStatus()");
+    }
+
+    mSession->transBeginForGTxEndTran();
+
+    return IDE_FAILURE;
+}
+
+IDE_RC mmcStatement::shardRetryRebuild()
+{
+    if ( ( getQciStmt()->flag & QCI_STMT_SHARD_RETRY_REBUILD_MASK )
+         == QCI_STMT_SHARD_RETRY_REBUILD_TRUE )
+    {
+        /* Sharding
+         *  GLOBAL_TRANSACTION_LEVEL=3(GCTx) ¿Ã∏Èº≠
+         *  Execute statement ¿« Request SCN != 0 ¿Œ ∞ÊøÏ (Multi node execute OR Partial statement)
+         *  Rebuild ø°∑Ø∞° πﬂª˝ Ω√ ¬¸ø© ≥ÎµÂ¥¬ Rebuild ∏¶ ºˆ«‡«œ¡ˆ æ ∞Ì
+         *  Coordinator ∑Œ ø°∑Ø ¿¿¥‰ »ƒ
+         *  Coordinator ø°º≠ shard statement retry ∏¶ ºˆ«‡«—¥Ÿ. 
+         *  (ø©∑Ø ≥ÎµÂø°º≠ ºˆ«‡µ«¥¬ ±∏πÆ¿Œ ∞ÊøÏ ¬¸ø© ≥ÎµÂ »•¿⁄ Rebuild «“ ∞ÊøÏ ¡§«’º∫¿ª ∏¬√‚ºˆ æ¯¥Ÿ)
+         *  ¿Ã∑Ø«— ∞ÊøÏ execute ¿ÁΩ√µµ (doExecute) «“∂ß Plan ¿ª rebuild «ÿæﬂ «—¥Ÿ.
+         *
+         * PROJ-2745
+         *  ¬¸ø© ≥ÎµÂø°º≠ Rebuild event πﬂª˝ Ω√ GCTx øÕ ∏∂¬˘∞°¡ˆ∑Œ
+         *  ¬¸ø© ≥ÎµÂø°º≠ rebuild «œ¡ˆ æ ∞Ì
+         *  Coordinator ∑Œ ø°∑Ø ¿¿¥‰ »ƒ shard statement retry ∏¶ ºˆ«‡«—¥Ÿ.
+         *
+         *  ¬¸ø© ≥ÎµÂø°º≠ rebuild ø°∑Ø∑Œ ¿Œ«ÿ 
+         *  shard statement retry ∏¶ ≈Î«ÿ ¿Áºˆ«‡ µ«¥¬ ∞ÊøÏ
+         *  QCI_STMT_SHARD_RETRY_REBUILD_TRUE «√∑°±◊∞° º≥¡§µ«æÓ ¿÷¿∏∏Á
+         *  plan rebuild ∏¶ ºˆ«‡«—¥Ÿ.
+         */
+        getQciStmt()->flag &= ~QCI_STMT_SHARD_RETRY_REBUILD_MASK;
+        getQciStmt()->flag |= QCI_STMT_SHARD_RETRY_REBUILD_FALSE;
+
+        IDE_TEST( rebuild() != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 }
@@ -1119,7 +1282,7 @@ IDE_RC mmcStatement::beginStmt()
 {
     ULong *sEventFlag = mSession->getEventFlag();
 
-    // BUG-21204 : V$SESSTATÏùò accumTimeÏùÑ Ï¥àÍ∏∞Ìôî
+    // BUG-21204 : V$SESSTAT¿« accumTime¿ª √ ±‚»≠
     idvManager::initBeginStmtAccumTime( getStatistics() );
     
     setQueryStartTime(mmtSessionManager::getBaseTime());
@@ -1129,12 +1292,15 @@ IDE_RC mmcStatement::beginStmt()
 
     IDU_SESSION_CLR_CANCELED(*sEventFlag); /* PROJ-2177 User Interface - Cancel */
 
+    /* PROJ-2733 Statement SCN Sync (statement begin) */
+    IDE_TEST( updateSystemSCN() != IDE_SUCCESS );
+
     IDE_TEST(mBeginFunc[qciMisc::getStmtTypeNumber(mStmtType)](this) != IDE_SUCCESS);
 
     //==========================================================
-    // bug-23991: prepared ÌõÑ execute ÎßàÎã§ PVO time Í∞íÏù¥ Í∑∏ÎåÄÎ°ú ÎÇ®Ïùå
-    // TIMED_STATISTICS ÏÜçÏÑ±Í∞íÏù¥ 1(on)Ïù∏ Í≤ΩÏö∞Îßå ÏàòÌñâ.
-    // time Í∞íÎì§ÏùÑ Í≥ÑÏÇ∞ÌïòÍ∏∞ Ï†ÑÏóê time Ìï≠Î™©Îì§ÏùÑ 0ÏúºÎ°ú Ï¥àÍ∏∞Ìôî
+    // bug-23991: prepared »ƒ execute ∏∂¥Ÿ PVO time ∞™¿Ã ±◊¥Î∑Œ ≥≤¿Ω
+    // TIMED_STATISTICS º”º∫∞™¿Ã 1(on)¿Œ ∞ÊøÏ∏∏ ºˆ«‡.
+    // time ∞™µÈ¿ª ∞ËªÍ«œ±‚ ¿¸ø° time «◊∏ÒµÈ¿ª 0¿∏∑Œ √ ±‚»≠
     if (iduProperty::getTimedStatistics() == IDV_TIMED_STATISTICS_ON)
     {
         clearStatisticsTime();
@@ -1157,16 +1323,16 @@ IDE_RC mmcStatement::beginStmt()
 }
 
 //==============================================================
-// bug-23991: prepared ÌõÑ execute ÎßàÎã§ PVO time Í∞íÏù¥ Í∑∏ÎåÄÎ°ú ÎÇ®Ïùå
-// Îã§Ïùå Ìï®ÏàòÎäî beginStmt(execute ÏãúÏûëÏãúÏ†ê) ÏóêÏÑú Ìò∏Ï∂úÎêòÎ©∞
-// TIMED_STATISTICS ÏÜçÏÑ±Í∞íÏù¥ 1 (on)Ïù∏ Í≤ΩÏö∞Îßå ÏàòÌñâÏù¥ ÎêúÎã§
-// ÏãúÍ∞Ñ ÌÜµÍ≥ÑÏ†ïÎ≥¥Î•º Íµ¨ÌïòÍ∏∞ Ï†ÑÏóê PVO time Í∞íÏùÑ Ï¥àÍ∏∞ÌôîÏãúÌÇ§Îäî Ïö©ÎèÑÏûÑ
-// ÍπîÎÅîÌïòÍ≤å ÌïòÍ∏∞ ÏúÑÌï¥ idvSQLÏóêÏÑú time Í¥ÄÎ†® Î≥ÄÏàòÎì§ÏùÑ Ï†ÑÎ∂Ä Ï¥àÍ∏∞Ìôî ÏãúÌÇ®Îã§
-// time Í¥ÄÎ†® Ìï≠Î™©: parse, validate, optimize, execute, fetch, soft_prepare
+// bug-23991: prepared »ƒ execute ∏∂¥Ÿ PVO time ∞™¿Ã ±◊¥Î∑Œ ≥≤¿Ω
+// ¥Ÿ¿Ω «‘ºˆ¥¬ beginStmt(execute Ω√¿€Ω√¡°) ø°º≠ »£√‚µ«∏Á
+// TIMED_STATISTICS º”º∫∞™¿Ã 1 (on)¿Œ ∞ÊøÏ∏∏ ºˆ«‡¿Ã µ»¥Ÿ
+// Ω√∞£ ≈Î∞Ë¡§∫∏∏¶ ±∏«œ±‚ ¿¸ø° PVO time ∞™¿ª √ ±‚»≠Ω√≈∞¥¬ øÎµµ¿”
+// ±Ú≤˚«œ∞‘ «œ±‚ ¿ß«ÿ idvSQLø°º≠ time ∞¸∑√ ∫ØºˆµÈ¿ª ¿¸∫Œ √ ±‚»≠ Ω√≈≤¥Ÿ
+// time ∞¸∑√ «◊∏Ò: parse, validate, optimize, execute, fetch, soft_prepare
 // ex)
-// 1. prepared: PVO time Í≥ÑÏÇ∞
-// 2. execute : execute time Í≥ÑÏÇ∞. statement Ï¢ÖÎ£åÏãú PVO + execute Ï†ÑÎ∂Ä Ï∂úÎ†•
-// 3. execute : execute time Í≤åÏÇ∞. statement Ï¢ÖÎ£åÏãú PVO timeÏùÄ 0Ïù¥Ïñ¥Ïïº Ìï®
+// 1. prepared: PVO time ∞ËªÍ
+// 2. execute : execute time ∞ËªÍ. statement ¡æ∑·Ω√ PVO + execute ¿¸∫Œ √‚∑¬
+// 3. execute : execute time ∞‘ªÍ. statement ¡æ∑·Ω√ PVO time¿∫ 0¿ÃæÓæﬂ «‘
 //==============================================================
 IDE_RC mmcStatement::clearStatisticsTime()
 {
@@ -1176,19 +1342,19 @@ IDE_RC mmcStatement::clearStatisticsTime()
 
     idvSQL* sStatSQL = getStatistics();
 
-    // ÌòπÏãú NULLÏù∏ Í≤ΩÏö∞ÏóêÎèÑ Í∑∏ÎÉ• Î¨¥Ïãú(callerÍ∞Ä returnÍ∞í Í≤ÄÏÇ¨ ÏïàÌï®)
+    // »§Ω√ NULL¿Œ ∞ÊøÏø°µµ ±◊≥… π´Ω√(caller∞° return∞™ ∞ÀªÁ æ»«‘)
     IDE_TEST(sStatSQL == NULL);
 
-    // Î∞îÎ°ú Ïù¥Ï†ÑÏóê preparedÍ∞Ä ÏàòÌñâÎêòÏñ¥ PVO timeÏù¥ Ï°¥Ïû¨ÌïòÎäî Í≤ΩÏö∞
-    // PVO timeÏùÑ clearÌïòÏßÄ ÏïäÍ≥† execute, fetch timeÎßå clear
+    // πŸ∑Œ ¿Ã¿¸ø° prepared∞° ºˆ«‡µ«æÓ PVO time¿Ã ¡∏¿Á«œ¥¬ ∞ÊøÏ
+    // PVO time¿ª clear«œ¡ˆ æ ∞Ì execute, fetch time∏∏ clear
     if (getPreparedTimeExist() == ID_TRUE)
     {
         sIdxStart = IDV_OPTM_INDEX_QUERY_EXECUTE;       // 3
         sIdxEnd   = IDV_OPTM_INDEX_QUERY_FETCH;         // 4
         setPreparedTimeExist(ID_FALSE);
     }
-    // Î∞îÎ°ú Ïù¥Ï†ÑÏóê preparedÍ∞Ä ÏàòÌñâÎêòÏßÄ ÏïäÍ≥† Î∞îÎ°ú executeÍ∞Ä
-    // ÏàòÌñâÎêú Í≤ΩÏö∞ Î™®Îì† time Ìï≠Î™©ÏùÑ Ï¥àÍ∏∞Ìôî
+    // πŸ∑Œ ¿Ã¿¸ø° prepared∞° ºˆ«‡µ«¡ˆ æ ∞Ì πŸ∑Œ execute∞°
+    // ºˆ«‡µ» ∞ÊøÏ ∏µÁ time «◊∏Ò¿ª √ ±‚»≠
     else
     {
         sIdxStart = IDV_OPTM_INDEX_QUERY_PARSE;         // 0
@@ -1221,12 +1387,12 @@ IDE_RC mmcStatement::clearStatisticsTime()
 
 
 // fix BUG-30990
-// clearStmt()Ïãú bind ÏÉÅÌÉúÎ•º Î™ÖÌôïÌïòÍ≤å ÏÑ§Ï†ïÌïúÎã§.
+// clearStmt()Ω√ bind ªÛ≈¬∏¶ ∏Ì»Æ«œ∞‘ º≥¡§«—¥Ÿ.
 IDE_RC mmcStatement::clearStmt(mmcStmtBindState aBindState)
 {
     mmcAtomicInfo   *sAtomicInfo = getAtomicInfo();
 
-    // Atomic Í¥ÄÎ†® ÏÜçÏÑ±ÏùÑ Ï¥àÍ∏∞Ìôî ÏãúÌÇ®Îã§.
+    // Atomic ∞¸∑√ º”º∫¿ª √ ±‚»≠ Ω√≈≤¥Ÿ.
     setAtomicExecSuccess(ID_TRUE);
     setAtomic(ID_FALSE);
 
@@ -1251,12 +1417,12 @@ IDE_RC mmcStatement::clearStmt(mmcStmtBindState aBindState)
         IDE_TEST(qci::clearStatement(getQciStmt(),
                                      getSmiStmt(),
                                      QCI_STMT_STATE_INITIALIZED) != IDE_SUCCESS);
-        /* BUG-22826 PLAN CACHEÎ•º unfix ÌïòÎäî ÏãúÏ†êÏù¥ ÏûòÎ™ªÎêòÏóàÏäµÎãàÎã§.
-           direct executeÎäî clear statementÏãúÎßàÎã§ unfixÎ•º ÏàòÌñâÌïúÎã§. */
+        /* BUG-22826 PLAN CACHE∏¶ unfix «œ¥¬ Ω√¡°¿Ã ¿ﬂ∏¯µ«æ˙Ω¿¥œ¥Ÿ.
+           direct execute¥¬ clear statementΩ√∏∂¥Ÿ unfix∏¶ ºˆ«‡«—¥Ÿ. */
         if(mPCB != NULL)
         {
 
-            //fix BUG-24364 valgrind direct executeÏúºÎ°ú ÏàòÌñâÏãúÌÇ® statementÏùò  plan cacheÏ†ïÎ≥¥Î•º resetÏãúÏºúÏïºÌï®.
+            //fix BUG-24364 valgrind direct execute¿∏∑Œ ºˆ«‡Ω√≈≤ statement¿«  plan cache¡§∫∏∏¶ resetΩ√ƒ—æﬂ«‘.
             releasePlanCacheObject();
         }
 
@@ -1273,18 +1439,18 @@ IDE_RC mmcStatement::clearStmt(mmcStmtBindState aBindState)
                                   getSmiStmt()) != IDE_SUCCESS);
 
         // To Fix BUG-19842
-        // SQLExecute() Í≥ºÏ†ïÏ§ëÏóê Binding Ïã§Ìå®Í∞Ä Î∞úÏÉùÌï† Ïàò ÏûàÏúºÎØÄÎ°ú
-        // BINDING ÏÉÅÌÉúÏóê Îî∞Îùº Ï†ÅÏ†àÌûà Ï†úÏñ¥ÌïòÏó¨Ïïº Ìï®.
+        // SQLExecute() ∞˙¡§¡ﬂø° Binding Ω«∆–∞° πﬂª˝«“ ºˆ ¿÷¿∏π«∑Œ
+        // BINDING ªÛ≈¬ø° µ˚∂Û ¿˚¿˝»˜ ¡¶æÓ«œø©æﬂ «‘.
         switch ( mBindState )
         {
             case MMC_STMT_BIND_NONE:
                 // Nothing To Do
-                // MM ÏùÄ BIND_INFO ÏÑ±Í≥µÏ†Ñ ÏóêÎü¨Í∞Ä Î∞úÏÉùÌïú Í≤ÉÏûÑ
-                // QPÎäî QCI_STMT_STATE_PREPARED ÏÉÅÌÉúÏûÑ.
+                // MM ¿∫ BIND_INFO º∫∞¯¿¸ ø°∑Ø∞° πﬂª˝«— ∞Õ¿”
+                // QP¥¬ QCI_STMT_STATE_PREPARED ªÛ≈¬¿”.
                 break;
             case MMC_STMT_BIND_INFO:
-                // MM ÏùÄ BIND_INFO ÏÑ±Í≥µÌõÑ ÏóêÎü¨Í∞Ä Î∞úÏÉùÌïú Í≤ÉÏûÑ
-                // QPÎäî QCI_STMT_STATE_PREPARED ÏÉÅÌÉúÏûÑ.
+                // MM ¿∫ BIND_INFO º∫∞¯»ƒ ø°∑Ø∞° πﬂª˝«— ∞Õ¿”
+                // QP¥¬ QCI_STMT_STATE_PREPARED ªÛ≈¬¿”.
                 IDE_TEST(qci::clearStatement(getQciStmt(),
                                              getSmiStmt(),
                                              QCI_STMT_STATE_PREPARED)
@@ -1294,7 +1460,7 @@ IDE_RC mmcStatement::clearStmt(mmcStmtBindState aBindState)
                 break;
             case MMC_STMT_BIND_DATA:
                 // fix BUG-30990
-                // DEQUEUE ÎåÄÍ∏∞Ïãú BindÎêú DataÎäî Ïú†ÏßÄÌïòÎèÑÎ°ù Ìï®
+                // DEQUEUE ¥Î±‚Ω√ Bindµ» Data¥¬ ¿Ø¡ˆ«œµµ∑œ «‘
                 if (aBindState == MMC_STMT_BIND_DATA)
                 {
                     IDE_TEST(qci::clearStatement(getQciStmt(),
@@ -1315,7 +1481,7 @@ IDE_RC mmcStatement::clearStmt(mmcStmtBindState aBindState)
                 }
                 break;
             default :
-                // ÏûòÎ™ªÎêú ÏÉÅÌÉúÏûÑ.
+                // ¿ﬂ∏¯µ» ªÛ≈¬¿”.
                 IDE_DASSERT(0);
         }
     }
@@ -1330,7 +1496,7 @@ IDE_RC mmcStatement::endStmt(mmcExecutionFlag aExecutionFlag)
     idvSQL           *sStatSQL;
     mmcSession       *sSession;
     mmcSessionInfo   *sSessInfo;
-    UInt              sTransID; // autocommitÏùºÎïå TxIDÍ∞Ä ÏÇ¨ÎùºÏßê. so, keep it.
+    UInt              sTransID; // autocommit¿œ∂ß TxID∞° ªÁ∂Û¡¸. so, keep it.
     ULong            *sEventFlag;
     idvProfStmtInfo   sProfInfo;
     idBool            sSuccess;
@@ -1358,9 +1524,20 @@ IDE_RC mmcStatement::endStmt(mmcExecutionFlag aExecutionFlag)
     setQueryStartTime(0);
     
     IDU_SESSION_SET_BLOCK(*sEventFlag);
+    /* BUG-47244 if use limit syntax in non-auto commit mode then it occurs session hang.
+     * to prevent self statement local loop back deadlock
+     */
+    if ( sdi::isShardEnable() == ID_TRUE )
+    {
+        freeAllRemoteStatement( CMP_DB_FREE_CLOSE );
+    }
 
     IDE_TEST(mEndFunc[qciMisc::getStmtTypeNumber(mStmtType)](this, sSuccess)
              != IDE_SUCCESS);
+
+    /* BUG-47238 */
+    mInfo.mFlag &= ~MMC_STMT_NEED_UNLOCK_MASK;
+    mInfo.mFlag |= MMC_STMT_NEED_UNLOCK_FALSE;
 
     if (sResultSetCount > 0)
     {
@@ -1377,17 +1554,17 @@ IDE_RC mmcStatement::endStmt(mmcExecutionFlag aExecutionFlag)
             IDV_SQL_ADD_DIRECT(getStatistics(), mFetchFailureCount, 1);
         }
     }
-    
+
     /* BUG-38472 Query timeout applies to one statement. */
     setTimeoutEventOccured( ID_FALSE );
 
     IDU_SESSION_CLR_BLOCK(*sEventFlag);
     IDU_SESSION_CLR_CANCELED(*sEventFlag); /* PROJ-2177 User Interface - Cancel */
 
-    // StmtÏóêÏÑú Ï∏°Ï†ïÌï¥ÏïºÌï† Í≤ΩÍ≥ºÏãúÍ∞ÑÏùÑ Î™®Îëê Í≥ÑÏÇ∞ÌïòÏó¨ Ï†ÄÏû•ÌïòÍ≥†,
-    // Ïù¥Î•º SessionÏóê Î∞òÏòÅÌïúÎã§.
+    // Stmtø°º≠ √¯¡§«ÿæﬂ«“ ∞Ê∞˙Ω√∞£¿ª ∏µŒ ∞ËªÍ«œø© ¿˙¿Â«œ∞Ì,
+    // ¿Ã∏¶ Sessionø° π›øµ«—¥Ÿ.
  
-    // Î¨∏Ï†úÏ†ê: Array Execute ÏàòÌñâÏãú Stmt ÏÑ±Îä•Ï†ÄÌïòÎ•º Í∞ÄÏ†∏Ïò¨ Ïàò ÏûàÎã§.
+    // πÆ¡¶¡°: Array Execute ºˆ«‡Ω√ Stmt º∫¥…¿˙«œ∏¶ ∞°¡Æø√ ºˆ ¿÷¥Ÿ.
     applyOpTimeToSession();
 
     if ((idvProfile::getProfFlag() & IDV_PROF_TYPE_STMT_FLAG) 
@@ -1424,7 +1601,7 @@ IDE_RC mmcStatement::endStmt(mmcExecutionFlag aExecutionFlag)
 
         IDE_ASSERT( sStatSQL != NULL );
 
-        // applyStmtOetStat.. ÏóêÏÑú Í≥ÑÏÇ∞ÎêòÏñ¥ÏßÑ Í≤ΩÍ≥ºÏãúÍ∞ÑÍ∞íÏùÑ ÌîÑÎ°úÌååÏùºÎßÅÌïúÎã§.
+        // applyStmtOetStat.. ø°º≠ ∞ËªÍµ«æÓ¡¯ ∞Ê∞˙Ω√∞£∞™¿ª «¡∑Œ∆ƒ¿œ∏µ«—¥Ÿ.
         sProfInfo.mParseTime    =
             IDV_TIMEBOX_GET_ACCUM_TIME(
                     IDV_SQL_OPTIME_DIRECT(sStatSQL,
@@ -1499,7 +1676,7 @@ IDE_RC mmcStatement::beginFetch(UShort aResultSetID)
 {
     if( isRootStmt() == ID_TRUE )
     {
-        /* PROJ-1381 FAC : FetchListÎ•º Î∞îÍøÄ ÎïåÎèÑ lockÏúºÎ°ú Î≥¥Ìò∏ */
+        /* PROJ-1381 FAC : FetchList∏¶ πŸ≤‹ ∂ßµµ lock¿∏∑Œ ∫∏»£ */
         mSession->lockForFetchList();
         IDU_LIST_ADD_LAST(mSession->getFetchList(), getFetchListNode());
         mSession->unlockForFetchList();
@@ -1525,7 +1702,7 @@ IDE_RC mmcStatement::endFetch(UShort aResultSetID)
 
     if( isRootStmt() == ID_TRUE )
     {
-        /* PROJ-1381 FAC : FetchListÎ•º Î∞îÍøÄ ÎïåÎèÑ lockÏúºÎ°ú Î≥¥Ìò∏ */
+        /* PROJ-1381 FAC : FetchList∏¶ πŸ≤‹ ∂ßµµ lock¿∏∑Œ ∫∏»£ */
         mSession->lockForFetchList();
         IDU_LIST_REMOVE(getFetchListNode());
         mSession->unlockForFetchList();
@@ -1612,7 +1789,7 @@ IDE_RC mmcStatement::parse(SChar* aSQLText)
 
             case QCI_STMT_MASK_DML:
                 /*
-                 * BUG-11031: Fixed TableÏù¥ÎÇò Performance View Ïóê ÎåÄÌïú SELECT Îßå ÌóàÏö©
+                 * BUG-11031: Fixed Table¿Ã≥™ Performance View ø° ¥Î«— SELECT ∏∏ «„øÎ
                  */
                 if (mStmtType == QCI_STMT_SELECT)
                 {
@@ -1621,7 +1798,7 @@ IDE_RC mmcStatement::parse(SChar* aSQLText)
                 }
                 else
                 {
-                    /* BUG-44387 SERVICE Ïù¥Ï†Ñ Îã®Í≥ÑÏóêÏÑú INSERT, DELETE, UPDATE Íµ¨Î¨∏ Ïã§ÌñâÏãú FATAL */
+                    /* BUG-44387 SERVICE ¿Ã¿¸ ¥‹∞Ëø°º≠ INSERT, DELETE, UPDATE ±∏πÆ Ω««‡Ω√ FATAL */
                     IDE_RAISE( InvalidServerPhaseError );
                 }
                 break;
@@ -1637,7 +1814,7 @@ IDE_RC mmcStatement::parse(SChar* aSQLText)
     else
     {
         /* BUG-20832 */
-        /* service Í∞Ä ÏãúÏûëÎêú ÌõÑÏóêÎäî xa session Ïù¥ÎùºÎ©¥ DCL, DDL ÏàòÌñâÏùÑ Î∞©ÏßÄÌï¥Ïïº ÌïúÎã§. */
+        /* service ∞° Ω√¿€µ» »ƒø°¥¬ xa session ¿Ã∂Û∏È DCL, DDL ºˆ«‡¿ª πÊ¡ˆ«ÿæﬂ «—¥Ÿ. */
         switch (qciMisc::getStmtType(mStmtType))
         {
             case QCI_STMT_MASK_DCL:
@@ -1716,6 +1893,10 @@ IDE_RC mmcStatement::doHardPrepare(SChar                   *aSQLText,
                                    qciSQLPlanCacheContext  *aPlanCacheContext,
                                    smiStatement            *aSmiStmt)
 {
+    UInt sStmtRetryMax    = mSession->getShardStatementRetry();
+    UInt sRebuildRetryMax = SDI_SHARD_RETRY_LOOP_MAX;
+    smiDistTxInfo sDistTxInfo;
+
     /* BUG-37806 */
 #ifdef DEBUG
     getQciStmt()->flag &= ~QCI_STMT_AUDIT_MASK;
@@ -1734,10 +1915,22 @@ IDE_RC mmcStatement::doHardPrepare(SChar                   *aSQLText,
     }    
 #endif
 
+    getQciStmt()->flag &= ~QCI_STMT_SHARD_RETRY_REBUILD_MASK;
+    getQciStmt()->flag |= QCI_STMT_SHARD_RETRY_REBUILD_FALSE;
+
+    /* BUG-48282 : Shard TX¿« HARD PREPAREΩ√ø°µµ ∫–ªÍ¡§∫∏∞° º≥¡§µ«æÓæﬂ «—¥Ÿ.  */
+    buildSmiDistTxInfo( &sDistTxInfo );
+
     while (qci::hardPrepare(getQciStmt(),
                             aSmiStmt,
-                            aPlanCacheContext) != IDE_SUCCESS)
+                            aPlanCacheContext,
+                            &sDistTxInfo) != IDE_SUCCESS)
     {
+        IDE_TEST( mSession->processShardRetryError( this,
+                                                    &sStmtRetryMax,
+                                                    &sRebuildRetryMax )
+                  != IDE_SUCCESS );
+
         IDE_TEST(ideIsRebuild() != IDE_SUCCESS);
 
         /* BUG-40170 */
@@ -1760,6 +1953,175 @@ IDE_RC mmcStatement::doHardPrepare(SChar                   *aSQLText,
     return IDE_FAILURE;
 }
 
+IDE_RC mmcStatement::beginSmiStmtInternal(mmcTransObj *aTrans, UInt aFlag, UChar *aSessionType)
+{
+    smSCN            sSCN;
+    smiDistTxInfo    sDistTxInfo;
+    smiDistTxInfo  * sDistTxInfoPtr = NULL;
+
+    /* TASK-7219 Non-shard DML */
+    idBool           sIsShardPartialExecStmt = ID_FALSE;
+    UInt             sStmtExecSeq = 0;
+
+    SM_INIT_SCN( &sSCN ); 
+
+    ACP_UNUSED( aSessionType );
+
+    if ( ( mSession->isGCTx() == ID_TRUE ) &&
+         ( isNeedRequestSCN() == ID_TRUE ) )
+    {
+        getRequestSCN( &sSCN );
+        aFlag |= SMI_STATEMENT_VIEWSCN_REQUESTED;
+    }
+
+    buildSmiDistTxInfo( &sDistTxInfo );
+
+    if ( SMI_DIST_LEVEL_IS_VALID( sDistTxInfo.mDistLevel ) )
+    {
+        #if defined(DEBUG)
+        /* PROJ-2733-DistTxInfo DistTxInfo ¿¸¥ﬁ */
+        ideLog::log( IDE_SD_18,
+                     "= [%s] beginSmiStmtInternal"
+                     ", VIEWSCN_REQUESTED : %s"
+                     ", SCN : %"ID_UINT64_FMT
+                     ", TxFirstStmtViewSCN : %"ID_UINT64_FMT
+                     ", TxFirstStmtTime : [%"ID_UINT64_FMT"][%"ID_UINT64_FMT"]"
+                     ", DistLevel : %"ID_UINT32_FMT
+                     "\nQuery : %s",
+                     aSessionType,
+                     SMI_STATEMENT_VIEWSCN_IS_REQUESTED(aFlag) ? "True" : "False",
+                     sSCN,
+                     sDistTxInfo.mFirstStmtViewSCN,
+                     sDistTxInfo.mFirstStmtTime.tv_.tv_sec, sDistTxInfo.mFirstStmtTime.tv_.tv_usec,
+                     sDistTxInfo.mDistLevel,
+                     mInfo.mQueryString );
+        #endif
+
+        sDistTxInfoPtr = &sDistTxInfo;
+    }
+    else
+    {
+        sDistTxInfoPtr = NULL;
+    }
+
+    /* TASK-7219 Non-shard DML
+     * SM statement¿« cursor SCN ∞¸∏Æ∏¶ ¿ß«ÿ
+     * Partial execution query ø©∫ŒøÕ execution exquence∏¶ ¿¸¥ﬁ«—¥Ÿ.
+     */
+    if ( SDU_SHARD_ENABLE == 1 )
+    {
+        sIsShardPartialExecStmt = ( mInfo.mShardPartialExecType !=
+                                    SDI_SHARD_PARTIAL_EXEC_TYPE_NONE ) ? ID_TRUE : ID_FALSE;
+        sStmtExecSeq = mSession->getStmtExecSeqForShardTx();
+    }
+
+    if( isRootStmt() == ID_TRUE )
+    {
+        /* PROJ-2446 */
+        IDE_TEST( mSmiStmt.begin( getStatistics(),
+                                  mmcTrans::getSmiStatement(aTrans),
+                                  ( getCursorFlag() | aFlag ),
+                                  sSCN,
+                                  sDistTxInfoPtr,
+                                  sIsShardPartialExecStmt,
+                                  sStmtExecSeq )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* PROJ-2446 */
+        IDE_TEST( mSmiStmt.begin( getStatistics(),
+                                  mInfo.mParentStmt->getSmiStmt(),
+                                  ( getCursorFlag() | aFlag ),
+                                  sSCN,
+                                  sDistTxInfoPtr,
+                                  sIsShardPartialExecStmt,
+                                  sStmtExecSeq )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* BUG-48115
+   smiDistTxInfo ±∏¡∂√ºø° ∫–ªÍ¡§∫∏∏¶ ±‚∑œ«—¥Ÿ. */
+void mmcStatement::buildSmiDistTxInfo( smiDistTxInfo * aDistTxInfo )
+{
+    smSCN            sTxFirstStmtSCN;
+    PDL_Time_Value   sTxFirstStmtTime;
+    sTxFirstStmtTime.initialize(0);
+    smiDistTxInfo    sDistTxInfo = { SM_SCN_INIT,
+                                     sTxFirstStmtTime,
+                                     SMI_SHARD_PIN_INVALID,
+                                     SMI_DIST_LEVEL_INIT };
+
+    if ( mSession->isShardTrans() == ID_TRUE ) 
+    {
+        if ( getDistLevel() > SDI_DIST_LEVEL_INIT )
+        {
+            getTxFirstStmtSCN( &sTxFirstStmtSCN );
+            sTxFirstStmtTime.msec( getTxFirstStmtTime() );
+
+            if ( SM_SCN_IS_NOT_INIT( sTxFirstStmtSCN ) &&
+                 SM_SCN_IS_NOT_NON_GCTX_TX_FIRST_STMT_SCN( sTxFirstStmtSCN ) )
+            {
+                SM_SET_SCN_VIEW_BIT(&sTxFirstStmtSCN); /* to ViewSCN */
+            }
+
+            /* set DistTxInfo */
+            SMI_SET_SMI_DIST_TX_INFO( &sDistTxInfo,
+                                      sTxFirstStmtSCN,
+                                      sTxFirstStmtTime,
+                                      mSession->getShardPIN(),
+                                      (smiDistLevel)getDistLevel() );
+        }
+        else 
+        {
+            if ( mSession->isShardUserSession() == ID_FALSE )
+            {
+                /* SHARD TX¿Œµ• ∫–ªÍ¡§∫∏∞° æ¯¥Ÿ∏È Dummy∞™¿ª ≥÷æÓ¡ÿ¥Ÿ.
+                   (øπ) TX OPEN»ƒ √π HARD PREPARE Ω√
+
+                   < DUMMY >
+                   mFisrtStmtViewSCN : 0 (SM_SCN_INIT)
+                   mFirstStmtTime    : «ˆ¿ÁΩ√∞£
+                   mShardPin         : SHARD-PIN
+                   mDistLevel        : SMI_DIST_LEVEL_SINGLE
+                 */
+                SMI_SET_SMI_DIST_TX_INFO( &sDistTxInfo,
+                                          SM_SCN_INIT,            /* mFirstStmtViewSCN */
+                                          idlOS::gettimeofday(),  /* mFirstStmtTime */
+                                          mSession->getShardPIN(),/* mShardPin */
+                                          SMI_DIST_LEVEL_SINGLE );/* mDistLevel */
+
+                #ifdef DEBUG
+                SChar sPinStr[SDI_MAX_SHARD_PIN_STR_LEN + 1]; 
+                sdi::shardPinToString( sPinStr,
+                                       ID_SIZEOF( sPinStr ),
+                                       sDistTxInfo.mShardPin );
+
+                ideLog::log( IDE_SD_18,
+                             "Dummy Distributed Info"
+                             ", TxFirstStmtViewSCN : %"ID_UINT64_FMT
+                             ", TxFirstStmtTime : [%"ID_UINT64_FMT"][%"ID_UINT64_FMT"]"
+                             ", DistLevel : %"ID_UINT32_FMT
+                             ", Shard-PIN : %s",
+                             sDistTxInfo.mFirstStmtViewSCN,
+                             sDistTxInfo.mFirstStmtTime.tv_.tv_sec, sDistTxInfo.mFirstStmtTime.tv_.tv_usec,
+                             sDistTxInfo.mDistLevel,
+                             sPinStr );
+                #endif
+            }
+        }
+    }
+
+    *aDistTxInfo = sDistTxInfo;
+}
+
 IDE_RC mmcStatement::beginSmiStmt(mmcTransObj *aTrans, UInt aFlag)
 {
     IDE_DASSERT(mIsShareTransSmiStmtLocked == ID_FALSE);
@@ -1767,28 +2129,20 @@ IDE_RC mmcStatement::beginSmiStmt(mmcTransObj *aTrans, UInt aFlag)
     /* PROJ-2701 Online Data Rebuild: multi-node parallel statement serialize */
     if( mmcTrans::isShareableTrans(aTrans) == ID_TRUE )
     {
-        mmcTrans::lockRecursive(aTrans);
+        /* for multi-node parallel statement serialize
+         * this statement is executing with transaction lock acquired.
+         */
+        IDE_TEST( mmcTrans::fixSharedTrans4Statement( aTrans,
+                                                      getSession(),
+                                                      MMC_TRANS_FIX_RECURSIVE )
+                  != IDE_SUCCESS );
         mIsShareTransSmiStmtLocked = ID_TRUE;
 
-        IDE_TEST( beginSmiStmtInternal(aTrans, aFlag) != IDE_SUCCESS );
-
-        /* PROJ-2701 Online Data Rebuild: for self deadlock prevent */
-        if( ( mSmiStmt.mFlag & SMI_STATEMENT_SELF_MASK ) == SMI_STATEMENT_SELF_TRUE )
-        {
-            /* coordinating statement */
-            mIsShareTransSmiStmtLocked = ID_FALSE;
-            mmcTrans::unlockRecursive(aTrans);
-        }
-        else
-        {
-            /* for multi-node parallel statement serialize
-             * this statement is executing with transaction lock acquired.
-             */
-        }
+        IDE_TEST( beginSmiStmtInternal(aTrans, aFlag, mSession->getSessionTypeString()) != IDE_SUCCESS );
     }
     else
     {
-        IDE_TEST( beginSmiStmtInternal(aTrans, aFlag) != IDE_SUCCESS );
+        IDE_TEST( beginSmiStmtInternal(aTrans, aFlag, mSession->getSessionTypeString()) != IDE_SUCCESS );
     }
 
     mSmiStmtPtr = &mSmiStmt;
@@ -1799,10 +2153,10 @@ IDE_RC mmcStatement::beginSmiStmt(mmcTransObj *aTrans, UInt aFlag)
 
     IDE_EXCEPTION_END;
 
-    if( mIsShareTransSmiStmtLocked == ID_TRUE )
+    if ( mIsShareTransSmiStmtLocked == ID_TRUE )
     {
         mIsShareTransSmiStmtLocked = ID_FALSE;
-        mmcTrans::unlockRecursive(aTrans);
+        mmcTrans::unfixSharedTrans( aTrans, getSessionID() );
     }
 
     return IDE_FAILURE;
@@ -1822,35 +2176,21 @@ void mmcStatement::setSmiStmt(smiStatement * aSmiStmt)
 
 IDE_RC mmcStatement::endSmiStmt(UInt aFlag)
 {
-    idBool sIsLockedAtHere = ID_FALSE;
-
     IDE_DASSERT(mExecutingTrans != NULL);
 
     /* PROJ-2701 Online Data Rebuild: multi-node parallel statement serialize */
     if( mmcTrans::isShareableTrans(mExecutingTrans) == ID_TRUE )
     {
-        /* PROJ-2701 Online Data Rebuild
-         * 1. self statement with no lock
-         * 2. The share transaction lock of FAC Cursor may be already released
-         */
-        if( mIsShareTransSmiStmtLocked == ID_FALSE )
+        if ( mIsShareTransSmiStmtLocked == ID_FALSE )
         {
-            mmcTrans::lockRecursive(mExecutingTrans);
-            sIsLockedAtHere = ID_TRUE;
+            mmcTrans::fixSharedTrans( mExecutingTrans, getSessionID() );
             mIsShareTransSmiStmtLocked = ID_TRUE;
-        }
-        else
-        {
-            /* already lock acquired for multi-node parallel statement serialize
-             * this statement was executed with transaction lock acquired.
-             */
         }
 
         IDE_TEST(mSmiStmt.end(aFlag) != IDE_SUCCESS);
 
         mIsShareTransSmiStmtLocked = ID_FALSE;
-        sIsLockedAtHere = ID_FALSE;
-        mmcTrans::unlockRecursive(mExecutingTrans);
+        mmcTrans::unfixSharedTrans( mExecutingTrans, getSessionID() );
     }
     else
     {
@@ -1863,10 +2203,10 @@ IDE_RC mmcStatement::endSmiStmt(UInt aFlag)
 
     IDE_EXCEPTION_END;
 
-    if( sIsLockedAtHere == ID_TRUE )
+    if ( mIsShareTransSmiStmtLocked == ID_TRUE )
     {
         mIsShareTransSmiStmtLocked = ID_FALSE;
-        mmcTrans::unlockRecursive(mExecutingTrans);
+        mmcTrans::unfixSharedTrans( mExecutingTrans, getSessionID() );
     }
 
     return IDE_FAILURE;
@@ -1898,28 +2238,7 @@ mmcTransObj* mmcStatement::getShareTransForSmiStmtLock(mmcTransObj *aTrans)
     {
         if( mmcTrans::isShareableTrans(sTrans) == ID_TRUE )
         {
-            /* fix BUG-46900 */
-            if ( isStmtBegin() == ID_TRUE )
-            {
-                /* for self statement deadlock prevent */
-                if( ( mIsShareTransSmiStmtLocked == ID_FALSE ) && 
-                    ( ( mSmiStmt.mFlag & SMI_STATEMENT_SELF_MASK ) != SMI_STATEMENT_SELF_TRUE ) )
-                {
-                    /* sTrans must be locked, sTrans return */
-                }
-                else
-                {
-                    /* for multi-node parallel statement serialize
-                     * 1. share transaction lock already acquired.
-                     * 2. self statement do not need to acquire to share transaction lock
-                     */
-                    sTrans = NULL;
-                }
-            }
-            else
-            {
-                /* sTrans must be locked, sTrans returns */
-            }
+            /* Nothing to do */
         }
         else
         {
@@ -1950,10 +2269,20 @@ mmcTransObj* mmcStatement::getExecutingTrans()
  * 1. for using smiStmt at prepare
  * 2. for fetching after transaction end at fetch across commit
  */
-void mmcStatement::acquireShareTransSmiStmtLock(mmcTransObj *aTrans)
+IDE_RC mmcStatement::acquireShareTransSmiStmtLock(mmcTransObj *aTrans)
 {
+    IDE_TEST( mmcTrans::fixSharedTrans4Statement( aTrans,
+                                                  getSession(),
+                                                  MMC_TRANS_FIX_RECURSIVE )
+              != IDE_SUCCESS );
+
     mIsShareTransSmiStmtLocked = ID_TRUE;
-    mmcTrans::lockRecursive(aTrans);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 /**
@@ -1964,49 +2293,21 @@ void mmcStatement::acquireShareTransSmiStmtLock(mmcTransObj *aTrans)
  */
 void mmcStatement::releaseShareTransSmiStmtLock(mmcTransObj *aTrans)
 {
-    IDE_DASSERT( aTrans != NULL );
-
-    if( mmcTrans::isShareableTrans(aTrans) == ID_TRUE )
+    if ( mIsShareTransSmiStmtLocked == ID_TRUE )
     {
-        if( mIsShareTransSmiStmtLocked == ID_TRUE )
-        {
-            /* already lock acquired for multi-node parallel statement serialize
-             * this statement was executed with transaction lock acquired.
-             */
-            mIsShareTransSmiStmtLocked = ID_FALSE;
-            mmcTrans::unlockRecursive(aTrans);
-        }
-        else
-        {
-            /* do nothing, no lock self statement */
-        }
+        mIsShareTransSmiStmtLocked = ID_FALSE;
+        mmcTrans::unfixSharedTrans( aTrans, getSessionID() );
     }
-
-    return;
 }
 
 IDE_RC mmcStatement::resetCursorFlag()
 {
-    cmiProtocolContext *sCtx = NULL;
-
     if ((qciMisc::isStmtDCL(mStmtType) != ID_TRUE) &&
         (qciMisc::isStmtSP(mStmtType)  != ID_TRUE) &&
         (qciMisc::isStmtDB(mStmtType)  != ID_TRUE))
     {
-        sCtx = mSession->getTask()->getProtocolContext();
-        if ((cmiGetLinkImpl(sCtx) == CMI_LINK_IMPL_IPCDA) &&
-            (isSimpleQuery() == ID_TRUE) &&
-            (mSmiStmtPtr != NULL))
-        {
-            /* BUG-46756 IPCDA SimpleQueryÏù∏ Í≤ΩÏö∞ÏóêÎäî setSmiStmtÎ•º ÌÜµÌï¥ Ìï†ÎãπÎêú
-             * smiStatementÎ•º ÌÜµÌï¥ÏÑú resetCursorFlagÎ•º Ìò∏Ï∂úÎêòÎèÑÎ°ù ÌïúÎã§. */
-            (void)mSmiStmtPtr->resetCursorFlag(getCursorFlag());
-        }
-        else
-        {
-            /* Always Success */
-            (void)mSmiStmt.resetCursorFlag(getCursorFlag());
-        }
+        /* Always Success */
+        (void)mSmiStmt.resetCursorFlag(getCursorFlag());
     }
     return IDE_SUCCESS;
 }
@@ -2106,10 +2407,10 @@ IDE_RC mmcStatement::freeChildStmt( idBool aSuccess,
     }
 
     // BUG-20756 
-    // ChildStmtList Ïóê ResultSet ÎèÑ Ìè¨Ìï®ÎêòÎØÄÎ°ú ResultSetÎèÑ Ï¥àÍ∏∞Ìôî ÏãúÏºúÏïº Ìï©ÎãàÎã§.
+    // ChildStmtList ø° ResultSet µµ ∆˜«‘µ«π«∑Œ ResultSetµµ √ ±‚»≠ Ω√ƒ—æﬂ «’¥œ¥Ÿ.
     if( mInfo.mResultSet != NULL)
     {
-        /* BUG-42903 ÌïúÍ≥ÑÍ∞í Î≥¥Ï†ï */
+        /* BUG-42903 «—∞Ë∞™ ∫∏¡§ */
         for (sResultSetID = 0; sResultSetID < IDL_MIN(mInfo.mResultSetCount, mInfo.mResultSetHWM); sResultSetID++)
         {
             mInfo.mResultSet[sResultSetID].mResultSetState = MMC_RESULTSET_STATE_INITIALIZE;
@@ -2124,7 +2425,7 @@ IDE_RC mmcStatement::freeChildStmt( idBool aSuccess,
     return IDE_FAILURE;
 }
 
-/* BUG-46090 Meta Node SMN Ï†ÑÌåå */
+/* BUG-46090 Meta Node SMN ¿¸∆ƒ */
 void mmcStatement::clearShardDataInfo()
 {
     mmcStatement * sStmt     = NULL;
@@ -2138,6 +2439,21 @@ void mmcStatement::clearShardDataInfo()
     }
 
     qci::clearShardDataInfo( getQciStmt() );
+}
+
+void mmcStatement::clearShardDataInfoForRebuild()
+{
+    mmcStatement * sStmt     = NULL;
+    iduListNode  * sIterator = NULL;
+
+    IDU_LIST_ITERATE( getChildStmtList(), sIterator )
+    {
+        sStmt = (mmcStatement *)sIterator->mObj;
+
+        sStmt->clearShardDataInfoForRebuild();
+    }
+
+    qci::clearShardDataInfoForRebuild( getQciStmt() );
 }
 
 /* BUG-46092 */
@@ -2179,9 +2495,9 @@ void mmcStatement::freeRemoteStatement( UInt aNodeId, UChar aMode )
 
 void mmcStatement::applyOpTimeToSession()
 {
-   /* statistics event Í¥ÄÎ†® ÌÜµÍ≥ÑÏ†ïÎ≥¥Îßå ÏóÖÎéÉÌïúÎã§.
-    * ÏôúÎÉêÌïòÎ©¥, wait event Í¥ÄÎ†® ÌÜµÍ≥ÑÏ†ïÎ≥¥Îäî Ï∏°Ï†ïÏßÅÌõÑÏóê
-    * Î∞îÎ°ú SessionÏóê Î∞òÏòÅÎêòÍ∏∞ ÎïåÎ¨∏Ïù¥Îã§. */
+   /* statistics event ∞¸∑√ ≈Î∞Ë¡§∫∏∏∏ æ˜µ´«—¥Ÿ.
+    * ø÷≥ƒ«œ∏È, wait event ∞¸∑√ ≈Î∞Ë¡§∫∏¥¬ √¯¡§¡˜»ƒø°
+    * πŸ∑Œ Sessionø° π›øµµ«±‚ ∂ßπÆ¿Ã¥Ÿ. */
    idvManager::applyOpTimeToSession( 
        getSession()->getStatistics(),     // idvSession *
        getStatistics());                  // idvSQL *
@@ -2192,13 +2508,20 @@ IDE_RC  mmcStatement::getSmiStatement4PrepareCallback(void          *aGetSmiStmt
 {
     mmcGetSmiStmt4PrepareContext   *sGetSmiStmt4PrepareContext = (mmcGetSmiStmt4PrepareContext*)aGetSmiStmt4PrepareContext;
     smiStatement *sRootStmt;
+    mmcStatement * sStmt = NULL;
+    idBool         sIsBegin = ID_FALSE;
+
 
     if(sGetSmiStmt4PrepareContext->mSoftPrepareReason  ==  MMC_SOFT_PREPARE_FOR_PREPARE)
     {
         if(sGetSmiStmt4PrepareContext->mTrans == NULL)
         {    
-            sGetSmiStmt4PrepareContext->mStatement->getTrans4Prepare(&(sGetSmiStmt4PrepareContext->mTrans),
-                                                                     &(sGetSmiStmt4PrepareContext->mCommitFunc));
+            IDE_TEST( sGetSmiStmt4PrepareContext->mStatement->beginTransAndLock4Prepare(
+                            &(sGetSmiStmt4PrepareContext->mTrans),
+                            &(sGetSmiStmt4PrepareContext->mEndTransAction) )
+                      != IDE_SUCCESS );
+            sIsBegin = ID_TRUE;
+
             sGetSmiStmt4PrepareContext->mNeedCommit = ID_TRUE;
             sRootStmt = mmcTrans::getSmiStatement(sGetSmiStmt4PrepareContext->mTrans);
 
@@ -2226,11 +2549,17 @@ IDE_RC  mmcStatement::getSmiStatement4PrepareCallback(void          *aGetSmiStmt
     return IDE_SUCCESS;
     
     IDE_EXCEPTION_END;
+
+    if ( sIsBegin == ID_TRUE )
     {
-        /* BUG-38585 IDE_ASSERT remove */
-        IDE_ASSERT( sGetSmiStmt4PrepareContext->mCommitFunc(sGetSmiStmt4PrepareContext->mTrans,
-                                                            sGetSmiStmt4PrepareContext->mStatement->getSession(),
-                                                            SMI_RELEASE_TRANSACTION) == IDE_SUCCESS );
+        sStmt = sGetSmiStmt4PrepareContext->mStatement;
+
+        IDE_ASSERT( sStmt->endTransAndUnlock4Prepare( sGetSmiStmt4PrepareContext->mTrans,
+                                                      &sGetSmiStmt4PrepareContext->mEndTransAction,
+                                                      MMC_END_TRANS_FAILURE )
+                    == IDE_SUCCESS );
+        sIsBegin = ID_FALSE;
+        sGetSmiStmt4PrepareContext->mNeedCommit = ID_FALSE;
     }
 
     return IDE_FAILURE;
@@ -2257,10 +2586,12 @@ IDE_RC mmcStatement::softPrepare(mmcParentPCO          *aParentPCO,
     //fix BUG-31376 Reducing s-latch duration of parent PCO while perform soft prepare .
     idBool                       sIsFixPcb =  ID_FALSE;;
     UInt                         sCurChildCreateCnt;
-    
-    
+    mmcStatement               * sStmt = NULL;
+
+    IDU_FIT_POINT( "mmcStatement::softPrepare" );
+
     sStatistics = getStatistics();
-    //parent PCOÏóê prepare-latchÍ∞Ä s-latchÎ°ú Í±∏Î†§ ÏûàÎäî ÏÉÅÌÉú.
+    //parent PCOø° prepare-latch∞° s-latch∑Œ ∞…∑¡ ¿÷¥¬ ªÛ≈¬.
     *aNeedHardPrepare = ID_FALSE;
     if(aParentPCO == NULL)
     {
@@ -2271,7 +2602,7 @@ IDE_RC mmcStatement::softPrepare(mmcParentPCO          *aParentPCO,
     }
     else
     {
-        //rebuildÏóê ÏùòÌïòÏó¨ Parent PCOÏúºÎ°úÎ∂ÄÌÑ∞ soft-prepareÎ•º ÌïòÎäî Í≤ΩÏö∞.
+        //rebuildø° ¿««œø© Parent PCO¿∏∑Œ∫Œ≈Õ soft-prepare∏¶ «œ¥¬ ∞ÊøÏ.
         sParentPCO = aParentPCO;
         //TASK-3873 Static Analysis Code-Sonar false alarm remove.
         sHashKeyVal = aParentPCO->getHashKeyValue();
@@ -2283,7 +2614,7 @@ IDE_RC mmcStatement::softPrepare(mmcParentPCO          *aParentPCO,
     if(sParentPCO == NULL)
     {
         IDE_DASSERT( sPCOLatchState == MMC_PCO_LOCK_RELEASED);
-        //SQLTextÎ•º Plan CacheÏóê Îì±Î°ù ÏãúÎèÑ(parent PCO ÏÉùÏÑ±ÏãúÎèÑÎ•º ÏùòÎØ∏).
+        //SQLText∏¶ Plan Cacheø° µÓ∑œ Ω√µµ(parent PCO ª˝º∫Ω√µµ∏¶ ¿«πÃ).
         sCacheAbleSQLText = mmcPlanCache::isCacheAbleSQLText(getQueryString());
         if(sCacheAbleSQLText == ID_TRUE)
         {
@@ -2309,7 +2640,7 @@ IDE_RC mmcStatement::softPrepare(mmcParentPCO          *aParentPCO,
             else
             {
                 IDE_DASSERT( sPCOLatchState == MMC_PCO_LOCK_RELEASED);
-                // plan cache ÎåÄÏÉÅÏù¥Î©∞,hard-prepareÎ•º ÏàòÌñâÌï¥Ïïº Ìï®(sql plan check-inÏù¥ ÌïÑÏöî).
+                // plan cache ¥ÎªÛ¿Ã∏Á,hard-prepare∏¶ ºˆ«‡«ÿæﬂ «‘(sql plan check-in¿Ã « ø‰).
                 *aNeedHardPrepare = ID_TRUE;
                 *aPCB = sPlanPCB;
             }
@@ -2317,7 +2648,7 @@ IDE_RC mmcStatement::softPrepare(mmcParentPCO          *aParentPCO,
         }
         else
         {
-            // plan cache ÎπÑÎåÄÏÉÅÏù¥Î©∞,hard-prepareÎ•º   ÏàòÌñâÌï¥Ïïº Îê®.
+            // plan cache ∫Ò¥ÎªÛ¿Ã∏Á,hard-prepare∏¶   ºˆ«‡«ÿæﬂ µ .
             mmcPlanCache::incNoneCacheSQLTryCnt(sStatistics);
             *aNeedHardPrepare = ID_TRUE;
             *aPCB = NULL;
@@ -2326,9 +2657,9 @@ IDE_RC mmcStatement::softPrepare(mmcParentPCO          *aParentPCO,
     else
     {
         IDE_DASSERT(sPCOLatchState == MMC_PCO_LOCK_ACQUIRED_SHARED);
-        //SQL TextÎäî Plan CacheÏóê ÏûàÎäî ÏÉÅÌÉú
-        // /statementÏùò environementÏôÄ matchÎêòÎäî planÏùÑ Ï∞æÎäîÎã§.
-        // fix BUG-23005 soft-prepareÏôÄ cachde replaceÍ∞ÑÏùò ÎèôÏãúÏÑ± Î¨∏Ï†úÎ°ú parent PCOÍ∞Ä freeÎê†Ïàò ÏûàÏùå.
+        //SQL Text¥¬ Plan Cacheø° ¿÷¥¬ ªÛ≈¬
+        // /statement¿« environementøÕ matchµ«¥¬ plan¿ª √£¥¬¥Ÿ.
+        // fix BUG-23005 soft-prepareøÕ cachde replace∞£¿« µøΩ√º∫ πÆ¡¶∑Œ parent PCO∞° freeµ…ºˆ ¿÷¿Ω.
         if(sParentPCO->getChildCnt() == 0 )
         {
             *aNeedHardPrepare = ID_TRUE;
@@ -2336,8 +2667,8 @@ IDE_RC mmcStatement::softPrepare(mmcParentPCO          *aParentPCO,
         }
         else
         {
-            // compile code optimizingÎïåÎ¨∏Ïóê
-            // else Î∏îÎü≠ÏúºÎ°ú Î≥¥Ìò∏ÌïúÎã§.
+            // compile code optimizing∂ßπÆø°
+            // else ∫Ì∑∞¿∏∑Œ ∫∏»£«—¥Ÿ.
             IDV_SQL_OPTIME_BEGIN(sStatistics,IDV_OPTM_INDEX_PLANCACHE_SEARCH_CHILD_PCO);
             sParentPCO->searchChildPCO(this,&sPlanPCB,&sChildPCOPlanState,&sPCOLatchState);
             IDV_SQL_OPTIME_END(sStatistics,IDV_OPTM_INDEX_PLANCACHE_SEARCH_CHILD_PCO);
@@ -2354,9 +2685,9 @@ IDE_RC mmcStatement::softPrepare(mmcParentPCO          *aParentPCO,
                     IDE_DASSERT(sPCOLatchState == MMC_PCO_LOCK_ACQUIRED_SHARED);
                     sPlanPCB = sParentPCO->getSafeGuardPCB();
                     IDE_ASSERT(sPlanPCB != NULL);
-                    //statementÏùò environementÏôÄ matchÎêòÎäî planÏù¥ cacheÏóê ÏóÜÎäî Í≤ΩÏö∞.
-                    // child PCO ÏÉùÏÑ±ÏãúÎèÑ.
-                    //preventDupPlanÏóêÏÑú parent PCOÏùò s-latchÎ•º Ìíà.
+                    //statement¿« environementøÕ matchµ«¥¬ plan¿Ã cacheø° æ¯¥¬ ∞ÊøÏ.
+                    // child PCO ª˝º∫Ω√µµ.
+                    //preventDupPlanø°º≠ parent PCO¿« s-latch∏¶ «∞.
                     IDE_TEST_RAISE(mmcPlanCache::preventDupPlan(sStatistics,
                                                           sParentPCO,
                                                           sPlanPCB,
@@ -2376,7 +2707,7 @@ IDE_RC mmcStatement::softPrepare(mmcParentPCO          *aParentPCO,
                     }
                     else
                     {
-                        //winner,hard-prepareÍ∞Ä ÌïÑÏöî
+                        //winner,hard-prepare∞° « ø‰
                         mmcPlanCache::incCacheMissCnt(sStatistics);
                         *aNeedHardPrepare = ID_TRUE;
                         *aPCB = sPCB4NewPlan;
@@ -2384,12 +2715,12 @@ IDE_RC mmcStatement::softPrepare(mmcParentPCO          *aParentPCO,
                     break;
                 case    MMC_CHILD_PCO_PLAN_IS_READY:
                     IDE_DASSERT(sPCOLatchState == MMC_PCO_LOCK_ACQUIRED_SHARED);
-                    // PlanÏù¥ ÏûàÎã§.
+                    // Plan¿Ã ¿÷¥Ÿ.
                     sChildPCO = sPlanPCB->getChildPCO();
                     IDE_ASSERT(sChildPCO != NULL);
                     //fix BUG-31376 Reducing s-latch duration of parent PCO while perform soft prepare .
-                    /* parent PCO s-latch releaseÌïòÍ∏∞Ï†ÑÏóê old PCBÏóê ÎåÄÌïòÏó¨ plan fixÎ•º ÌïòÏó¨,
-                       parent PCOÍ∞Ä  victimÎêòÏñ¥ Ìï¥Ï†úÎêòÎäî caseÎ•º ÎßâÎäîÎã§.
+                    /* parent PCO s-latch release«œ±‚¿¸ø° old PCBø° ¥Î«œø© plan fix∏¶ «œø©,
+                       parent PCO∞°  victimµ«æÓ «ÿ¡¶µ«¥¬ case∏¶ ∏∑¥¬¥Ÿ.
                      */
                     
                     sParentPCO->getChildCreateCnt(&sCurChildCreateCnt);
@@ -2428,11 +2759,11 @@ IDE_RC mmcStatement::softPrepare(mmcParentPCO          *aParentPCO,
                     else
                     {
                         // fix BUG-30903
-                        // V$SYSSTATdml rebuild countÎ•º Ï¶ùÍ∞ÄÏãúÌÇ®Îã§.
+                        // V$SYSSTATdml rebuild count∏¶ ¡ı∞°Ω√≈≤¥Ÿ.
                         IDV_SESS_ADD_DIRECT(mSession->getStatistics(),
                                             IDV_STAT_INDEX_REBUILD_COUNT,
                                             1);
-                        // new planÏÉùÏÑ±ÏùÑ ÏúÑÌïòÏó¨ Ï§ëÎ≥µ plan Î∞©ÏßÄ Ï†àÏ∞®Î•º ÏàòÌñâÌïúÎã§.
+                        // new planª˝º∫¿ª ¿ß«œø© ¡ﬂ∫π plan πÊ¡ˆ ¿˝¬˜∏¶ ºˆ«‡«—¥Ÿ.
                         //fix BUG-27360 Code-Sonar UMR, sPCB4NewPlan can be uninitialized mememory.
                         IDV_SQL_OPTIME_BEGIN(sStatistics,IDV_OPTM_INDEX_CREATE_NEW_CHILD_PCO_BY_REBUILD_AT_SOFT_PREPARE);
                         IDE_TEST_RAISE(mmcPlanCache::preventDupPlan(sStatistics,
@@ -2461,7 +2792,7 @@ IDE_RC mmcStatement::softPrepare(mmcParentPCO          *aParentPCO,
                         }//if
                         else
                         {
-                            //winner,hard-prepareÍ∞Ä ÌïÑÏöî
+                            //winner,hard-prepare∞° « ø‰
                             *aNeedHardPrepare = ID_TRUE;
                             *aPCB = sPCB4NewPlan;
                         }//else
@@ -2472,11 +2803,12 @@ IDE_RC mmcStatement::softPrepare(mmcParentPCO          *aParentPCO,
                         IDE_TEST_RAISE(sGetSmit4PrepareContext.mPrepareStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS,
                                        ErrorSmiStmtEnd);
 
-                        /* BUG-38585 IDE_ASSERT remove */
-                        IDU_FIT_POINT( "mmcStatement::softPrepare::CommitFunc" );
-                        IDE_TEST( sGetSmit4PrepareContext.mCommitFunc(sGetSmit4PrepareContext.mTrans,
-                                                                      mSession,
-                                                                      SMI_RELEASE_TRANSACTION) != IDE_SUCCESS );
+                        sStmt = sGetSmit4PrepareContext.mStatement;
+
+                        IDE_TEST( sStmt->endTransAndUnlock4Prepare( sGetSmit4PrepareContext.mTrans,
+                                                                    &sGetSmit4PrepareContext.mEndTransAction,
+                                                                    MMC_END_TRANS_SUCCESS )
+                                  != IDE_SUCCESS );
                     }
                     break;
                 default:
@@ -2487,7 +2819,7 @@ IDE_RC mmcStatement::softPrepare(mmcParentPCO          *aParentPCO,
     }//else sParentPCO
     
     
-    //Parent PCO Ïùò prepare-latchÏùò  release.
+    //Parent PCO ¿« prepare-latch¿«  release.
     if(sPCOLatchState !=  MMC_PCO_LOCK_RELEASED)
     {
         sParentPCO->releasePrepareLatch();
@@ -2497,34 +2829,23 @@ IDE_RC mmcStatement::softPrepare(mmcParentPCO          *aParentPCO,
     
     IDE_EXCEPTION(ErrorSmiStmtEnd);
     {
-        IDE_ASSERT(sGetSmit4PrepareContext.mCommitFunc(sGetSmit4PrepareContext.mTrans,
-                                                       mSession,
-                                                       SMI_RELEASE_TRANSACTION ) == IDE_SUCCESS);
+        sStmt = sGetSmit4PrepareContext.mStatement;
 
+        IDE_ASSERT( sStmt->endTransAndUnlock4Prepare( sGetSmit4PrepareContext.mTrans,
+                                                      &sGetSmit4PrepareContext.mEndTransAction,
+                                                      MMC_END_TRANS_FAILURE )
+                    == IDE_SUCCESS );
+        sGetSmit4PrepareContext.mNeedCommit = ID_FALSE;
     }
     IDE_EXCEPTION(PlanValidationError);
     {
         //fix BUG-30855 It needs to describe soft prepare time in detail for problem tracking.
         IDV_SQL_OPTIME_END(sStatistics,IDV_OPTM_INDEX_VALIDATE_PCO);
-        if(sGetSmit4PrepareContext.mNeedCommit == ID_TRUE)
-        {
-            IDE_ASSERT(sGetSmit4PrepareContext.mPrepareStmt.end(SMI_STATEMENT_RESULT_SUCCESS) == IDE_SUCCESS);
-            IDE_ASSERT(sGetSmit4PrepareContext.mCommitFunc(sGetSmit4PrepareContext.mTrans,
-                                                           mSession,
-                                                           SMI_RELEASE_TRANSACTION ) == IDE_SUCCESS);
-        }
     }
     IDE_EXCEPTION(PrivilegeError);
     {
         //fix BUG-30855 It needs to describe soft prepare time in detail for problem tracking.
         IDV_SQL_OPTIME_END(sStatistics,IDV_OPTM_INDEX_CHECK_PRIVILEGE_PCO);
-        if(sGetSmit4PrepareContext.mNeedCommit == ID_TRUE)
-        {
-            IDE_ASSERT(sGetSmit4PrepareContext.mPrepareStmt.end(SMI_STATEMENT_RESULT_SUCCESS) == IDE_SUCCESS);
-            IDE_ASSERT(sGetSmit4PrepareContext.mCommitFunc(sGetSmit4PrepareContext.mTrans,
-                                                           mSession,
-                                                           SMI_RELEASE_TRANSACTION ) == IDE_SUCCESS);
-        }
     }
     //fix BUG-30855 It needs to describe soft prepare time in detail for problem tracking.
     IDE_EXCEPTION(InsertSQLTextError);
@@ -2550,81 +2871,152 @@ IDE_RC mmcStatement::softPrepare(mmcParentPCO          *aParentPCO,
     {
         sParentPCO->releasePrepareLatch();
     }
-    
+
+    if ( sGetSmit4PrepareContext.mNeedCommit == ID_TRUE )
+    {
+        IDE_ASSERT( sGetSmit4PrepareContext.mPrepareStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) 
+                    == IDE_SUCCESS );
+
+        sStmt = sGetSmit4PrepareContext.mStatement;
+
+        IDE_ASSERT( sStmt->endTransAndUnlock4Prepare(  sGetSmit4PrepareContext.mTrans,
+                                                       &sGetSmit4PrepareContext.mEndTransAction,
+                                                       MMC_END_TRANS_FAILURE )
+                    == IDE_SUCCESS );
+        sGetSmit4PrepareContext.mNeedCommit = ID_FALSE;
+    }
+
     return IDE_FAILURE;
 }
 //PROJ-1436 SQL-Plan Cache.
-// commit modeÏôÄ root statementÏóê Îî∞Îùº
-// Ï†ÅÏ†àÌïú mmcTrans objectÎ•º returnÌïúÎã§.
-void mmcStatement::getTrans4Prepare(mmcTransObj               **aTrans,
-                                    mmcTransCommt4PrepareFunc  *aCommit4PrepareFunc)
+// commit modeøÕ root statementø° µ˚∂Û
+// ¿˚¿˝«— mmcTrans object∏¶ return«—¥Ÿ.
+IDE_RC mmcStatement::beginTransAndLock4Prepare( mmcTransObj                  ** aTrans,
+                                                mmcEndTransAction4Prepare     * aEndTransAction )
 {
-    mmcTransObj   *sTrans;
-    UInt           sFlag=0;
-    idBool         sUseNewTrans = ID_FALSE;
-    
-    if ( ( mSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT ) &&
-         ( isRootStmt() == ID_TRUE ) )
-    {
-        sTrans = allocTrans();
-        *aTrans = sTrans;
-        sFlag = SMI_TRANSACTION_NORMAL   |
-            SMI_ISOLATION_CONSISTENT |
-            SMI_COMMIT_WRITE_NOWAIT;
+    mmcTransObj           * sTrans = NULL;
+    idBool                  sIsDummyBegin = ID_TRUE;
 
-        mmcTrans::begin(sTrans, getStatistics(), sFlag, getSession());
-        /* fix bug-18703 */
-        mmcStatement::setTransID(mmcTrans::getTransID(sTrans));
-        *aCommit4PrepareFunc = mmcTrans::commit4Prepare;
+    mmcTransEndAction       sTransEndAction = MMC_TRANS_END;
+    idBool                  sIsLock = ID_FALSE;
+
+    if ( mSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT )
+    {
+        if ( isRootStmt() == ID_TRUE )
+        {
+            sTrans = allocTrans();
+
+            mmcTrans::begin( sTrans, 
+                             getStatistics(), 
+                             (SMI_TRANSACTION_NORMAL | SMI_ISOLATION_CONSISTENT | SMI_COMMIT_WRITE_NOWAIT),
+                             getSession(), 
+                             &sIsDummyBegin );
+            sTransEndAction = MMC_TRANS_END;
+        }
+        else
+        {
+            sTrans = getParentStmt()->getTransPtr();
+            sTransEndAction = MMC_TRANS_DO_NOTHING;
+        }
+
+        IDE_DASSERT( mmcTrans::isShareableTrans( sTrans ) == ID_FALSE );
+
     }//if
     else
     {
-        if( ( mSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT ) &&
-            ( isRootStmt() == ID_FALSE ) )
+        IDE_DASSERT( mSession->isTransAlloc() == ID_TRUE );
+
+        sTrans = mSession->getTransPtr();
+
+        if( mmcTrans::isShareableTrans( sTrans ) == ID_TRUE )
         {
-            sTrans = getParentStmt()->getTransPtr();
+            IDE_TEST( acquireShareTransSmiStmtLock( sTrans ) != IDE_SUCCESS );
+            sIsLock = ID_TRUE;
         }
-        else
+
+        if ( mSession->getTransBegin() == ID_FALSE )
         {
-            /* ÏÉ§Îî©ÏóêÏÑú non-autocommit sql prepareÏãúÏóê
-             * Ìä∏ÎûúÏû≠ÏÖòÏùÑ ÏµúÏ¥à beginÌïòÎäî Í≤ΩÏö∞ Ìä∏ÎûúÏû≠ÏÖòÏùÑ Í≥µÏú†ÌïòÏßÄ ÏïäÏäµÎãàÎã§.
-             * prepareÎßå Ìïú ÏÑ∏ÏÖòÏóê ÎåÄÌï¥ÏÑúÎäî ÏÑ±Îä• Î∞è ÏûêÏõê Í¥ÄÎ†® Ïù¥Ïú†Î°ú
-             * shardcliÏóêÏÑú Ìä∏ÎûúÏû≠ÏÖò ÏôÑÎ£åÎ•º Î≥¥ÎÇ¥ÏßÄ ÏïäÍ≥† Ìä∏ÎûúÏû≠ÏÖòÏùÑ Ïú†ÏßÄÌïòÏßÄ ÏïäÏäµÎãàÎã§.
-             */
-            if (mSession->getTransBegin() == ID_FALSE)
+            mmcTrans::begin( sTrans,
+                             mSession->getStatSQL(),
+                             mSession->getSessionInfoFlagForTx(),
+                             mSession,
+                             &sIsDummyBegin );
+
+            /* fix BUG-46913 */
+            mmcTrans::clearAndSetSessionInfoAfterBegin( mSession,
+                                                        sTrans );
+
+            if ( sIsDummyBegin == ID_TRUE )
             {
-                /* Í≥µÏú†ÌïòÏßÄ ÏïäÎäî Ìä∏ÎûúÏû≠ÏÖòÏùÑ allocÌïúÎã§. */
-                IDE_ASSERT(mmcTrans::alloc( NULL, &sTrans ) == IDE_SUCCESS);
-                mmcTrans::beginRaw(sTrans,
-                                   mSession->getStatSQL(),
-                                   mSession->getSessionInfoFlagForTx(),
-                                   mSession->getEventFlag());
-
-                /* fix BUG-46913 */
-                mmcTrans::clearAndSetSessionInfoAfterBegin( mSession,
-                                                            sTrans );
-
-                sUseNewTrans = ID_TRUE;
+                sTransEndAction = MMC_TRANS_SESSION_ONLY_END;
             }
             else
             {
-                sTrans = mSession->getTransPtr();
+                sTransEndAction = MMC_TRANS_END;
             }
-        }
-        /* fix bug-18703 */
-        *aTrans = sTrans;
-        if(sUseNewTrans == ID_TRUE)
-        {
-            /* Ïã†Í∑ú Ìä∏ÎûúÏû≠ÏÖòÏùÑ ÏÇ¨Ïö©Ìïú Í≤ΩÏö∞ freeÎ•º Ìï®Íªò ÌïòÎäî Ìï®ÏàòÎ•º ÏÑ§Ï†ïÌïúÎã§. */
-            *aCommit4PrepareFunc = mmcTrans::commit4PrepareWithFree;
         }
         else
         {
-            *aCommit4PrepareFunc = mmcTrans::commit4Null;
+            sTransEndAction = MMC_TRANS_DO_NOTHING;
         }
-
-        mmcStatement::setTransID(mmcTrans::getTransID(sTrans));
     }//else
+
+    IDE_DASSERT( sTrans != NULL );
+
+    mmcStatement::setTransID(mmcTrans::getTransID(sTrans));
+
+    *aTrans = sTrans;
+    aEndTransAction->mTransEndAction = sTransEndAction;
+    aEndTransAction->mNeedReleaseLock = sIsLock;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if ( sIsLock == ID_TRUE )
+    {
+        releaseShareTransSmiStmtLock( sTrans );
+    }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC mmcStatement::endTransAndUnlock4Prepare( mmcTransObj                * aTrans,
+                                                mmcEndTransAction4Prepare  * aEndTransAction,
+                                                mmcEndTransResult4Prepare    aResult )
+{
+    switch ( aResult )
+    {
+        case MMC_END_TRANS_SUCCESS:
+            IDE_TEST( mmcTrans::commit4Prepare( aTrans,
+                                                mSession,
+                                                aEndTransAction->mTransEndAction )
+                      != IDE_SUCCESS );
+            break;
+
+        case MMC_END_TRANS_FAILURE:
+            IDE_TEST( mmcTrans::rollback4Prepare( aTrans,
+                                                  mSession,
+                                                  aEndTransAction->mTransEndAction )
+                      != IDE_SUCCESS );
+            break;
+
+        default:
+            IDE_DASSERT( 0 );
+            break;
+    }
+
+    if ( aEndTransAction->mNeedReleaseLock == ID_TRUE )
+    {
+        releaseShareTransSmiStmtLock( aTrans );
+        aEndTransAction->mNeedReleaseLock = ID_FALSE;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 //PROJ-1436 SQL-Plan Cache.
@@ -2633,12 +3025,12 @@ IDE_RC mmcStatement::hardPrepare(mmcPCB                 *aPCB,
 {
     idBool                     sSuccess;
     mmcTransObj               *sTrans;
-    mmcTransCommt4PrepareFunc  sCommit4PrepareFunc;
+    mmcEndTransAction4Prepare  sEndTransAction;
     SChar                     *sSQLText;
     mmcChildPCO               *sChildPCO;
     //fix BUG-30855 It needs to describe soft prepare time in detail for problem tracking.
     idvSQL                    *sStatistics = getStatistics();
-    mmcTransObj               *sShareTrans = NULL;
+
     if(aPCB != NULL)
     {
         sSQLText = aPCB->getParentPCO()->getSQLString4HardPrepare();
@@ -2652,40 +3044,46 @@ IDE_RC mmcStatement::hardPrepare(mmcPCB                 *aPCB,
 
     IDE_TEST_RAISE(parse(sSQLText) != IDE_SUCCESS, parse_error);
 
-    getTrans4Prepare(&sTrans,
-                     &sCommit4PrepareFunc);
-
-    /* PROJ-2701 Online date rebuild
-     * For statement concurrency control */
-    sShareTrans = getShareTransForSmiStmtLock(sTrans);
-    if(sShareTrans != NULL)
+    /* TASK-7219 Analyzer/Transformer/Executor º∫¥…∞≥º± */
+    if ( mSession->getCallByShardAnalyzeProtocol() == ID_TRUE )
     {
-        acquireShareTransSmiStmtLock(sShareTrans);
+        IDE_TEST( sdi::checkStmtTypeBeforeAnalysis( &getQciStmt()->statement )
+                  != IDE_SUCCESS );
     }
+    else
+    {
+        /* Nothing to do. */
+    }
+
+    IDE_TEST( beginTransAndLock4Prepare( &sTrans, &sEndTransAction ) != IDE_SUCCESS );
 
     // PROJ-2163
     IDE_TEST_RAISE(qci::bindParamInfo(getQciStmt(),
                                       aPlanCacheContext) != IDE_SUCCESS,
                    HardPrepareError);
 
+    IDU_FIT_POINT_RAISE( "mmcStatement::hardPrepare::doHardPrepare", 
+                         HardPrepareError, 
+                         mmERR_ABORT_INTERNAL_SERVER_ERROR_ARG, 
+                         "doHardPrepare Error" );
     IDE_TEST_RAISE(doHardPrepare(sSQLText,
                                  aPlanCacheContext,
                                  mmcTrans::getSmiStatement(sTrans)) 
                    != IDE_SUCCESS, HardPrepareError);
 
-    /* PROJ-2701 Online date rebuild
-     * For statement concurrency control */
-    if(sShareTrans != NULL)
-    {
-        releaseShareTransSmiStmtLock(sShareTrans);
-    }
-
     //fix BUG-30855 It needs to describe soft prepare time in detail for problem tracking.
     IDV_SQL_OPTIME_END(sStatistics,IDV_OPTM_INDEX_HARD_PREPARE);
 
-    /* BUG-38585 IDE_ASSERT remove */
-    IDU_FIT_POINT("mmcStatement::hardPrepare::Commit4PrepareFunc");
-    IDE_TEST(sCommit4PrepareFunc(sTrans, mSession, SMI_RELEASE_TRANSACTION) != IDE_SUCCESS);
+    IDU_FIT_POINT_RAISE( "mmcStatement::hardPrepare::endTransAndUnlock4Prepare", 
+                         CommitError, 
+                         mmERR_ABORT_INTERNAL_SERVER_ERROR_ARG, 
+                         "CommitError" );
+
+    /* BUG-47650 BUG-38585 IDE_ASSERT remove */
+    IDE_TEST_RAISE( endTransAndUnlock4Prepare( sTrans,
+                                               &sEndTransAction,
+                                               MMC_END_TRANS_SUCCESS )
+                    != IDE_SUCCESS, CommitError );
 
     if( aPCB != NULL)
     {
@@ -2707,8 +3105,8 @@ IDE_RC mmcStatement::hardPrepare(mmcPCB                 *aPCB,
                                         aPlanCacheContext->mSharedPlanMemory,
                                         QCI_SQL_PLAN_CACHE_IN_FAILURE);
 
-                /* BUG-44853 Plan Cache ÏòàÏô∏ Ï≤òÎ¶¨Í∞Ä Î∂ÄÏ°±ÌïòÏó¨, ÎπÑÏ†ïÏÉÅ Ï¢ÖÎ£åÍ∞Ä Î∞úÏÉùÌï† Ïàò ÏûàÏäµÎãàÎã§.
-                 * qci::makePlanCacheInfo()ÏóêÏÑú ÎßåÎì† QMP MemoryÏôÄ Shared TemplateÏùÑ Ï†úÍ±∞ÌïúÎã§.
+                /* BUG-44853 Plan Cache øπø‹ √≥∏Æ∞° ∫Œ¡∑«œø©, ∫Ò¡§ªÛ ¡æ∑·∞° πﬂª˝«“ ºˆ ¿÷Ω¿¥œ¥Ÿ.
+                 * qci::makePlanCacheInfo()ø°º≠ ∏∏µÁ QMP MemoryøÕ Shared Template¿ª ¡¶∞≈«—¥Ÿ.
                  */
                 aPlanCacheContext->mSharedPlanMemory = NULL;
 
@@ -2719,17 +3117,17 @@ IDE_RC mmcStatement::hardPrepare(mmcPCB                 *aPCB,
             }
             else
             {
-                /* BUG-44853 Plan Cache ÏòàÏô∏ Ï≤òÎ¶¨Í∞Ä Î∂ÄÏ°±ÌïòÏó¨, ÎπÑÏ†ïÏÉÅ Ï¢ÖÎ£åÍ∞Ä Î∞úÏÉùÌï† Ïàò ÏûàÏäµÎãàÎã§.
-                 * QMP MemoryÏôÄ Shared TemplateÏùÑ Ï¥àÍ∏∞ÌôîÌïúÎã§.
+                /* BUG-44853 Plan Cache øπø‹ √≥∏Æ∞° ∫Œ¡∑«œø©, ∫Ò¡§ªÛ ¡æ∑·∞° πﬂª˝«“ ºˆ ¿÷Ω¿¥œ¥Ÿ.
+                 * QMP MemoryøÕ Shared Template¿ª √ ±‚»≠«—¥Ÿ.
                  */
                 aPlanCacheContext->mSharedPlanMemory = NULL;
                 aPlanCacheContext->mPrepPrivateTemplate = NULL;
 
                 //success;
                 /*fix BUG-30434 VAL] mmcPCB::getChildPCO Invalid read of size 8
-                  check In Ïù¥ ÏÑ±Í≥µÌïú caseÏóê ÌïúÌïòÏó¨ child PCOÎ•º Ï∞∏Ï°∞ÌïòÏó¨Ïïº ÌïúÎã§.
-                  check InÏù¥  Ïã§Ìå®Ìïú Í≤ΩÏö∞Îäî cache replaceÏóê ÏùòÌïòÏó¨ victimÏù¥ ÎêòÏñ¥
-                  child PCOÍ∞Ä Ìï¥Ï†úÎê†Ïàò ÏûàÍ∏∞ÎïåÎ¨∏Ïù¥Îã§.*/
+                  check In ¿Ã º∫∞¯«— caseø° «—«œø© child PCO∏¶ ¬¸¡∂«œø©æﬂ «—¥Ÿ.
+                  check In¿Ã  Ω«∆–«— ∞ÊøÏ¥¬ cache replaceø° ¿««œø© victim¿Ã µ«æÓ
+                  child PCO∞° «ÿ¡¶µ…ºˆ ¿÷±‚∂ßπÆ¿Ã¥Ÿ.*/
                 sChildPCO = aPCB->getChildPCO();
                 IDE_TEST(qci::clonePrivateTemplate(getQciStmt(),
                                                    sChildPCO->getSharedPlan(),
@@ -2760,7 +3158,7 @@ IDE_RC mmcStatement::hardPrepare(mmcPCB                 *aPCB,
     }
 
     // fix BUG-23161
-    // prepare successÏùò ÏùòÎØ∏Îäî  hard prepareÍ∞Ä ÏÑ±Í≥µÌñàÎã§Îäî Í≤ÉÏûÑ.
+    // prepare success¿« ¿«πÃ¥¬  hard prepare∞° º∫∞¯«ﬂ¥Ÿ¥¬ ∞Õ¿”.
     IDV_SESS_ADD_DIRECT(mSession->getStatistics(),
                         IDV_STAT_INDEX_PREPARE_SUCCESS_COUNT, 1);
 
@@ -2772,34 +3170,35 @@ IDE_RC mmcStatement::hardPrepare(mmcPCB                 *aPCB,
         //fix BUG-30855 It needs to describe soft prepare time in detail for problem tracking.
         IDV_SQL_OPTIME_END(sStatistics,IDV_OPTM_INDEX_HARD_PREPARE);
 
-        /* PROJ-2701 Online date rebuild
-         * For statement concurrency control */
-        if(sShareTrans != NULL)
-        {
-            releaseShareTransSmiStmtLock(sTrans);
-        }
+        IDE_ASSERT( endTransAndUnlock4Prepare( sTrans,
+                                               &sEndTransAction,
+                                               MMC_END_TRANS_FAILURE )
+                    == IDE_SUCCESS );
 
-        /* commit function(sCommit4PrepareFunc) of sTrans for hard prepare was set
-         * appropriate function therefore the function must be called.
-         * ex> commit4Null for no commit or commit4Prepare for commit,
-         *     if new trans was alloced for prepare, commit4PrepareWithFree
-         */
-        (void)sCommit4PrepareFunc(sTrans, mSession, SMI_RELEASE_TRANSACTION);
-
-        // fix BUG-27952
-        // Non-Autocommit ÏÑ∏ÏÖòÏóêÏÑú DDL prepare Ï§ë ÏóêÎü¨Í∞Ä Î∞úÏÉùÌñàÏùÑ Í≤ΩÏö∞ÏóêÎäî
-        // Ïù¥Ï†Ñ Ïó∞ÏÇ∞ÏùÑ Î™®Îëê commit ÏãúÌÇ®Îã§.
-        if ((mSession->getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT) &&
+        /* fix BUG-27952
+           Non-Autocommit ººº«ø°º≠ DDL prepare ¡ﬂ ø°∑Ø∞° πﬂª˝«ﬂ¿ª ∞ÊøÏø°¥¬
+           ¿Ã¿¸ ø¨ªÍ¿ª ∏µŒ commit Ω√≈≤¥Ÿ.
+           BUG-48592 Shardingø°º≠¥¬ ø°∑Ø∞° πﬂª˝«ÿµµ ¡§«’º∫ ∫∏¿Â¿ª ¿ß«ÿ commit«œ¡ˆ æ ¥¬¥Ÿ. */
+        if ((sdi::isShardEnable() != ID_TRUE) &&
+            (mSession->getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT) &&
             (isRootStmt() == ID_TRUE))
         {
             if (qciMisc::getStmtType(mStmtType) == QCI_STMT_MASK_DDL)
             {
-                // fix BUG-30411
-                // hardPrepare Ïã§Ìå® ÌõÑ commitÏãú ÏóêÎü¨Í∞Ä Î∞úÏÉùÌïòÎ©¥
-                // Î∂ÄÌä∏Î°úÍ∑∏Ïóê ÏóêÎü¨ Î°úÍ∑∏Î•º Í∏∞Î°ùÌïúÎã§. 
-                if (mSession->commit(ID_FALSE) != IDE_SUCCESS)
+                if ( mSession->isDDLAutoCommit() == ID_TRUE ) 
                 {
-                    ideLog::log(IDE_SERVER_0, "[hardPrepare Failure : %s]", ideGetErrorMsg(ideGetErrorCode()));
+                    // fix BUG-30411
+                    // hardPrepare Ω«∆– »ƒ commitΩ√ ø°∑Ø∞° πﬂª˝«œ∏È
+                    // ∫Œ∆Æ∑Œ±◊ø° ø°∑Ø ∑Œ±◊∏¶ ±‚∑œ«—¥Ÿ. 
+                    if (mSession->commit(ID_FALSE) != IDE_SUCCESS)
+                    {
+                        ideLog::log(IDE_SERVER_0, "[hardPrepare Failure : %s]", ideGetErrorMsg(ideGetErrorCode()));
+                    }
+                }
+                else
+                {
+                    /* Transactional DDL, Global DDL µµ¡ﬂ Ω«∆–«“ ∞ÊøÏø°¥¬ Commit/Rollback æÓ¥¿ ¿€æ˜µµ «œ¡ˆ æ ∞Ì Ω«∆– */
+                    /* nothing to do */
                 }
             }
         }
@@ -2823,10 +3222,22 @@ IDE_RC mmcStatement::hardPrepare(mmcPCB                 *aPCB,
                                       aPCB);
         }
     }
+    IDE_EXCEPTION( CommitError )
+    {
+        IDE_ASSERT( endTransAndUnlock4Prepare( sTrans,
+                                               &sEndTransAction,
+                                               MMC_END_TRANS_FAILURE )
+                    == IDE_SUCCESS );
+
+        if ( aPCB != NULL )
+        {
+            mmcPlanCache::register4GC( getStatistics(), aPCB );
+        }
+    }
     IDE_EXCEPTION_END;
 
-    /* BUG-44853 Plan Cache ÏòàÏô∏ Ï≤òÎ¶¨Í∞Ä Î∂ÄÏ°±ÌïòÏó¨, ÎπÑÏ†ïÏÉÅ Ï¢ÖÎ£åÍ∞Ä Î∞úÏÉùÌï† Ïàò ÏûàÏäµÎãàÎã§.
-     * qci::makePlanCacheInfo()ÏóêÏÑú ÎßåÎì† QMP MemoryÏôÄ Shared TemplateÏùÑ Ï†úÍ±∞ÌïúÎã§.
+    /* BUG-44853 Plan Cache øπø‹ √≥∏Æ∞° ∫Œ¡∑«œø©, ∫Ò¡§ªÛ ¡æ∑·∞° πﬂª˝«“ ºˆ ¿÷Ω¿¥œ¥Ÿ.
+     * qci::makePlanCacheInfo()ø°º≠ ∏∏µÁ QMP MemoryøÕ Shared Template¿ª ¡¶∞≈«—¥Ÿ.
      */
     if ( aPlanCacheContext->mPlanCacheInMode == QCI_SQL_PLAN_CACHE_IN_ON )
     {
@@ -2856,7 +3267,7 @@ IDE_RC mmcStatement::hardPrepare(mmcPCB                 *aPCB,
     }
 
     // fix BUG-23161
-    // prepare failureÏùò ÏùòÎØ∏Îäî  hard prepareÍ∞Ä Ïã§Ìå®ÌñàÎã§Îäî Í≤ÉÏûÑ.
+    // prepare failure¿« ¿«πÃ¥¬  hard prepare∞° Ω«∆–«ﬂ¥Ÿ¥¬ ∞Õ¿”.
     IDV_SESS_ADD_DIRECT(mSession->getStatistics(),
                         IDV_STAT_INDEX_PREPARE_FAILURE_COUNT, 1);
 
@@ -2867,18 +3278,23 @@ void mmcStatement::makePlanTreeBeforeCloseCursor( mmcStatement * aStatement,
                                                   mmcStatement * aResultSetStmt )
 {
     // fix BUG- 22175
-    // executionÎÅùÎ∂ÄÎ∂Ñ ÎòêÎäî fetch ÎÅùÎ∂ÄÎ∂ÑÏóê Î∂àÎ†§ÏßÄÎäî Ìï®ÏàòÎ°ú,
-    // planTree textÎ•º ÏÉùÏÑ±ÌïúÎã§.
-    // Ìò∏Ï∂úÌïòÎäî Î∂ÄÎ∂ÑÏùÄ Îã§ÏùåÍ≥º Í∞ôÏùå.
-    // 1. dml execution endÏ†ÑÏóê Ìò∏Ï∂ú
-    // 2. no rows select endÏ†ÑÏóê Ìò∏Ï∂ú
-    // 3. fetchEndÏóêÏÑú cursor closeÏ†ÑÏóê Ìò∏Ï∂ú
+    // execution≥°∫Œ∫– ∂«¥¬ fetch ≥°∫Œ∫–ø° ∫“∑¡¡ˆ¥¬ «‘ºˆ∑Œ,
+    // planTree text∏¶ ª˝º∫«—¥Ÿ.
+    // »£√‚«œ¥¬ ∫Œ∫–¿∫ ¥Ÿ¿Ω∞˙ ∞∞¿Ω.
+    // 1. dml execution end¿¸ø° »£√‚
+    // 2. no rows select end¿¸ø° »£√‚
+    // 3. fetchEndø°º≠ cursor close¿¸ø° »£√‚
     
     IDE_RC         sRet;
     iduVarString * sPlanString;
-    
-    //profilingÏóêÏÑú ÌïÑÏöîÎ°ú ÌïòÍ±∞ÎÇò
-    //plan onÏù¥Î©¥ planTreeText ÏÉùÏÑ±
+    mmcTransObj  * sTrans = NULL;
+    smTID          sTransID;
+
+    // BUG-47831 View plan of query in PSM
+    iduListNode  * sPieceIterator;
+
+    //profilingø°º≠ « ø‰∑Œ «œ∞≈≥™
+    //plan on¿Ã∏È planTreeText ª˝º∫
     if ( ((idvProfile::getProfFlag() & IDV_PROF_TYPE_PLAN_FLAG) ==
           IDV_PROF_TYPE_PLAN_FLAG) ||
          (aStatement->getSession()->getExplainPlan() ==
@@ -2890,9 +3306,10 @@ void mmcStatement::makePlanTreeBeforeCloseCursor( mmcStatement * aStatement,
             sRet = aStatement->makePlanTreeText(ID_FALSE);
         }
 
-        //profilingÏóêÏÑú ÌïÑÏöîÎ°ú Ìïú Í≤ΩÏö∞ profileÏóê plan write
-        if ((idvProfile::getProfFlag() & IDV_PROF_TYPE_PLAN_FLAG) ==
-            IDV_PROF_TYPE_PLAN_FLAG)
+        //profilingø°º≠ « ø‰∑Œ «— ∞ÊøÏ profileø° plan write
+        if ( ((idvProfile::getProfFlag() & IDV_PROF_TYPE_PLAN_FLAG) ==
+              IDV_PROF_TYPE_PLAN_FLAG) ||
+             (IDE_TRC_QP_6 != 0) )
         {
             if( sRet == IDE_SUCCESS )
             {
@@ -2902,17 +3319,61 @@ void mmcStatement::makePlanTreeBeforeCloseCursor( mmcStatement * aStatement,
             {
                 sPlanString = NULL;
             }
+        }
             
+        if ( (idvProfile::getProfFlag() & IDV_PROF_TYPE_PLAN_FLAG) ==
+             IDV_PROF_TYPE_PLAN_FLAG)
+        {
+            /* BUG-46713 codesonar */
+            sTrans = aResultSetStmt->getSession()->getTransPtr( aResultSetStmt );
+
+            if ( sTrans != NULL )
+            {
+                sTransID = mmcTrans::getTransID( sTrans );
+            }
+            else
+            {
+                sTransID = 0;
+            }
+
             idvProfile::writePlan(aResultSetStmt->getSessionID(),
                                   aResultSetStmt->getStmtID(),
-                                  mmcTrans::getTransID(aResultSetStmt->getSession()->getTransPtr(aResultSetStmt)),
+                                  sTransID,
                                   sPlanString);
         }
+
+        // BUG-47831 IDE_TRC_QP_5 = Logging query in PSM
+        if ( (IDE_TRC_QP_5 != 0) &&
+             (aResultSetStmt->getParentStmt() != NULL) )
+        {
+            ideLog::log(IDE_QP_5,
+                        "[Query in PSM][SID %"ID_UINT32_FMT"][STMT_ID %"ID_UINT32_FMT"]\n%s",
+                        aResultSetStmt->getSessionID(),
+                        aResultSetStmt->getStmtID(),
+                        aResultSetStmt->getQueryString());
+        }
+
+        // BUG-47831 IDE_TRC_QP_6 = Logging plan in PSM
+        if ( (IDE_TRC_QP_6 != 0) &&
+             (sPlanString != NULL) &&
+             (aResultSetStmt->getParentStmt() != NULL) )
+        {
+            if ( sPlanString->mLength != 0 )
+            {
+                ideLog::log(IDE_QP_6,
+                            "[Plan in PSM][SID %"ID_UINT32_FMT"][STMT_ID %"ID_UINT32_FMT"]",
+                            aResultSetStmt->getSessionID(),
+                            aResultSetStmt->getStmtID());
+
+                // BUG-47831
+                // trc logø°¥¬ «—π¯ø° 2K¡§µµ∏∏ ±‚∑œ ∞°¥…«œø© piece ¥‹¿ß(1024)∑Œ ±‚∑œ«—¥Ÿ.
+                IDU_LIST_ITERATE(&sPlanString->mPieceList, sPieceIterator)
+                {
+                    ideLog::log(IDE_QP_6, "%s", ((iduVarStringPiece *)sPieceIterator->mObj)->mData);
+                }
+            }
+        }
     }
-    else
-    {
-        // Nothing to do.
-    }  
 }
 
 // BUG-36203 PSM Optimize
@@ -2944,24 +3405,24 @@ IDE_RC mmcStatement::reprepare()
 /***********************************************************************
  *
  * Description : PROJ-2163
- *      Execute Ï†ÑÏóê plan ÏùÑ Ïû¨ÏÉùÏÑ±(reprepare) ÌïòÎäî Ìï®Ïàò
+ *      Execute ¿¸ø° plan ¿ª ¿Áª˝º∫(reprepare) «œ¥¬ «‘ºˆ
  *
- *      Ìò∏Ïä§Ìä∏ Î≥ÄÏàòÍ∞Ä Ìè¨Ìï®Îêú ÏøºÎ¶¨Îäî Ïã§Ìñâ ÏãúÏ†êÏóê
- *      ÏÇ¨Ïö©ÏûêÍ∞Ä Î∞îÏù∏ÎìúÌïú type Í≥º plan Ïùò type Ïù¥ ÏÑúÎ°ú Îã§Î•º Ïàò ÏûàÎã§.
- *      Ïù¥ Í≤ΩÏö∞ plan ÏùÑ Ïû¨ÏÉùÏÑ± Ìï¥Ïïº ÌïúÎã§.
+ *      »£Ω∫∆Æ ∫Øºˆ∞° ∆˜«‘µ» ƒı∏Æ¥¬ Ω««‡ Ω√¡°ø°
+ *      ªÁøÎ¿⁄∞° πŸ¿ŒµÂ«— type ∞˙ plan ¿« type ¿Ã º≠∑Œ ¥Ÿ∏¶ ºˆ ¿÷¥Ÿ.
+ *      ¿Ã ∞ÊøÏ plan ¿ª ¿Áª˝º∫ «ÿæﬂ «—¥Ÿ.
  *
  * Implementation :
- *      1. reprepare skip Ïó¨Î∂Ä Ï≤¥ÌÅ¨
- *        1. Rebuild failure flag Ï≤¥ÌÅ¨
- *        2. Bind state Ï≤¥ÌÅ¨ Î∞è ÏÉÅÌÉú Ï†ÑÏù¥
- *        3. Re hard prepare failure flag Ï≤¥ÌÅ¨ (Î∞îÏù∏Îìú ÏøºÎ¶¨)
+ *      1. reprepare skip ø©∫Œ √º≈©
+ *        1. Rebuild failure flag √º≈©
+ *        2. Bind state √º≈© π◊ ªÛ≈¬ ¿¸¿Ã
+ *        3. Re hard prepare failure flag √º≈© (πŸ¿ŒµÂ ƒı∏Æ)
  *      2. reprepare
- *        a. (Plan cache ÏÇ¨Ïö© Î∂àÍ∞Ä ÌòπÏùÄ non-cacheable ÏøºÎ¶¨ Ïù∏Í≤ΩÏö∞)
- *           CACHE_IN_OFF Î™®ÎìúÎ°ú hard prepare ÏàòÌñâ
- *        b. (Soft prepare ÏóêÏÑú plan hit Ïãú)
- *           clone private template ÏàòÌñâ
- *        c. (Soft prepare ÏóêÏÑú plan miss Ïãú)
- *           PCB ÌöçÎìù Ïó¨Î∂ÄÏóê Îî∞Îùº CACHE_IN_ON/OFF Î°ú hard prepare ÏàòÌñâ
+ *        a. (Plan cache ªÁøÎ ∫“∞° »§¿∫ non-cacheable ƒı∏Æ ¿Œ∞ÊøÏ)
+ *           CACHE_IN_OFF ∏µÂ∑Œ hard prepare ºˆ«‡
+ *        b. (Soft prepare ø°º≠ plan hit Ω√)
+ *           clone private template ºˆ«‡
+ *        c. (Soft prepare ø°º≠ plan miss Ω√)
+ *           PCB »πµÊ ø©∫Œø° µ˚∂Û CACHE_IN_ON/OFF ∑Œ hard prepare ºˆ«‡
  *
  ***********************************************************************/
 
@@ -2971,12 +3432,13 @@ IDE_RC mmcStatement::reprepare()
     qciSQLPlanCacheContext  sPlanCacheContext;
     idvSQL                 *sStatistics;
     UChar                   sState =0;
+    idBool                  sRebuildDetected = ID_FALSE;
 
     /* PROJ-2223 Altibase Auditing */
     idvAuditTrail          *sAuditTrail;
     
-    /* BUG-44853 Plan Cache ÏòàÏô∏ Ï≤òÎ¶¨Í∞Ä Î∂ÄÏ°±ÌïòÏó¨, ÎπÑÏ†ïÏÉÅ Ï¢ÖÎ£åÍ∞Ä Î∞úÏÉùÌï† Ïàò ÏûàÏäµÎãàÎã§.
-     * QMP MemoryÏôÄ Shared TemplateÏùÑ Ï¥àÍ∏∞ÌôîÌïúÎã§.
+    /* BUG-44853 Plan Cache øπø‹ √≥∏Æ∞° ∫Œ¡∑«œø©, ∫Ò¡§ªÛ ¡æ∑·∞° πﬂª˝«“ ºˆ ¿÷Ω¿¥œ¥Ÿ.
+     * QMP MemoryøÕ Shared Template¿ª √ ±‚»≠«—¥Ÿ.
      */
     sPlanCacheContext.mPlanCacheInMode = QCI_SQL_PLAN_CACHE_IN_OFF;
     sPlanCacheContext.mSharedPlanMemory = NULL;
@@ -2987,8 +3449,7 @@ IDE_RC mmcStatement::reprepare()
     if((getQciStmt()->flag & QCI_STMT_REBUILD_EXEC_MASK)
        == QCI_STMT_REBUILD_EXEC_FAILURE )
     {
-        /* BUG-46902 Shard rebuild coordinating Ï§ëÏóê ÏàòÌñâÎêòÎäî statementÎäî reprepareÎ•º skipÌïòÏßÄ ÏïäÎäîÎã§. */
-        IDE_TEST_CONT( sdi::isRebuildCoordinator( &getQciStmt()->statement ) == ID_FALSE, pass );
+        IDE_CONT( pass );
     }
 
     // BUG-36203 PSM Optimize
@@ -3003,24 +3464,37 @@ IDE_RC mmcStatement::reprepare()
         }
         else
         {
-            /* BUG-46902 Shard rebuild coordinating Ï§ëÏóê ÏàòÌñâÎêòÎäî statementÎäî reprepareÎ•º skipÌïòÏßÄ ÏïäÎäîÎã§. */
-            IDE_TEST_CONT( sdi::isRebuildCoordinator( &getQciStmt()->statement ) == ID_FALSE, pass );
+            IDE_TEST( checkShardRebuildStatus( &sRebuildDetected ) != IDE_SUCCESS );
+
+            if ( sRebuildDetected == ID_TRUE )
+            {
+                // continue
+            }
+            else
+            {
+                IDE_CONT( pass );
+            }
         }
     }
 
-    /* BUG-44874 Plan CacheÍ∞Ä Í∞ÄÎìùÏ∞®Î©¥, ÎπÑÏ†ïÏÉÅ Ï¢ÖÎ£åÍ∞Ä Î∞úÏÉùÌï† Ïàò ÏûàÏäµÎãàÎã§.
-     *  1. Plan CacheÍ∞Ä qcPrepTemplateHeaderÎ•º Í¥ÄÎ¶¨ÌïòÎäîÎç∞,
-     *     Plan CacheÎ•º ÏÇ¨Ïö©ÌïòÎäî qcStatementÍ∞Ä qcPrepTemplateHeaderÎ•º Ìè¨Ïù∏ÌÑ∞Î°ú Ï∞∏Ï°∞Ìï©ÎãàÎã§.
-     *  2. qcStatementÎ•º Ï†ïÏÉÅÏ†ÅÏúºÎ°ú Ïû¨ÌôúÏö©ÌïòÎäî Í≤ΩÏö∞, qcg::clearStatement() -> qcg::freePrepTemplate()
-     *     -> qci::freePrepTemplate() Í≤ΩÎ°úÎ°ú qcPrepTemplateHeader Ï∞∏Ï°∞Î•º Ï¢ÖÎ£åÌï©ÎãàÎã§.
-     *  3. Ïù¥ÌõÑÏóê mmcStatement::releasePlanCacheObject()Î•º Ìò∏Ï∂úÌïòÎ©¥, Plan CacheÏôÄ qcStatementÏùò Í¥ÄÍ≥ÑÎ•º Ï¢ÖÎ£åÌï©ÎãàÎã§.
-     *  Îî∞ÎùºÏÑú, releasePlanCacheObject()Î•º Ìò∏Ï∂úÌïòÍ∏∞ Ï†ÑÏóê, qci::clearStatement4Reprepare()Î•º Ìò∏Ï∂úÌï¥Ïïº Ìï©ÎãàÎã§.
+    /* BUG-44874 Plan Cache∞° ∞°µÊ¬˜∏È, ∫Ò¡§ªÛ ¡æ∑·∞° πﬂª˝«“ ºˆ ¿÷Ω¿¥œ¥Ÿ.
+     *  1. Plan Cache∞° qcPrepTemplateHeader∏¶ ∞¸∏Æ«œ¥¬µ•,
+     *     Plan Cache∏¶ ªÁøÎ«œ¥¬ qcStatement∞° qcPrepTemplateHeader∏¶ ∆˜¿Œ≈Õ∑Œ ¬¸¡∂«’¥œ¥Ÿ.
+     *  2. qcStatement∏¶ ¡§ªÛ¿˚¿∏∑Œ ¿Á»∞øÎ«œ¥¬ ∞ÊøÏ, qcg::clearStatement() -> qcg::freePrepTemplate()
+     *     -> qci::freePrepTemplate() ∞Ê∑Œ∑Œ qcPrepTemplateHeader ¬¸¡∂∏¶ ¡æ∑·«’¥œ¥Ÿ.
+     *  3. ¿Ã»ƒø° mmcStatement::releasePlanCacheObject()∏¶ »£√‚«œ∏È, Plan CacheøÕ qcStatement¿« ∞¸∞Ë∏¶ ¡æ∑·«’¥œ¥Ÿ.
+     *  µ˚∂Ûº≠, releasePlanCacheObject()∏¶ »£√‚«œ±‚ ¿¸ø°, qci::clearStatement4Reprepare()∏¶ »£√‚«ÿæﬂ «’¥œ¥Ÿ.
      */
     IDE_TEST( qci::clearStatement4Reprepare( getQciStmt(),
                                              getSmiStmt() )
               != IDE_SUCCESS );
 
-    //Plan cache ÏóêÏÑú Í∞ÄÏ†∏Ïò® PCB Î•º Ìï¥Ï†úÌïúÎã§. (unfix)
+    /* TASK-7219 Non-shard DML */
+    IDE_TEST( qci::setShardPartialExecType( getQciStmt(),
+                                            getShardPartialExecType() )
+              != IDE_SUCCESS );
+
+    //Plan cache ø°º≠ ∞°¡Æø¬ PCB ∏¶ «ÿ¡¶«—¥Ÿ. (unfix)
     if(mPCB != NULL)
     {
         releasePlanCacheObject();
@@ -3083,9 +3557,9 @@ IDE_RC mmcStatement::reprepare()
             }
             else
             {
-                // Soft prepare ÏóêÏÑú PCB Î•º Í∞ÄÏ†∏ÏôîÎã§Î©¥ CACHE_IN_ON Î™®ÎìúÎ°ú
-                // hard prepare Ìï¥ÏÑú  plan cache Ïóê check in ÌïòÍ≥†
-                // Í∞ÄÏ†∏Ïò§ÏßÄ Î™ªÌñàÎã§Î©¥ CACHE_IN_OFF Î™®ÎìúÎ°ú hard prepare ÌïúÎã§.
+                // Soft prepare ø°º≠ PCB ∏¶ ∞°¡Æø‘¥Ÿ∏È CACHE_IN_ON ∏µÂ∑Œ
+                // hard prepare «ÿº≠  plan cache ø° check in «œ∞Ì
+                // ∞°¡Æø¿¡ˆ ∏¯«ﬂ¥Ÿ∏È CACHE_IN_OFF ∏µÂ∑Œ hard prepare «—¥Ÿ.
                 if(sPCB == NULL)
                 {
                     sPlanCacheContext.mPlanCacheInMode = QCI_SQL_PLAN_CACHE_IN_OFF;
@@ -3159,7 +3633,10 @@ IDE_RC mmcStatement::reprepare()
         {
             sPCB->planUnFix( getStatistics());
         }
+
     }
+
+    mSession->transBeginForGTxEndTran();
 
     return IDE_FAILURE;
 }
@@ -3314,3 +3791,64 @@ void mmcStatement::setAuditTrailStatElapsedTime( idvAuditTrail *aAuditTrail, idv
                   IDV_OPTM_INDEX_QUERY_SOFT_PREPARE));
 
 }
+
+/* BUG-47029 smiStatement.beginΩ√ø° ¿¸¥ﬁ«œ¥¬ sFlag(smiStatement º”º∫) ∞™¿ª ±∏«—¥Ÿ. */
+UInt mmcStatement::getSmiStatementFlag(mmcSession *aSession, mmcStatement *aStmt, mmcTransObj *aTrans)
+{
+    qciStmtType sQciStmtType = aStmt->getStmtType();
+    UInt        sFlag = 0;
+
+    if ( qciMisc::isStmtDML(sQciStmtType) == ID_TRUE )
+    {
+        if ( (sQciStmtType == QCI_STMT_SELECT) &&
+             (aSession->getTxIsolationLevel(aTrans) != SMI_ISOLATION_REPEATABLE) )
+        {
+            sFlag = SMI_STATEMENT_UNTOUCHABLE;
+        }
+        else
+        {
+            // PROJ-2199 SELECT func() FOR UPDATE ¡ˆø¯
+            // SMI_STATEMENT_FORUPDATE √ﬂ∞°
+            if( sQciStmtType == QCI_STMT_SELECT_FOR_UPDATE )
+            {
+                sFlag = SMI_STATEMENT_FORUPDATE;
+            }
+            else
+            {
+                sFlag = SMI_STATEMENT_NORMAL;
+            }
+        }
+    }
+    else if ( qciMisc::isStmtDDL(sQciStmtType) == ID_TRUE )
+    {
+        sFlag = SMI_STATEMENT_NORMAL;
+    }
+
+    return sFlag;
+}
+
+inline IDE_RC mmcStatement::updateSystemSCN()
+{
+    smSCN sRequestSCN;
+
+    getRequestSCN( &sRequestSCN );
+
+    if ( SM_SCN_IS_NOT_INIT( sRequestSCN ) )
+    {
+        IDE_DASSERT( getSession()->isGCTx() == ID_TRUE );
+
+        if ( getSession()->isGCTx() == ID_TRUE )
+        {
+            IDU_FIT_POINT( "mmcStatement::updateSystemSCN::statementBeginSync" );
+
+            IDE_TEST( sdi::syncSystemSCN4GCTx( &sRequestSCN, NULL ) != IDE_SUCCESS );
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+

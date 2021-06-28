@@ -146,7 +146,7 @@ IDE_RC sdmFixedTable::buildRecordForShardConnectionInfo(
             // link failure
             sConnectInfo4PV.mLinkFailure = sConnectInfo->mLinkFailure;
 
-            // link failureê°€ ì•„ë‹Œê²½ìš° í˜„ìž¬ ì‹œì ì—ì„œ í•œë²ˆ ë” ê²€ì‚¬í•œë‹¤.
+            // link failure°¡ ¾Æ´Ñ°æ¿ì ÇöÀç ½ÃÁ¡¿¡¼­ ÇÑ¹ø ´õ °Ë»çÇÑ´Ù.
             if ( sConnectInfo4PV.mLinkFailure == ID_FALSE )
             {
                 if ( sdl::checkDbcAlive( sConnectInfo->mDbc ) == ID_FALSE )
@@ -249,6 +249,14 @@ iduFixedTableColDesc gShardDataNodeInfoColDesc[] =
         0, 0, NULL
     },
     {
+        (SChar*)"SHARD_STATUS",
+        offsetof( sdmDataNodeInfo4PV, mShardStatus ),
+        IDU_FT_SIZEOF(sdmDataNodeInfo4PV, mShardStatus),
+        IDU_FT_TYPE_UINTEGER,
+        NULL,
+        0, 0, NULL // for internal use
+    },
+    {
         NULL,
         0,
         0,
@@ -275,14 +283,97 @@ IDE_RC sdmFixedTable::buildRecordForShardDataNodeInfo( idvSQL              * /*a
                                                        void                * /* aDumpObj */,
                                                        iduFixedTableMemory * aMemory )
 {
-    sdmDataNodeInfo4PV   sDataNodeInfo = { ID_ULONG(0) };
+    sdmDataNodeInfo4PV   sDataNodeInfo = { ID_ULONG(0), 0 };
 
     sDataNodeInfo.mSMN = sdi::getSMNForDataNode();
+    
+    sDataNodeInfo.mShardStatus = sdi::getShardStatus();
 
     IDE_TEST( iduFixedTable::buildRecord( aHeader,
                                           aMemory,
                                           (void *)&sDataNodeInfo )
               != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+//BUG-48748
+iduFixedTableColDesc gZookeeperInfoColDesc[]=
+{
+    {
+        (SChar*)"ZOOKEEPER_PATH",
+        offsetof( sdiZookeeperInfo4PV, mPath ),
+        SDI_ZKC_PATH_LENGTH,
+        IDU_FT_TYPE_VARCHAR,
+        NULL,
+        0, 0, NULL // for internal use
+    },
+    {
+        (SChar*)"ZOOKEEPER_DATA",
+        offsetof( sdiZookeeperInfo4PV, mData ),
+        SDI_NODE_NAME_MAX_SIZE,
+        IDU_FT_TYPE_VARCHAR,
+        NULL,
+        0, 0, NULL // for internal use
+    },
+    {
+        NULL,
+        0,
+        0,
+        IDU_FT_TYPE_CHAR,
+        NULL,
+        0, 0, NULL // for internal use
+    }
+};
+
+iduFixedTableDesc  gZookeeperInfoTableDesc =
+{
+    (SChar *)"X$ZOOKEEPER_DATA_INFO",
+    sdmFixedTable::buildRecordForZookeeperInfo,
+    gZookeeperInfoColDesc,
+    IDU_STARTUP_SERVICE,
+    0,
+    0,
+    IDU_FT_DESC_TRANS_NOT_USE,
+    NULL
+};
+
+IDE_RC sdmFixedTable::buildRecordForZookeeperInfo( idvSQL              * /*aStatistics*/,
+                                                   void                * aHeader,
+                                                   void                * /* aDumpObj */,
+                                                   iduFixedTableMemory * aMemory )
+{
+    iduList               * sList = NULL;
+    iduListNode           * sIterator = NULL;
+    sdiZookeeperInfo4PV     sInfo;
+    sdiZookeeperInfo4PV   * sZookeeperInfo = NULL;
+
+    if( sdiZookeeper::isConnect() == ID_TRUE )
+    {
+        IDE_TEST( sdiZookeeper::getZookeeperInfo4PV( &sList ) != IDE_SUCCESS ); 
+
+        IDU_LIST_ITERATE( sList, sIterator )
+        {
+            sZookeeperInfo = (sdiZookeeperInfo4PV*)sIterator->mObj;
+
+            sInfo = *sZookeeperInfo;
+
+            IDE_TEST( iduFixedTable::buildRecord( aHeader,
+                                                  aMemory,
+                                                  (void *)&sInfo )
+                      != IDE_SUCCESS );
+        }
+
+        sdiZookeeper::freeList( sList, SDI_ZKS_LIST_PRINT );
+    }
+    else
+    {
+        /* zookeeper¿Í ¿¬°áÀÌ µÇÁö ¾Ê¾Ò´Ù¸é Ãâ·ÂÇÒ µ¥ÀÌÅÍ°¡ ¾ø´Ù. */
+    }
 
     return IDE_SUCCESS;
 

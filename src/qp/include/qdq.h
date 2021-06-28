@@ -16,7 +16,7 @@
  
 
 /*********************************************************************** */
-/* $Id: qdq.h 82844 2018-04-19 00:41:18Z andrew.shin $ */
+/* $Id: qdq.h 82763 2018-04-10 05:02:33Z andrew.shin $ */
 /**********************************************************************/
 #ifndef _O_QDQ_H_
 #define _O_QDQ_H_  1
@@ -38,7 +38,7 @@ public:
     static IDE_RC wakeupDequeue(qcStatement * aStatement);
     static IDE_RC waitForEnqueue(qcStatement * aStatement, idBool *aIsTimeOut);
 
-    // BUG-22346 : Queue Tableì˜ compact ì§€ì› 
+    // BUG-22346 : Queue TableÀÇ compact Áö¿ø 
     static IDE_RC validateAlterCompactQueue( qcStatement * aStatement);
     static IDE_RC executeCompactQueue( qcStatement * aStatement);
     

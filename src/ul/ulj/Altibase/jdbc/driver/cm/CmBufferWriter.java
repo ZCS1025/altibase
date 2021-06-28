@@ -34,7 +34,7 @@ import static Altibase.jdbc.driver.cm.CmChannel.CHAR_VARCHAR_COLUMN_SIZE;
 // PROJ-2368
 /**
  * @author pss4you
- * ê¸°ì¡´ CmChannel ì— ì •ì˜ ë˜ì–´ìˆë˜ í•¨ìˆ˜ ì¤‘, ListBufferHandle ê³¼ ê³µìœ í•´ì„œ ì‚¬ìš©í•  í•¨ìˆ˜ ë“¤ì„ ë½‘ì•„ë‚¸ ìƒìœ„ í´ë˜ìŠ¤
+ * ±âÁ¸ CmChannel ¿¡ Á¤ÀÇ µÇ¾îÀÖ´ø ÇÔ¼ö Áß, ListBufferHandle °ú °øÀ¯ÇØ¼­ »ç¿ëÇÒ ÇÔ¼ö µéÀ» »Ì¾Æ³½ »óÀ§ Å¬·¡½º
  */
 public abstract class CmBufferWriter
 {
@@ -49,25 +49,25 @@ public abstract class CmBufferWriter
     protected ByteBuffer     mBuffer;
     protected ByteBuffer     mCharVarcharColumnBuffer;
     private ByteBuffer       mEncodingBuf;
-    // BUG-46465 String encodingì‹œ ì¬ì‚¬ìš©í•˜ê¸° ìœ„í•œ CharBuffer ì„ ì–¸
+    // BUG-46465 String encoding½Ã Àç»ç¿ëÇÏ±â À§ÇÑ CharBuffer ¼±¾ğ
     private CharBuffer       mTempCharWrapper = CharBuffer.allocate(CHAR_VARCHAR_COLUMN_SIZE);
     private char[]           mTempChars       = mTempCharWrapper.array();
     
     /**
-     * Buffer ì— ì“¸ ë°ì´í„° ê³µê°„ì´ ì¶©ë¶„í•œì§€ ì—¬ë¶€ë¥¼ í™•ì¸í•˜ì—¬, ì¶©ë¶„í•˜ì§€ ì•Šìœ¼ë©´ í•„ìš”í•œ ê³µê°„ì„ ë§Œë“œëŠ” í•¨ìˆ˜ 
-     * CmChannel ê³¼ ListBufferHandle ì—ì„œ ê°ìì— ë§ê²Œ êµ¬í˜„í•œë‹¤.
+     * Buffer ¿¡ ¾µ µ¥ÀÌÅÍ °ø°£ÀÌ ÃæºĞÇÑÁö ¿©ºÎ¸¦ È®ÀÎÇÏ¿©, ÃæºĞÇÏÁö ¾ÊÀ¸¸é ÇÊ¿äÇÑ °ø°£À» ¸¸µå´Â ÇÔ¼ö 
+     * CmChannel °ú ListBufferHandle ¿¡¼­ °¢ÀÚ¿¡ ¸Â°Ô ±¸ÇöÇÑ´Ù.
      * 
-     * @param aNeedToWrite ë°ì´íƒ€ë¥¼ ì“°ê¸° ìœ„í•´ í•„ìš”í•œ bytes ìˆ«ì
-     * @throws SQLException ë°ì´íƒ€ ì „ì†¡ì— ì‹¤íŒ¨í–ˆì„ ê²½ìš°
+     * @param aNeedToWrite µ¥ÀÌÅ¸¸¦ ¾²±â À§ÇØ ÇÊ¿äÇÑ bytes ¼ıÀÚ
+     * @throws SQLException µ¥ÀÌÅ¸ Àü¼Û¿¡ ½ÇÆĞÇßÀ» °æ¿ì
      */
     public abstract void checkWritable(int aNeedToWrite) throws SQLException;
 
     /**
-     * ByteBuffer ê°ì²´ë¥¼ Buffer ì— ì‚½ì…í•˜ëŠ” í•¨ìˆ˜ 
-     * CmChannel ê³¼ ListBufferHandle ì—ì„œ ê°ìì— ë§ê²Œ êµ¬í˜„í•œë‹¤.
+     * ByteBuffer °´Ã¼¸¦ Buffer ¿¡ »ğÀÔÇÏ´Â ÇÔ¼ö 
+     * CmChannel °ú ListBufferHandle ¿¡¼­ °¢ÀÚ¿¡ ¸Â°Ô ±¸ÇöÇÑ´Ù.
      * 
-     * @param aValue Buffer ì— ì €ì¥í•  ByteBuffer ê°ì²´
-     * @throws SQLException ë°ì´íƒ€ ì „ì†¡ì— ì‹¤íŒ¨í–ˆì„ ê²½ìš°
+     * @param aValue Buffer ¿¡ ÀúÀåÇÒ ByteBuffer °´Ã¼
+     * @throws SQLException µ¥ÀÌÅ¸ Àü¼Û¿¡ ½ÇÆĞÇßÀ» °æ¿ì
      */
     public abstract void writeBytes(ByteBuffer aValue) throws SQLException;
     
@@ -86,18 +86,18 @@ public abstract class CmBufferWriter
         }
         else if (aConvType == CmOperation.WRITE_STRING_MODE_NLITERAL)
         {
-            // sql êµ¬ë¬¸ì´ "insert into t1 values (N'some string', 123)"ê³¼ ê°™ì„ ë•Œ,
-            // sSubStringsëŠ” ë‹¤ìŒì²˜ëŸ¼ êµ¬ì„±ëœë‹¤.
+            // sql ±¸¹®ÀÌ "insert into t1 values (N'some string', 123)"°ú °°À» ¶§,
+            // sSubStrings´Â ´ÙÀ½Ã³·³ ±¸¼ºµÈ´Ù.
             // sSubStrings[0] = "insert into t1 values (N'"
             // sSubStrings[1] = "some string"
             // sSubStrings[2] = "', 123)"
-            // ì²«ë²ˆì§¸ sSubStringsëŠ” ë°˜ë“œì‹œ DB_CHARSETìœ¼ë¡œ êµ¬ì„±ë˜ì–´ ìˆê³ ,
-            // ê·¸ë‹¤ìŒë¶€í„° NCHARSETê³¼ DB_CHARSETì´ ë²ˆê°ˆì•„ ì˜¨ë‹¤.
+            // Ã¹¹øÂ° sSubStrings´Â ¹İµå½Ã DB_CHARSETÀ¸·Î ±¸¼ºµÇ¾î ÀÖ°í,
+            // ±×´ÙÀ½ºÎÅÍ NCHARSET°ú DB_CHARSETÀÌ ¹ø°¥¾Æ ¿Â´Ù.
             CoderResult sResult;
             String[] sSubStrings = splitNLiteralString(aValue);
             for (int i = 0; i < sSubStrings.length; i++)
             {
-                if ((i % 2) == 0) // sSubStrings[]ê°€ ì§ìˆ˜ë²ˆì§¸ ì¸ ê²ƒë“¤ì€ DB_CHARSETìœ¼ë¡œ encodingí•œë‹¤.
+                if ((i % 2) == 0) // sSubStrings[]°¡ Â¦¼ö¹øÂ° ÀÎ °ÍµéÀº DB_CHARSETÀ¸·Î encodingÇÑ´Ù.
                 {
                     sResult = encodeWithCharsetEncoder(sSubStrings[i], mEncodingBuf, mDBEncoder);
                 }
@@ -213,11 +213,11 @@ public abstract class CmBufferWriter
     }
 
     /**
-     * String ê°ì²´ë¥¼ ì¸ì½”ë”©í•˜ì—¬ aBuf ê°ì²´ì— ì €ì¥í•œë‹¤. ì´ë•Œ String.getcharsë¥¼ í˜¸ì¶œí•˜ì—¬ ë‚´ë¶€ CharBufferë¥¼ ì¬ì‚¬ìš©í•œë‹¤.
-     * @param aValue ì¸ì½”ë”©í•  String ê°ì²´
-     * @param aBuf ì¸ì½”ë”© ê²°ê³¼ê°€ ì €ì¥ë  ByteBuffer ê°ì²´
-     * @param aEncoder ì¸ì½”ë”©ì— ì‚¬ìš©í•  CharsetEncoder ê°ì²´
-     * @return encode ê²°ê³¼
+     * String °´Ã¼¸¦ ÀÎÄÚµùÇÏ¿© aBuf °´Ã¼¿¡ ÀúÀåÇÑ´Ù. ÀÌ¶§ String.getchars¸¦ È£ÃâÇÏ¿© ³»ºÎ CharBuffer¸¦ Àç»ç¿ëÇÑ´Ù.
+     * @param aValue ÀÎÄÚµùÇÒ String °´Ã¼
+     * @param aBuf ÀÎÄÚµù °á°ú°¡ ÀúÀåµÉ ByteBuffer °´Ã¼
+     * @param aEncoder ÀÎÄÚµù¿¡ »ç¿ëÇÒ CharsetEncoder °´Ã¼
+     * @return encode °á°ú
      */
     private CoderResult encodeWithCharsetEncoder(String aValue, ByteBuffer aBuf, CharsetEncoder aEncoder)
     {
@@ -231,7 +231,7 @@ public abstract class CmBufferWriter
             {
                 sReadLength = mTempChars.length;
             }
-            // BUG-46465 chunkë¥¼ ë‚´ë¶€ì˜ temporary charë²„í¼ì— ë³µì‚¬í•œë‹¤.
+            // BUG-46465 chunk¸¦ ³»ºÎÀÇ temporary char¹öÆÛ¿¡ º¹»çÇÑ´Ù.
             aValue.getChars(sReadOffset, sReadOffset + sReadLength, mTempChars, 0);
             mTempCharWrapper.clear();
             mTempCharWrapper.limit(sReadLength);
@@ -240,6 +240,9 @@ public abstract class CmBufferWriter
             sDone = (sReadOffset == aValue.length());
             sResult = aEncoder.encode(mTempCharWrapper, aBuf, sDone);
         }
+
+        // BUG-47846 ÀÎÄÚµùÀÌ ³¡³­ ´ÙÀ½¿¡´Â CharsetEncoder °´Ã¼¸¦ reset ÇØ¼­ »óÅÂ¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
+        aEncoder.reset();
 
         return sResult;
     }
@@ -302,7 +305,7 @@ public abstract class CmBufferWriter
         mDBEncoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
         mNCharEncoder.onMalformedInput(CodingErrorAction.REPLACE);
         mNCharEncoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
-        // BUG-45156 NLiteralEncoderì— ëŒ€í•œ ì—ëŸ¬ì²˜ë¦¬ ë°©ì‹ ì¶”ê°€
+        // BUG-45156 NLiteralEncoder¿¡ ´ëÇÑ ¿¡·¯Ã³¸® ¹æ½Ä Ãß°¡
         mNLiteralEncoder.onMalformedInput(CodingErrorAction.REPLACE);
         mNLiteralEncoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
     }

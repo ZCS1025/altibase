@@ -19,7 +19,7 @@ package com.altibase.altimon.properties;
 import java.util.Properties;
 
 public class DbConnectionProperty {
-    public final static int DB_CONNECTION_PROPERTY_COUNT = 10;
+    public final static int DB_CONNECTION_PROPERTY_COUNT = 11;
 
     public final static int ID = 0;
     public final static int DBTYPE = 1;
@@ -31,6 +31,7 @@ public class DbConnectionProperty {
     public final static int LANGUAGE = 7;
     public final static int DRIVERLOCATION = 8;	
     public final static int ISIPV6 = 9;	
+    public final static int ADDITIONALPROPS = 10; // BUG-47436
 
     private String[] connProperties;
 
@@ -64,6 +65,7 @@ public class DbConnectionProperty {
         this.setIpv6(props[DbConnectionProperty.ISIPV6]);
         this.setIp(props[DbConnectionProperty.ADDRESS]);
         this.setDbType(props[DbConnectionProperty.DBTYPE]);
+        this.setAdditionalProperties(props[DbConnectionProperty.ADDITIONALPROPS]);
     }
 
     public String getUserId() {
@@ -155,8 +157,18 @@ public class DbConnectionProperty {
         }
     }
 
+    /* BUG-47436 Need a function to specify additional connection properties */
+    public String getAdditionalProperties() {
+        return connProperties[DbConnectionProperty.ADDITIONALPROPS];
+    }
+
+    private void setAdditionalProperties(String aConnProps) {
+        connProperties[DbConnectionProperty.ADDITIONALPROPS] = aConnProps;
+    }
+
     public String getUrl(Properties props)
     {
+        String sConProps = null;
         StringBuffer url = new StringBuffer();
         DatabaseType dbType = DatabaseType.valueOf(connProperties[DbConnectionProperty.DBTYPE]);
 
@@ -195,6 +207,12 @@ public class DbConnectionProperty {
             break;
 
         }
+
+        /* BUG-47436 Need a function to specify additional connection properties */
+        sConProps = getAdditionalProperties();
+        if (sConProps != null && sConProps.length() > 0)
+            url.append("?").append(sConProps);
+
         return url.toString();
     }
 }

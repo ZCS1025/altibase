@@ -316,8 +316,8 @@ void utpDump::dumpBindVariableData(void *aPtr, UInt aRemain)
 
 /*
  * proj_2160 cm_type removal
- * dumpBindVariableDataì™€ ë™ì¼í•˜ë‚˜
- * ë°ì´í„° ì¼ë¶€ë§Œ ì¶œë ¥í•˜ê¸° ìœ„í•´ ë§Œë“  í•¨ìˆ˜ì´ë‹¤
+ * dumpBindVariableData¿Í µ¿ÀÏÇÏ³ª
+ * µ¥ÀÌÅÍ ÀÏºÎ¸¸ Ãâ·ÂÇÏ±â À§ÇØ ¸¸µç ÇÔ¼öÀÌ´Ù
  */
 void utpDump::dumpBindVariablePart(void *aPtr, UInt aRemain, UInt aMaxLen)
 {
@@ -327,7 +327,7 @@ void utpDump::dumpBindVariablePart(void *aPtr, UInt aRemain, UInt aMaxLen)
     UInt   sWidth = 80;
     UInt   sLen;
 
-    /* ìµœëŒ€ MaxLenê¹Œì§€ë§Œ ì¶œë ¥í•œë‹¤ */
+    /* ÃÖ´ë MaxLen±îÁö¸¸ Ãâ·ÂÇÑ´Ù */
     sLen = (aRemain > aMaxLen)? aMaxLen: aRemain;
 
     /* ------------------------------------------------
@@ -370,7 +370,7 @@ void utpDump::dumpBindVariablePart(void *aPtr, UInt aRemain, UInt aMaxLen)
 
 void utpDump::dumpBindA5(idvProfHeader *aHeader, void *aBody)
 {
-    UInt             sOffset; /* variable bind ë°ì´íƒ€ì˜ í¬ê¸°ë¥¼ ì•Œê¸° ìœ„í•¨. */
+    UInt             sOffset; /* variable bind µ¥ÀÌÅ¸ÀÇ Å©±â¸¦ ¾Ë±â À§ÇÔ. */
     UChar           *sPtr = (UChar *)aBody;
     idvProfStmtInfo  sStmtInfo;
     UInt             sRemain;
@@ -388,7 +388,7 @@ void utpDump::dumpBindA5(idvProfHeader *aHeader, void *aBody)
     sPtr    += ID_SIZEOF(cmtAny);
     sOffset += ID_SIZEOF(cmtAny);
 
-    /* ë‚¨ì€ ë°ì´íƒ€ í¬ê¸° */
+    /* ³²Àº µ¥ÀÌÅ¸ Å©±â */
     sRemain = aHeader->mSize - sOffset;
 
     idlOS::fprintf(stdout,
@@ -510,7 +510,7 @@ void utpDump::dumpBindA5(idvProfHeader *aHeader, void *aBody)
         {
             UInt i;
             /* ------------------------------------------------
-             * BUGBUG : ì‹¤ì œ ê°’ ì¶œë ¥í•˜ë„ë¡ ì¶”ê°€.
+             * BUGBUG : ½ÇÁ¦ °ª Ãâ·ÂÇÏµµ·Ï Ãß°¡.
              * ----------------------------------------------*/
 
             idlOS::fprintf(stdout, "(numeric) "
@@ -611,7 +611,7 @@ void utpDump::dumpBind(idvProfHeader * /*aHeader */, void *aBody, UInt aBindMaxL
             {
                 idlOS::fprintf(stdout, "(_binary  ) (%"ID_UINT32_FMT")\n",
                                sLen32);
-                /* padding 4bytes ë•Œë¬¸ì— 8ì„ ë”í•œë‹¤ */
+                /* padding 4bytes ¶§¹®¿¡ 8À» ´õÇÑ´Ù */
                 dumpBindVariablePart(sPtr + 8, sLen32, aBindMaxLen);
             }
             break;
@@ -740,8 +740,8 @@ void utpDump::dumpBind(idvProfHeader * /*aHeader */, void *aBody, UInt aBindMaxL
         case MTD_REAL_ID :
             /* static const UInt mtdRealNull =
                ( MTD_REAL_EXPONENT_MASK| MTD_REAL_FRACTION_MASK );
-               mtdRealNullì„ ì‚¬ìš©í•˜ì§€ ì•Šê³  ì§ì ‘ ê°’ì„ ë¹„êµí•˜ë„ë¡ í•¨
-               ì™œ: ìš”ê²ƒí•˜ë‚˜ ë•Œë¬¸ì— mtdë¥¼ linkí•˜ê³  ì‹¶ì§€ ì•ŠìŒ */
+               mtdRealNullÀ» »ç¿ëÇÏÁö ¾Ê°í Á÷Á¢ °ªÀ» ºñ±³ÇÏµµ·Ï ÇÔ
+               ¿Ö: ¿ä°ÍÇÏ³ª ¶§¹®¿¡ mtd¸¦ linkÇÏ°í ½ÍÁö ¾ÊÀ½ */
             if (*((UInt*)sPtr) == 0x7fffffff)
             {
                 idlOS::fprintf(stdout, "(_real    ) NULL");
@@ -992,7 +992,7 @@ IDE_RC utpDump::run(SInt             aArgc,
     idvProfHeader  *sHeader;
     void           *sBody;
 
-    /* 1. íŒŒì¼ ì¡´ì¬ ì—¬ë¶€ í™•ì¸ */
+    /* 1. ÆÄÀÏ Á¸Àç ¿©ºÎ È®ÀÎ */
     for (i = 0; i < aArgc; i++)
     {
         IDE_TEST_RAISE(idlOS::access(aArgv[i], F_OK) != 0,

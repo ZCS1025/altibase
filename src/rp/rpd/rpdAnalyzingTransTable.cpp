@@ -251,7 +251,8 @@ idBool rpdAnalyzingTransTable::isDDLTrans( smTID aTransID )
 IDE_RC rpdAnalyzingTransTable::addItemMetaEntry( smTID          aTID,
                                                  smiTableMeta * aItemMeta,
                                                  const void   * aItemMetaLogBody,
-                                                 UInt           aItemMetaLogBodySize )
+                                                 UInt           aItemMetaLogBodySize,
+                                                 smSN           aLogSN )
 {
     rpdItemMetaEntry * sItemMetaEntry = NULL;
     UInt               sIndex         = aTID % mTransTableSize;
@@ -273,16 +274,23 @@ IDE_RC rpdAnalyzingTransTable::addItemMetaEntry( smTID          aTID,
     IDU_FIT_POINT_RAISE( "rpdAnalyzingTransTable::addItemMetaEntry::malloc::sItemMetaEntry->mLogBody",
                          ERR_MEMORY_ALLOC_ITEM_META_ENTRY );
 
-    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_RP_RPD,
-                                       (ULong)aItemMetaLogBodySize,
-                                       (void **)&sItemMetaEntry->mLogBody,
-                                       IDU_MEM_IMMEDIATE )
-                    != IDE_SUCCESS, ERR_MEMORY_ALLOC_LOG_BODY );
-    idlOS::memcpy( (void *)sItemMetaEntry->mLogBody,
-                   aItemMetaLogBody,
-                   aItemMetaLogBodySize );
-
-    // ì´í›„ì—ëŠ” ì‹¤íŒ¨í•˜ì§€ ì•ŠëŠ”ë‹¤
+    if ( aItemMetaLogBodySize > 0 )
+    {
+        IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_RP_RPD,
+                                           (ULong)aItemMetaLogBodySize,
+                                           (void **)&sItemMetaEntry->mLogBody,
+                                           IDU_MEM_IMMEDIATE )
+                        != IDE_SUCCESS, ERR_MEMORY_ALLOC_LOG_BODY);
+        idlOS::memcpy( (void *)sItemMetaEntry->mLogBody,
+                       aItemMetaLogBody,
+                       aItemMetaLogBodySize );
+    }
+    else
+    {
+        sItemMetaEntry->mLogBody = NULL;
+    }
+    sItemMetaEntry->mLogSN = aLogSN;
+    // ÀÌÈÄ¿¡´Â ½ÇÆÐÇÏÁö ¾Ê´Â´Ù
     IDU_LIST_INIT_OBJ( &(sItemMetaEntry->mNode), sItemMetaEntry );
     IDU_LIST_ADD_LAST( &mTransTable[sIndex].mItemMetaList,
                        &(sItemMetaEntry->mNode) );

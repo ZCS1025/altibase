@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtvDate2Varchar.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtvDate2Varchar.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -140,7 +140,7 @@ IDE_RC mtvCalculate_Date2Varchar( mtcNode*,
                   != IDE_SUCCESS );
         
         // PROJ-1436
-        // dateFormatì„ ì°¸ì¡°í–ˆìŒì„ í‘œì‹œí•œë‹¤.
+        // dateFormatÀ» ÂüÁ¶ÇßÀ½À» Ç¥½ÃÇÑ´Ù.
         aTemplate->dateFormatRef = ID_TRUE;
         
         sVarchar->length = (UShort)sLength;

@@ -29,21 +29,100 @@
 
 const UShort smiLob::mLobPieceSize = IDL_MAX(SM_PAGE_SIZE,SD_PAGE_SIZE);
 
-/* PROJ-2174 Supporting LOB in the volatile tablespace
- * volatile tablespaceëŠ” memory tablespace ì™€ ìœ ì‚¬í•˜ë¯€ë¡œ,
- * ì•„ëž˜ í•¨ìˆ˜ë¥¼ ê³µìœ í•œë‹¤. */
+/* PROJ-2728 Sharding LOB */
+smLobModule sdiLobModule;
+
+IDE_RC smiLob::setShardLobModule(
+                smLobOpenFunc                   aOpen,
+                smLobReadFunc                   aRead,
+                smLobWriteFunc                  aWrite,
+                smLobEraseFunc                  aErase,
+                smLobTrimFunc                   aTrim,
+                smLobPrepare4WriteFunc          aPrepare4Write,
+                smLobFinishWriteFunc            aFinishWrite,
+                smLobGetLobInfoFunc             aGetLobInfo,
+                smLobWriteLog4LobCursorOpen     aWriteLog4CursorOpen,
+                smLobCloseFunc                  aClose )
+{
+    sdiLobModule.mOpen                   = aOpen;
+    sdiLobModule.mRead                   = aRead;
+    sdiLobModule.mWrite                  = aWrite;
+    sdiLobModule.mErase                  = aErase;
+    sdiLobModule.mTrim                   = aTrim;
+    sdiLobModule.mPrepare4Write          = aPrepare4Write;
+    sdiLobModule.mFinishWrite            = aFinishWrite;
+    sdiLobModule.mGetLobInfo             = aGetLobInfo;
+    sdiLobModule.mWriteLog4LobCursorOpen = aWriteLog4CursorOpen;
+    sdiLobModule.mClose                  = aClose;
+
+    return IDE_SUCCESS;
+}
+
 /***********************************************************************
- * Description : Memory LobCursorë¥¼ ìƒì„±í•˜ê³ , íŠ¸ëžœìž­ì…˜ì— ë“±ë¡í•œë‹¤.
- * Implementation : ìžì‹ ì˜ TIDì™€ LobCursorë“±ë¡ ì‹œì ì—ì„œ ë¶€ì—¬í•œ
- *                  LobCursorIDë¥¼ í•©ì„±í•œ LobLocatorë¥¼
- *                  output parameterë¡œ  ì „ë‹¬í•œë‹¤.
+ * Description : This function opens Shard LOB Cursor.
+ * PROJ-2728 Sharding LOB
+ *
+ *  aSmiTrans         - [IN]  smiTrans
+ *  aMmStmtId         - [IN]  mmcStatement ID
+ *  aRemoteStmtId     - [IN]  Remote statement ID
+ *  aNodeId           - [IN]  Data Node ID
+ *  aLobLocatorType   - [IN]  CLOB or BLOB locator
+ *  aRemoteLobLocator - [IN]  node#¿¡¼­ ¹Þ¾Æ¿Âlob locator
+ *  aInfo             - [IN]  not null Á¦¾àµî QP¿¡¼­ »ç¿ëÇÔ.
+ *  aMode             - [IN]  LOB Cursor Open Mode
+ *  aShardLobLocator  - [OUT] shard lob locator
+ **********************************************************************/
+IDE_RC smiLob::openShardLobCursor( smiTrans        * aSmiTrans,
+                                   UInt              aMmSessId,
+                                   UInt              aMmStmtId,
+                                   UInt              aRemoteStmtId,
+                                   UInt              aNodeId,
+                                   SShort            aLobLocatorType,
+                                   smLobLocator      aRemoteLobLocator,
+                                   UInt              aInfo,
+                                   smiLobCursorMode  aMode,
+                                   smLobLocator*     aShardLobLocator )
+{
+    smxTrans  * sTrans;
+
+    sTrans    = (smxTrans *)(aSmiTrans->getTrans());
+    IDE_ASSERT( sTrans != NULL );
+
+    IDE_TEST( sTrans->openShardLobCursor(
+                                 NULL,
+                                 aMmSessId,
+                                 aMmStmtId,
+                                 aRemoteStmtId,
+                                 aNodeId,
+                                 aLobLocatorType,
+                                 aRemoteLobLocator,
+                                 aInfo,
+                                 aMode,
+                                 aShardLobLocator )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* PROJ-2174 Supporting LOB in the volatile tablespace
+ * volatile tablespace´Â memory tablespace ¿Í À¯»çÇÏ¹Ç·Î,
+ * ¾Æ·¡ ÇÔ¼ö¸¦ °øÀ¯ÇÑ´Ù. */
+/***********************************************************************
+ * Description : Memory LobCursor¸¦ »ý¼ºÇÏ°í, Æ®·£Àè¼Ç¿¡ µî·ÏÇÑ´Ù.
+ * Implementation : ÀÚ½ÅÀÇ TID¿Í LobCursorµî·Ï ½ÃÁ¡¿¡¼­ ºÎ¿©ÇÑ
+ *                  LobCursorID¸¦ ÇÕ¼ºÇÑ LobLocator¸¦
+ *                  output parameter·Î  Àü´ÞÇÑ´Ù.
  *
  *    aTableCursor - [IN]  Table Cursor
  *    aRow         - [IN]  memory row
- *    aLobColumn   - [IN]  Lob Columnì˜ Columnì •ë³´
- *    aInfo        - [IN]  not null ì œì•½ë“± QPì—ì„œ ì‚¬ìš©í•¨.
+ *    aLobColumn   - [IN]  Lob ColumnÀÇ ColumnÁ¤º¸
+ *    aInfo        - [IN]  not null Á¦¾àµî QP¿¡¼­ »ç¿ëÇÔ.
  *    aMode        - [IN]  LOB Cursor Open Mode
- *    aLobLocator  - [OUT] Lob Locatorë°˜í™˜
+ *    aLobLocator  - [OUT] Lob Locator¹ÝÈ¯
  **********************************************************************/
 IDE_RC smiLob::openLobCursorWithRow( smiTableCursor   * aTableCursor,
                                      void             * aRow,
@@ -75,7 +154,7 @@ IDE_RC smiLob::openLobCursorWithRow( smiTableCursor   * aTableCursor,
 
     IDU_FIT_POINT( "smiLob::openLobCursorWithRow::openLobCursor" );
 
-    IDE_TEST( sTrans->openLobCursor( NULL,
+    IDE_TEST( sTrans->openLobCursor( aTableCursor->mStatement->mStatistics,
                                      aTableCursor->mTable,
                                      aMode,
                                      aTableCursor->mSCN,
@@ -83,7 +162,8 @@ IDE_RC smiLob::openLobCursorWithRow( smiTableCursor   * aTableCursor,
                                      aRow,
                                      aLobColumn,
                                      aInfo,
-                                     aLobLocator ) != IDE_SUCCESS );
+                                     aLobLocator )
+              != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -97,15 +177,15 @@ IDE_RC smiLob::openLobCursorWithRow( smiTableCursor   * aTableCursor,
 }
 
 /***********************************************************************
- * Description : Disk LobCursorë¥¼ ìƒì„±í•˜ê³ , íŠ¸ëžœìž­ì…˜ì— ë“±ë¡í•œë‹¤.
- * Implementation : ìžì‹ ì˜ TIDì™€ LobCursorë“±ë¡ì‹œì ì—ì„œ ë¶€ì—¬í•œ
- *                  LobCursorIDë¥¼ í•©ì„±í•œ LobLocatorë¥¼
- *                  output parameterë¡œ  ì „ë‹¬í•œë‹¤.
+ * Description : Disk LobCursor¸¦ »ý¼ºÇÏ°í, Æ®·£Àè¼Ç¿¡ µî·ÏÇÑ´Ù.
+ * Implementation : ÀÚ½ÅÀÇ TID¿Í LobCursorµî·Ï½ÃÁ¡¿¡¼­ ºÎ¿©ÇÑ
+ *                  LobCursorID¸¦ ÇÕ¼ºÇÑ LobLocator¸¦
+ *                  output parameter·Î  Àü´ÞÇÑ´Ù.
  *
  *  aTableCursor   - [IN]  table cursor
  *  aGRID          - [IN]  global row id
- *  aLobColumn     - [IN]  lob column ì •ë³´
- *  aInfo          - [IN]  not null ì œì•½ë“± QPì—ì„œ ì‚¬ìš©í•¨.
+ *  aLobColumn     - [IN]  lob column Á¤º¸
+ *  aInfo          - [IN]  not null Á¦¾àµî QP¿¡¼­ »ç¿ëÇÔ.
  *  aMode          - [IN]  LOB Cursor Open Mode
  *  aLobLocator    - [OUT] lob locator
  **********************************************************************/
@@ -136,15 +216,15 @@ IDE_RC smiLob::openLobCursorWithGRID(smiTableCursor   * aTableCursor,
                    err_invalid_mode);
 
     /*
-     * BUG-27495  outer joinì— ì˜í•´ ìƒì„±ëœ lob column ì„ selectì‹œ ì˜¤ë¥˜
+     * BUG-27495  outer join¿¡ ÀÇÇØ »ý¼ºµÈ lob column À» select½Ã ¿À·ù
      */
-    if( SC_GRID_IS_VIRTUAL_NULL_GRID_FOR_LOB( aGRID ) == ID_TRUE )
+    if( SC_GRID_IS_VIRTUAL_NULL_GRID_FOR_LOB( aGRID ) )
     {
         *aLobLocator = SMI_NULL_LOCATOR;
         IDE_CONT( err_virtual_null_grid );
     }
 
-    IDE_TEST( sTrans->openLobCursor( NULL,
+    IDE_TEST( sTrans->openLobCursor( aTableCursor->mStatement->mStatistics,
                                      aTableCursor->mTable,
                                      aMode,
                                      aTableCursor->mSCN,
@@ -168,67 +248,16 @@ IDE_RC smiLob::openLobCursorWithGRID(smiTableCursor   * aTableCursor,
 }
 
 /***********************************************************************
- * Description : This function open LOB Cursor to read last version.
+ * Description : LobCursor¸¦ close½ÃÅ²´Ù.
+ * Implementation: 1> LobLocator¿¡ ½Ç·ÁÀÖ´Â Æ®·£Àè¼ÇID¸¦ ±¸ÇÑ´Ù.
+ *                 2> Æ®·£Àè¼Ç ID¸¦ ÀÌ¿ëÇÏ¿© Æ®·£Àè¼Ç °´Ã¼¸¦ ±¸ÇÑ´Ù.
+ *                 3> ÇØ´ç Æ®·£Àè¼Ç¿¡¼­ LobCursorID¿¡ ÇØ´çÇÏ´Â
+ *                    LobCursor¸¦ ´Ý´Â´Ù.
  *
- * BUG-33189 [sm_interface] need to add a lob interface
- * for reading the latest lob column value like getLastModifiedRow
+ *   aLobLocator - [IN] closeÇÒ Lob Cursor¸¦ °¡¸®Å°´Â Lob Locator
  **********************************************************************/
-IDE_RC smiLob::openLobCursor( smiTableCursor   * aTableCursor,
-                              void             * aRow,
-                              scGRID             aGRID,
-                              smiColumn        * aLobColumn,
-                              UInt               aInfo,
-                              smiLobCursorMode   aMode,
-                              smLobLocator     * aLobLocator )
-{
-    UInt    sTableType;
-
-    IDE_ASSERT( aTableCursor != NULL );
-
-    sTableType = SMI_GET_TABLE_TYPE( (smcTableHeader*)(aTableCursor->mTable) );
-
-    IDE_DASSERT( (sTableType == SMI_TABLE_DISK)   ||
-                 (sTableType == SMI_TABLE_MEMORY) ||
-                 (sTableType == SMI_TABLE_VOLATILE) );
-
-    if( sTableType == SMI_TABLE_DISK )
-    {
-        IDE_TEST( openLobCursorWithGRID(aTableCursor,
-                                        aGRID,
-                                        aLobColumn,
-                                        aInfo,
-                                        aMode,
-                                        aLobLocator)
-                  != IDE_SUCCESS );
-    }
-    else
-    {
-        IDE_TEST( openLobCursorWithRow(aTableCursor,
-                                       aRow,
-                                       aLobColumn,
-                                       aInfo,
-                                       aMode,
-                                       aLobLocator)
-                  != IDE_SUCCESS );
-    }
-    
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;    
-}
-
-/***********************************************************************
- * Description : LobCursorë¥¼ closeì‹œí‚¨ë‹¤.
- * Implementation: 1> LobLocatorì— ì‹¤ë ¤ìžˆëŠ” íŠ¸ëžœìž­ì…˜IDë¥¼ êµ¬í•œë‹¤.
- *                 2> íŠ¸ëžœìž­ì…˜ IDë¥¼ ì´ìš©í•˜ì—¬ íŠ¸ëžœìž­ì…˜ ê°ì²´ë¥¼ êµ¬í•œë‹¤.
- *                 3> í•´ë‹¹ íŠ¸ëžœìž­ì…˜ì—ì„œ LobCursorIDì— í•´ë‹¹í•˜ëŠ”
- *                    LobCursorë¥¼ ë‹«ëŠ”ë‹¤.
- *
- *   aLobLocator - [IN] closeí•  Lob Cursorë¥¼ ê°€ë¦¬í‚¤ëŠ” Lob Locator
- **********************************************************************/
-IDE_RC smiLob::closeLobCursor( smLobLocator aLobLocator )
+IDE_RC smiLob::closeLobCursor( idvSQL*      aStatistics,
+                               smLobLocator aLobLocator )
 {
     smxTrans *    sTrans;
     smLobCursorID sLobCursorID;
@@ -243,7 +272,10 @@ IDE_RC smiLob::closeLobCursor( smLobLocator aLobLocator )
     sTrans = smxTransMgr::getTransByTID( sTID );
     IDE_TEST_RAISE( sTrans->mTransID != sTID, transaction_end );
 
-    IDE_TEST( sTrans->closeLobCursor( sLobCursorID ) != IDE_SUCCESS );
+    IDE_TEST( sTrans->closeLobCursor( aStatistics,
+                                      sLobCursorID,
+                                      SMI_IS_SHARD_LOB_LOCATOR( aLobLocator) )
+              != IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -261,41 +293,9 @@ IDE_RC smiLob::closeLobCursor( smLobLocator aLobLocator )
     return IDE_FAILURE;
 }
 
-IDE_RC smiLob::closeAllLobCursors( smiTableCursor   * aTableCursor,
-                                   UInt               aInfo  )
-{
-    smxTrans* sTrans;
-
-    IDE_ASSERT( aTableCursor != NULL );
-    // CodeSonar::Null Pointer Dereference (9)
-    IDE_ASSERT( aTableCursor->mStatement != NULL );
-
-    sTrans = (smxTrans*)( aTableCursor->mStatement->getTrans()->getTrans() );
-
-    if ( aInfo == SMI_LOB_LOCATOR_CLIENT_FALSE )
-    {
-        IDE_TEST( sTrans->closeAllLobCursorsWithRPLog() != IDE_SUCCESS );
-    }
-    else
-    {
-        IDE_TEST( sTrans->closeAllLobCursors( aInfo ) != IDE_SUCCESS );
-    }
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-IDE_RC smiLob::closeAllLobCursors( smiTableCursor   * aTableCursor )
-{
-    return closeAllLobCursors( aTableCursor, 
-                               SMI_LOB_LOCATOR_CLIENT_FALSE /* aInfo */ );
-}
-
-IDE_RC smiLob::closeAllLobCursors( smLobLocator aLobLocator,
-                                   UInt         aInfo )
+IDE_RC smiLob::closeAllLobCursors( idvSQL       * aStatistics,
+                                   smLobLocator   aLobLocator,
+                                   UInt           aInfo )
 {
     smxTrans *    sTrans;
     smTID         sTID;
@@ -315,7 +315,11 @@ IDE_RC smiLob::closeAllLobCursors( smLobLocator aLobLocator,
     }
     else
     {
-        IDE_TEST( sTrans->closeAllLobCursors( aInfo ) != IDE_SUCCESS );
+        IDE_TEST( sTrans->closeAllLobCursors(
+                        aStatistics,
+                        aInfo,
+                        SMI_IS_SHARD_LOB_LOCATOR(aLobLocator) )
+                  != IDE_SUCCESS );
     }
 
     return IDE_SUCCESS;
@@ -334,18 +338,12 @@ IDE_RC smiLob::closeAllLobCursors( smLobLocator aLobLocator,
     return IDE_FAILURE;
 }
 
-IDE_RC smiLob::closeAllLobCursors( smLobLocator aLobLocator )
-{
-    return closeAllLobCursors( aLobLocator, 
-                               SMI_LOB_LOCATOR_CLIENT_FALSE /* aInfo */ );
-}
-
 /***********************************************************************
- * Description : Lob Locatorê°€ ê°€ë¥´í‚¤ëŠ” Lob Cursorê°€ ì—´ë ¤ ìžˆëŠ”ì§€ í™•ì¸í•œë‹¤.
+ * Description : Lob Locator°¡ °¡¸£Å°´Â Lob Cursor°¡ ¿­·Á ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
  *
- * Implementation: aLobLocatorê°€ ê°€ë¥´í‚¤ëŠ” íŠ¸ëžœìž­ì…˜ì´ ì´ë¯¸ ëë‚¬ê±°ë‚˜,
- *                 aLobLocatorê°€ ê°€ë¥´í‚¤ëŠ” LobCursorê°€ closeëœ ê²½ìš°
- *                 ID_FALSEë¥¼ returní•œë‹¤.
+ * Implementation: aLobLocator°¡ °¡¸£Å°´Â Æ®·£Àè¼ÇÀÌ ÀÌ¹Ì ³¡³µ°Å³ª,
+ *                 aLobLocator°¡ °¡¸£Å°´Â LobCursor°¡ closeµÈ °æ¿ì
+ *                 ID_FALSE¸¦ returnÇÑ´Ù.
  *
  *   aLobLocator - [IN] Lob cursor
  **********************************************************************/
@@ -368,7 +366,9 @@ idBool smiLob::isOpen( smLobLocator aLobLocator )
         sLobCursorID = SMI_MAKE_LOB_CURSORID( aLobLocator );
 
         if( sTrans->getLobCursor( sLobCursorID,
-                                  &sLobCursor ) != IDE_SUCCESS )
+                                  &sLobCursor,
+                                  SMI_IS_SHARD_LOB_LOCATOR( aLobLocator) )
+            != IDE_SUCCESS )
         {
             sIsOpen = ID_FALSE;
         }
@@ -382,15 +382,15 @@ idBool smiLob::isOpen( smLobLocator aLobLocator )
 }
 
 /***********************************************************************
- * Description : LobLocatorë¥¼ ì´ìš©í•˜ì—¬ lob valueë¥¼ íŠ¹ì • aOffsetì—ì„œ
- *               aMountë§Œí¼ ì½ëŠ”ë‹¤.
+ * Description : LobLocator¸¦ ÀÌ¿ëÇÏ¿© lob value¸¦ Æ¯Á¤ aOffset¿¡¼­
+ *               aMount¸¸Å­ ÀÐ´Â´Ù.
  *
- *    aStatistics - [IN]  í†µê³„ ì •ë³´
- *    aLobLocator - [IN]  ì½ì„ ëŒ€ìƒì„ ê°€ë¦¬í‚¤ëŠ” Lob Locator
- *    aOffset     - [IN]  Lob data ì—ì„œ ì½ì„ offset
- *    aMount      - [IN]  ì½ì„ Lob data í¬ê¸°
- *    aPiece      - [OUT] ì½ì€ Lob dataë¥¼ ë°˜í™˜í•  ë²„í¼
- *    aReadLength - [OUT] ì½ì€ Lob data í¬ê¸°
+ *    aStatistics - [IN]  Åë°è Á¤º¸
+ *    aLobLocator - [IN]  ÀÐÀ» ´ë»óÀ» °¡¸®Å°´Â Lob Locator
+ *    aOffset     - [IN]  Lob data ¿¡¼­ ÀÐÀ» offset
+ *    aMount      - [IN]  ÀÐÀ» Lob data Å©±â
+ *    aPiece      - [OUT] ÀÐÀº Lob data¸¦ ¹ÝÈ¯ÇÒ ¹öÆÛ
+ *    aReadLength - [OUT] ÀÐÀº Lob data Å©±â
  **********************************************************************/
 IDE_RC smiLob::read( idvSQL      * aStatistics,
                      smLobLocator  aLobLocator,
@@ -406,6 +406,9 @@ IDE_RC smiLob::read( idvSQL      * aStatistics,
                                     &sLobCursor,
                                     &sTrans )
               != IDE_SUCCESS );
+
+    //BUG-48212: Lob Å½»öÇÒ ¶§, Å¸ÀÓ¾Æ¿ôµÉ ¼ö ÀÖµµ·Ï Ã¼Å© ÄÚµå Ãß°¡
+    IDE_TEST( iduCheckSessionEvent( aStatistics ) != IDE_SUCCESS );
 
     IDE_TEST( sLobCursor->mModule->mRead( aStatistics,
                                           sTrans,
@@ -424,13 +427,14 @@ IDE_RC smiLob::read( idvSQL      * aStatistics,
 }
 
 /***********************************************************************
- * Description : LobLocatorê°€ ê°€ë¥´í‚¤ëŠ” lobì˜ ê¸¸ì´ë¥¼ returní•œë‹¤.
+ * Description : LobLocator°¡ °¡¸£Å°´Â lobÀÇ ±æÀÌ¸¦ returnÇÑ´Ù.
  *
- *     aLobLocator - [IN]  í¬ê¸°ë¥¼ í™•ì¸í•˜ë ¤ëŠ” Lobì˜ Locator
- *     aLobLen     - [OUT] Lob dataì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•œë‹¤.
- *     aIsNullLob  - [OUT] Null ì—¬ë¶€ë¥¼ ë°˜í™˜
+ *     aLobLocator - [IN]  Å©±â¸¦ È®ÀÎÇÏ·Á´Â LobÀÇ Locator
+ *     aLobLen     - [OUT] Lob dataÀÇ Å©±â¸¦ ¹ÝÈ¯ÇÑ´Ù.
+ *     aIsNullLob  - [OUT] Null ¿©ºÎ¸¦ ¹ÝÈ¯
  **********************************************************************/
-IDE_RC smiLob::getLength( smLobLocator    aLobLocator,
+IDE_RC smiLob::getLength( idvSQL        * aStatistics,
+                          smLobLocator    aLobLocator,
                           SLong         * aLobLen,
                           idBool        * aIsNullLob )
 {
@@ -452,7 +456,7 @@ IDE_RC smiLob::getLength( smLobLocator    aLobLocator,
                                         &sTrans )
                   != IDE_SUCCESS );
 
-        IDE_TEST( sLobCursor->mModule->mGetLobInfo(NULL, /* idvSQL* */
+        IDE_TEST( sLobCursor->mModule->mGetLobInfo(aStatistics,
                                                    sTrans,
                                                    &(sLobCursor->mLobViewEnv),
                                                    &sLobLen,
@@ -472,14 +476,14 @@ IDE_RC smiLob::getLength( smLobLocator    aLobLocator,
 }
 
 /***********************************************************************
- * Description : Lobì„ aOffsetì—ì„œ ì‹œìž‘í•˜ì—¬ aPieceLen ë§Œí¼,
- *               aPieceë‚´ìš©ìœ¼ë¡œ ë¶€ë¶„ ê°±ì‹ í•˜ëŠ” í•¨ìˆ˜.
+ * Description : LobÀ» aOffset¿¡¼­ ½ÃÀÛÇÏ¿© aPieceLen ¸¸Å­,
+ *               aPiece³»¿ëÀ¸·Î ºÎºÐ °»½ÅÇÏ´Â ÇÔ¼ö.
  *
- *     aStatistics - [IN] í†µê³„ ìžë£Œ
- *     aLobLocator - [IN] ê°±ì‹ í•  Lobì„ ê°€ë¦¬í‚¤ëŠ” Lob Locator
- *     aOffset     - [IN] ê°±ì‹ í•  ìœ„ì¹˜ Offset
- *     aPieceLen   - [IN] ë®ì–´ì“°ë ¤ëŠ” Lob Dataì˜ í¬ê¸°
- *     aPiece      - [IN] ë®ì–´ì“°ë ¤ëŠ” Lob Data
+ *     aStatistics - [IN] Åë°è ÀÚ·á
+ *     aLobLocator - [IN] °»½ÅÇÒ LobÀ» °¡¸®Å°´Â Lob Locator
+ *     aOffset     - [IN] °»½ÅÇÒ À§Ä¡ Offset
+ *     aPieceLen   - [IN] µ¤¾î¾²·Á´Â Lob DataÀÇ Å©±â
+ *     aPiece      - [IN] µ¤¾î¾²·Á´Â Lob Data
  **********************************************************************/
 IDE_RC smiLob::write( idvSQL       * aStatistics,
                       smLobLocator   aLobLocator,
@@ -541,15 +545,15 @@ IDE_RC smiLob::write( idvSQL       * aStatistics,
 }
 
 /***********************************************************************
- * Description : Lobì„ aOffsetì—ì„œ ì‹œìž‘í•˜ì—¬ aSize ë§Œí¼,
- *               ì§€ìš°ëŠ” í•¨ìˆ˜.
- *               ì´ í•¨ìˆ˜ëŠ” ì¶”í›„ í•„ìš”í•  ìˆ˜ ìžˆëŠ” ê¸°ëŠ¥ì´ë¯€ë¡œ êµ¬í˜„ë¨.
- *               ì‹¤ì œ ì‚¬ìš©ì „ì— í…ŒìŠ¤íŠ¸ê°€ í•„ìš”í•¨.
+ * Description : LobÀ» aOffset¿¡¼­ ½ÃÀÛÇÏ¿© aSize ¸¸Å­,
+ *               Áö¿ì´Â ÇÔ¼ö.
+ *               ÀÌ ÇÔ¼ö´Â ÃßÈÄ ÇÊ¿äÇÒ ¼ö ÀÖ´Â ±â´ÉÀÌ¹Ç·Î ±¸ÇöµÊ.
+ *               ½ÇÁ¦ »ç¿ëÀü¿¡ Å×½ºÆ®°¡ ÇÊ¿äÇÔ.
  *
- *     aStatistics - [IN] í†µê³„ ìžë£Œ
- *     aLobLocator - [IN] ì§€ìš°ë ¤ëŠ” Lobì„ ê°€ë¦¬í‚¤ëŠ” Lob Locator
- *     aOffset     - [IN] ì§€ìš°ë ¤ëŠ” ìœ„ì¹˜ Offset
- *     aPieceLen   - [IN] ì§€ìš°ë ¤ëŠ” Lob Dataì˜ í¬ê¸°
+ *     aStatistics - [IN] Åë°è ÀÚ·á
+ *     aLobLocator - [IN] Áö¿ì·Á´Â LobÀ» °¡¸®Å°´Â Lob Locator
+ *     aOffset     - [IN] Áö¿ì·Á´Â À§Ä¡ Offset
+ *     aPieceLen   - [IN] Áö¿ì·Á´Â Lob DataÀÇ Å©±â
  **********************************************************************/
 IDE_RC smiLob::erase( idvSQL       * aStatistics,
                       smLobLocator   aLobLocator,
@@ -587,11 +591,11 @@ IDE_RC smiLob::erase( idvSQL       * aStatistics,
 }
 
 /***********************************************************************
- * Description : Lobì„ aOffsetì—ì„œ ì‹œìž‘í•˜ì—¬ ì´í›„ ë°ì´í„°ë¥¼ ìž˜ë¼ë‚´ëŠ” í•¨ìˆ˜.
+ * Description : LobÀ» aOffset¿¡¼­ ½ÃÀÛÇÏ¿© ÀÌÈÄ µ¥ÀÌÅÍ¸¦ Àß¶ó³»´Â ÇÔ¼ö.
  *
- *     aStatistics - [IN] í†µê³„ ìžë£Œ
- *     aLobLocator - [IN] Trimí•  Lobì„ ê°€ë¦¬í‚¤ëŠ” Lob Locator
- *     aOffset     - [IN] Trim ì‹œìž‘ ìœ„ì¹˜ Offset
+ *     aStatistics - [IN] Åë°è ÀÚ·á
+ *     aLobLocator - [IN] TrimÇÒ LobÀ» °¡¸®Å°´Â Lob Locator
+ *     aOffset     - [IN] Trim ½ÃÀÛ À§Ä¡ Offset
  **********************************************************************/
 IDE_RC smiLob::trim( idvSQL       * aStatistics,
                      smLobLocator   aLobLocator,
@@ -629,15 +633,15 @@ IDE_RC smiLob::trim( idvSQL       * aStatistics,
 /***********************************************************************
  *
  * Description :
- *  LOB ë°ì´í„°ì— ê°±ì‹  ì‹œìž‘ offsetì„ ì„¤ì •í•œë‹¤.
+ *  LOB µ¥ÀÌÅÍ¿¡ °»½Å ½ÃÀÛ offsetÀ» ¼³Á¤ÇÑ´Ù.
  *
  * Implementation:
  *
- *     aStatistics - [IN] í†µê³„ì •ë³´
+ *     aStatistics - [IN] Åë°èÁ¤º¸
  *     aLobLocator - [IN] Lob Locator
- *     aOffset     - [IN] ìž‘ì—…ì„ ì‹œìž‘í•  offset
- *     aOldSize    - [IN] ê¸°ì¡´ì˜ Lob dataì˜ í¬ê¸°
- *     aNewSize    - [IN] ë³€ê²½ í›„ì˜ Lob dataì˜ í¬ê¸°
+ *     aOffset     - [IN] ÀÛ¾÷À» ½ÃÀÛÇÒ offset
+ *     aOldSize    - [IN] ±âÁ¸ÀÇ Lob dataÀÇ Å©±â
+ *     aNewSize    - [IN] º¯°æ ÈÄÀÇ Lob dataÀÇ Å©±â
  **********************************************************************/
 IDE_RC smiLob::prepare4Write( idvSQL*      aStatistics,
                               smLobLocator aLobLocator,
@@ -694,16 +698,16 @@ IDE_RC smiLob::prepare4Write( idvSQL*      aStatistics,
 }
 
 /***********************************************************************
- * Description : source Lobì„  destionation Lobìœ¼ë¡œ  deep copyí•˜ëŠ” í•¨ìˆ˜.
- *    1. source Lob, destination lob cursorë¥¼ locateì‹œí‚¨ë‹¤.
- *    2. destionation Lobì„ ë¨¼ì € ì§€ìš´ë‹¤
- *    3. destination lobì— source lobì„ ë³µì‚¬í•˜ê¸° ì „ì—
- *       source lobì˜ ê¸¸ì´ë¡œ resizeë¥¼ í•œë‹¤.
- *    4. lob pieceë³µì‚¬ë¥¼ ìˆ˜í–‰í•œë‹¤.
+ * Description : source LobÀ»  destionation LobÀ¸·Î  deep copyÇÏ´Â ÇÔ¼ö.
+ *    1. source Lob, destination lob cursor¸¦ locate½ÃÅ²´Ù.
+ *    2. destionation LobÀ» ¸ÕÀú Áö¿î´Ù
+ *    3. destination lob¿¡ source lobÀ» º¹»çÇÏ±â Àü¿¡
+ *       source lobÀÇ ±æÀÌ·Î resize¸¦ ÇÑ´Ù.
+ *    4. lob pieceº¹»ç¸¦ ¼öÇàÇÑ´Ù.
  *
- *    aStatistics - [IN] í†µê³„ì •ë³´
- *    aDestLob    - [IN] ë³µì‚¬ ëŒ€ìƒ Lobì˜ Lob Locator
- *    aSrcLob     - [IN] ë³µì‚¬ ì›ë³¸ Lobì˜ Lob Locator
+ *    aStatistics - [IN] Åë°èÁ¤º¸
+ *    aDestLob    - [IN] º¹»ç ´ë»ó LobÀÇ Lob Locator
+ *    aSrcLob     - [IN] º¹»ç ¿øº» LobÀÇ Lob Locator
  **********************************************************************/
 IDE_RC smiLob::copy(idvSQL*      aStatistics,
                     smLobLocator aDestLob,
@@ -739,19 +743,21 @@ IDE_RC smiLob::copy(idvSQL*      aStatistics,
 
     sSrcLobCursorID = SMI_MAKE_LOB_CURSORID( aSrcLob );
     IDE_TEST( sTrans->getLobCursor( sSrcLobCursorID,
-                                    &sSrcLobCursorPtr) != IDE_SUCCESS );
+                                    &sSrcLobCursorPtr,
+                                    SMI_IS_SHARD_LOB_LOCATOR(aSrcLob) )
+              != IDE_SUCCESS );
     IDE_TEST_RAISE( sSrcLobCursorPtr == NULL, srcLobCursor_closed );
 
-    /* update t1 set c1=c1 ì§ˆì˜ì˜ ê²½ìš°,
-     * lobdescë¥¼ ë¨¼ì € ì´ˆê¸°í™” í•œí›„,
-     * lob copy ì—°ì‚°ì„ ìˆ˜í–‰í•œë‹¤.
-     * ì´ë•Œ src lob cursorëŠ” ì´ˆê¸°í™” ë˜ê¸° ì „
-     * lobdesc ì •ë³´ë¥¼ ì½ì–´ì™€ì•¼ í•œë‹¤.
-     * ê·¸ëŸ°ë° openmodeê°€ READ_WRITE_MODEì´ë©´
-     * ìžì‹ ì´ ê°±ì‹ í•œ ìµœì‹  ë²„ì „ì„ ì½ê²Œ ë˜ë¯€ë¡œ
-     * ì´ˆê¸°í™”ëœ lobdesc ì •ë³´ë¥¼ ì½ê²Œ ëœë‹¤.
-     * ê·¸ëž˜ì„œ src lob cursor ì •ë³´ë¥¼ ì§€ì—­ë³€ìˆ˜ì— ë³µì‚¬í•œ í›„,
-     * openmodeë¥¼ READ_MODEë¡œ ë³€ê²½í•œë‹¤. */
+    /* update t1 set c1=c1 ÁúÀÇÀÇ °æ¿ì,
+     * lobdesc¸¦ ¸ÕÀú ÃÊ±âÈ­ ÇÑÈÄ,
+     * lob copy ¿¬»êÀ» ¼öÇàÇÑ´Ù.
+     * ÀÌ¶§ src lob cursor´Â ÃÊ±âÈ­ µÇ±â Àü
+     * lobdesc Á¤º¸¸¦ ÀÐ¾î¿Í¾ß ÇÑ´Ù.
+     * ±×·±µ¥ openmode°¡ READ_WRITE_MODEÀÌ¸é
+     * ÀÚ½ÅÀÌ °»½ÅÇÑ ÃÖ½Å ¹öÀüÀ» ÀÐ°Ô µÇ¹Ç·Î
+     * ÃÊ±âÈ­µÈ lobdesc Á¤º¸¸¦ ÀÐ°Ô µÈ´Ù.
+     * ±×·¡¼­ src lob cursor Á¤º¸¸¦ Áö¿ªº¯¼ö¿¡ º¹»çÇÑ ÈÄ,
+     * openmode¸¦ READ_MODE·Î º¯°æÇÑ´Ù. */
     idlOS::memcpy( &sSrcLobCursor4Read,
                    sSrcLobCursorPtr,
                    ID_SIZEOF(smLobCursor) );
@@ -761,7 +767,9 @@ IDE_RC smiLob::copy(idvSQL*      aStatistics,
     /* desc lob */
     sDestLobCursorID = SMI_MAKE_LOB_CURSORID( aDestLob );
     IDE_TEST( sTrans->getLobCursor(sDestLobCursorID,
-                                   &sDestLobCursor) != IDE_SUCCESS );
+                                   &sDestLobCursor,
+                                   SMI_IS_SHARD_LOB_LOCATOR(aDestLob))
+              != IDE_SUCCESS );
     IDE_TEST_RAISE( sDestLobCursor == NULL, destLobCursor_closed );
 
     IDE_TEST_RAISE( sDestLobCursor->mLobViewEnv.mOpenMode == SMI_LOB_READ_MODE,
@@ -810,7 +818,7 @@ IDE_RC smiLob::copy(idvSQL*      aStatistics,
             
             for( i = 0; i < sSrcLobLen; i += smiLob::mLobPieceSize )
             {
-                // LOB_PIECEë‹¨ìœ„ë¡œ ì½ë‹¤ê°€ Lobì˜ ìž”ì—¬ë¶€ë¶„ì„ ì½ì„ë•Œ ì²˜ë¦¬.
+                // LOB_PIECE´ÜÀ§·Î ÀÐ´Ù°¡ LobÀÇ ÀÜ¿©ºÎºÐÀ» ÀÐÀ»¶§ Ã³¸®.
                 if( ( i + smiLob::mLobPieceSize ) > sSrcLobLen )
                 {
                     sReadBytes = sSrcLobLen - i;
@@ -907,15 +915,15 @@ IDE_RC smiLob::copy(idvSQL*      aStatistics,
 }
 
 /***********************************************************************
- * Description : Lob Columnì˜ Writeë¥¼ ì™„ë£Œí•˜ê³  ì™„ë£Œ Logë¥¼ ê¸°ë¡í•œë‹¤.
+ * Description : Lob ColumnÀÇ Write¸¦ ¿Ï·áÇÏ°í ¿Ï·á Log¸¦ ±â·ÏÇÑ´Ù.
  *     1) prepare4Write
  *     2) write ...
  *        write ...
  *        write ...
  *    3)  finishWrite
  *
- *    aStatistics - [IN] í†µê³„ ìžë£Œ
- *    aLobLocator - [IN] write ë¥¼ ì™„ë£Œ í•  Lobì˜ Locator
+ *    aStatistics - [IN] Åë°è ÀÚ·á
+ *    aLobLocator - [IN] write ¸¦ ¿Ï·á ÇÒ LobÀÇ Locator
  **********************************************************************/
 IDE_RC smiLob::finishWrite(idvSQL*      aStatistics,
                            smLobLocator aLobLocator)
@@ -970,10 +978,10 @@ IDE_RC smiLob::finishWrite(idvSQL*      aStatistics,
 }
 
 /***********************************************************************
- * Description : not null ì œì•½ë“± QPì—ì„œ ì‚¬ìš©í•˜ëŠ” ì •ë³´ë¥¼ ë°˜í™˜
+ * Description : not null Á¦¾àµî QP¿¡¼­ »ç¿ëÇÏ´Â Á¤º¸¸¦ ¹ÝÈ¯
  *
- *    aLobLocator - [IN]  ì •ë³´ë¥¼ í™•ì¸í•  Lobì˜ Locator
- *    aInfo       - [OUT] not null ì œì•½ë“± QPì—ì„œ ì‚¬ìš©í•¨.
+ *    aLobLocator - [IN]  Á¤º¸¸¦ È®ÀÎÇÒ LobÀÇ Locator
+ *    aInfo       - [OUT] not null Á¦¾àµî QP¿¡¼­ »ç¿ëÇÔ.
  **********************************************************************/
 IDE_RC smiLob::getInfo(smLobLocator aLobLocator,
                        UInt*        aInfo)
@@ -996,11 +1004,11 @@ IDE_RC smiLob::getInfo(smLobLocator aLobLocator,
 }
 
 /***********************************************************************
- * Description : not null ì œì•½ë“± QPì—ì„œ ì‚¬ìš©í•˜ëŠ” ì •ë³´ë¥¼ ë°˜í™˜
+ * Description : not null Á¦¾àµî QP¿¡¼­ »ç¿ëÇÏ´Â Á¤º¸¸¦ ¹ÝÈ¯
  *
- *    aLobLocator - [IN]  ì •ë³´ë¥¼ í™•ì¸í•  Lobì˜ Locator
- *    aInfo       - [OUT] not null ì œì•½ë“± QPì—ì„œ ì‚¬ìš©í•¨.
-                          ë‹¨, getInfoì™€ëŠ” ë‹¬ë¦¬ í¬ì¸í„°ë¥¼ ë¦¬í„´í•œë‹¤.
+ *    aLobLocator - [IN]  Á¤º¸¸¦ È®ÀÎÇÒ LobÀÇ Locator
+ *    aInfo       - [OUT] not null Á¦¾àµî QP¿¡¼­ »ç¿ëÇÔ.
+                          ´Ü, getInfo¿Í´Â ´Þ¸® Æ÷ÀÎÅÍ¸¦ ¸®ÅÏÇÑ´Ù.
  **********************************************************************/
 IDE_RC smiLob::getInfoPtr(smLobLocator aLobLocator,
                           UInt**       aInfo)
@@ -1023,10 +1031,10 @@ IDE_RC smiLob::getInfoPtr(smLobLocator aLobLocator,
 }
 
 /***********************************************************************
- * Description : Lob Locatorë¡œ ë¶€í„° LobCursorì™€ Trans ì •ë³´ë¥¼ ë°˜í™˜
- *      aLobLocator - [IN] Lobì˜ Locator
- *      aLobCursor  - [OUT] LobCursorë¥¼ ë°˜í™˜
- *      aTrans      - [OUT] Transë¥¼ ë°˜í™˜
+ * Description : Lob Locator·Î ºÎÅÍ LobCursor¿Í Trans Á¤º¸¸¦ ¹ÝÈ¯
+ *      aLobLocator - [IN] LobÀÇ Locator
+ *      aLobCursor  - [OUT] LobCursor¸¦ ¹ÝÈ¯
+ *      aTrans      - [OUT] Trans¸¦ ¹ÝÈ¯
  **********************************************************************/
 IDE_RC smiLob::getLobCursorAndTrans( smLobLocator      aLobLocator,
                                      smLobCursor    ** aLobCursor,
@@ -1045,7 +1053,10 @@ IDE_RC smiLob::getLobCursorAndTrans( smLobLocator      aLobLocator,
     IDE_TEST_RAISE( sTrans->mTransID != sTID, transaction_end );
 
     /* to get lob cusor */
-    IDE_TEST( sTrans->getLobCursor(sLobCursorID, &sLobCursor)
+    IDE_TEST( sTrans->getLobCursor(
+                    sLobCursorID,
+                    &sLobCursor,
+                    SMI_IS_SHARD_LOB_LOCATOR( aLobLocator) )
               != IDE_SUCCESS );
     IDE_TEST_RAISE( sLobCursor == NULL, lobCursor_closed );
 

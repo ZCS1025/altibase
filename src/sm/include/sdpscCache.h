@@ -19,8 +19,8 @@
  *
  * $Id: sdpscCache.h 82075 2018-01-17 06:39:52Z jina.kim $
  *
- * ë³¸ íŒŒì¼ì€ Circular-List Managed Segmentì˜ Segment Runtime Cacheì— ëŒ€í•œ
- * í—¤ë”íŒŒì¼ì´ë‹¤.
+ * º» ÆÄÀÏÀº Circular-List Managed SegmentÀÇ Segment Runtime Cache¿¡ ´ëÇÑ
+ * Çì´õÆÄÀÏÀÌ´Ù.
  *
  ***********************************************************************/
 
@@ -34,13 +34,13 @@ class sdpscCache
 
 public:
 
-    // [ INTERFACE ] Segment Handleì˜ Cacheí• ë‹¹ ë° ì´ˆê¸°í™”
+    // [ INTERFACE ] Segment HandleÀÇ CacheÇÒ´ç ¹× ÃÊ±âÈ­
     static IDE_RC initialize( sdpSegHandle * aSegHandle,
                               scSpaceID      aSpaceID,
                               sdpSegType     aSegType,
                               smOID          aObjectID );
 
-    // [ INTERFACE ] Segment Handleì˜ Cache í•´ì œ
+    // [ INTERFACE ] Segment HandleÀÇ Cache ÇØÁ¦
     static IDE_RC destroy( sdpSegHandle * aSegHandle );
 
     static inline sdpSegType getSegType( sdpSegHandle * aSegHandle );

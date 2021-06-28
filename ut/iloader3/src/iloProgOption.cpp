@@ -15,17 +15,20 @@
  */
  
 /***********************************************************************
- * $Id: iloProgOption.cpp 82186 2018-02-05 05:17:56Z lswhh $
+ * $Id: iloProgOption.cpp 90270 2021-03-21 23:20:18Z bethy $
  **********************************************************************/
 
 #include <idp.h>
 #include <iduProperty.h>
 #include <ilo.h>
 
+/* BUG-47652 Set file permission */
+UInt gFilePerm; 
+
 extern SChar gszCommand[COMMAND_LEN];
 extern SChar *getpass(const SChar *prompt);
 
-// BUG-17932: ë„ì›€ë§ í†µì¼
+// BUG-17932: µµ¿ò¸» ÅëÀÏ
 static const SChar *gHelpCommand[] =
 {
 #ifndef COMPILE_SHARDCLI
@@ -43,7 +46,9 @@ static const SChar *gHelpCommand[] =
     "[-partition]\n", /* BUG-32114 aexport must support the import/export of partition tables.*/
     "[-dry-run]\n",
     "[-prefetch_rows]\n",
-    "[-async_prefetch off|on|auto]"
+    "[-async_prefetch off|on|auto]\n",
+    "[-geom WKB]\n", /* BUG-48357 WKB compatibility option */
+    (SChar*) HELP_WITHOUT_NEWLINE(OPT_STMT_PREFIX) /* BUG-47608 */
 #else /* COMPILE_SHARDCLI */
     "{ in | out | formout | structout | help }\n",
     "[-d datafile or datafiles] [-f formatfile]\n",
@@ -59,6 +64,7 @@ static const SChar *gHelpCommand[] =
     "[-dry-run]\n",
     "[-prefetch_rows]\n",
     "[-async_prefetch off|on|auto]"
+    "[-geom WKB]\n", /* BUG-48357 WKB compatibility option */
 #endif /* COMPILE_SHARDCLI */
 };
 
@@ -78,6 +84,7 @@ static const SChar *gHelpMessage[] =
     "                    [-port port_no] [-silent] [-nst] [-displayquery]\n"
     "                    [-NLS_USE nls_name]\n"
     "                    [-prefer_ipv6]\n"
+    "                    [-geom WKB]\n"
     "                    [-ssl_ca CA_file_path | -ssl_capath CA_dir_path]\n"
     "                    [-ssl_cert certificate_file_path]\n"
     "                    [-ssl_key key_file_path]\n"
@@ -95,6 +102,7 @@ static const SChar *gHelpMessage[] =
     "            -displayquery : display query string\n"
     "            -NLS_USE      : Specify NLS\n"
     "            -prefer_ipv6  : Prefer resolving server_name to IPv6 Address\n"
+    "            -geom         : Specify geometry format such as WKB\n"
     "            -ssl_ca       : The path to a CA certificate file\n"
     "            -ssl_cpath    : The path to a directory that contains CA certificates\n"
     "            -ssl_cert     : The path to the client certificate\n"
@@ -131,7 +139,7 @@ void PrintHelpScreenCore(ECommandType aType)
     idlOS::printf("\n");
 }
 
-// BUG-17932: ë„ì›€ë§ í†µì¼
+// BUG-17932: µµ¿ò¸» ÅëÀÏ
 void iloProgOption::PrintHelpScreen(ECommandType aType)
 {
     switch (aType)
@@ -182,10 +190,10 @@ iloProgOption::iloProgOption()
     mCSVFieldTerm = ',';
     mCSVEnclosing = '"';
 
-    /* BUG-29932 : [WIN] iloader ë„ noprompt ì˜µì…˜ì´ í•„ìš”í•©ë‹ˆë‹¤. */
+    /* BUG-29932 : [WIN] iloader µµ noprompt ¿É¼ÇÀÌ ÇÊ¿äÇÕ´Ï´Ù. */
     mNoPrompt = ILO_FALSE;
 
-    /* BUG-30415: ì—ëŸ¬ ë°œìƒ í”Œë˜ê·¸ ì´ˆê¸°í™” */
+    /* BUG-30415: ¿¡·¯ ¹ß»ı ÇÃ·¡±× ÃÊ±âÈ­ */
     m_bErrorExist = SQL_FALSE;
 
     InitOption();
@@ -197,8 +205,8 @@ void iloProgOption::InitOption()
     idlOS::strcpy(m_FieldTerm, m_DefaultFieldTerm);
     idlOS::strcpy(m_RowTerm, m_DefaultRowTerm);
 
-    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
-    // -NLS_USE ì˜µì…˜ ì¶”ê°€
+    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+    // -NLS_USE ¿É¼Ç Ãß°¡
     m_bExist_NLS = ILO_FALSE;
     m_bExist_b = SQL_FALSE; // bad input checker
     m_bExist_T = SQL_FALSE;
@@ -243,9 +251,9 @@ void iloProgOption::InitOption()
     m_ioParallelCount   = 0;           
 
     m_bExist_errors = SQL_FALSE;
-    // BUG-24879 errors ì˜µì…˜ ì§€ì› ê¸°ë³¸ê°’ 50
+    // BUG-24879 errors ¿É¼Ç Áö¿ø ±âº»°ª 50
     m_ErrorCount = 50;
-    // BUG-18803 readsize ì˜µì…˜ ì¶”ê°€
+    // BUG-18803 readsize ¿É¼Ç Ãß°¡
     mReadSizeExist  = SQL_FALSE;
     mReadSzie       = FILE_READ_SIZE_DEFAULT;
 
@@ -335,6 +343,24 @@ void iloProgOption::InitOption()
     /* BUG-44187 Support Asynchronous Prefetch */
     m_bExist_async_prefetch = ID_FALSE;
     m_AsyncPrefetchType = ASYNC_PREFETCH_OFF;
+    
+    /* BUG-47608 insert_prefix: node_meta */
+    m_bExist_StmtPrefix = ID_FALSE;
+    m_StmtPrefix[0]     = '\0';
+    
+    /* BUG-48016 Fix skipped commit */
+    m_bExist_ShowCommit = ID_FALSE;
+
+    /* BUG-47652 Set file permission */
+    mbExistFilePerm == ID_FALSE;
+    gFilePerm = DEFAULT_FILE_PERM;
+    
+    /* BUG-48357 WKB compatibility option */
+    m_bExist_geom = ID_FALSE;
+    m_bIsGeomWKB = ID_FALSE;
+
+    mExistTxLevel  = SQL_FALSE;
+    mTxLevel       = 0;
 }
 
 SChar *iloProgOption::MakeCommandLine(SInt argc, SChar **argv)
@@ -378,8 +404,8 @@ SInt iloProgOption::ParsingCommandLine( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     while (i<argc)
     {
-        // BUG-17932: ë„ì›€ë§ í†µì¼
-        // command lineì—ì„œ ë„ì›€ë§ì„ ì¶œë ¥í•  ë•ŒëŠ” í•­ìƒ ì „ì²´ ë„ì›€ë§ ì¶œë ¥
+        // BUG-17932: µµ¿ò¸» ÅëÀÏ
+        // command line¿¡¼­ µµ¿ò¸»À» Ãâ·ÂÇÒ ¶§´Â Ç×»ó ÀüÃ¼ µµ¿ò¸» Ãâ·Â
         if (idlOS::strcasecmp(argv[i], "-h") == 0
          || idlOS::strcasecmp(argv[i], "help") == 0
          || idlOS::strcasecmp(argv[i], "--help") == 0)
@@ -454,11 +480,11 @@ SInt iloProgOption::ParsingCommandLine( ALTIBASE_ILOADER_HANDLE  aHandle,
             m_PortNum     = idlOS::atoi(argv[i+1]);
             i += 2;
         }
-        // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
-        // -NLS_USE ì˜µì…˜ ì¶”ê°€
+        // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+        // -NLS_USE ¿É¼Ç Ãß°¡
         else if (idlOS::strcasecmp(argv[i], "-NLS_USE") == 0)
         {
-            /* NLSê°€ ì—†ëŠ” ê²½ìš° */
+            /* NLS°¡ ¾ø´Â °æ¿ì */
             IDE_TEST_RAISE(argc <= i+1, print_help_screen);
             IDE_TEST_RAISE(argv[i+1][1] == '-', print_help_screen);
 
@@ -491,8 +517,8 @@ SInt iloProgOption::ParsingCommandLine( ALTIBASE_ILOADER_HANDLE  aHandle,
         else if (idlOS::strcmp(argv[i], "-plus") == 0 ||
                  idlOS::strcmp(argv[i], "-PLUS") == 0)
         {
-            // BUG-28708 -plus ì˜µì…˜ì´ dropë¨
-            // í˜¸í™˜ì„±ì„ ìœ„í•´ ì˜µì…˜ ìì²´ëŠ” ë‚¨ê²¨ë‘ë˜, ë¬´ì‹œí•œë‹¤.
+            // BUG-28708 -plus ¿É¼ÇÀÌ dropµÊ
+            // È£È¯¼ºÀ» À§ÇØ ¿É¼Ç ÀÚÃ¼´Â ³²°ÜµÎµÇ, ¹«½ÃÇÑ´Ù.
             (void)idlOS::printf("NOTICE: -plus option is deprecated. " \
                                 "Thus, the option will be ignored.\n");
             i++;
@@ -527,9 +553,9 @@ SInt iloProgOption::ParsingCommandLine( ALTIBASE_ILOADER_HANDLE  aHandle,
                                 argv[i]);
             i++;
 
-            /* ì…¸ì´ "lob_option_string"ì—ì„œ
-             * ë”°ì˜´í‘œë¥¼ ì œê±°í•˜ê³  '\"'ëŠ” '"'ìœ¼ë¡œ ë³€ê²½í•´ë²„ë¦° ê²ƒì„
-             * ì›ìƒë³µê·€ì‹œí‚¨ë‹¤. */
+            /* ¼ĞÀÌ "lob_option_string"¿¡¼­
+             * µû¿ÈÇ¥¸¦ Á¦°ÅÇÏ°í '\"'´Â '"'À¸·Î º¯°æÇØ¹ö¸° °ÍÀ»
+             * ¿ø»óº¹±Í½ÃÅ²´Ù. */
             if (i < argc && argv[i][0] != '-')
             {
 #define APPEND_CHAR_TO_CMD(aC) \
@@ -560,7 +586,7 @@ SInt iloProgOption::ParsingCommandLine( ALTIBASE_ILOADER_HANDLE  aHandle,
 #undef APPEND_CHAR_TO_CMD
             }
         }
-        /* BUG-29932 : [WIN] iloader ë„ noprompt ì˜µì…˜ì´ í•„ìš”í•©ë‹ˆë‹¤. */
+        /* BUG-29932 : [WIN] iloader µµ noprompt ¿É¼ÇÀÌ ÇÊ¿äÇÕ´Ï´Ù. */
         else if (idlOS::strcmp(argv[i], "-noprompt") == 0 ||
                  idlOS::strcmp(argv[i], "-NOPROMPT") == 0)
         {
@@ -657,6 +683,46 @@ SInt iloProgOption::ParsingCommandLine( ALTIBASE_ILOADER_HANDLE  aHandle,
             mDryrun= ILO_TRUE;
             i++;
         }
+        /* BUG-47608 stmt_prefix */
+        else if (idlOS::strcmp(argv[i], (SChar*) OPT_STMT_PREFIX) == 0)
+        {
+            IDE_TEST_RAISE( m_bExist_StmtPrefix == ID_TRUE, err_stmt_prefix );
+            m_bExist_StmtPrefix= ID_TRUE;
+            i++;
+
+            /* If no user-defined prefix, then input default value: NODE [META] */
+            if ( (argc <= i) || (idlOS::strncmp(argv[i], "-", 1) == 0) ) 
+            {
+                idlOS::snprintf(m_StmtPrefix, idlOS::strlen((SChar*) NODE_META) + 1, 
+                        "%s", (SChar*) NODE_META);
+            }
+            /* User-defined prefix */
+            else
+            {
+                idlOS::snprintf(m_StmtPrefix, ID_SIZEOF(m_StmtPrefix), "%s",
+                        argv[i]);
+                i++;
+            }
+        }
+        /* BUG-48016 Fix skipped commit */
+        else if (idlOS::strcmp(argv[i], "-dev-show-commit") == 0)
+        {
+            m_bExist_ShowCommit = ID_TRUE;
+            i++;
+        }
+        /* BUG-48357 WKB compatibility option */
+        else if (idlOS::strcmp(argv[i], (SChar*) OPT_GEOM ) == 0)
+        {
+            IDE_TEST_RAISE( m_bExist_geom == ID_TRUE, err_geom_dup );
+            m_bExist_geom = ID_TRUE;
+            i++;
+
+            IDE_TEST_RAISE( argv[i] == NULL, err_geom_no_value );
+            IDE_TEST_RAISE( idlOS::strcasecmp(argv[i], "WKB") != 0, 
+                            err_geom_invalid_value );
+            m_bIsGeomWKB = ID_TRUE;
+            i++;
+        }
         else
         {
             idlOS::strcat(gszCommand, argv[i]);
@@ -667,7 +733,7 @@ SInt iloProgOption::ParsingCommandLine( ALTIBASE_ILOADER_HANDLE  aHandle,
 
     if( m_ConnType == ILO_CONNTYPE_NONE )
     {
-        /* BUG-31387: ConnTypeì„ í•œë²ˆë§Œ ì–»ì–´ ì¬í™œìš© */
+        /* BUG-31387: ConnTypeÀ» ÇÑ¹ø¸¸ ¾ò¾î ÀçÈ°¿ë */
         sPtr = idlOS::getenv(ENV_ISQL_CONNECTION);
         if (sPtr != NULL)
         {
@@ -854,7 +920,7 @@ SInt iloProgOption::ParsingCommandLine( ALTIBASE_ILOADER_HANDLE  aHandle,
             utePrintfErrorCode(stdout, sHandle->mErrorMgr);
         }
     }
-    /* BUG-29932 : [WIN] iloader ë„ noprompt ì˜µì…˜ì´ í•„ìš”í•©ë‹ˆë‹¤. */
+    /* BUG-29932 : [WIN] iloader µµ noprompt ¿É¼ÇÀÌ ÇÊ¿äÇÕ´Ï´Ù. */
     IDE_EXCEPTION( err_noprompt );
     {
         m_bErrorExist = SQL_TRUE;
@@ -894,6 +960,45 @@ SInt iloProgOption::ParsingCommandLine( ALTIBASE_ILOADER_HANDLE  aHandle,
             utePrintfErrorCode(stdout, sHandle->mErrorMgr);
         }
     }
+    /* BUG-47608 */
+    IDE_EXCEPTION( err_stmt_prefix );
+    {
+        m_bErrorExist = SQL_TRUE;
+        uteSetErrorCode( sHandle->mErrorMgr, utERR_ABORT_Dup_Option_Error, (SChar*) OPT_STMT_PREFIX);
+        if ( sHandle->mUseApi != SQL_TRUE )
+        {
+            utePrintfErrorCode(stdout, sHandle->mErrorMgr);
+        }
+    }
+    /* BUG-48357 */
+    IDE_EXCEPTION( err_geom_dup );
+    {
+        m_bErrorExist = SQL_TRUE;
+        uteSetErrorCode( sHandle->mErrorMgr, utERR_ABORT_Dup_Option_Error, (SChar*) OPT_GEOM );
+        if ( sHandle->mUseApi != SQL_TRUE )
+        {
+            utePrintfErrorCode(stdout, sHandle->mErrorMgr);
+        }
+    }
+    IDE_EXCEPTION( err_geom_no_value );
+    {
+        m_bErrorExist = SQL_TRUE;
+        uteSetErrorCode( sHandle->mErrorMgr, utERR_ABORT_Option_No_Value_Error, (SChar*) OPT_GEOM );
+        if ( sHandle->mUseApi != SQL_TRUE )
+        {
+            utePrintfErrorCode(stdout, sHandle->mErrorMgr);
+        }
+    }
+    IDE_EXCEPTION( err_geom_invalid_value );
+    {
+        m_bErrorExist = SQL_TRUE;
+        uteSetErrorCode( sHandle->mErrorMgr, utERR_ABORT_Option_Invalid_Value_Error,
+                (SChar*) OPT_GEOM, argv[i] );
+        if ( sHandle->mUseApi != SQL_TRUE )
+        {
+            utePrintfErrorCode(stdout, sHandle->mErrorMgr);
+        }
+    }
     IDE_EXCEPTION_END;
 
     return SQL_FALSE;
@@ -901,15 +1006,15 @@ SInt iloProgOption::ParsingCommandLine( ALTIBASE_ILOADER_HANDLE  aHandle,
 
 /* BUG-31387 */
 /**
- * IPCì™€ Unix domainì€ localhostì— ì ‘ì† í•  ë•Œë§Œ ì‚¬ìš©í•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
- * ServerNameì´ localhostê°€ ì•„ë‹ˆë¼ë©´ TCPë¥¼ ì‚¬ìš©í•˜ë„ë¡ ì—°ê²° ìœ í˜•ì„ ì¡°ì ˆí•œë‹¤.
+ * IPC¿Í Unix domainÀº localhost¿¡ Á¢¼Ó ÇÒ ¶§¸¸ »ç¿ëÇÒ ¼ö ÀÖÀ¸¹Ç·Î,
+ * ServerNameÀÌ localhost°¡ ¾Æ´Ï¶ó¸é TCP¸¦ »ç¿ëÇÏµµ·Ï ¿¬°á À¯ÇüÀ» Á¶ÀıÇÑ´Ù.
  *
- * ì›ê²© ì„œë²„ì— ì ‘ì†í•  ë•Œ IPC, Unix domainì„ ì‚¬ìš©í•˜ë„ë¡ ì„¤ì •í–ˆë‹¤ë©´
- * ì—°ê²° ìœ í˜• ì„¤ì •ì´ ë¬´ì‹œë¨ì„ ì•Œë¦¬ëŠ” ê²½ê³  ë©”ì‹œì§€ë¥¼ ì¶œë ¥í•œë‹¤.
- * Unix í”Œë«í¼ì—ì„œ Unix domainì„ ì‚¬ìš©í•  ë•ŒëŠ” í¬íŠ¸ ë²ˆí˜¸ê°€ í•„ìš”í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ
- * -port ì˜µì…˜ì„ ì§€ì •í–ˆì„ë•Œë„ ê²½ê³ ë¥¼ ì¶œë ¥í•œë‹¤.
+ * ¿ø°İ ¼­¹ö¿¡ Á¢¼ÓÇÒ ¶§ IPC, Unix domainÀ» »ç¿ëÇÏµµ·Ï ¼³Á¤Çß´Ù¸é
+ * ¿¬°á À¯Çü ¼³Á¤ÀÌ ¹«½ÃµÊÀ» ¾Ë¸®´Â °æ°í ¸Ş½ÃÁö¸¦ Ãâ·ÂÇÑ´Ù.
+ * Unix ÇÃ·§Æû¿¡¼­ Unix domainÀ» »ç¿ëÇÒ ¶§´Â Æ÷Æ® ¹øÈ£°¡ ÇÊ¿äÇÏÁö ¾ÊÀ¸¹Ç·Î
+ * -port ¿É¼ÇÀ» ÁöÁ¤ÇßÀ»¶§µµ °æ°í¸¦ Ãâ·ÂÇÑ´Ù.
  *
- * @param aHandle iLoader í•¸ë“¤
+ * @param aHandle iLoader ÇÚµé
  */
 void iloProgOption::AdjustConnType( ALTIBASE_ILOADER_HANDLE aHandle )
 {
@@ -976,7 +1081,7 @@ SInt iloProgOption::ReadProgOptionInteractive()
         m_bExist_S = SQL_TRUE;
     }
 
-    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
+    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
 #if defined(VC_WIN32)
     if ( m_bExist_PORT == SQL_FALSE )
 #else
@@ -1007,12 +1112,12 @@ SInt iloProgOption::ReadProgOptionInteractive()
         idlOS::gets(szInStr, sizeof(szInStr));
 
         m_bExist_U = SQL_TRUE;
-        /* BUG-17563 : iloader ì—ì„œ í°ë”°ì˜´í‘œ ì´ìš©í•œ Naming Rule ì œì•½ ì œê±°  */
-        /*    Interactive ëª¨ë“œì¼ ê²½ìš°ì—ë§Œ userIDì˜ caseë¥¼ "..."ë¡œ êµ¬ë¶„í•´ì¤Œ.
-         *    - Quoted Nameì¸ ê²½ìš°
-         *      : ê·¸ëŒ€ë¡œ ì‚¬ìš© - "Quoted Name" ==> "Quoted Name"
-         *    - Non-Quoted Nameì¸ ê²½ìš°
-         *      : ëŒ€ë¬¸ìë¡œ ë³€ê²½ - NonQuotedName ==> NONQUOTEDNAME
+        /* BUG-17563 : iloader ¿¡¼­ Å«µû¿ÈÇ¥ ÀÌ¿ëÇÑ Naming Rule Á¦¾à Á¦°Å  */
+        /*    Interactive ¸ğµåÀÏ °æ¿ì¿¡¸¸ userIDÀÇ case¸¦ "..."·Î ±¸ºĞÇØÁÜ.
+         *    - Quoted NameÀÎ °æ¿ì
+         *      : ±×´ë·Î »ç¿ë - "Quoted Name" ==> "Quoted Name"
+         *    - Non-Quoted NameÀÎ °æ¿ì
+         *      : ´ë¹®ÀÚ·Î º¯°æ - NonQuotedName ==> NONQUOTEDNAME
         */
         utString::makeNameInCLI(m_LoginID,
                                 ID_SIZEOF(m_LoginID),
@@ -1027,30 +1132,35 @@ SInt iloProgOption::ReadProgOptionInteractive()
         idlOS::strcpy(m_Password, getpass("Write Password : "));
     }
 
-    // BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
-    // -NLS_USE ì˜µì…˜ ì¶”ê°€
+    // BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+    // -NLS_USE ¿É¼Ç Ãß°¡
     if (m_bExist_NLS == ILO_FALSE)
     {
-        // BUG-24126 isql ì—ì„œ ALTIBASE_NLS_USE í™˜ê²½ë³€ìˆ˜ê°€ ì—†ì–´ë„ ê¸°ë³¸ NLSë¥¼ ì„¸íŒ…í•˜ë„ë¡ í•œë‹¤.
-        // ì˜¤ë¼í´ê³¼ ë™ì´í•˜ê²Œ US7ASCII ë¡œ í•©ë‹ˆë‹¤.
+        // BUG-24126 isql ¿¡¼­ ALTIBASE_NLS_USE È¯°æº¯¼ö°¡ ¾ø¾îµµ ±âº» NLS¸¦ ¼¼ÆÃÇÏµµ·Ï ÇÑ´Ù.
+        // ¿À¶óÅ¬°ú µ¿ÀÌÇÏ°Ô US7ASCII ·Î ÇÕ´Ï´Ù.
         idlOS::strncpy(m_NLS, "US7ASCII", ID_SIZEOF(m_NLS));
         m_bExist_NLS = ILO_TRUE;
     }
 
-    // BUG-25359 iloader ì—ì„œ download condition ì´ ì ìš©ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
-    // ê¸°ì¡´ : form file ì—ì„œ ê¸°ë³¸ê°’ì„ ì„¸íŒ…í•˜ê³  ìˆì—ˆìŒ
-    // form file íŒŒì„œ ìˆ˜ì •ì‹œ ê¸°ë³¸ê°’ì„ ì„¸íŒ…í• ìˆ˜ ì—†ìœ¼ë¯€ë¡œ ì—¬ê¸°ì„œ ì„¸íŒ…í•˜ë„ë¡ ë³€ê²½í•¨
+    // BUG-25359 iloader ¿¡¼­ download condition ÀÌ Àû¿ëµÇÁö ¾Ê½À´Ï´Ù.
+    // ±âÁ¸ : form file ¿¡¼­ ±âº»°ªÀ» ¼¼ÆÃÇÏ°í ÀÖ¾úÀ½
+    // form file ÆÄ¼­ ¼öÁ¤½Ã ±âº»°ªÀ» ¼¼ÆÃÇÒ¼ö ¾øÀ¸¹Ç·Î ¿©±â¼­ ¼¼ÆÃÇÏµµ·Ï º¯°æÇÔ
     idlOS::strcpy(m_DataNLS, m_NLS);
 
     return SQL_TRUE;
 
 }
 
-// BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
-// altibase.propertiesë¥¼ ì°¸ì¡°í•˜ì§€ ì•ŠëŠ”ê²Œ ì¢‹ë‹¤.
-void iloProgOption::ReadEnvironment()
+// BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+// altibase.properties¸¦ ÂüÁ¶ÇÏÁö ¾Ê´Â°Ô ÁÁ´Ù.
+IDE_RC iloProgOption::ReadEnvironment( ALTIBASE_ILOADER_HANDLE aHandle )
 {
     SChar *sCharData;
+    
+    /* BUG-47652 Set file permission */
+    SChar  sEnvVarName[ENV_NAME_LEN+1];
+    
+    iloaderHandle *sHandle = (iloaderHandle *) aHandle;
 
     if (m_bExist_PORT == SQL_FALSE)
     {
@@ -1078,12 +1188,42 @@ void iloProgOption::ReadEnvironment()
             m_bExist_NLS = ILO_TRUE;
         }
     }
+    
+    /* BUG-47652 Set file permission */
+    if (mbExistFilePerm == ID_FALSE)
+    {
+        idlOS::sprintf( sEnvVarName, "%s", ENV_ALTIBASE_UT_FILE_PERMISSION );
+        sCharData = idlOS::getenv( sEnvVarName );
+        IDE_TEST_RAISE ( uttEnv::setFilePermission( sCharData,
+                                                    &gFilePerm,
+                                                    &mbExistFilePerm ) != IDE_SUCCESS, 
+                         FilePerm_error );
+
+        idlOS::sprintf( sEnvVarName, "%s", ENV_ILO_FILE_PERMISSION );
+        sCharData = idlOS::getenv( sEnvVarName );
+        IDE_TEST_RAISE ( uttEnv::setFilePermission( sCharData,
+                                                    &gFilePerm,
+                                                    &mbExistFilePerm ) != IDE_SUCCESS, 
+                         FilePerm_error );
+    }
+
+    return IDE_SUCCESS;
+    
+    /* BUG-47652 Set file permission */
+    IDE_EXCEPTION(FilePerm_error);
+    {
+        uteSetErrorCode( sHandle->mErrorMgr, utERR_ABORT_FilePerm_OutOfRange_Error, 
+                         sEnvVarName, sCharData );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
-// BUG-26287: ì˜µì…˜ ì²˜ë¦¬ë°©ë²• í†µì¼
-// ì„œë²„ë¥¼ ì„¤ì¹˜í•œ ê²½ìš° í™˜ê²½ë³€ìˆ˜ë¥¼ ì„¤ì •í•˜ì§€ ì•Šê³  altibase.propertiesë§Œ ì„¤ì •í•´ì„œ
-// ì“¸ ìˆ˜ ìˆìœ¼ë¯€ë¡œ altibase.propertiesê°€ ìˆìœ¼ë©´ ì½ì–´ì˜¤ë„ë¡í•´ì•¼
-// ê¸°ì¡´ ìŠ¤í¬ë¦½íŠ¸ì—ì„œ ì—ëŸ¬ê°€ ì•ˆë‚œë‹¤.
+// BUG-26287: ¿É¼Ç Ã³¸®¹æ¹ı ÅëÀÏ
+// ¼­¹ö¸¦ ¼³Ä¡ÇÑ °æ¿ì È¯°æº¯¼ö¸¦ ¼³Á¤ÇÏÁö ¾Ê°í altibase.properties¸¸ ¼³Á¤ÇØ¼­
+// ¾µ ¼ö ÀÖÀ¸¹Ç·Î altibase.properties°¡ ÀÖÀ¸¸é ÀĞ¾î¿Àµµ·ÏÇØ¾ß
+// ±âÁ¸ ½ºÅ©¸³Æ®¿¡¼­ ¿¡·¯°¡ ¾È³­´Ù.
 void iloProgOption::ReadServerProperties()
 {
     IDE_RC  sRead;
@@ -1150,29 +1290,24 @@ SInt iloProgOption::IsValidOption( ALTIBASE_ILOADER_HANDLE aHandle )
     case DATA_IN :
         IDE_TEST_RAISE( m_bExist_f == SQL_FALSE, err_form );
         IDE_TEST_RAISE( m_bExist_d == SQL_FALSE, err_data );
+        IDE_TEST_RAISE(ValidateLOBOptions() != IDE_SUCCESS, LOBOptStrErr);
         IDE_TEST_RAISE( ValidTermString() == SQL_FALSE, err_term );
         IDE_TEST_RAISE( m_bExist_split == SQL_TRUE , err_split );
 #ifdef COMPILE_SHARDCLI
         IDE_TEST_RAISE( m_bExist_array == SQL_TRUE && m_ArrayCount > 1,
                         err_array );
-        IDE_TEST_RAISE( mExistUseLOBFile == ILO_TRUE ||
-                        mExistLOBFileSize == ILO_TRUE ||
-                        mExistUseSeparateFiles == ILO_TRUE ||
-                        mExistLOBIndicator == ILO_TRUE,
-                        err_lob );
         IDE_TEST_RAISE( m_bExist_atomic == SQL_TRUE, err_atomic );
         IDE_TEST_RAISE( m_bExist_direct == SQL_TRUE, err_direct );
         IDE_TEST_RAISE( m_bExist_ioParallel == SQL_TRUE, err_ioparallel );
         IDE_TEST_RAISE( m_LoadMode == ILO_REPLACE ||
                         m_LoadMode == ILO_TRUNCATE, err_mode );
 #else /* COMPILE_SHARDCLI */
-        IDE_TEST_RAISE(ValidateLOBOptions() != IDE_SUCCESS, LOBOptStrErr);
         IDE_TEST_RAISE( m_bExist_array == SQL_TRUE && m_ArrayCount <= 0,
                         err_array );
         IDE_TEST_RAISE( ( m_bExist_array == SQL_FALSE ) &&
                         ( m_bExist_atomic == SQL_TRUE ), err_atomic );
         //PROJ-1760
-        // -ioparallelì€ -direct ì˜µì…˜ê³¼ í•¨ê»˜ ì‚¬ìš©í•´ì•¼ë§Œ í•œë‹¤.
+        // -ioparallelÀº -direct ¿É¼Ç°ú ÇÔ²² »ç¿ëÇØ¾ß¸¸ ÇÑ´Ù.
         IDE_TEST_RAISE( ( m_bExist_direct == SQL_FALSE ) &&
                         ( m_bExist_ioParallel == SQL_TRUE), err_ioparallel );
 #endif /* COMPILE_SHARDCLI */
@@ -1246,12 +1381,6 @@ SInt iloProgOption::IsValidOption( ALTIBASE_ILOADER_HANDLE aHandle )
         m_bErrorExist = SQL_TRUE;
         uteSetErrorCode(sHandle->mErrorMgr, utERR_ABORT_Invalid_Option_Error,
                         "-array");
-    }
-    IDE_EXCEPTION( err_lob );
-    {
-        m_bErrorExist = SQL_TRUE;
-        uteSetErrorCode(sHandle->mErrorMgr, utERR_ABORT_Invalid_Option_Error,
-                        "-use_lob_file, -lob_file_size, -use_separate_files or -lob_indicator");        
     }
     IDE_EXCEPTION( err_atomic );
     {
@@ -1355,23 +1484,18 @@ SInt iloProgOption::TestCommandLineOption( ALTIBASE_ILOADER_HANDLE aHandle )
     case DATA_IN :
         IDE_TEST_RAISE( m_bExist_f == SQL_FALSE, err_form );
         IDE_TEST_RAISE( m_bExist_d == SQL_FALSE, err_data );
+        IDE_TEST_RAISE(ValidateLOBOptions() != IDE_SUCCESS, LOBOptStrErr);
         IDE_TEST_RAISE( ValidTermString() == SQL_FALSE, err_term );
         IDE_TEST_RAISE( m_bExist_split == SQL_TRUE , err_split );
 #ifdef COMPILE_SHARDCLI
         IDE_TEST_RAISE( m_bExist_array == SQL_TRUE && m_ArrayCount > 1,
                         err_array );
-        IDE_TEST_RAISE( mExistUseLOBFile == ILO_TRUE ||
-                        mExistLOBFileSize == ILO_TRUE ||
-                        mExistUseSeparateFiles == ILO_TRUE ||
-                        mExistLOBIndicator == ILO_TRUE,
-                        err_lob );
         IDE_TEST_RAISE( m_bExist_atomic == SQL_TRUE, err_atomic );
         IDE_TEST_RAISE( m_bExist_direct == SQL_TRUE, err_direct );
         IDE_TEST_RAISE( m_bExist_ioParallel == SQL_TRUE, err_ioparallel );
         IDE_TEST_RAISE( m_LoadMode == ILO_REPLACE ||
                         m_LoadMode == ILO_TRUNCATE, err_mode );
 #else /* COMPILE_SHARDCLI */
-        IDE_TEST_RAISE(ValidateLOBOptions() != IDE_SUCCESS, LOBOptStrErr);
         IDE_TEST_RAISE( m_bExist_array == SQL_TRUE && m_ArrayCount <= 0,
                         err_array );
         IDE_TEST_RAISE( m_bExist_split == SQL_TRUE , err_split );
@@ -1383,7 +1507,7 @@ SInt iloProgOption::TestCommandLineOption( ALTIBASE_ILOADER_HANDLE aHandle )
                         ( m_bExist_atomic == SQL_TRUE ), err_atomic );
 
         //PROJ-1760
-        // 1. -ioparallelì€ -direct ì˜µì…˜ê³¼ í•¨ê»˜ ì‚¬ìš©í•´ì•¼ë§Œ í•œë‹¤.
+        // 1. -ioparallelÀº -direct ¿É¼Ç°ú ÇÔ²² »ç¿ëÇØ¾ß¸¸ ÇÑ´Ù.
         IDE_TEST_RAISE( ( m_bExist_direct == SQL_FALSE ) &&
                         ( m_bExist_ioParallel == SQL_TRUE), err_ioparallel );
 #endif /* COMPILE_SHARDCLI */
@@ -1469,12 +1593,6 @@ SInt iloProgOption::TestCommandLineOption( ALTIBASE_ILOADER_HANDLE aHandle )
         uteSetErrorCode(sHandle->mErrorMgr, utERR_ABORT_Invalid_Option_Error,
                         "-array");
     }
-    IDE_EXCEPTION( err_lob );
-    {
-        m_bErrorExist = SQL_TRUE;
-        uteSetErrorCode(sHandle->mErrorMgr, utERR_ABORT_Invalid_Option_Error,
-                        "-use_lob_file, -lob_file_size, -use_separate_files or -lob_indicator");        
-    }
     IDE_EXCEPTION( err_atomic );
     {
         m_bErrorExist = SQL_TRUE;
@@ -1556,7 +1674,7 @@ SInt iloProgOption::TestCommandLineOption( ALTIBASE_ILOADER_HANDLE aHandle )
 /**
  * ValidateLOBOptions.
  *
- * ì‚¬ìš©ìê°€ ì…ë ¥í•œ ëª…ë ¹ì—ì„œ LOB ì˜µì…˜ë“¤ì´ ì˜ëª»ëœ ì ì´ ì—†ëŠ”ê°€ ê²€ì‚¬í•œë‹¤.
+ * »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ¸í·É¿¡¼­ LOB ¿É¼ÇµéÀÌ Àß¸øµÈ Á¡ÀÌ ¾ø´Â°¡ °Ë»çÇÑ´Ù.
  */
 IDE_RC iloProgOption::ValidateLOBOptions()
 {
@@ -1619,10 +1737,10 @@ void iloProgOption::ResetError(void)
  * StrToUpper.
  *
  *
- * ë¬¸ìì—´ì„ ëŒ€ë¬¸ìë¡œ ë§Œë“ ë‹¤.
+ * ¹®ÀÚ¿­À» ´ë¹®ÀÚ·Î ¸¸µç´Ù.
  *
  * @param[in,out] aStr
- *  ëŒ€ë¬¸ìë¡œ ë§Œë“¤ ë¬¸ìì—´.
+ *  ´ë¹®ÀÚ·Î ¸¸µé ¹®ÀÚ¿­.
  */
 void iloProgOption::StrToUpper(SChar *aStr)
 {
@@ -1638,8 +1756,8 @@ void iloProgOption::StrToUpper(SChar *aStr)
 }
 
 /* PROJ-1714
- * ë°ì´í„° íŒŒì¼ì„ ì…ë ¥ë°›ëŠ”ë‹¤.
- * Parallelì˜ ìµœëŒ€ ê°’ê¹Œì§€ë§Œ ì…ë ¥ ë°›ì„ ìˆ˜ ìˆë‹¤.
+ * µ¥ÀÌÅÍ ÆÄÀÏÀ» ÀÔ·Â¹Ş´Â´Ù.
+ * ParallelÀÇ ÃÖ´ë °ª±îÁö¸¸ ÀÔ·Â ¹ŞÀ» ¼ö ÀÖ´Ù.
  */
  
 SInt iloProgOption::AddDataFileName( SChar *aFileName )
@@ -1662,8 +1780,8 @@ SInt iloProgOption::AddDataFileName( SChar *aFileName )
 
 /*
  * PROJ-1714
- * ì‚¬ìš©ìê°€ ì…ë ¥í•œ íŒŒì¼ ì´ë¦„ì„ ìˆœì°¨ì ìœ¼ë¡œ ì–»ê¸° ìœ„í•´ì„œëŠ” ID_TRUEê°’ì„ (Data Uploading ì—ì„œ ì‚¬ìš©ë¨)
- * ì‚¬ìš©ìê°€ ì…ë ¥í•œ íŒŒì¼ ì´ë¦„ í•˜ë‚˜ë¥¼ ê³„ì†ì ìœ¼ë¡œ ì–»ê¸° ìœ„í•´ì„œëŠ” ID_FALSEê°’ì„ ì‚¬ìš©(Data Downloadingì—ì„œ ì‚¬ìš©ë¨)  
+ * »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ÆÄÀÏ ÀÌ¸§À» ¼øÂ÷ÀûÀ¸·Î ¾ò±â À§ÇØ¼­´Â ID_TRUE°ªÀ» (Data Uploading ¿¡¼­ »ç¿ëµÊ)
+ * »ç¿ëÀÚ°¡ ÀÔ·ÂÇÑ ÆÄÀÏ ÀÌ¸§ ÇÏ³ª¸¦ °è¼ÓÀûÀ¸·Î ¾ò±â À§ÇØ¼­´Â ID_FALSE°ªÀ» »ç¿ë(Data Downloading¿¡¼­ »ç¿ëµÊ)  
  */
 
 SChar* iloProgOption::GetDataFileName( iloBool aIsUpload )
@@ -1685,11 +1803,11 @@ SChar* iloProgOption::GetDataFileName( iloBool aIsUpload )
 }
 
 
-/* BUG-30693 : table ì´ë¦„ë“¤ê³¼ owner ì´ë¦„ì„ mtlMakeNameInFunc í•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬
-               ëŒ€ë¬¸ìë¡œ ë³€ê²½í•´ì•¼ í•  ê²½ìš° ë³€ê²½í•¨.
-   CommandParserì—ì„œ ë³€í™˜í•˜ë©´ ì•ˆëœë‹¤. ê·¸ ì´ìœ ëŠ” ulnDbcInitialize í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ê¸° ì „ì´ë¼
-   ë¬´ì¡°ê±´ ASCII ë¼ê³  ê°„ì£¼ë˜ê¸° ë•Œë¬¸ì—, SHIFTJISì™€ ê°™ì€ ì¸ì½”ë”©ì˜ ë¬¸ìì—´ì´ ì™”ì„ê²½ìš° ëŒ€ë¬¸ì ë³€í™˜ì´
-   ì˜ëª»ë  ìˆ˜ ìˆë‹¤.
+/* BUG-30693 : table ÀÌ¸§µé°ú owner ÀÌ¸§À» mtlMakeNameInFunc ÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿©
+               ´ë¹®ÀÚ·Î º¯°æÇØ¾ß ÇÒ °æ¿ì º¯°æÇÔ.
+   CommandParser¿¡¼­ º¯È¯ÇÏ¸é ¾ÈµÈ´Ù. ±× ÀÌÀ¯´Â ulnDbcInitialize ÇÔ¼ö°¡ È£ÃâµÇ±â ÀüÀÌ¶ó
+   ¹«Á¶°Ç ASCII ¶ó°í °£ÁÖµÇ±â ¶§¹®¿¡, SHIFTJIS¿Í °°Àº ÀÎÄÚµùÀÇ ¹®ÀÚ¿­ÀÌ ¿ÔÀ»°æ¿ì ´ë¹®ÀÚ º¯È¯ÀÌ
+   Àß¸øµÉ ¼ö ÀÖ´Ù.
 */
 void iloProgOption::makeTableNameInCLI(void)
 {

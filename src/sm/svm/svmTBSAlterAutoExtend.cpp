@@ -28,7 +28,7 @@
 #include <svmTBSAlterAutoExtend.h>
 
 /*
-  ìƒì„±ì (ì•„ë¬´ê²ƒë„ ì•ˆí•¨)
+  »ı¼ºÀÚ (¾Æ¹«°Íµµ ¾ÈÇÔ)
 */
 svmTBSAlterAutoExtend::svmTBSAlterAutoExtend()
 {
@@ -37,37 +37,37 @@ svmTBSAlterAutoExtend::svmTBSAlterAutoExtend()
 
 
 /*
-    ALTER TABLESPACE AUTOEXTEND ... ì˜ ì‹¤í–‰ ì‹¤ì‹œ 
+    ALTER TABLESPACE AUTOEXTEND ... ÀÇ ½ÇÇà ½Ç½Ã 
     
     aTrans      [IN] Transaction
-    aSpaceID    [IN] Tablespaceì˜ ID
-    aAutoExtend [IN] ì‚¬ìš©ìê°€ ì§€ì •í•œ Auto Extend ì—¬ë¶€
-                     ID_TRUE => Auto Extend ì‹¤ì‹œ
-    aNextSize   [IN] ì‚¬ìš©ìê°€ ì§€ì •í•œ NEXT (ìë™í™•ì¥)í¬ê¸° ( byteë‹¨ìœ„ )
-                     ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš° 0
-    aMaxSize    [IN] ì‚¬ìš©ìê°€ ì§€ì •í•œ MAX (ìµœëŒ€)í¬ê¸° ( byteë‹¨ìœ„ )
-                     ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš° 0
-                     UNLIMITTEDë¡œ ì§€ì •í•œ ê²½ìš° ID_ULONG_MAX
+    aSpaceID    [IN] TablespaceÀÇ ID
+    aAutoExtend [IN] »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Auto Extend ¿©ºÎ
+                     ID_TRUE => Auto Extend ½Ç½Ã
+    aNextSize   [IN] »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ NEXT (ÀÚµ¿È®Àå)Å©±â ( byte´ÜÀ§ )
+                     ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì 0
+    aMaxSize    [IN] »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ MAX (ÃÖ´ë)Å©±â ( byte´ÜÀ§ )
+                     ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì 0
+                     UNLIMITTED·Î ÁöÁ¤ÇÑ °æ¿ì ID_ULONG_MAX
 
-    [ ìš”êµ¬ì‚¬í•­ ]
-      - Auto Extend On/Offì‹œ NEXTì™€ MAXSIZE ì˜ ì„¤ì • ( Oracleê³¼ ë™ì¼ )
-        - Offë¡œ ë³€ê²½ì‹œ NEXTì™€ MAXSIZEë¥¼ 0ìœ¼ë¡œ ì„¤ì •
-        - Onìœ¼ë¡œ ë³€ê²½ì‹œ NEXTì™€ MAXSIZEë¥¼ ì‹œìŠ¤í…œ ê¸°ë³¸ê°’ìœ¼ë¡œ ì„¤ì •
-          - ì‚¬ìš©ìê°€ NEXTì™€ MAXSIZEë¥¼ ë³„ë„ ì§€ì •í•œ ê²½ìš°, ì§€ì •í•œ ê°’ìœ¼ë¡œ ì„¤ì •
+    [ ¿ä±¸»çÇ× ]
+      - Auto Extend On/Off½Ã NEXT¿Í MAXSIZE ÀÇ ¼³Á¤ ( Oracle°ú µ¿ÀÏ )
+        - Off·Î º¯°æ½Ã NEXT¿Í MAXSIZE¸¦ 0À¸·Î ¼³Á¤
+        - OnÀ¸·Î º¯°æ½Ã NEXT¿Í MAXSIZE¸¦ ½Ã½ºÅÛ ±âº»°ªÀ¸·Î ¼³Á¤
+          - »ç¿ëÀÚ°¡ NEXT¿Í MAXSIZE¸¦ º°µµ ÁöÁ¤ÇÑ °æ¿ì, ÁöÁ¤ÇÑ °ªÀ¸·Î ¼³Á¤
     
-    [ ì•Œê³ ë¦¬ì¦˜ ]
+    [ ¾Ë°í¸®Áò ]
       (010) lock TBSNode in X
-      (020) NextPageCount, MaxPageCount ê³„ì‚° 
-      (030) ë¡œê¹…ì‹¤ì‹œ => ALTER_TBS_AUTO_EXTEND
-      (040) AutoExtendMode, NextSize, MaxSize ë³€ê²½ 
+      (020) NextPageCount, MaxPageCount °è»ê 
+      (030) ·Î±ë½Ç½Ã => ALTER_TBS_AUTO_EXTEND
+      (040) AutoExtendMode, NextSize, MaxSize º¯°æ 
       
-    [ ALTER_TBS_AUTO_EXTEND ì˜ REDO ì²˜ë¦¬ ]
+    [ ALTER_TBS_AUTO_EXTEND ÀÇ REDO Ã³¸® ]
       (r-010) TBSNode.AutoExtend := AfterImage.AutoExtend
       (r-020) TBSNode.NextSize   := AfterImage.NextSize
       (r-030) TBSNode.MaxSize    := AfterImage.MaxSize
 
-    [ ALTER_TBS_AUTO_EXTEND ì˜ UNDO ì²˜ë¦¬ ]
-      (u-010) ë¡œê¹…ì‹¤ì‹œ -> CLR ( ALTER_TBS_AUTO_EXTEND )
+    [ ALTER_TBS_AUTO_EXTEND ÀÇ UNDO Ã³¸® ]
+      (u-010) ·Î±ë½Ç½Ã -> CLR ( ALTER_TBS_AUTO_EXTEND )
       (u-020) TBSNode.AutoExtend := BeforeImage.AutoExtend
       (u-030) TBSNode.NextSize   := BeforeImage.NextSize
       (u-040) TBSNode.MaxSize    := BeforeImage.MaxSize
@@ -84,23 +84,14 @@ IDE_RC svmTBSAlterAutoExtend::alterTBSsetAutoExtend(void      * aTrans,
     scPageID            sNextPageCount;
     scPageID            sMaxPageCount;
     
-    UInt                sState = 0;
-    
     IDE_DASSERT( aTrans != NULL );
     IDE_DASSERT( sctTableSpaceMgr::isVolatileTableSpace( aTableSpaceID ) == ID_TRUE );
 
     ///////////////////////////////////////////////////////////////////////////
-    // Tablespace IDë¡œë¶€í„° Nodeë¥¼ ê°€ì ¸ì˜¨ë‹¤
-    IDE_TEST( sctTableSpaceMgr::lock(NULL) != IDE_SUCCESS );
-    sState = 1;
-    
+    // Tablespace ID·ÎºÎÅÍ Node¸¦ °¡Á®¿Â´Ù
     IDE_TEST( sctTableSpaceMgr::findSpaceNodeBySpaceID( aTableSpaceID,
-                                                        (void**)&sTBSNode)
+                                                        (void**)&sTBSNode )
                   != IDE_SUCCESS );
-    IDE_ASSERT( sTBSNode->mHeader.mID == aTableSpaceID );
-
-    sState = 0;
-    IDE_TEST( sctTableSpaceMgr::unlock() != IDE_SUCCESS );
 
     sTBSAttr = & sTBSNode->mTBSAttr;
 
@@ -120,13 +111,13 @@ IDE_RC svmTBSAlterAutoExtend::alterTBSsetAutoExtend(void      * aTrans,
               != IDE_SUCCESS );
 
     ///////////////////////////////////////////////////////////////////////////
-    // (e-010) TBSNode.state ê°€ DROPPEDì´ë©´ ì—ëŸ¬ 
-    // (e-020) TBSNode.state ê°€ OFFLINEì´ë©´ ì—ëŸ¬ 
-    // (e-030) ì´ë¯¸ AUTOEXTEND == ON  ì¸ë° ë˜ë‹¤ì‹œ ONì„¤ì •ì‹œ ì—ëŸ¬
-    // (e-040) ì´ë¯¸ AUTOEXTEND == OFF ì¸ë° ë˜ë‹¤ì‹œ OFFì„¤ì •ì‹œ ì—ëŸ¬
-    // (e-050) NextSizeê°€ EXPAND_CHUNK_PAGE_COUNT*SM_PAGE_SIZEë¡œ
-    //         ë‚˜ëˆ„ì–´ ë–¨ì–´ì§€ì§€ ì•Šìœ¼ë©´ ì—ëŸ¬
-    // (e-060) Tablespaceì˜ í˜„ì¬í¬ê¸° > MAXSIZE ì´ë©´ ì—ëŸ¬
+    // (e-010) TBSNode.state °¡ DROPPEDÀÌ¸é ¿¡·¯ 
+    // (e-020) TBSNode.state °¡ OFFLINEÀÌ¸é ¿¡·¯ 
+    // (e-030) ÀÌ¹Ì AUTOEXTEND == ON  ÀÎµ¥ ¶Ç´Ù½Ã ON¼³Á¤½Ã ¿¡·¯
+    // (e-040) ÀÌ¹Ì AUTOEXTEND == OFF ÀÎµ¥ ¶Ç´Ù½Ã OFF¼³Á¤½Ã ¿¡·¯
+    // (e-050) NextSize°¡ EXPAND_CHUNK_PAGE_COUNT*SM_PAGE_SIZE·Î
+    //         ³ª´©¾î ¶³¾îÁöÁö ¾ÊÀ¸¸é ¿¡·¯
+    // (e-060) TablespaceÀÇ ÇöÀçÅ©±â > MAXSIZE ÀÌ¸é ¿¡·¯
     IDE_TEST( checkErrorOnAutoExtendAttrs( sTBSNode,
                                            aAutoExtendMode,
                                            aNextSize,
@@ -135,7 +126,7 @@ IDE_RC svmTBSAlterAutoExtend::alterTBSsetAutoExtend(void      * aTrans,
 
 
     ///////////////////////////////////////////////////////////////////////////
-    // (020)   NextPageCount, MaxPageCount ê³„ì‚° 
+    // (020)   NextPageCount, MaxPageCount °è»ê 
     IDE_TEST( calcAutoExtendAttrs( sTBSNode,
                                    aAutoExtendMode,
                                    aNextSize,
@@ -145,7 +136,7 @@ IDE_RC svmTBSAlterAutoExtend::alterTBSsetAutoExtend(void      * aTrans,
               != IDE_SUCCESS );
     
     ///////////////////////////////////////////////////////////////////////////
-    // (030) ë¡œê¹…ì‹¤ì‹œ => ALTER_TBS_AUTO_EXTEND
+    // (030) ·Î±ë½Ç½Ã => ALTER_TBS_AUTO_EXTEND
     IDE_TEST( smLayerCallback::writeVolatileTBSAlterAutoExtend ( NULL, /* idvSQL* */
                                                                  aTrans,
                                                                  aTableSpaceID,
@@ -160,7 +151,7 @@ IDE_RC svmTBSAlterAutoExtend::alterTBSsetAutoExtend(void      * aTrans,
               != IDE_SUCCESS );
 
     ///////////////////////////////////////////////////////////////////////////
-    // (040) AutoExtendMode, NextSize, MaxSize ë³€ê²½ 
+    // (040) AutoExtendMode, NextSize, MaxSize º¯°æ 
     sTBSAttr->mVolAttr.mIsAutoExtend  = aAutoExtendMode;
     sTBSAttr->mVolAttr.mNextPageCount = sNextPageCount;
     sTBSAttr->mVolAttr.mMaxPageCount  = sMaxPageCount;
@@ -169,36 +160,24 @@ IDE_RC svmTBSAlterAutoExtend::alterTBSsetAutoExtend(void      * aTrans,
     
     IDE_EXCEPTION_END;
 
-    IDE_PUSH();
-    
-    switch( sState )
-    {
-        case 1:
-        {
-            IDE_ASSERT( sctTableSpaceMgr::unlock() == IDE_SUCCESS );
-        }
-    }
-
-    // (010)ì—ì„œ íšë“í•œ Tablespace X Lockì€ UNDOì™„ë£Œí›„ ìë™ìœ¼ë¡œ í’€ê²Œëœë‹¤
-    // ì—¬ê¸°ì„œ ë³„ë„ ì²˜ë¦¬í•  í•„ìš” ì—†ìŒ
-    
-    IDE_POP();
+    // (010)¿¡¼­ È¹µæÇÑ Tablespace X LockÀº UNDO¿Ï·áÈÄ ÀÚµ¿À¸·Î Ç®°ÔµÈ´Ù
+    // ¿©±â¼­ º°µµ Ã³¸®ÇÒ ÇÊ¿ä ¾øÀ½
     
     return IDE_FAILURE;
 }
 
 /*
-    ALTER TABLESPACE AUTOEXTEND ... ì— ëŒ€í•œ ì—ëŸ¬ì²˜ë¦¬
+    ALTER TABLESPACE AUTOEXTEND ... ¿¡ ´ëÇÑ ¿¡·¯Ã³¸®
 
-    [ ì—ëŸ¬ì²˜ë¦¬ ]
-      (e-010) TBSNode.state ê°€ DROPPEDì´ë©´ ì—ëŸ¬
-      (e-020) TBSNode.state ê°€ OFFLINEì´ë©´ ì—ëŸ¬ 
-      (e-050) NextSizeê°€ EXPAND_CHUNK_PAGE_COUNT*SM_PAGE_SIZEë¡œ
-              ë‚˜ëˆ„ì–´ ë–¨ì–´ì§€ì§€ ì•Šìœ¼ë©´ ì—ëŸ¬
-      (e-060) Tablespaceì˜ í˜„ì¬í¬ê¸° > MAXSIZE ì´ë©´ ì—ëŸ¬
+    [ ¿¡·¯Ã³¸® ]
+      (e-010) TBSNode.state °¡ DROPPEDÀÌ¸é ¿¡·¯
+      (e-020) TBSNode.state °¡ OFFLINEÀÌ¸é ¿¡·¯ 
+      (e-050) NextSize°¡ EXPAND_CHUNK_PAGE_COUNT*SM_PAGE_SIZE·Î
+              ³ª´©¾î ¶³¾îÁöÁö ¾ÊÀ¸¸é ¿¡·¯
+      (e-060) TablespaceÀÇ ÇöÀçÅ©±â > MAXSIZE ÀÌ¸é ¿¡·¯
       
-    [ ì„ ê²°ì¡°ê±´ ]
-      aTBSNodeì— í•´ë‹¹í•˜ëŠ” Tablespaceì— Xë½ì´ ì¡í˜€ìˆëŠ” ìƒíƒœì—¬ì•¼ í•œë‹¤.
+    [ ¼±°áÁ¶°Ç ]
+      aTBSNode¿¡ ÇØ´çÇÏ´Â Tablespace¿¡ X¶ôÀÌ ÀâÇôÀÖ´Â »óÅÂ¿©¾ß ÇÑ´Ù.
 */
 IDE_RC svmTBSAlterAutoExtend::checkErrorOnAutoExtendAttrs( svmTBSNode * aTBSNode,
                                                    idBool       aAutoExtendMode,
@@ -211,31 +190,31 @@ IDE_RC svmTBSAlterAutoExtend::checkErrorOnAutoExtendAttrs( svmTBSNode * aTBSNode
     IDE_DASSERT( aTBSNode != NULL );
         
     ///////////////////////////////////////////////////////////////////////////
-    // (e-010) TBSNode.state ê°€ DROPPEDì´ë©´ ì—ëŸ¬ 
+    // (e-010) TBSNode.state °¡ DROPPEDÀÌ¸é ¿¡·¯ 
     IDE_TEST_RAISE( SMI_TBS_IS_DROPPED(aTBSNode->mHeader.mState),
                     error_dropped_tbs );
 
     ///////////////////////////////////////////////////////////////////////////
-    // (e-020) TBSNode.state ê°€ OFFLINEì´ë©´ ì—ëŸ¬ 
+    // (e-020) TBSNode.state °¡ OFFLINEÀÌ¸é ¿¡·¯ 
     IDE_TEST_RAISE( SMI_TBS_IS_OFFLINE(aTBSNode->mHeader.mState),
                     error_offline_tbs );
     
     sChunkPageCount = svmDatabase::getExpandChunkPageCnt( &aTBSNode->mMemBase );
 
-    if ( aNextSize != ID_ULONG_MAX ) // ì‚¬ìš©ìê°€ Next Sizeë¥¼ ì§€ì •í•œ ê²½ìš°
+    if ( aNextSize != ID_ULONG_MAX ) // »ç¿ëÀÚ°¡ Next Size¸¦ ÁöÁ¤ÇÑ °æ¿ì
     {
         ////////////////////////////////////////////////////////////////////////
-        // (e-050) NextSizeê°€ EXPAND_CHUNK_PAGE_COUNT*SM_PAGE_SIZEë¡œ
-        //         ë‚˜ëˆ„ì–´ ë–¨ì–´ì§€ì§€ ì•Šìœ¼ë©´ ì—ëŸ¬
+        // (e-050) NextSize°¡ EXPAND_CHUNK_PAGE_COUNT*SM_PAGE_SIZE·Î
+        //         ³ª´©¾î ¶³¾îÁöÁö ¾ÊÀ¸¸é ¿¡·¯
         IDE_TEST_RAISE( (aNextSize % ( sChunkPageCount * SM_PAGE_SIZE )) != 0,
                         error_alter_tbs_nextsize_not_aligned_to_chunk_size );
     }
 
-    if ( (aMaxSize != ID_ULONG_MAX) && // ì‚¬ìš©ìê°€ Max Sizeë¥¼ ì§€ì •í•œ ê²½ìš°
-         (aMaxSize != 0 ) )            // MAXSIZE UNLIMITEDê°€ ì•„ë‹Œ ê²½ìš°
+    if ( (aMaxSize != ID_ULONG_MAX) && // »ç¿ëÀÚ°¡ Max Size¸¦ ÁöÁ¤ÇÑ °æ¿ì
+         (aMaxSize != 0 ) )            // MAXSIZE UNLIMITED°¡ ¾Æ´Ñ °æ¿ì
     {
         ////////////////////////////////////////////////////////////////////////
-        // (e-060) Tablespaceì˜ í˜„ì¬í¬ê¸° > MAXSIZE ì´ë©´ ì—ëŸ¬
+        // (e-060) TablespaceÀÇ ÇöÀçÅ©±â > MAXSIZE ÀÌ¸é ¿¡·¯
         sCurrTBSSize = svmDatabase::getAllocPersPageCount( &aTBSNode->mMemBase )
                        * SM_PAGE_SIZE ;
 
@@ -251,7 +230,7 @@ IDE_RC svmTBSAlterAutoExtend::checkErrorOnAutoExtendAttrs( svmTBSNode * aTBSNode
     {
         IDE_SET(ideSetErrorCode(
                     smERR_ABORT_ALTER_TBS_NEXTSIZE_NOT_ALIGNED_TO_CHUNK_SIZE,
-                    /* K byte ë‹¨ìœ„ì˜ Expand Chunkí¬ê¸° */
+                    /* K byte ´ÜÀ§ÀÇ Expand ChunkÅ©±â */
                     (ULong) ( (ULong)sChunkPageCount * SM_PAGE_SIZE / 1024)
                     ));
     }
@@ -259,7 +238,7 @@ IDE_RC svmTBSAlterAutoExtend::checkErrorOnAutoExtendAttrs( svmTBSNode * aTBSNode
     {
         IDE_SET(ideSetErrorCode(
                     smERR_ABORT_ALTER_TBS_MAXSIZE_LESSTHAN_CURRENT_SIZE,
-                    /* K byte ë‹¨ìœ„ì˜ Current Tablespace Size */
+                    /* K byte ´ÜÀ§ÀÇ Current Tablespace Size */
                     (ULong) ( sCurrTBSSize / 1024 )
                     ));
     }
@@ -278,26 +257,26 @@ IDE_RC svmTBSAlterAutoExtend::checkErrorOnAutoExtendAttrs( svmTBSNode * aTBSNode
 }
 
 /*
-    Next Page Count ì™€ Max Page Countë¥¼ ê³„ì‚°í•œë‹¤.
+    Next Page Count ¿Í Max Page Count¸¦ °è»êÇÑ´Ù.
     
-    aMemBase    [IN] Tablespaceì˜ 0ë²ˆ Pageì— ì¡´ì¬í•˜ëŠ” Membase
-    aAutoExtend [IN] ì‚¬ìš©ìê°€ ì§€ì •í•œ Auto Extend ì—¬ë¶€
-                     ID_TRUE => Auto Extend ì‹¤ì‹œ
-    aNextSize   [IN] ì‚¬ìš©ìê°€ ì§€ì •í•œ NEXT (ìë™í™•ì¥)í¬ê¸° ( byteë‹¨ìœ„ )
-                     ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš° 0
-    aMaxSize    [IN] ì‚¬ìš©ìê°€ ì§€ì •í•œ MAX (ìµœëŒ€)í¬ê¸° ( byteë‹¨ìœ„ )
-                     ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš° 0
-                     UNLIMITTEDë¡œ ì§€ì •í•œ ê²½ìš° ID_ULONG_MAX
+    aMemBase    [IN] TablespaceÀÇ 0¹ø Page¿¡ Á¸ÀçÇÏ´Â Membase
+    aAutoExtend [IN] »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ Auto Extend ¿©ºÎ
+                     ID_TRUE => Auto Extend ½Ç½Ã
+    aNextSize   [IN] »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ NEXT (ÀÚµ¿È®Àå)Å©±â ( byte´ÜÀ§ )
+                     ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì 0
+    aMaxSize    [IN] »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ MAX (ÃÖ´ë)Å©±â ( byte´ÜÀ§ )
+                     ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì 0
+                     UNLIMITTED·Î ÁöÁ¤ÇÑ °æ¿ì ID_ULONG_MAX
 
-    aNextPageCount [OUT] Tablespaceì˜ ìë™í™•ì¥ ë‹¨ìœ„ ( SM Page ê°¯ìˆ˜ )
-    aMaxPageCount  [OUT] Tablespaceì˜ ìµœëŒ€ í¬ê¸°      ( SM Page ê°¯ìˆ˜ )
+    aNextPageCount [OUT] TablespaceÀÇ ÀÚµ¿È®Àå ´ÜÀ§ ( SM Page °¹¼ö )
+    aMaxPageCount  [OUT] TablespaceÀÇ ÃÖ´ë Å©±â      ( SM Page °¹¼ö )
 
 
-    [ ì•Œê³ ë¦¬ì¦˜ ]
+    [ ¾Ë°í¸®Áò ]
     
       if AUTO EXTEND == ON
-         (010) NewNextSize := DEFAULT Next Size í˜¹ì€ ì‚¬ìš©ìê°€ ì§€ì •í•œ ê°’
-         (020) NewMaxSize  := DEFAULT Max Size  í˜¹ì€ ì‚¬ìš©ìê°€ ì§€ì •í•œ ê°’
+         (010) NewNextSize := DEFAULT Next Size È¤Àº »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ °ª
+         (020) NewMaxSize  := DEFAULT Max Size  È¤Àº »ç¿ëÀÚ°¡ ÁöÁ¤ÇÑ °ª
       else // AUTO EXTEND OFF
          (030) NewNextSize := 0
          (040) NewMaxSize  := 0
@@ -305,8 +284,8 @@ IDE_RC svmTBSAlterAutoExtend::checkErrorOnAutoExtendAttrs( svmTBSNode * aTBSNode
     
     
 
-    [ ì„ ê²°ì¡°ê±´ ]
-      aTBSNodeì— í•´ë‹¹í•˜ëŠ” Tablespaceì— Xë½ì´ ì¡í˜€ìˆëŠ” ìƒíƒœì—¬ì•¼ í•œë‹¤.
+    [ ¼±°áÁ¶°Ç ]
+      aTBSNode¿¡ ÇØ´çÇÏ´Â Tablespace¿¡ X¶ôÀÌ ÀâÇôÀÖ´Â »óÅÂ¿©¾ß ÇÑ´Ù.
  */
 IDE_RC svmTBSAlterAutoExtend::calcAutoExtendAttrs(
                           svmTBSNode * aTBSNode,
@@ -325,25 +304,25 @@ IDE_RC svmTBSAlterAutoExtend::calcAutoExtendAttrs(
     
     if ( aAutoExtendMode == ID_TRUE ) /* Auto Extend On */
     {
-        // Oracleê³¼ ë™ì¼í•˜ê²Œ ì²˜ë¦¬
-        // Auto Extend Onì‹œ Next/Max Sizeë¥¼ ì§€ì •í•˜ì§€ ì•Šì•˜ë‹¤ë©´
-        // ì‹œìŠ¤í…œì˜ ê¸°ë³¸ê°’ì„ ì‚¬ìš© 
-        if ( aNextSize == ID_ULONG_MAX ) // ì‚¬ìš©ìê°€ Next Sizeë¥¼ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš°
+        // Oracle°ú µ¿ÀÏÇÏ°Ô Ã³¸®
+        // Auto Extend On½Ã Next/Max Size¸¦ ÁöÁ¤ÇÏÁö ¾Ê¾Ò´Ù¸é
+        // ½Ã½ºÅÛÀÇ ±âº»°ªÀ» »ç¿ë 
+        if ( aNextSize == ID_ULONG_MAX ) // »ç¿ëÀÚ°¡ Next Size¸¦ ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì
         {
-            // ê¸°ë³¸ê°’ => EXPAND CHUNKì˜ í¬ê¸° 
+            // ±âº»°ª => EXPAND CHUNKÀÇ Å©±â 
             sNextPageCount =
                 svmDatabase::getExpandChunkPageCnt( &aTBSNode->mMemBase );
         }
-        else                  // ì‚¬ìš©ìê°€ Next Sizeë¥¼ ì§€ì •í•œ ê²½ìš° 
+        else                  // »ç¿ëÀÚ°¡ Next Size¸¦ ÁöÁ¤ÇÑ °æ¿ì 
         {
             sNextPageCount = aNextSize / SM_PAGE_SIZE ;
         }
         
         
-        // ì‚¬ìš©ìê°€ Max Sizeë¥¼ ì§€ì •í•˜ì§€ ì•Šì€ ê²½ìš°  ë˜ëŠ” UNLIMITEDë¡œ ì§€ì •í•œ ê²½ìš°
+        // »ç¿ëÀÚ°¡ Max Size¸¦ ÁöÁ¤ÇÏÁö ¾ÊÀº °æ¿ì  ¶Ç´Â UNLIMITED·Î ÁöÁ¤ÇÑ °æ¿ì
         if ( (aMaxSize == ID_ULONG_MAX) || (aMaxSize == 0) )
         {
-            // ê¸°ë³¸ê°’ => UNLIMITTED
+            // ±âº»°ª => UNLIMITTED
             sMaxPageCount = SM_MAX_PID + 1;
         }
         else
@@ -353,8 +332,8 @@ IDE_RC svmTBSAlterAutoExtend::calcAutoExtendAttrs(
     } 
     else /* Auto Extend Off */
     {
-        // Oracleê³¼ ë™ì¼í•˜ê²Œ ì²˜ë¦¬
-        // Auto Extend Offì‹œ Next/Max Sizeë¥¼ 0ìœ¼ë¡œ ì´ˆê¸°í™” 
+        // Oracle°ú µ¿ÀÏÇÏ°Ô Ã³¸®
+        // Auto Extend Off½Ã Next/Max Size¸¦ 0À¸·Î ÃÊ±âÈ­ 
         sNextPageCount = 0;
         sMaxPageCount = 0;
     }

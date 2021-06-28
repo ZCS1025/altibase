@@ -189,12 +189,12 @@ IDE_RC cmnSockRecvIB(cmbBlock       *aBlock,
     ssize_t sRet;
 
     /*
-     * aSize ì´ìƒ aBlockìœ¼ë¡œ ë°ì´í„° ì½ìŒ
+     * aSize ÀÌ»ó aBlockÀ¸·Î µ¥ÀÌÅÍ ÀÐÀ½
      */
     while (aBlock->mDataSize < aSize)
     {
         /*
-         * Dispatcherë¥¼ ì´ìš©í•˜ì—¬ Timeout ë§Œí¼ ëŒ€ê¸°
+         * Dispatcher¸¦ ÀÌ¿ëÇÏ¿© Timeout ¸¸Å­ ´ë±â
          */
         if (aTimeout != NULL)
         {
@@ -204,7 +204,7 @@ IDE_RC cmnSockRecvIB(cmbBlock       *aBlock,
         }
 
         /*
-         * Socketìœ¼ë¡œë¶€í„° ì½ìŒ
+         * SocketÀ¸·ÎºÎÅÍ ÀÐÀ½
          */
         sRet = gIB.mFuncs.rread(aHandle,
                                 aBlock->mData + aBlock->mDataSize,
@@ -277,7 +277,7 @@ IDE_RC cmnSockSendIB(cmbBlock       *aBlock,
     while (aBlock->mCursor < aBlock->mDataSize)
     {
         /*
-         * Dispatcherë¥¼ ì´ìš©í•˜ì—¬ Timeout ë§Œí¼ ëŒ€ê¸°
+         * Dispatcher¸¦ ÀÌ¿ëÇÏ¿© Timeout ¸¸Å­ ´ë±â
          */
         if (aTimeout != NULL)
         {
@@ -287,7 +287,7 @@ IDE_RC cmnSockSendIB(cmbBlock       *aBlock,
         }
 
         /*
-         * socketìœ¼ë¡œ ë°ì´í„° ì”€
+         * socketÀ¸·Î µ¥ÀÌÅÍ ¾¸
          */
         sSize = gIB.mFuncs.rwrite(aHandle,
                                   aBlock->mData + aBlock->mCursor,

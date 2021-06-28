@@ -17,7 +17,7 @@
 #include <mmm.h>
 #include <mmcLob.h>
 #include <mmcStatementManager.h>
-#include <mmcTrans.h>
+#include <mmcTransManager.h>
 #include <mmtSessionManager.h>
 #include <mmtThreadManager.h>
 #include <mmtAuditManager.h>
@@ -36,7 +36,7 @@ static IDE_RC mmmPhaseActionInitService(mmmPhase         /*aPhase*/,
 
     IDE_TEST(mmcLob::initialize() != IDE_SUCCESS);
 
-    IDE_TEST(mmcTrans::initialize() != IDE_SUCCESS);
+    IDE_TEST(mmcTransManager::initializeManager() != IDE_SUCCESS);
 
 #if !defined(WRS_VXWORKS) && !defined(SYMBIAN)
     IDE_TEST(mmtThreadManager::addListener(CMI_LINK_IMPL_UNIX, NULL, 0) != IDE_SUCCESS);

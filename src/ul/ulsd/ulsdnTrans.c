@@ -13,20 +13,30 @@
 #include <ulsd.h>
 #include <ulsdnExecute.h>
 #include <ulsdnTrans.h>
+#include <ulsdDistTxInfo.h>
 
 ACI_RC ulsdCallbackShardPrepareResult(cmiProtocolContext *aProtocolContext,
                                       cmiProtocol        *aProtocol,
                                       void               *aServiceSession,
                                       void               *aUserContext)
 {
-    acp_uint8_t             sReadOnly;
+    ulnFnContext   *sFnContext = (ulnFnContext *)aUserContext;
+    ulnDbc         *sDbc       = sFnContext->mHandle.mDbc;
+
+    acp_uint8_t     sReadOnly;
+    acp_uint64_t    sPrepareSCN = 0;
 
     ACP_UNUSED(aProtocol);
     ACP_UNUSED(aServiceSession);
 
     CMI_RD1(aProtocolContext, sReadOnly);
+    CMI_RD8(aProtocolContext, &sPrepareSCN);
 
-    /* BUG-45967 Data NodeÏùò Shard Session Ï†ïÎ¶¨ */
+    /* ReadOnly ¿Œ ∞ÊøÏ sPrepareSCN ∞™¿Ã 0 ¿Ã¥Ÿ.
+     * Prepare ∏¶ ºˆ«‡«œ¡ˆ æ ±‚ ∂ßπÆø° 0 ∞™ ±◊¥Î∑Œ sd ∏µ‚∑Œ ≥—∞‹æﬂ «—¥Ÿ. */
+    ulsdUpdateSCNToDbc(sDbc, &sPrepareSCN);  /* PROJ-2733-DistTxInfo */
+
+    /* BUG-45967 Data Node¿« Shard Session ¡§∏Æ */
     return ulsdCallbackShardPrepareResultInternal( aUserContext,
                                                    sReadOnly );
 }
@@ -58,8 +68,8 @@ ACI_RC ulsdCallbackShardPrepareResultInternal( void        * aUserContext,
     }
     ACI_EXCEPTION_END;
 
-    /* CM ÏΩúÎ∞± Ìï®ÏàòÎäî communication errorÍ∞Ä ÏïÑÎãå Ìïú ACI_SUCCESSÎ•º Î∞òÌôòÌï¥Ïïº ÌïúÎã§.
-     * ÏΩúÎ∞± ÏóêÎü¨Îäî function contextÏóê ÏÑ§Ï†ïÎêú Í∞íÏúºÎ°ú ÌåêÎã®ÌïúÎã§. */
+    /* CM ƒ›πÈ «‘ºˆ¥¬ communication error∞° æ∆¥— «— ACI_SUCCESS∏¶ π›»Ø«ÿæﬂ «—¥Ÿ.
+     * ƒ›πÈ ø°∑Ø¥¬ function contextø° º≥¡§µ» ∞™¿∏∑Œ ∆«¥‹«—¥Ÿ. */
     return ACI_SUCCESS;
 }
 
@@ -68,10 +78,19 @@ ACI_RC ulsdCallbackShardEndPendingTxResult(cmiProtocolContext *aProtocolContext,
                                            void               *aServiceSession,
                                            void               *aUserContext)
 {
-    ACP_UNUSED(aProtocolContext);
+    ulnFnContext   *sFnContext = (ulnFnContext *)aUserContext;
+    ulnDbc         *sDbc       = sFnContext->mHandle.mDbc;
+    acp_uint64_t    sSCN       = 0;
+    
     ACP_UNUSED(aProtocol);
     ACP_UNUSED(aServiceSession);
-    ACP_UNUSED(aUserContext);
+
+    CMI_RD8(aProtocolContext, &sSCN);  /* PROJ-2733-Protocol */
+
+    if (sSCN > 0)
+    {
+        ulsdUpdateSCNToDbc(sDbc, &sSCN);  /* PROJ-2733-DistTxInfo */
+    }
 
     return ACI_SUCCESS;
 }
@@ -86,12 +105,12 @@ ACI_RC ulsdShardPrepareRequest(ulnFnContext     *aFnContext,
     acp_uint16_t        sOrgWriteCursor = CMI_GET_CURSOR(sCtx);
     acp_uint8_t         sState          = 0;
 
-    sPacket.mOpID = CMP_OP_DB_ShardPrepare;
+    sPacket.mOpID = CMP_OP_DB_ShardPrepareV3;  /* PROJ-2733-Protocol */
 
-    CMI_WRITE_CHECK(sCtx, 2 + 4 + aXIDSize);
+    CMI_WRITE_CHECK(sCtx, 1 + 4 + aXIDSize);  
     sState = 1;
 
-    CMI_WOP(sCtx, CMP_OP_DB_ShardPrepare);
+    CMI_WOP(sCtx, CMP_OP_DB_ShardPrepareV3);
 
     /* xid */
     CMI_WR4(sCtx, &aXIDSize);
@@ -124,12 +143,14 @@ ACI_RC ulsdShardEndPendingTxRequest(ulnFnContext     *aFnContext,
     acp_uint16_t        sOrgWriteCursor = CMI_GET_CURSOR(sCtx);
     acp_uint8_t         sState          = 0;
 
-    sPacket.mOpID = CMP_OP_DB_ShardEndPendingTx;
+    ulnDbc             *sDbc = aFnContext->mHandle.mDbc;
 
-    CMI_WRITE_CHECK(sCtx, 2 + 4 + aXIDSize + 1);
+    sPacket.mOpID = CMP_OP_DB_ShardEndPendingTxV3;  /* PROJ-2733-Protocol */
+
+    CMI_WRITE_CHECK(sCtx, 1 + 4 + aXIDSize + 1 + 8);
     sState = 1;
 
-    CMI_WOP(sCtx, CMP_OP_DB_ShardEndPendingTx);
+    CMI_WOP(sCtx, CMP_OP_DB_ShardEndPendingTxV3);
 
     /* xid */
     CMI_WR4(sCtx, &aXIDSize);
@@ -150,6 +171,9 @@ ACI_RC ulsdShardEndPendingTxRequest(ulnFnContext     *aFnContext,
             ACI_RAISE(LABEL_INVALID_OPCODE);
             break;
     }
+
+    /* PROJ-2733-DistTxInfo */
+    CMI_WR8(sCtx, &(sDbc->mSCN));  /* GlobalCommitSCN */
 
     ACI_TEST(ulnWriteProtocol(aFnContext, aPtContext, &sPacket) != ACI_SUCCESS);
 
@@ -195,7 +219,7 @@ ACI_RC ulsdShardPrepareTranMain(ulnFnContext    *aFnContext,
     if ((aDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_OFF) && (aDbc->mIsConnected == ACP_TRUE))
     {
         /*
-         * protocol context Ï¥àÍ∏∞Ìôî
+         * protocol context √ ±‚»≠
          */
         // fix BUG-17722
         ACI_TEST(ulnInitializeProtocolContext(aFnContext,
@@ -205,7 +229,7 @@ ACI_RC ulsdShardPrepareTranMain(ulnFnContext    *aFnContext,
         ULN_FLAG_UP(sNeedFinPtContext);
 
         /*
-         * Ìå®ÌÇ∑ Ïì∞Í∏∞
+         * ∆–≈∂ æ≤±‚
          */
         ACI_TEST(ulsdShardPrepareRequest(aFnContext,
                                          &(aDbc->mPtContext),
@@ -214,7 +238,7 @@ ACI_RC ulsdShardPrepareTranMain(ulnFnContext    *aFnContext,
                  != ACI_SUCCESS);
 
         /*
-         * Ìå®ÌÇ∑ Ï†ÑÏÜ°
+         * ∆–≈∂ ¿¸º€
          */
         ACI_TEST(ulnFlushProtocol(aFnContext,&(aDbc->mPtContext)) != ACI_SUCCESS);
 
@@ -243,7 +267,7 @@ ACI_RC ulsdShardPrepareTranMain(ulnFnContext    *aFnContext,
         /* 
          * PROJ-2047 Strengthening LOB - LOBCACHE
          *
-         * Stmt ListÏùò LOB CacheÎ•º Ï†úÍ±∞ÌïòÏûê.
+         * Stmt List¿« LOB Cache∏¶ ¡¶∞≈«œ¿⁄.
          */
         ACP_LIST_ITERATE(&(aDbc->mStmtList), sIterator)
         {
@@ -252,11 +276,15 @@ ACI_RC ulsdShardPrepareTranMain(ulnFnContext    *aFnContext,
         }
 
         /*
-         * Protocol Context Ï†ïÎ¶¨
+         * Protocol Context ¡§∏Æ
          */
         ULN_FLAG_DOWN(sNeedFinPtContext);
         // fix BUG-17722
         ACI_TEST(ulnFinalizeProtocolContext(aFnContext,&(aDbc->mPtContext)) != ACI_SUCCESS);
+    }
+    else
+    {
+        ulsdDbcCallback(aDbc);  /* PROJ-2733 */
     }
 
     return ACI_SUCCESS;
@@ -295,7 +323,7 @@ SQLRETURN ulsdShardPrepareTran(ulnDbc       *aDbc,
     ACI_TEST_RAISE(aDbc->mXaEnlist == ACP_TRUE, LABEL_XA_COMMIT_ERROR);
 
     /*
-     * Prepare Transaction Î©îÏù∏ Î£®Ìã¥
+     * Prepare Transaction ∏ﬁ¿Œ ∑Á∆æ
      */
     ACI_TEST(ulsdShardPrepareTranMain(&sFnContext,
                                       aDbc,
@@ -381,7 +409,7 @@ ACI_RC ulsdShardEndPendingTranMain(ulnFnContext     *aFnContext,
     if ((aDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_OFF) && (aDbc->mIsConnected == ACP_TRUE))
     {
         /*
-         * protocol context Ï¥àÍ∏∞Ìôî
+         * protocol context √ ±‚»≠
          */
         // fix BUG-17722
         ACI_TEST(ulnInitializeProtocolContext(aFnContext,
@@ -391,7 +419,7 @@ ACI_RC ulsdShardEndPendingTranMain(ulnFnContext     *aFnContext,
         ULN_FLAG_UP(sNeedFinPtContext);
 
         /*
-         * Ìå®ÌÇ∑ Ïì∞Í∏∞
+         * ∆–≈∂ æ≤±‚
          */
         ACI_TEST(ulsdShardEndPendingTxRequest(aFnContext,
                                               &(aDbc->mPtContext),
@@ -401,7 +429,7 @@ ACI_RC ulsdShardEndPendingTranMain(ulnFnContext     *aFnContext,
                  != ACI_SUCCESS);
 
         /*
-         * Ìå®ÌÇ∑ Ï†ÑÏÜ°
+         * ∆–≈∂ ¿¸º€
          */
         ACI_TEST(ulnFlushProtocol(aFnContext,&(aDbc->mPtContext)) != ACI_SUCCESS);
 
@@ -430,7 +458,7 @@ ACI_RC ulsdShardEndPendingTranMain(ulnFnContext     *aFnContext,
         /* 
          * PROJ-2047 Strengthening LOB - LOBCACHE
          *
-         * Stmt ListÏùò LOB CacheÎ•º Ï†úÍ±∞ÌïòÏûê.
+         * Stmt List¿« LOB Cache∏¶ ¡¶∞≈«œ¿⁄.
          */
         ACP_LIST_ITERATE(&(aDbc->mStmtList), sIterator)
         {
@@ -439,11 +467,15 @@ ACI_RC ulsdShardEndPendingTranMain(ulnFnContext     *aFnContext,
         }
 
         /*
-         * Protocol Context Ï†ïÎ¶¨
+         * Protocol Context ¡§∏Æ
          */
         ULN_FLAG_DOWN(sNeedFinPtContext);
         // fix BUG-17722
         ACI_TEST(ulnFinalizeProtocolContext(aFnContext,&(aDbc->mPtContext)) != ACI_SUCCESS);
+    }
+    else
+    {
+        ulsdDbcCallback(aDbc);  /* PROJ-2733 */
     }
 
     return ACI_SUCCESS;
@@ -500,7 +532,7 @@ SQLRETURN ulsdShardEndPendingTran(ulnDbc       *aDbc,
     ACI_TEST(ulsdEndPendingTxCheckArgs(&sFnContext, aOp) != ACI_SUCCESS);
 
     /*
-     * Prepare Transaction Î©îÏù∏ Î£®Ìã¥
+     * Prepare Transaction ∏ﬁ¿Œ ∑Á∆æ
      */
     ACI_TEST(ulsdShardEndPendingTranMain(&sFnContext,
                                          aDbc,

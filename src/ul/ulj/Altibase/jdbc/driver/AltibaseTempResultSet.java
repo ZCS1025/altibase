@@ -21,8 +21,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import Altibase.jdbc.driver.datatype.Column;
 import Altibase.jdbc.driver.datatype.RowHandle;
+import Altibase.jdbc.driver.datatype.Column;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpdLogAnalyzer.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: rpdLogAnalyzer.cpp 90444 2021-04-02 10:15:58Z minku.kang $
  **********************************************************************/
 
 
@@ -74,15 +74,15 @@ IDE_RC rpdLogAnalyzer::initialize(iduMemAllocator * aAllocator, iduMemPool *aCha
     IDE_ASSERT(aChainedValuePool != NULL);
     mChainedValuePool = aChainedValuePool;
 
-    /* ìµœì´ˆ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í–ˆì„ ë•Œì— ì´ˆê¸°í™”í•˜ëŠ” ë³€ìˆ˜ */
+    /* ÃÖÃÊ ¸Ş¸ğ¸®¸¦ ÇÒ´çÇßÀ» ¶§¿¡ ÃÊ±âÈ­ÇÏ´Â º¯¼ö */
     idlOS::memset(mPKCIDs, 0, ID_SIZEOF(UInt) * QCI_MAX_KEY_COLUMN_COUNT);
     idlOS::memset(mPKCols, 0, ID_SIZEOF(smiValue) * QCI_MAX_KEY_COLUMN_COUNT);
 
     /*
      * PROJ-1705
-     * ë¡œê·¸ ë¶„ì„ ì‹œ, ì»¬ëŸ¼ì´ CIDìˆœì„œë¡œ ë¶„ì„ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ,
-     * ë¶„ì„ì´ ëë‚œ í›„, í•œêº¼ë²ˆì— ì •ë ¬í•˜ëŠ”ë°, ì´ˆê¸°ê°’ì„ 0ìœ¼ë¡œ ì£¼ë©´, CIDê°€ 0ì¸ ê²ƒê³¼
-     * ì„ì´ê²Œ ë˜ë¯€ë¡œ, ì´ˆê¸°ê°’ì„ UINT_MAXë¡œ í•œë‹¤.
+     * ·Î±× ºĞ¼® ½Ã, ÄÃ·³ÀÌ CID¼ø¼­·Î ºĞ¼®µÇÁö ¾ÊÀ¸¹Ç·Î,
+     * ºĞ¼®ÀÌ ³¡³­ ÈÄ, ÇÑ²¨¹ø¿¡ Á¤·ÄÇÏ´Âµ¥, ÃÊ±â°ªÀ» 0À¸·Î ÁÖ¸é, CID°¡ 0ÀÎ °Í°ú
+     * ¼¯ÀÌ°Ô µÇ¹Ç·Î, ÃÊ±â°ªÀ» UINT_MAX·Î ÇÑ´Ù.
      */
     idlOS::memset(mCIDs, ID_UINT_MAX, ID_SIZEOF(UInt) * QCI_MAX_COLUMN_COUNT);
 
@@ -90,8 +90,8 @@ IDE_RC rpdLogAnalyzer::initialize(iduMemAllocator * aAllocator, iduMemPool *aCha
     idlOS::memset(mACols, 0, ID_SIZEOF(smiValue) * QCI_MAX_COLUMN_COUNT);
 
     // PROJ-1705
-    // smiChainedValueì˜ ë©¤ë²„ë³€ìˆ˜ì¸ AllocMethodì™€ Linkê°’ì„ ëª¨ë‘ 0ìœ¼ë¡œ
-    // ì´ˆê¸°í™” í•˜ì—¬ë„ ë¬´ë°©í•˜ë‹¤.
+    // smiChainedValueÀÇ ¸â¹öº¯¼öÀÎ AllocMethod¿Í Link°ªÀ» ¸ğµÎ 0À¸·Î
+    // ÃÊ±âÈ­ ÇÏ¿©µµ ¹«¹æÇÏ´Ù.
     idlOS::memset(mBChainedCols, 0, ID_SIZEOF(smiChainedValue) * QCI_MAX_COLUMN_COUNT);
 
     // PROJ-1705
@@ -99,7 +99,7 @@ IDE_RC rpdLogAnalyzer::initialize(iduMemAllocator * aAllocator, iduMemPool *aCha
     idlOS::memset(mBMtdValueLen, 0, ID_SIZEOF(rpValueLen) * QCI_MAX_COLUMN_COUNT);
     idlOS::memset(mAMtdValueLen, 0, ID_SIZEOF(rpValueLen) * QCI_MAX_COLUMN_COUNT);
 
-    /* Transaction ë‚´ì—ì„œ XLogë¥¼ ë¶„ì„í•˜ê¸° ì „ì— ì´ˆê¸°í™”í•˜ëŠ” ë³€ìˆ˜ */
+    /* Transaction ³»¿¡¼­ XLog¸¦ ºĞ¼®ÇÏ±â Àü¿¡ ÃÊ±âÈ­ÇÏ´Â º¯¼ö */
     mType               = RP_X_NONE;
     mPKColCnt           = 0;
     mUndoAnalyzedColCnt = 0;
@@ -117,7 +117,7 @@ void rpdLogAnalyzer::destroy()
     /* PROJ-2397 free List */
     destroyDictValueList();
 
-    /* XLog ë¶„ì„ì´ ì‹¤íŒ¨í•œ ê²½ìš°, ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤. */
+    /* XLog ºĞ¼®ÀÌ ½ÇÆĞÇÑ °æ¿ì, ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù. */
     if(getNeedFree() == ID_TRUE)
     {
         freeColumnValue(ID_TRUE);
@@ -133,7 +133,7 @@ void rpdLogAnalyzer::freeColumnValue(idBool aIsAborted)
     smiChainedValue * sNextChainedCols = NULL;
     UShort            sColumnCount = 0;
 
-    /* ë¶„ì„ì„ ì™„ë£Œí•˜ì§€ ì•Šì€ ê²½ìš°, ì „ì²´ Before/After Imageë¥¼ í™•ì¸í•œë‹¤. */
+    /* ºĞ¼®À» ¿Ï·áÇÏÁö ¾ÊÀº °æ¿ì, ÀüÃ¼ Before/After Image¸¦ È®ÀÎÇÑ´Ù. */
     if(aIsAborted == ID_TRUE)
     {
         for(i = 0; i < QCI_MAX_COLUMN_COUNT; i++)
@@ -144,10 +144,10 @@ void rpdLogAnalyzer::freeColumnValue(idBool aIsAborted)
         mRedoAnalyzedColCnt = QCI_MAX_COLUMN_COUNT;
     }
 
-    /* Out-Mode LOB Update ì‹œ í•´ë‹¹ LOBì˜ BeforeëŠ” ë¶„ì„í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì—,
-     * mUndoAnalyzedColCnt < mRedoAnalyzedColCnt ìƒí™©ì´ ë°œìƒí•  ìˆ˜ ìˆë‹¤.
-     * ê·¸ëŸ°ë°, mCIDsë¥¼ ì°¸ê³ í•˜ì—¬ ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•œë‹¤.
-     * ë”°ë¼ì„œ, Before Image ë©”ëª¨ë¦¬ë¥¼ í•´ì œí•  ë•Œë„ mRedoAnalyzedColCntë¥¼ ì‚¬ìš©í•œë‹¤.
+    /* Out-Mode LOB Update ½Ã ÇØ´ç LOBÀÇ Before´Â ºĞ¼®ÇÏÁö ¾Ê±â ¶§¹®¿¡,
+     * mUndoAnalyzedColCnt < mRedoAnalyzedColCnt »óÈ²ÀÌ ¹ß»ıÇÒ ¼ö ÀÖ´Ù.
+     * ±×·±µ¥, mCIDs¸¦ Âü°íÇÏ¿© ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÑ´Ù.
+     * µû¶ó¼­, Before Image ¸Ş¸ğ¸®¸¦ ÇØÁ¦ÇÒ ¶§µµ mRedoAnalyzedColCnt¸¦ »ç¿ëÇÑ´Ù.
      */
     if ( mRedoAnalyzedColCnt > mUndoAnalyzedColCnt )
     {
@@ -160,14 +160,14 @@ void rpdLogAnalyzer::freeColumnValue(idBool aIsAborted)
 
     for(i = 0; i < sColumnCount; i++)
     {
-        /* Diskì¸ ê²½ìš°, mBColsì— ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•˜ì§€ ì•ŠëŠ”ë‹¤. */
+        /* DiskÀÎ °æ¿ì, mBCols¿¡ ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÏÁö ¾Ê´Â´Ù. */
 
         // PROJ-1705
         sFreeNode = ID_FALSE;
         sChainedCols = &mBChainedCols[mCIDs[i]];
         if(sChainedCols->mAllocMethod != SMI_NON_ALLOCED)
         {
-            // ë§¨ ì²« smiChainedValueëŠ” ë°°ì—´ì´ë¯€ë¡œ, freeí•´ì„  ì•ˆëœë‹¤.
+            // ¸Ç Ã¹ smiChainedValue´Â ¹è¿­ÀÌ¹Ç·Î, freeÇØ¼± ¾ÈµÈ´Ù.
             do
             {
                 if(sChainedCols->mAllocMethod == SMI_NORMAL_ALLOC)
@@ -192,8 +192,8 @@ void rpdLogAnalyzer::freeColumnValue(idBool aIsAborted)
             }
             while(sChainedCols != NULL);
 
-            // free ìˆ˜í–‰ ì—¬ë¶€ë¥¼ allocMethodë¡œ íŒë‹¨í•˜ë¯€ë¡œ, ì—¬ëŸ¬ ë ˆì½”ë“œë¥¼ ì—…ë°ì´íŠ¸ í•˜ëŠ” ê²½ìš°,
-            // í•œ ë ˆì½”ë“œ ë¶„ì„ ì‹œ ë§ˆë‹¤ mAllocMethodë¥¼ ì´ˆê¸°í™”í•˜ì—¬ì•¼í•œë‹¤.
+            // free ¼öÇà ¿©ºÎ¸¦ allocMethod·Î ÆÇ´ÜÇÏ¹Ç·Î, ¿©·¯ ·¹ÄÚµå¸¦ ¾÷µ¥ÀÌÆ® ÇÏ´Â °æ¿ì,
+            // ÇÑ ·¹ÄÚµå ºĞ¼® ½Ã ¸¶´Ù mAllocMethod¸¦ ÃÊ±âÈ­ÇÏ¿©¾ßÇÑ´Ù.
             sChainedCols = &mBChainedCols[mCIDs[i]];
             sChainedCols->mColumn.value  = NULL;
             sChainedCols->mAllocMethod   = SMI_NON_ALLOCED;
@@ -216,8 +216,8 @@ void rpdLogAnalyzer::freeColumnValue(idBool aIsAborted)
         IDE_ASSERT(mACols[i].value == NULL);
         /*
          * PROJ-1705
-         * linkedlistë‚´ì˜ ëª¨ë“  ë…¸ë“œê°€ nullì„ì„ í™•ì¸ì€ ëª»í•˜ê² ê³ ,
-         * ì²« ë…¸ë“œì˜ valueì™€ linkìƒíƒœë§Œ í™•ì¸í•œë‹¤.
+         * linkedlist³»ÀÇ ¸ğµç ³ëµå°¡ nullÀÓÀ» È®ÀÎÀº ¸øÇÏ°Ú°í,
+         * Ã¹ ³ëµåÀÇ value¿Í link»óÅÂ¸¸ È®ÀÎÇÑ´Ù.
          */
         IDE_ASSERT((mBChainedCols[i].mColumn.value == NULL) &&
                    (mBChainedCols[i].mLink         == NULL));
@@ -251,9 +251,9 @@ void rpdLogAnalyzer::resetVariables(idBool aNeedInitMtdValueLen,
 
     if(aNeedInitMtdValueLen == ID_TRUE)
     {
-        /* Disk Tableì—ë§Œ ê´€ë ¨ëœ ì´ˆê¸°í™”í•œë‹¤.
-         * Selection ê¸°ëŠ¥ì„ ì‚¬ìš©í•  ê²½ìš°, UPDATEê°€ INSERT/DELETEë¡œ ë³€ê²½ë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
-         * INSERT, UPDATE, DELETEë¥¼ êµ¬ë¶„í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        /* Disk Table¿¡¸¸ °ü·ÃµÈ ÃÊ±âÈ­ÇÑ´Ù.
+         * Selection ±â´ÉÀ» »ç¿ëÇÒ °æ¿ì, UPDATE°¡ INSERT/DELETE·Î º¯°æµÉ ¼ö ÀÖÀ¸¹Ç·Î,
+         * INSERT, UPDATE, DELETE¸¦ ±¸ºĞÇÏÁö ¾Ê´Â´Ù.
          */
         switch(mType)
         {
@@ -323,16 +323,15 @@ void rpdLogAnalyzer::resetVariables(idBool aNeedInitMtdValueLen,
 
     if ( mRedoAnalyzedColCnt > 0 || mUndoAnalyzedColCnt > 0 )
     {
-        /*
-         * PROJ-1705
-         * ë¡œê·¸ ë¶„ì„ ì‹œ, ì»¬ëŸ¼ì´ CIDìˆœì„œë¡œ ë¶„ì„ë˜ì§€ ì•Šìœ¼ë¯€ë¡œ,
-         * ë¶„ì„ì´ ëë‚œ í›„, í•œêº¼ë²ˆì— ì •ë ¬í•˜ëŠ”ë°, ì´ˆê¸°ê°’ì„ 0ìœ¼ë¡œ ì£¼ë©´, CIDê°€ 0ì¸ ê²ƒê³¼
-         * ì„ì´ê²Œ ë˜ë¯€ë¡œ, ì´ˆê¸°ê°’ì„ UINT_MAXë¡œ í•œë‹¤.
-         */
-        idlOS::memset(mCIDs, ID_UINT_MAX, ID_SIZEOF(UInt) * aTableColCount);
-
         if(aTableColCount > 0)
         {
+            /*
+             * PROJ-1705
+             * ·Î±× ºĞ¼® ½Ã, ÄÃ·³ÀÌ CID¼ø¼­·Î ºĞ¼®µÇÁö ¾ÊÀ¸¹Ç·Î,
+             * ºĞ¼®ÀÌ ³¡³­ ÈÄ, ÇÑ²¨¹ø¿¡ Á¤·ÄÇÏ´Âµ¥, ÃÊ±â°ªÀ» 0À¸·Î ÁÖ¸é, CID°¡ 0ÀÎ °Í°ú
+             * ¼¯ÀÌ°Ô µÇ¹Ç·Î, ÃÊ±â°ªÀ» UINT_MAX·Î ÇÑ´Ù.
+             */
+            idlOS::memset(mCIDs, ID_UINT_MAX, ID_SIZEOF(UInt) * aTableColCount);
             idlOS::memset(mBCols, 0, ID_SIZEOF(smiValue) * aTableColCount);
             idlOS::memset(mACols, 0, ID_SIZEOF(smiValue) * aTableColCount);
         }
@@ -349,7 +348,7 @@ void rpdLogAnalyzer::resetVariables(idBool aNeedInitMtdValueLen,
     }
 #endif
 
-    /* ë°°ì—´ì´ ì•„ë‹Œ ë³€ìˆ˜ë“¤ì„ ì´ˆê¸°í™”í•œë‹¤. */
+    /* ¹è¿­ÀÌ ¾Æ´Ñ º¯¼öµéÀ» ÃÊ±âÈ­ÇÑ´Ù. */
     mType               = RP_X_NONE;
     mTID                = 0;
     mSendTransID        = 0;
@@ -386,21 +385,25 @@ void rpdLogAnalyzer::resetVariables(idBool aNeedInitMtdValueLen,
     return;
 }
 
-IDE_RC rpdLogAnalyzer::analyze(smiLogRec *aLog, idBool *aIsDML)
+IDE_RC rpdLogAnalyzer::analyze( smiLogRec *aLog,
+                                idBool    *aIsDML,
+                                smTID      aTID )
 {
-    smTID      sTID;
-    smSN       sLogRecordSN;
+    smTID      sTID = aTID;
+    smSN       sLogRecordSN = SM_SN_NULL;
     smiLogType sType = aLog->getType();    // BUG-22613
 
     IDE_DASSERT(aLog != NULL);
 
     *aIsDML = ID_FALSE;
     sLogRecordSN = aLog->getRecordSN();
-    sTID = aLog->getTransID();
 
     switch(sType)
     {
         case SMI_LT_TRANS_COMMIT :
+            idlOS::memcpy( &mGlobalCommitSCN, aLog->getGlobalCommitSCN(), ID_SIZEOF(smSCN) );
+
+        case SMI_LT_TRANS_GROUPCOMMIT :
             IDE_TEST_RAISE(mIsCont == ID_TRUE, ERR_INVALID_CONT_FLAG);
             setXLogHdr(RP_X_COMMIT, sTID, sLogRecordSN);
             break;
@@ -452,6 +455,26 @@ IDE_RC rpdLogAnalyzer::analyze(smiLogRec *aLog, idBool *aIsDML)
             }
             break;
 
+        case SMI_LT_XA_START_REQ :
+            setXLogHdr( RP_X_XA_START_REQ, sTID, sLogRecordSN );
+            idlOS::memcpy( &mXID, aLog->getXID(), ID_SIZEOF(ID_XID) );
+
+            break;
+        case SMI_LT_XA_PREPARE_REQ :
+            setXLogHdr( RP_X_XA_PREPARE_REQ, sTID, sLogRecordSN );
+            idlOS::memcpy( &mXID, aLog->getXID(), ID_SIZEOF(ID_XID) );
+            break;
+
+        case SMI_LT_XA_PREPARE :
+            setXLogHdr( RP_X_XA_PREPARE, sTID, sLogRecordSN );
+            idlOS::memcpy( &mXID, aLog->getXID(), ID_SIZEOF(ID_XID) );
+            break;
+
+        case SMI_LT_XA_END :
+            setXLogHdr( RP_X_XA_END, sTID, sLogRecordSN );
+            idlOS::memcpy( &mXID, aLog->getXID(), ID_SIZEOF(ID_XID) );
+            break;
+
         default:
             break;
     }
@@ -460,10 +483,10 @@ IDE_RC rpdLogAnalyzer::analyze(smiLogRec *aLog, idBool *aIsDML)
 
     IDE_EXCEPTION(ERR_INVALID_CONT_FLAG);
     {
-        /* BUG-28939 ì¤‘ë³µ beginì„ ë°œìƒì‹œí‚¬ ê°€ëŠ¥ì„±ì´ ìˆëŠ” ëŒ€ìƒì„ ì°¾ëŠ”ë‹¤.
-         * ì˜ëª»ëœ continue flagë¡œê·¸ë¡œ ì¸í•´ ë’¤ì— ì˜¤ëŠ” commitì´ skipë˜ì–´
-         * transaction tableì´ ë¹„ì›Œì§€ì§€ ì•Šì„ ìˆ˜ ìˆë‹¤. remove transaction tableí•˜ëŠ”
-         * ë°ì´í„°íƒ€ì…ì„ ëŒ€ìƒìœ¼ë¡œ continue flagë¥¼ í™•ì¸í•œë‹¤. */
+        /* BUG-28939 Áßº¹ beginÀ» ¹ß»ı½ÃÅ³ °¡´É¼ºÀÌ ÀÖ´Â ´ë»óÀ» Ã£´Â´Ù.
+         * Àß¸øµÈ continue flag·Î±×·Î ÀÎÇØ µÚ¿¡ ¿À´Â commitÀÌ skipµÇ¾î
+         * transaction tableÀÌ ºñ¿öÁöÁö ¾ÊÀ» ¼ö ÀÖ´Ù. remove transaction tableÇÏ´Â
+         * µ¥ÀÌÅÍÅ¸ÀÔÀ» ´ë»óÀ¸·Î continue flag¸¦ È®ÀÎÇÑ´Ù. */
         IDE_SET(ideSetErrorCode(rpERR_ABORT_INVALID_CONT_LOG,
                                 sLogRecordSN));
     }
@@ -540,8 +563,8 @@ IDE_RC rpdLogAnalyzer::anlzUdtMem(rpdLogAnalyzer *aLA,
 {
     aLA->setXLogHdr(RP_X_UPDATE, aTID, aSN);
     aLA->mTableOID = aLog->getTableOID();
-    //PROJ-1705 ë©”ëª¨ë¦¬ í…Œì´ë¸”ì—ì„œëŠ” Redo / Undo AnalyzedColCntì˜ êµ¬ë¶„ì´ ì˜ë¯¸ê°€ ì—†ë‹¤.
-    //ì˜ë¯¸ì—†ì´ ë‘˜ ì¤‘ì˜ í•˜ë‚˜ mRedoAnalyzedColCnt ë³€ìˆ˜ë¥¼ ì‚¬ìš© í•œë‹¤.
+    //PROJ-1705 ¸Ş¸ğ¸® Å×ÀÌºí¿¡¼­´Â Redo / Undo AnalyzedColCntÀÇ ±¸ºĞÀÌ ÀÇ¹Ì°¡ ¾ø´Ù.
+    //ÀÇ¹Ì¾øÀÌ µÑ ÁßÀÇ ÇÏ³ª mRedoAnalyzedColCnt º¯¼ö¸¦ »ç¿ë ÇÑ´Ù.
     IDE_TEST( smiLogRec::analyzeUpdateLogMemory( aLog,
                                                  &aLA->mPKColCnt,
                                                  aLA->mPKCIDs,
@@ -586,7 +609,7 @@ IDE_RC rpdLogAnalyzer::anlzDelMem(rpdLogAnalyzer *aLA,
 }
 
 /***************************************************************
- * < REDO INSERT DML ë¡œê·¸ êµ¬ì¡° >
+ * < REDO INSERT DML ·Î±× ±¸Á¶ >
  *
  * ----------------
  * |  sdrLogHdr   |
@@ -636,7 +659,7 @@ IDE_RC rpdLogAnalyzer::anlzRedoInsertDisk(rpdLogAnalyzer *aLA,
 }
 
 /***************************************************************
- * < REDO UPDATE DML - UPDATE ROW PIECE ë¡œê·¸ êµ¬ì¡° >
+ * < REDO UPDATE DML - UPDATE ROW PIECE ·Î±× ±¸Á¶ >
  *
  * ----------------
  * |  sdrLogHdr   |
@@ -697,7 +720,7 @@ IDE_RC rpdLogAnalyzer::anlzRedoUpdateDisk(rpdLogAnalyzer * aLA,
 }
 
 /***************************************************************
- * < REDO UPDATE DML - INSERT ROW PIECE ë¡œê·¸ êµ¬ì¡° >
+ * < REDO UPDATE DML - INSERT ROW PIECE ·Î±× ±¸Á¶ >
  *
  * ----------------
  * |  sdrLogHdr   |
@@ -752,7 +775,7 @@ IDE_RC rpdLogAnalyzer::anlzRedoUpdateInsertRowPieceDisk(rpdLogAnalyzer * aLA,
 }
 
 /***************************************************************
- * < REDO UPDATE DML - OVERWRITE ROW PIECE ë¡œê·¸ êµ¬ì¡° >
+ * < REDO UPDATE DML - OVERWRITE ROW PIECE ·Î±× ±¸Á¶ >
  *
  * ----------------
  * |  sdrLogHdr   |
@@ -808,12 +831,12 @@ IDE_RC rpdLogAnalyzer::anlzRedoUpdateOverwriteDisk(rpdLogAnalyzer * aLA,
 
 /***********************************************************************
  *
- * Description : ë¡œê·¸ í—¤ë”ë¥¼ XLogì— ì…ë ¥í•˜ê¸° ìœ„í•´ ì¡´ì¬í•œë‹¤.
- *               XLogì— í•„ìš”í•œ delete ì •ë³´ëŠ” ë¡œê·¸ì˜ ë§¨ ë’¤ì— ë‚˜ì˜¤ëŠ”
- *               PK logì— ì¡´ì¬í•œë‹¤.
- *               undo delete logëŠ” ê·¸ëƒ¥ skipí•˜ê³ ,
- *                  : TASK-5030ì— ì˜í•´ undoë„ ë¶„ì„í•œë‹¤.
- *               redo delete logì—ì„œ í—¤ë”ì •ë³´ë§Œ XLogì— ì±„ì›Œë‘”ë‹¤.
+ * Description : ·Î±× Çì´õ¸¦ XLog¿¡ ÀÔ·ÂÇÏ±â À§ÇØ Á¸ÀçÇÑ´Ù.
+ *               XLog¿¡ ÇÊ¿äÇÑ delete Á¤º¸´Â ·Î±×ÀÇ ¸Ç µÚ¿¡ ³ª¿À´Â
+ *               PK log¿¡ Á¸ÀçÇÑ´Ù.
+ *               undo delete log´Â ±×³É skipÇÏ°í,
+ *                  : TASK-5030¿¡ ÀÇÇØ undoµµ ºĞ¼®ÇÑ´Ù.
+ *               redo delete log¿¡¼­ Çì´õÁ¤º¸¸¸ XLog¿¡ Ã¤¿öµĞ´Ù.
  *
  ***********************************************************************/
 IDE_RC rpdLogAnalyzer::anlzRedoDeleteDisk(rpdLogAnalyzer * aLA,
@@ -830,7 +853,7 @@ IDE_RC rpdLogAnalyzer::anlzRedoDeleteDisk(rpdLogAnalyzer * aLA,
 
 
 /***************************************************************
- * < UNDO UPDATE DML - DELETE ROW PIECE ë¡œê·¸ êµ¬ì¡° >
+ * < UNDO UPDATE DML - DELETE ROW PIECE ·Î±× ±¸Á¶ >
  *
  * ----------------
  * |  sdrLogHdr   |
@@ -851,7 +874,7 @@ IDE_RC rpdLogAnalyzer::anlzUndoDeleteDisk(rpdLogAnalyzer * aLA,
                                           smSN             aSN)
 {
     /* TASK-5030 
-     * Full XLog ì¼ë•Œë§Œ ë¶„ì„ */
+     * Full XLog ÀÏ¶§¸¸ ºĞ¼® */
     if( aLog->needSupplementalLog() == ID_TRUE )
     {
         aLA->setXLogHdr(RP_X_DELETE, aTID, aSN);
@@ -898,7 +921,7 @@ IDE_RC rpdLogAnalyzer::anlzUndoDeleteDisk(rpdLogAnalyzer * aLA,
 
 
 /***************************************************************
- * < UNDO UPDATE DML - UPDATE ROW PIECE ë¡œê·¸ êµ¬ì¡° >
+ * < UNDO UPDATE DML - UPDATE ROW PIECE ·Î±× ±¸Á¶ >
  *
  * ----------------
  * |  sdrLogHdr   |
@@ -963,7 +986,7 @@ IDE_RC rpdLogAnalyzer::anlzUndoUpdateDisk(rpdLogAnalyzer * aLA,
 }
 
 /***************************************************************
- * < UNDO UPDATE DML - DELETE ROW PIECE ë¡œê·¸ êµ¬ì¡° >
+ * < UNDO UPDATE DML - DELETE ROW PIECE ·Î±× ±¸Á¶ >
  *
  * ----------------
  * |  sdrLogHdr   |
@@ -1021,7 +1044,7 @@ IDE_RC rpdLogAnalyzer::anlzUndoUpdateDeleteRowPieceDisk(rpdLogAnalyzer * aLA,
 }
 
 /***************************************************************
- * < UNDO UPDATE DML - OVERWRITE ROW PIECE ë¡œê·¸ êµ¬ì¡° >
+ * < UNDO UPDATE DML - OVERWRITE ROW PIECE ·Î±× ±¸Á¶ >
  *
  * ----------------
  * |  sdrLogHdr   |
@@ -1079,7 +1102,7 @@ IDE_RC rpdLogAnalyzer::anlzUndoUpdateOverwriteDisk(rpdLogAnalyzer * aLA,
 }
 
 /***************************************************************
- * < UNDO UPDATE DML - DELETE FIRST COLUMN PIECE ë¡œê·¸ êµ¬ì¡° >
+ * < UNDO UPDATE DML - DELETE FIRST COLUMN PIECE ·Î±× ±¸Á¶ >
  *
  * ----------------
  * |  sdrLogHdr   |
@@ -1138,8 +1161,8 @@ IDE_RC rpdLogAnalyzer::anlzUndoUpdateDeleteFirstColumnDisk(rpdLogAnalyzer * aLA,
 
 /***********************************************************************
  *
- * Description : update/delete DMLì„ ìœ„í•œ ì •ë³´ì´ë‹¤.
- *               ê° ë¡œê·¸ì˜ ë§¨ ë’¤ì— ë‚˜ì˜¨ë‹¤.
+ * Description : update/delete DMLÀ» À§ÇÑ Á¤º¸ÀÌ´Ù.
+ *               °¢ ·Î±×ÀÇ ¸Ç µÚ¿¡ ³ª¿Â´Ù.
  *
  ***********************************************************************/
 IDE_RC rpdLogAnalyzer::anlzPKDisk(rpdLogAnalyzer * aLA,
@@ -1148,13 +1171,13 @@ IDE_RC rpdLogAnalyzer::anlzPKDisk(rpdLogAnalyzer * aLA,
                                   smSN           /* aSN */)
 {
     /*
-     * addXLogì—ì„œ ì²˜ìŒì— needFreeë¥¼ Falseë¡œ ì´ˆê¸°í™” í•œë‹¤.
-     * PK logëŠ” mallocí•˜ì§€ ì•Šìœ¼ë¯€ë¡œ, Freeê°€ í•„ìš”í•˜ì§€ ì•Šìœ¼ë‚˜,
-     * ì´ì „ì— ë¶„ì„í•œ undo logì™€ redo logë¥¼ Freeí•˜ê¸° ìœ„í•´ needFreeë¥¼
-     * TRUEë¡œ ì…‹íŒ…í•œë‹¤.
-     * ë§Œì•½ FALSEë¡œ ë˜ì–´ ìˆìœ¼ë©´,
-     * ì—¬ëŸ¬ê°œì˜ ë ˆì½”ë“œë¥¼ ë™ì‹œì— ì—…ë°ì´íŠ¸ ì‹œì— rpdLogAnalyzer êµ¬ì¡°ì²´ê°€
-     * ì´ˆê¸°í™” ë˜ì–´ìˆì§€ì•Šì•„, ì• ë ˆì½”ë“œì˜ ë°ì´í„°ì— ì´ì–´ì„œ ì €ì¥ë˜ê²Œ ëœë‹¤.
+     * addXLog¿¡¼­ Ã³À½¿¡ needFree¸¦ False·Î ÃÊ±âÈ­ ÇÑ´Ù.
+     * PK log´Â mallocÇÏÁö ¾ÊÀ¸¹Ç·Î, Free°¡ ÇÊ¿äÇÏÁö ¾ÊÀ¸³ª,
+     * ÀÌÀü¿¡ ºĞ¼®ÇÑ undo log¿Í redo log¸¦ FreeÇÏ±â À§ÇØ needFree¸¦
+     * TRUE·Î ¼ÂÆÃÇÑ´Ù.
+     * ¸¸¾à FALSE·Î µÇ¾î ÀÖÀ¸¸é,
+     * ¿©·¯°³ÀÇ ·¹ÄÚµå¸¦ µ¿½Ã¿¡ ¾÷µ¥ÀÌÆ® ½Ã¿¡ rpdLogAnalyzer ±¸Á¶Ã¼°¡
+     * ÃÊ±âÈ­ µÇ¾îÀÖÁö¾Ê¾Æ, ¾Õ ·¹ÄÚµåÀÇ µ¥ÀÌÅÍ¿¡ ÀÌ¾î¼­ ÀúÀåµÇ°Ô µÈ´Ù.
      */
     aLA->setNeedFree(ID_TRUE);
 
@@ -1206,7 +1229,7 @@ IDE_RC rpdLogAnalyzer::anlzWriteDskLobPiece(rpdLogAnalyzer *aLA,
                                                     sIsAfterInsert)
              != IDE_SUCCESS);
 
-    /* í•œ LOB column valueì˜ copyë¥¼ ì™„ë£Œí–ˆìœ¼ë©´, ì´ˆê¸°í™” */
+    /* ÇÑ LOB column valueÀÇ copy¸¦ ¿Ï·áÇßÀ¸¸é, ÃÊ±âÈ­ */
     if(aLA->mLobAnalyzedLen == aLA->mACols[sCID].length)
     {
         aLA->mLobAnalyzedLen = 0;
@@ -1378,7 +1401,7 @@ IDE_RC rpdLogAnalyzer::anlzLobTrim(rpdLogAnalyzer *aLA,
     return IDE_FAILURE;
 }
 
-// ë¶„ì„í•  í•„ìš”ê°€ ì—†ëŠ” ë¡œê·¸íƒ€ì…
+// ºĞ¼®ÇÒ ÇÊ¿ä°¡ ¾ø´Â ·Î±×Å¸ÀÔ
 IDE_RC rpdLogAnalyzer::anlzNA(rpdLogAnalyzer * aLA,
                               smiLogRec      * /* aLog */,
                               smTID           /* aTID */,
@@ -1470,4 +1493,9 @@ void rpdLogAnalyzer::setSendTransID( smTID     aTransID )
 smTID  rpdLogAnalyzer::getSendTransID( void )
 {
     return mSendTransID;
+}
+
+smSCN  rpdLogAnalyzer::getGlobalCommitSCN( void )
+{
+    return mGlobalCommitSCN;
 }

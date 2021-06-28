@@ -49,7 +49,7 @@ typedef struct dkiSession
 {
     UInt          mSessionId;
     dkmSession  * mSession;
-    dkmSession    mSessionObj;    /* í• ë‹¹í•˜ì§€ ì•Šê³  mSession = &mSession_ìœ¼ë¡œ ì‚¬ìš©í•œë‹¤. */
+    dkmSession    mSessionObj;    /* ÇÒ´çÇÏÁö ¾Ê°í mSession = &mSession_À¸·Î »ç¿ëÇÑ´Ù. */
 } dkiSession;
 
 extern void dkiSessionInit( dkiSession * aSession );
@@ -63,6 +63,8 @@ extern void dkiSessionSetUserId( dkiSession * aSession, UInt aUserId );
  * System property
  */ 
 extern IDE_RC dkiGetGlobalTransactionLevel( UInt * aValue );
+extern idBool dkiIsGTx( UInt aValue );
+extern idBool dkiIsGCTx( UInt aValue );
 extern IDE_RC dkiGetRemoteStatementAutoCommit( UInt * aValue );
 
 /*
@@ -76,13 +78,38 @@ extern IDE_RC dkiSessionSetRemoteStatementAutoCommit( dkiSession * aSession,
 /*
  * Transaction
  */
-extern IDE_RC dkiCommitPrepare( dkiSession * aSession );
+extern IDE_RC dkiCommitPrepare( dkiSession * aSession, ID_XID * aSourceXID );
 extern IDE_RC dkiCommitPrepareForce( dkiSession * aSession );
 extern void dkiCommit( dkiSession * aSession );
 extern IDE_RC dkiRollbackPrepare( dkiSession * aSession, const SChar * aSavepoint );
 extern void dkiRollbackPrepareForce( dkiSession * aSession );
-extern void dkiRollback( dkiSession * aSession, const SChar * aSavepoint );
+extern IDE_RC dkiRollback( dkiSession * aSession, const SChar * aSavepoint );  /* BUG-48489 */
 extern IDE_RC dkiSavepoint( dkiSession * aSession, const SChar * aSavepoint );
 extern idBool dkiIsReadOnly( dkiSession * aSession );
+
+extern IDE_RC dkiEndPendingPassiveDtxInfo( ID_XID * aXID, idBool aCommit );
+extern IDE_RC dkiEndPendingFailoverDtxInfo( ID_XID * aXID, 
+                                            idBool   aCommit,
+                                            smSCN  * aGlobalCommitSCN );
+
+extern UInt dkiGetDtxInfoCnt( void );
+extern IDE_RC dkiPrintNotifierInfo( void );
+
+extern void   dkiCopyXID( ID_XID * aDst, ID_XID * aSrc );
+extern idBool dkiIsUsableNEqualXID( ID_XID * aTargetXID, ID_XID * aSourceXID );
+extern void   dkiNotifierSetPause( idBool aPause );
+extern void   dkiNotifierWaitUntilFailoverRunOneCycle();
+extern IDE_RC dkiNotifierAddUnCompleteGlobalTxList( iduList * aGlobalTxList );
+
+typedef struct dkiUnCompleteGlobalTxInfo
+{
+    ID_XID          mXID;
+    smTID           mTID;
+    idBool          mIsRequestNode;
+    smiDtxLogType   mResultType;
+    smSCN           mGlobalCommitSCN;
+    smiTransNode  * mTrans;
+    iduListNode     mNode;
+} dkiUnCompleteGlobalTxInfo;
 
 #endif /* _O_DKI_H_ */ 

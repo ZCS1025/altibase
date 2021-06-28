@@ -58,15 +58,15 @@ typedef struct sdbFlusherStatData
     ULong mReplacementSkipPages;
 
     /* PROJ-2669
-     * Normal Flush List ì—ì„œ Delayed Flush List ë¡œ ì´ë™ë˜ì–´ì§„ BCB ì˜ ìˆ˜ */
+     * Normal Flush List ¿¡¼­ Delayed Flush List ·Î ÀÌµ¿µÇ¾îÁø BCB ÀÇ ¼ö */
     ULong mReplacementAddDelayedPages;
     /* PROJ-2669
-     * Delayed Flush List ë¡œ ì´ë™ë˜ì–´ì§„ í›„ ì—¬ì „íˆ ìµœê·¼ì— ì‚¬ìš©ë˜ì–´
-     * Flush ë˜ì§€ ì•Šì€ BCB ì˜ ìˆ˜                                         */
+     * Delayed Flush List ·Î ÀÌµ¿µÇ¾îÁø ÈÄ ¿©ÀüÈ÷ ÃÖ±Ù¿¡ »ç¿ëµÇ¾î
+     * Flush µÇÁö ¾ÊÀº BCB ÀÇ ¼ö                                         */
     ULong mReplacementSkipDelayedPages;
     /* PROJ-2669
-     * Delayed Flush List ì˜ ìµœëŒ€ í¬ê¸°ë¥¼ ë„˜ì–´
-     * Delayed Flush List ì¶”ê°€ë¥¼ í•˜ì§€ ì•Šì€ BCB ì˜ ìˆ˜                     */
+     * Delayed Flush List ÀÇ ÃÖ´ë Å©±â¸¦ ³Ñ¾î
+     * Delayed Flush List Ãß°¡¸¦ ÇÏÁö ¾ÊÀº BCB ÀÇ ¼ö                     */
     ULong mReplacementOverflowDelayedPages;
 
     ULong mCheckpointFlushJobs;
@@ -83,7 +83,7 @@ typedef struct sdbFlusherStatData
      * for analyzing storage performance. */
     ULong mTotalFlushPages;
 
-    /* PROJ-2669 Delayed Flush List ì— ì˜í•´ì„œ Flush ëœ BCB ì˜ ìˆ˜ */
+    /* PROJ-2669 Delayed Flush List ¿¡ ÀÇÇØ¼­ Flush µÈ BCB ÀÇ ¼ö */
     ULong mTotalFlushDelayedPages;
 
     ULong mTotalLogSyncTime;

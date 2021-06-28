@@ -137,25 +137,18 @@ class sctReqFunc
                                             aSpaceID,
                                             aTrans );
         };
-        static IDE_RC getAllocPageCount( idvSQL     * aStatistics,
-                                         scSpaceID    aSpaceID,
-                                         ULong      * aUsedPageLimit )
+        static IDE_RC getAllocPageCount( idvSQL            * aStatistics,
+                                         sddTableSpaceNode * aSpaceNode,
+                                         ULong             * aUsedPageLimit )
         {
-            return sdpTableSpace::getAllocPageCount( aStatistics,
-                                                     aSpaceID,
-                                                     aUsedPageLimit );
+            return sdptbGroup::getAllocPageCount( aStatistics,
+                                                  aSpaceNode,
+                                                  aUsedPageLimit );
         };
-        static ULong getCachedFreeExtCount( scSpaceID aSpaceID )
+
+        static ULong getCachedFreeExtCount( sddTableSpaceNode* aSpaceNode )
         {
-            return sdpTableSpace::getCachedFreeExtCount( aSpaceID );
-        };
-        static IDE_RC destroySpaceCache( idvSQL             * aStatistics,
-                                         sctTableSpaceNode  * aSpaceNode,
-                                         void               * aActionArg )
-        {
-            return sdpTableSpace::doActFreeSpaceCache( aStatistics,
-                                                       aSpaceNode,
-                                                       aActionArg );
+            return sdptbGroup::getCachedFreeExtCount( aSpaceNode );
         };
 
         /* smr */

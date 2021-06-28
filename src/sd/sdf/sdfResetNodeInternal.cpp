@@ -54,7 +54,7 @@ static IDE_RC sdfEstimate( mtcNode*        aNode,
 mtfModule sdfResetNodeInternalModule = {
     1|MTC_NODE_OPERATOR_MISC|MTC_NODE_VARIABLE_TRUE,
     ~0,
-    1.0,                    // default selectivity (ë¹„êµ ì—°ì‚°ìž ì•„ë‹˜)
+    1.0,                    // default selectivity (ºñ±³ ¿¬»êÀÚ ¾Æ´Ô)
     sdfFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -164,14 +164,24 @@ IDE_RC sdfCalculate_ResetNodeInternal( mtcNode*     aNode,
     SChar                     sAlternateHostStr[IDL_IP_ADDR_MAX_LEN + 1];
     mtdIntegerType            sPort;
     mtdIntegerType            sAlternatePort;
-    mtdIntegerType            sConnType = SDI_DATA_NODE_CONNECT_TYPE_DEFAULT;
+    mtdIntegerType            sConnType = SDI_NODE_CONNECT_TYPE_DEFAULT;
     UInt                      sRowCnt = 0;
     smiStatement            * sOldStmt;
     smiStatement              sSmiStmt;
     UInt                      sSmiStmtFlag;
     SInt                      sState = 0;
+    idBool                    sIsOldSessionShardMetaTouched = ID_FALSE;
 
     sStatement   = ((qcTemplate*)aTemplate)->stmt;
+
+    sStatement->mFlag &= ~QC_STMT_SHARD_META_CHANGE_MASK;
+    sStatement->mFlag |= QC_STMT_SHARD_META_CHANGE_TRUE;
+
+    if ( ( sStatement->session->mQPSpecific.mFlag & QC_SESSION_SHARD_META_TOUCH_MASK ) ==
+         QC_SESSION_SHARD_META_TOUCH_TRUE )
+    {
+        sIsOldSessionShardMetaTouched = ID_TRUE;
+    }
 
     // BUG-46366
     IDE_TEST_RAISE( ( QC_SMI_STMT(sStatement)->getTrans() == NULL ) ||
@@ -210,7 +220,7 @@ IDE_RC sdfCalculate_ResetNodeInternal( mtcNode*     aNode,
         // shard node name
         sNodeName = (mtdCharType*)aStack[1].value;
 
-        IDE_TEST_RAISE( sNodeName->length > SDI_NODE_NAME_MAX_SIZE,
+        IDE_TEST_RAISE( sNodeName->length > SDI_CHECK_NODE_NAME_MAX_SIZE,
                         ERR_SHARD_NODE_NAME_TOO_LONG );
         idlOS::strncpy( sNodeNameStr,
                         (SChar*)sNodeName->value,
@@ -283,7 +293,7 @@ IDE_RC sdfCalculate_ResetNodeInternal( mtcNode*     aNode,
         if ( aStack[6].column->module->isNull( aStack[6].column,
                                                aStack[6].value ) == ID_TRUE )
         {
-            sConnType = SDI_DATA_NODE_CONNECT_TYPE_TCP;
+            sConnType = SDI_NODE_CONNECT_TYPE_TCP;
         }
         else
         {
@@ -291,8 +301,8 @@ IDE_RC sdfCalculate_ResetNodeInternal( mtcNode*     aNode,
 
             switch ( sConnType )
             {
-                case SDI_DATA_NODE_CONNECT_TYPE_TCP :
-                case SDI_DATA_NODE_CONNECT_TYPE_IB  :
+                case SDI_NODE_CONNECT_TYPE_TCP :
+                case SDI_NODE_CONNECT_TYPE_IB  :
                     /* Nothing to do */
                     break;
 
@@ -383,6 +393,8 @@ IDE_RC sdfCalculate_ResetNodeInternal( mtcNode*     aNode,
     }
     IDE_EXCEPTION_END;
 
+    IDE_PUSH();
+    
     switch ( sState )
     {
         case 2:
@@ -402,5 +414,16 @@ IDE_RC sdfCalculate_ResetNodeInternal( mtcNode*     aNode,
             break;
     }
 
+    if ( sIsOldSessionShardMetaTouched == ID_TRUE )
+    {
+        sdi::setShardMetaTouched( sStatement->session );
+    }
+    else
+    {
+        sdi::unsetShardMetaTouched( sStatement->session );
+    }
+
+    IDE_POP();
+    
     return IDE_FAILURE;
 }

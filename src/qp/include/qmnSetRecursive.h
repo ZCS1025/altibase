@@ -16,19 +16,19 @@
  
 
 /***********************************************************************
- * $Id: qmnSetRecursive.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmnSetRecursive.h 88511 2020-09-08 07:02:11Z donovan.seo $
  *
  * Description :
  *
- *     SRECì„ ìˆ˜í–‰í•˜ëŠ” Plan Node ì´ë‹¤.
+ *     SRECÀ» ¼öÇàÇÏ´Â Plan Node ÀÌ´Ù.
  * 
- *     Left Childì— ëŒ€í•œ Dataì™€ Right Childì— ëŒ€í•œ Dataë¥¼
- *     recursive í•˜ê²Œ ìˆ˜í–‰ í•˜ë©´ì„œ ê²°ê³¼ë¥¼ ë¦¬í„´í•œë‹¤.
- *     Left Childì™€ Right Childì˜ VMTRì„ ì„œë¡œ SWAPí•˜ë©´ì„œ ìˆ˜í–‰í•œë‹¤. 
+ *     Left Child¿¡ ´ëÇÑ Data¿Í Right Child¿¡ ´ëÇÑ Data¸¦
+ *     recursive ÇÏ°Ô ¼öÇà ÇÏ¸é¼­ °á°ú¸¦ ¸®ÅÏÇÑ´Ù.
+ *     Left Child¿Í Right ChildÀÇ VMTRÀ» ¼­·Î SWAPÇÏ¸é¼­ ¼öÇàÇÑ´Ù. 
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -55,13 +55,18 @@
 #define QMND_SREC_INIT_DONE_FALSE      (0x00000000)
 #define QMND_SREC_INIT_DONE_TRUE       (0x00000001)
 
+/* BUG-48116 recurisive with fatal */
+#define QMND_SREC_RIGHT_INIT_DONE_MASK  (0x00000002)
+#define QMND_SREC_RIGHT_INIT_DONE_FALSE (0x00000000)
+#define QMND_SREC_RIGHT_INIT_DONE_TRUE  (0x00000002)
+
 #define QMN_SWAP_SORT_TEMP( elem1, elem2 )                      \
     { sSortTemp = *elem1; *elem1 = *elem2; *elem2 = sSortTemp; }
 
 typedef struct qmnSRECInfo
 {
     //---------------------------------
-    // Memory Temp Table ì „ìš© ì •ë³´
+    // Memory Temp Table Àü¿ë Á¤º¸
     //---------------------------------
 
     qmcdMemSortTemp    * memSortMgr;
@@ -70,7 +75,7 @@ typedef struct qmnSRECInfo
     SLong                recordPos;
 
     //---------------------------------
-    // mtrNode ì •ë³´
+    // mtrNode Á¤º¸
     //---------------------------------
     
     qmdMtrNode         * mtrNode;
@@ -80,7 +85,7 @@ typedef struct qmnSRECInfo
 typedef struct qmncSREC
 {
     //---------------------------------
-    // Code ì˜ì—­ ê³µí†µ ì •ë³´
+    // Code ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
 
     qmnPlan           plan;
@@ -88,24 +93,24 @@ typedef struct qmncSREC
     UInt              planID;
 
     //---------------------------------
-    // SREC ê³ ìœ  ì •ë³´
+    // SREC °íÀ¯ Á¤º¸
     //---------------------------------
 
-    qmnPlan         * recursiveChild;      // right queryì˜ í•˜ìœ„ recursive view scan
+    qmnPlan         * recursiveChild;      // right queryÀÇ ÇÏÀ§ recursive view scan
     
 } qmncSREC;
 
 typedef struct qmndSREC
 {
     //---------------------------------
-    // Data ì˜ì—­ ê³µí†µ ì •ë³´
+    // Data ¿µ¿ª °øÅë Á¤º¸
     //---------------------------------
     qmndPlan          plan;
     doItFunc          doIt;
     UInt            * flag;
     
     //---------------------------------
-    // SREC ì •ë³´
+    // SREC Á¤º¸
     //---------------------------------
     
     qmnSRECInfo       vmtrLeft;
@@ -124,11 +129,11 @@ public:
     // Base Function Pointer
     //------------------------
 
-    // ì´ˆê¸°í™”
+    // ÃÊ±âÈ­
     static IDE_RC init( qcTemplate * aTemplate,
                         qmnPlan    * aPlan );
 
-    // ìˆ˜í–‰ í•¨ìˆ˜
+    // ¼öÇà ÇÔ¼ö
     static IDE_RC doIt( qcTemplate * aTemplate,
                         qmnPlan    * aPlan,
                         qmcRowFlag * aFlag );
@@ -137,7 +142,7 @@ public:
     static IDE_RC padNull( qcTemplate * aTemplate,
                            qmnPlan    * aPlan );
 
-    // Plan ì •ë³´ ì¶œë ¥
+    // Plan Á¤º¸ Ãâ·Â
     static IDE_RC printPlan( qcTemplate   * aTemplate,
                              qmnPlan      * aPlan,
                              ULong          aDepth,
@@ -148,7 +153,7 @@ public:
     // mapping by doIt() function pointer
     //------------------------
 
-    // í˜¸ì¶œë˜ì–´ì„œëŠ” ì•ˆë¨
+    // È£ÃâµÇ¾î¼­´Â ¾ÈµÊ
     static IDE_RC doItDefault( qcTemplate * aTemplate,
                                qmnPlan    * aPlan,
                                qmcRowFlag * aFlag );
@@ -171,7 +176,7 @@ public:
     
 private:
 
-    // ìµœì´ˆ ì´ˆê¸°í™”
+    // ÃÖÃÊ ÃÊ±âÈ­
     static IDE_RC firstInit( qmncSREC   * aCodePlan,
                              qmndSREC   * aDataPlan );
 

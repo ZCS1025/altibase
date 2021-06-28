@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: iSQLAdminCommand.cpp 82166 2018-02-01 07:26:29Z ahra.cho $
+ * $Id: iSQLAdminCommand.cpp 91040 2021-06-23 02:06:58Z chkim $
  **********************************************************************/
 
 #include <idp.h>
@@ -37,25 +37,17 @@ extern iSQLCommandQueue              *gCommandQueue;
 extern iSQLProperty                   gProperty;
 extern iSQLProgOption                 gProgOption;
 extern iSQLHostVarMgr                 gHostVarMgr;
-extern ulnServerMessageCallbackStruct gMessageCallbackStruct;
 
 extern int SaveFileData(const char *file, UChar *data);
 IDL_EXTERN_C void sigfuncSIGPIPE(SInt /* signo */);
 
 IDE_RC
-iSQLExecuteCommand::Startup(SChar * aCmdStr, SInt aMode, iSQLForkRunType aRunWServer)
+iSQLExecuteCommand::Startup(SInt aMode, iSQLForkRunType aRunWServer)
 {
     SChar sQueryStr[31];
 
-    /* BUG-27966: í”„ë¡œí¼í‹° íŒŒì¼ì— ë¬¸ì œê°€ ìžˆìœ¼ë©´ ì—ëŸ¬ë¥¼ ì¶œë ¥í•˜ê³  ë°”ë¡œ ì¢…ë£Œ */
+    /* BUG-27966: ÇÁ·ÎÆÛÆ¼ ÆÄÀÏ¿¡ ¹®Á¦°¡ ÀÖÀ¸¸é ¿¡·¯¸¦ Ãâ·ÂÇÏ°í ¹Ù·Î Á¾·á */
     IDE_TEST_RAISE(gProgOption.IsServPropsLoaded() == ID_FALSE, InitError);
-
-    if (aMode == STARTUP_COM)
-    {
-        idlOS::snprintf(m_Spool->m_Buf, gProperty.GetCommandLen(), "%s",
-                        aCmdStr);
-        m_Spool->PrintCommand();
-    }
 
     IDE_TEST(m_ISPApi->Startup(gProgOption.GetServerName(),
                                gProperty.GetUserName(),
@@ -94,11 +86,14 @@ iSQLExecuteCommand::Startup(SChar * aCmdStr, SInt aMode, iSQLForkRunType aRunWSe
     }
     gCommand->SetQueryStr(sQueryStr);
 
-    IDE_TEST(ExecuteOtherCommandStmt(gCommand->GetCommandStr(),
-                                     gCommand->GetQuery()) != IDE_SUCCESS);
+    IDE_TEST(ExecuteOtherCommandStmt(gCommand->GetQuery()) != IDE_SUCCESS);
 
-    /* BUG-43529 Need to reconnect to a normal service session */
-    Reconnect();
+    /* BUG-48618 keep_sysdba */
+    if ( gProgOption.IsKeepSysdba() == ID_FALSE )
+    {
+        /* BUG-43529 Need to reconnect to a normal service session */
+        Reconnect();
+    }
 
     return IDE_SUCCESS;
 
@@ -124,9 +119,7 @@ iSQLExecuteCommand::Reconnect()
 
     IDE_EXCEPTION(connect_error);
     {
-        uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(),
-                            &gErrorMgr);
-        m_Spool->Print();
+        PrintMultiError();
     }
     
     IDE_EXCEPTION_END;
@@ -135,7 +128,7 @@ iSQLExecuteCommand::Reconnect()
 }
 
 IDE_RC
-iSQLExecuteCommand::Shutdown(SChar * /*aCmdStr*/, SInt aMode)
+iSQLExecuteCommand::Shutdown(SInt aMode)
 {
     IDE_RC sRC;
     SChar  sQueryStr[39];
@@ -192,8 +185,7 @@ iSQLExecuteCommand::Shutdown(SChar * /*aCmdStr*/, SInt aMode)
 
     IDE_EXCEPTION_END;
 
-    uteSprintfErrorCode(m_Spool->m_Buf, gProperty.GetCommandLen(), &gErrorMgr);
-    m_Spool->Print();
+    PrintMultiError();
 
     return IDE_FAILURE;
 }
@@ -203,9 +195,6 @@ iSQLExecuteCommand::ExecuteSysdbaCommandStmt( SChar * a_CommandStr,
                                               SChar * a_SysdbaCommandStmt )
 {
     idBool sReplace = ID_FALSE;
-
-    idlOS::sprintf(m_Spool->m_Buf, "%s", a_CommandStr);
-    m_Spool->PrintCommand();
 
     m_ISPApi->SetQuery(a_SysdbaCommandStmt);
 

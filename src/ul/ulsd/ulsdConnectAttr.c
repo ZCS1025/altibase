@@ -13,29 +13,16 @@
 
 #include <ulsd.h>
 
-SQLRETURN ulsdSetConnectAttr(ulnDbc       *aMetaDbc,
-                             acp_sint32_t  aAttribute,
-                             void         *aValuePtr,
-                             acp_sint32_t  aStringLength)
+ACI_RC ulsdCreateConnectAttrInfo( ulnFnContext           * aFnContext,
+                                  acp_sint32_t             aAttribute,
+                                  void                   * aValuePtr,
+                                  acp_sint32_t             aStringLength,
+                                  ulsdConnectAttrInfo   ** aConnectAttrInfo )
 {
-    acp_list_node_t     * sNode       = NULL;
-    acp_list_node_t     * sNext       = NULL;
-    ulsdConnectAttrInfo * sObj        = NULL;
-    ulsdConnectAttrInfo * sNewObj     = NULL;
     ulnConnAttrID         sConnAttrID = ULN_CONN_ATTR_MAX;
+    ulsdConnectAttrInfo * sNewObj     = NULL;
     acp_sint32_t          sRealLength = 0;
 
-    SQLRETURN           sRet = SQL_ERROR;
-    ulsdDbc            *sShard;
-    acp_uint32_t        sNodeArr[ULSD_SD_NODE_MAX_COUNT];
-    acp_uint16_t        sNodeCount = 0;
-    acp_uint16_t        sNodeIndex;
-    ulnFnContext        sFnContext;
-    acp_uint16_t        i;
-
-    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_SETCONNECTATTR, aMetaDbc, ULN_OBJ_TYPE_DBC);
-
-    /* BUG-46257 shardcliÏóêÏÑú Node Ï∂îÍ∞Ä/Ï†úÍ±∞ ÏßÄÏõê */
     ACI_TEST_RAISE( acpMemAlloc( (void **) & sNewObj,
                                  ACI_SIZEOF( ulsdConnectAttrInfo ) )
                     != ACP_RC_SUCCESS, LABEL_NOT_ENOUGH_MEMORY );
@@ -90,118 +77,16 @@ SQLRETURN ulsdSetConnectAttr(ulnDbc       *aMetaDbc,
 
     acpListInitObj( & sNewObj->mListNode, (void *)sNewObj );
 
-    ulsdGetShardFromDbc(aMetaDbc, &sShard);
+    *aConnectAttrInfo = sNewObj;
 
-    ulsdGetTouchedAllNodeList(sShard, sNodeArr, &sNodeCount);
+    return ACI_SUCCESS;
 
-    /* BUG-45411 touchÌïú dataÎÖ∏ÎìúÏóêÏÑú Î®ºÏ†Ä ÏàòÌñâÌïòÍ≥†, Î™®Îëê ÏÑ±Í≥µÌïòÎ©¥ metaÎÖ∏ÎìúÏóêÏÑú ÏàòÌñâÌïúÎã§. */
-    for ( i = 0; i < sNodeCount; i++ )
-    {
-        sNodeIndex = sNodeArr[i];
-
-        sRet = ulnSetConnectAttr(sShard->mNodeInfo[sNodeIndex]->mNodeDbc,
-                                 aAttribute,
-                                 aValuePtr,
-                                 aStringLength);
-        ACI_TEST_RAISE(sRet != SQL_SUCCESS, LABEL_NODE_SETCONNECTATTR_FAIL);
-
-        SHARD_LOG("(Set Connect Attr) Attr=%d, NodeId=%d, Server=%s:%d\n",
-                  aAttribute,
-                  sShard->mNodeInfo[sNodeIndex]->mNodeId,
-                  sShard->mNodeInfo[sNodeIndex]->mServerIP,
-                  sShard->mNodeInfo[sNodeIndex]->mPortNo);
-    }
-
-    sRet = ulnSetConnectAttr(aMetaDbc,
-                             aAttribute,
-                             aValuePtr,
-                             aStringLength);
-    ACI_TEST(sRet != SQL_SUCCESS);
-
-    /* shard tx option ÏÑ§Ï†ï */
-    if ( ulnGetConnAttrIDfromSQL_ATTR_ID(aAttribute) == ULN_CONN_ATTR_AUTOCOMMIT )
-    {
-        if ( aStringLength == ALTIBASE_SHARD_SINGLE_NODE_TRANSACTION )
-        {
-            aMetaDbc->mShardDbcCxt.mShardTransactionLevel = ULN_SHARD_TX_ONE_NODE;
-        }
-        else if ( aStringLength == ALTIBASE_SHARD_GLOBAL_TRANSACTION )
-        {
-            ACI_TEST_RAISE( ulnSendConnectAttr( & sFnContext,
-                                                ULN_PROPERTY_DBLINK_GLOBAL_TRANSACTION_LEVEL,
-                                                (void *) 2 )  /* dblink global tx */
-                            != ACI_SUCCESS, LABEL_NODE_SENDCONNECTATTR_FAIL );
-
-            sRet = ULN_FNCONTEXT_GET_RC( & sFnContext );
-            ACI_TEST( sRet != SQL_SUCCESS );
-
-            aMetaDbc->mShardDbcCxt.mShardTransactionLevel = ULN_SHARD_TX_GLOBAL;
-        }
-        else
-        {
-            ACI_TEST_RAISE( ulnSendConnectAttr( & sFnContext,
-                                                ULN_PROPERTY_DBLINK_GLOBAL_TRANSACTION_LEVEL,
-                                                (void *) 1 )  /* dblink simple tx */
-                            != ACI_SUCCESS, LABEL_NODE_SENDCONNECTATTR_FAIL );
-
-            sRet = ULN_FNCONTEXT_GET_RC( & sFnContext );
-            ACI_TEST( sRet != SQL_SUCCESS );
-
-            aMetaDbc->mShardDbcCxt.mShardTransactionLevel = ULN_SHARD_TX_MULTI_NODE;
-        }
-    }
-
-    /* BUG-46257 shardcliÏóêÏÑú Node Ï∂îÍ∞Ä/Ï†úÍ±∞ ÏßÄÏõê */
-    ACP_LIST_ITERATE_SAFE( & aMetaDbc->mShardDbcCxt.mConnectAttrList, sNode, sNext )
-    {
-        sObj = (ulsdConnectAttrInfo *)sNode->mObj;
-        if ( sObj->mAttribute == aAttribute )
-        {
-            acpListDeleteNode( sNode );
-
-            if ( sObj->mBufferForString != NULL )
-            {
-                acpMemFree( sObj->mBufferForString );
-            }
-            else
-            {
-                /* Nothing to do */
-            }
-
-            acpMemFree( sNode->mObj );
-            break;
-        }
-        else
-        {
-            /* Nothing to do */
-        }
-    }
-
-    acpListAppendNode( & aMetaDbc->mShardDbcCxt.mConnectAttrList,
-                       & sNewObj->mListNode );
-
-    return SQL_SUCCESS;
-
-    ACI_EXCEPTION(LABEL_NODE_SETCONNECTATTR_FAIL)
-    {
-        ulsdNativeErrorToUlnError(&sFnContext,
-                                  SQL_HANDLE_DBC,
-                                  (ulnObject *)sShard->mNodeInfo[sNodeIndex]->mNodeDbc,
-                                  sShard->mNodeInfo[sNodeIndex],
-                                  "Set Connect Attr");
-    }
-    ACI_EXCEPTION( LABEL_NODE_SENDCONNECTATTR_FAIL )
-    {
-        sRet = ULN_FNCONTEXT_GET_RC( & sFnContext );
-    }
     ACI_EXCEPTION( LABEL_NOT_ENOUGH_MEMORY )
     {
-        ulnError( & sFnContext,
+        ulnError( aFnContext,
                   ulERR_ABORT_SHARD_ERROR,
-                  "SetConnectAttr",
+                  "AddConnectAttrList",
                   "Memory allocation error." );
-
-        sRet = ULN_FNCONTEXT_GET_RC( & sFnContext );
     }
     ACI_EXCEPTION_END;
 
@@ -221,6 +106,160 @@ SQLRETURN ulsdSetConnectAttr(ulnDbc       *aMetaDbc,
     else
     {
         /* Nothing to do */
+    }
+
+    return ACI_FAILURE;
+}
+
+void ulsdDestroyConnectAttrInfo( ulsdConnectAttrInfo * aConnectAttrInfo )
+{
+    if ( aConnectAttrInfo->mBufferForString != NULL )
+    {
+        acpMemFree( aConnectAttrInfo->mBufferForString );
+    }
+
+    acpMemFree( aConnectAttrInfo );
+}
+
+void ulsdRemoveConnectAttrList( ulnDbc           * aMetaDbc,
+                                acp_sint32_t       aAttribute )
+{
+    acp_list_node_t     * sNode       = NULL;
+    acp_list_node_t     * sNext       = NULL;
+    ulsdConnectAttrInfo * sObj        = NULL;
+
+    /* BUG-46257 shardcliø°º≠ Node √ﬂ∞°/¡¶∞≈ ¡ˆø¯ */
+    ACP_LIST_ITERATE_SAFE( & aMetaDbc->mShardDbcCxt.mConnectAttrList, sNode, sNext )
+    {
+        sObj = (ulsdConnectAttrInfo *)sNode->mObj;
+        if ( sObj->mAttribute == aAttribute )
+        {
+            acpListDeleteNode( sNode );
+
+            ulsdDestroyConnectAttrInfo( sObj );
+            sObj = NULL;
+
+            break;
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+}
+
+ACI_RC ulsdSetConnectAttrOnDataNodes( ulnFnContext   * aFnContext,
+                                      ulsdDbc        * aShard,
+                                      acp_sint32_t     aAttribute,
+                                      void           * aValuePtr,
+                                      acp_sint32_t     aStringLength )
+{
+    acp_uint32_t        sNodeArr[ULSD_SD_NODE_MAX_COUNT];
+    acp_uint16_t        sNodeCount = 0;
+    acp_uint16_t        sNodeIndex;
+    acp_uint16_t        i = 0;
+    SQLRETURN           sRet = SQL_ERROR;
+
+    ulsdGetTouchedAllNodeList( aShard, sNodeArr, &sNodeCount );
+
+    for ( i = 0; i < sNodeCount; i++ )
+    {
+        sNodeIndex = sNodeArr[i];
+
+        sRet = ulnSetConnectAttr( aShard->mNodeInfo[sNodeIndex]->mNodeDbc,
+                                  aAttribute,
+                                  aValuePtr,
+                                  aStringLength) ;
+        ACI_TEST_RAISE( sRet != SQL_SUCCESS, LABEL_NODE_SETCONNECTATTR_FAIL );
+
+        SHARD_LOG( "(Set Connect Attr) Attr=%d, NodeId=%d, Server=%s:%d\n",
+                   aAttribute,
+                   aShard->mNodeInfo[sNodeIndex]->mNodeId,
+                   aShard->mNodeInfo[sNodeIndex]->mServerIP,
+                   aShard->mNodeInfo[sNodeIndex]->mPortNo );
+    }
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION(LABEL_NODE_SETCONNECTATTR_FAIL)
+    {
+        ulsdNativeErrorToUlnError( aFnContext,
+                                   SQL_HANDLE_DBC,
+                                   (ulnObject *)aShard->mNodeInfo[sNodeIndex]->mNodeDbc,
+                                   aShard->mNodeInfo[sNodeIndex],
+                                   "Set Connect Attr" );
+    }
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
+SQLRETURN ulsdSetConnectAttr(ulnDbc       *aMetaDbc,
+                             acp_sint32_t  aAttribute,
+                             void         *aValuePtr,
+                             acp_sint32_t  aStringLength)
+{
+    ulsdDbc             * sShard = NULL;
+    SQLRETURN             sRet = SQL_ERROR;
+    ulnFnContext          sFnContext;
+    ulsdConnectAttrInfo * sConnectAttrInfo = NULL;
+
+    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_SETCONNECTATTR, aMetaDbc, ULN_OBJ_TYPE_DBC);
+
+    /* BUG-47553 */
+    ACI_TEST_RAISE( ulsdEnter( &sFnContext ) != ACI_SUCCESS, LABEL_ENTER_ERROR );
+
+    /* data node */
+    /* BUG-45411 touch«— data≥ÎµÂø°º≠ ∏’¿˙ ºˆ«‡«œ∞Ì, ∏µŒ º∫∞¯«œ∏È meta≥ÎµÂø°º≠ ºˆ«‡«—¥Ÿ. */
+    ulsdGetShardFromDbc( aMetaDbc, &sShard );
+
+    ACI_TEST_RAISE( ulsdSetConnectAttrOnDataNodes( &sFnContext,
+                                                   sShard,
+                                                   aAttribute,
+                                                   aValuePtr,
+                                                   aStringLength )
+                    != ACI_SUCCESS, ERR_SET_CONNECT_ATTR_ON_DATA_NODES );
+
+    /* meta node */
+    sRet = ulnSetConnectAttr( aMetaDbc,
+                              aAttribute,
+                              aValuePtr,
+                              aStringLength );
+    ACI_TEST( sRet != SQL_SUCCESS );
+
+    /* BUG-46257 shardcliø°º≠ Node √ﬂ∞°/¡¶∞≈ ¡ˆø¯ */
+    ACI_TEST_RAISE( ulsdCreateConnectAttrInfo( &sFnContext,
+                                               aAttribute,
+                                               aValuePtr,
+                                               aStringLength,
+                                               &sConnectAttrInfo )
+                    != ACI_SUCCESS, ERR_CREATE_CONNECT_ATTR_INFO );
+
+    ulsdRemoveConnectAttrList( aMetaDbc, aAttribute );
+
+    acpListAppendNode( &aMetaDbc->mShardDbcCxt.mConnectAttrList,
+                       &sConnectAttrInfo->mListNode );
+
+    return SQL_SUCCESS;
+
+    ACI_EXCEPTION( LABEL_ENTER_ERROR )
+    {
+        sRet = ULN_FNCONTEXT_GET_RC( &sFnContext );
+    }
+    ACI_EXCEPTION( ERR_SET_CONNECT_ATTR_ON_DATA_NODES )
+    {
+        sRet = ULN_FNCONTEXT_GET_RC( &sFnContext );
+    }
+    ACI_EXCEPTION( ERR_CREATE_CONNECT_ATTR_INFO )
+    {
+        sRet = ULN_FNCONTEXT_GET_RC( &sFnContext );
+    }
+    ACI_EXCEPTION_END;
+
+    if ( sConnectAttrInfo != NULL )
+    {
+        ulsdDestroyConnectAttrInfo( sConnectAttrInfo );
+        sConnectAttrInfo = NULL;
     }
 
     return sRet;
@@ -269,4 +308,40 @@ SQLRETURN ulsdSetConnectAttrOnNode( ulnFnContext   * aFnContext,
     ACI_EXCEPTION_END;
 
     return sRet;
+}
+
+acp_bool_t ulsdIsSetConnectAttr( ulnFnContext     * aFnContext, 
+                                 ulnConnAttrID      aConnAttrID )
+{
+    ulnDbc          * sDbc = NULL;
+    acp_bool_t        sIsSet = ACP_TRUE;
+
+    ACE_DASSERT( aFnContext->mObjType == SQL_HANDLE_DBC );
+
+    sDbc = aFnContext->mHandle.mDbc;
+    if ( sDbc->mShardDbcCxt.mShardClient == ULSD_SHARD_CLIENT_TRUE )
+    {
+        switch( sDbc->mShardDbcCxt.mShardSessionType )
+        {
+            case ULSD_SESSION_TYPE_USER:
+                sIsSet = gUlnConnAttrTable[aConnAttrID].mIsSetShardUserConn;
+                break;
+
+            case ULSD_SESSION_TYPE_LIB:
+                sIsSet = gUlnConnAttrTable[aConnAttrID].mIsSetShardLibConn;
+                break;
+
+            case ULSD_SESSION_TYPE_COORD:
+            default:
+                ACE_DASSERT(0);
+                sIsSet = ACP_TRUE;
+                break;
+        }
+    }
+    else
+    {
+        sIsSet = ACP_TRUE;
+    }
+
+    return sIsSet;
 }

@@ -99,6 +99,11 @@ public class TinyIntColumn extends AbstractColumn
         ((ByteDynamicArray) aArray).put(mByteValue);
     }
 
+    public void storeTo()
+    {
+        mValues.add(mByteValue);
+    }
+
     protected void readFromSub(CmChannel aChannel) throws SQLException
     {
         mByteValue = aChannel.readByte();
@@ -109,9 +114,19 @@ public class TinyIntColumn extends AbstractColumn
         ((ByteDynamicArray)aArray).put(aChannel.readByte());
     }
 
+    protected void readAndStoreValue(CmChannel aChannel) throws SQLException
+    {
+        mValues.add(aChannel.readByte());
+    }
+
     protected void loadFromSub(DynamicArray aArray)
     {
         mByteValue = ((ByteDynamicArray) aArray).get();
+    }
+
+    protected void loadFromSub(int aLoadIndex)
+    {
+        mByteValue = (Byte)mValues.get(aLoadIndex);
     }
 
     protected void setNullValue()

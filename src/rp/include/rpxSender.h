@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpxSender.h 85321 2019-04-25 04:58:40Z donghyun1 $
+ * $Id: rpxSender.h 90266 2021-03-19 05:23:09Z returns $
  **********************************************************************/
 
 #ifndef _O_RPX_SENDER_H_
@@ -27,16 +27,12 @@
 
 #include <cm.h>
 #include <smrDef.h>
-#include <smiLogRec.h>
-#include <smErrorCode.h>
-
 #include <qci.h>
 #include <rp.h>
 #include <rpdLogAnalyzer.h>
 #include <rpdMeta.h>
 #include <rpdTransTbl.h>
 #include <rpuProperty.h>
-#include <smiReadLogByOrder.h>
 #include <rpnComm.h>
 #include <rpnMessenger.h>
 #include <rpdSenderInfo.h>
@@ -63,7 +59,7 @@ typedef enum
 {
     RP_LOG_MGR_INIT_NONE = 0,
     RP_LOG_MGR_INIT_FAIL,
-    RP_LOG_MGR_INIT_SUCCESS,
+    RP_LOG_MGR_INIT_SUCCESS
 } RP_LOG_MGR_INIT_STATUS;
 
 typedef struct rpxSyncItem
@@ -72,12 +68,6 @@ typedef struct rpxSyncItem
     rpdMetaItem * mTable;
     ULong         mSyncedTuples;
 } rpxSyncItem;
-
-typedef struct rpxSNEntry
-{
-    smSN            mSN;
-    iduListNode     mNode;
-} rpxSNEntry;
 
 typedef struct rpxSentLogCount
 {
@@ -135,10 +125,10 @@ public:
 
     idBool isYou(const SChar * aRepName );
 
-    IDE_RC attemptHandshake(idBool *aHandshakeFlag);    // ì—°ê²° ì‹œë„
-    void   releaseHandshake();                          // ì—°ê²° í•´ì œ
+    IDE_RC attemptHandshake(idBool *aHandshakeFlag);    // ¿¬°á ½Ãµµ
+    void   releaseHandshake();                          // ¿¬°á ÇØÁ¦
  
-    IDE_RC handshakeWithoutReconnect();
+    IDE_RC handshakeWithoutReconnect( smTID aTID );
 
     void   run();
 
@@ -154,7 +144,7 @@ public:
     idBool isExit() { return mExitFlag; }
     void setExitFlag( void );
 
-    static idBool isSyncItem(qciSyncItems *aSyncItems,
+    static idBool isSyncItem(rpdReplSyncItem *aSyncItems,
                              const SChar  *aUsername,
                              const SChar  *aTablename,
                              const SChar  *aPartname);
@@ -166,6 +156,10 @@ public:
 
     static IDE_RC makeFetchColumnList(const smOID          aTableOID,
                                       smiFetchColumnList * aFetchColumnList);
+
+    static RP_META_BUILD_TYPE getMetaBuildType( RP_SENDER_TYPE   aStartType,
+                                                UInt             aParallelID );
+
 
     //for repl sync parallel
     SInt           getParallelFactor() { return mParallelFactor; };
@@ -227,7 +221,7 @@ public:
         return &mStatSession;
     }
 
-    //BUG-19970 í˜¸ì¶œ ì „ PJ_lockì¡ì•„ì•¼ í•¨
+    //BUG-19970 È£Ãâ Àü PJ_lockÀâ¾Æ¾ß ÇÔ
     ULong getJobCount( SChar *aTableName );
 
     smSN getRmtLastCommitSN();
@@ -235,15 +229,16 @@ public:
     smSN getRestartSN();
     void setRestartSN(smSN aSN);
     smSN getNextRestartSN();
+    smSN getLastArrivedSN();
     
     void getMinRestartSNFromAllApply( smSN* aRestartSN );
 
     // BUG-29115
-    // checkpointì‹œ archive logë¡œ ì „í™˜í•´ì•¼í• ì§€ ê²°ì •í•œë‹¤.
+    // checkpoint½Ã archive log·Î ÀüÈ¯ÇØ¾ßÇÒÁö °áÁ¤ÇÑ´Ù.
     void checkAndSetSwitchToArchiveLogMgr(const UInt  * aLastArchiveFileNo,
                                           idBool      * aSetLogMgrSwitch);
 
-     // LFGê°€ 1ì´ê³  archive logë¥¼ ì½ì„ ìˆ˜ ìˆëŠ” ALAì¸ê°€.
+     // LFG°¡ 1ÀÌ°í archive log¸¦ ÀĞÀ» ¼ö ÀÖ´Â ALAÀÎ°¡.
     inline idBool isArchiveALA()
         {
             if ( ( ( getRole() == RP_ROLE_ANALYSIS ) ||
@@ -259,7 +254,7 @@ public:
             }
         }
                     
-    /* BUG-31545 í†µê³„ ì •ë³´ë¥¼ ì‹œìŠ¤í…œì— ë°˜ì˜í•œë‹¤. */
+    /* BUG-31545 Åë°è Á¤º¸¸¦ ½Ã½ºÅÛ¿¡ ¹İ¿µÇÑ´Ù. */
     inline void applyStatisticsToSystem()
     {
         idvManager::applyStatisticsToSystem(&mStatSession, &mOldStatSession);
@@ -278,6 +273,11 @@ public:
     IDE_RC    addXLogKeepAlive();
 
     RP_INTR_LEVEL checkInterrupt();
+
+    IDE_RC findAndUpdateInvalidMaxSN( smiStatement    * aSmiStmt,
+                                      rpdReplSyncItem * aSyncList,
+                                      rpdReplItems    * aReplItem,
+                                      smSN              aSN);
 
     IDE_RC  updateInvalidMaxSN(smiStatement * aSmiStmt,
                                rpdReplItems * aReplItems,
@@ -341,16 +341,34 @@ public:
                                      SChar * aUserName,
                                      SChar * aDDLStmt );
 
-    idBool isSuspended( void );
+    idBool isSuspendedApply( void );
 
-    void   resume( void );
+    void   resumeApply( void );
+
+    IDE_RC checkAndErrorConditionalStart( );
+    IDE_RC checkAndSetConditionalSync( );
+
+
+    IDE_RC checkErrorWithConditionActInfo( rpdConditionActInfo * aConditionInfo, 
+                                           UInt                  aItemCount );
+
+    IDE_RC makeSyncItemsWithConditionActInfo( rpdConditionActInfo * aConditionInfo, 
+                                              UInt                  aItemCount,
+                                              RP_CONDITION_ACTION   aAction,
+                                              rpdReplSyncItem       ** aItemList );
+
+    IDE_RC truncateStart();
 
 private:
     IDE_RC    initXSN( smSN aReceiverXSN );
     void      initReadLogCount();
     void      finalize();
     IDE_RC    execOnceAtStart();
+    IDE_RC    prepareForRunning();
     IDE_RC    prepareForParallel();
+    IDE_RC    prepareForConsistent();
+    IDE_RC    xlogfileFailbackMaster();
+    IDE_RC    xlogfileFailbackSlave();
     void      cleanupForParallel();
     void      initializeAssignedTransTbl();
     void      initializeServiceTrans();
@@ -368,10 +386,10 @@ private:
     IDE_RC    doReplication();
     //IDE_RC    makeXLog( smiLogRec * aLogRec);
 
-    /* Control ê´€ë ¨ XLog ì „ì†¡ */
-    IDE_RC    addXLogHandshake();
+    /* Control °ü·Ã XLog Àü¼Û */
+    IDE_RC    addXLogHandshake( smTID aTID );
 
-    /* Incremental Sync ê´€ë ¨ XLog ì „ì†¡ */
+    /* Incremental Sync °ü·Ã XLog Àü¼Û */
     IDE_RC    addXLogSyncPKBegin();
     IDE_RC    addXLogSyncPKEnd();
     IDE_RC    addXLogFailbackEnd();
@@ -384,8 +402,8 @@ private:
     IDE_RC    syncRow(rpdMetaItem *aMetaItem,
                       smiValue    *aPKCols);
 
-    /* PROJ-1442 Replication Online ì¤‘ DDL í—ˆìš©
-     * Meta êµ¬ì„± ë° ë°˜ì˜
+    /* PROJ-1442 Replication Online Áß DDL Çã¿ë
+     * Meta ±¸¼º ¹× ¹İ¿µ
      */
     IDE_RC    buildMeta(smiStatement  * aSmiStmt,
                         SChar         * aRepName,
@@ -393,7 +411,13 @@ private:
                         idBool          aMetaForUpdateFlag,
                         rpdMeta       * aMeta);
 
-    // Replicationì˜ Minimum XSNì„ ë³€ê²½í•œë‹¤.
+    IDE_RC rebuildWithUpdateOldMeta( smiStatement     * aSmiStmt,
+                                     SChar            * aRepName,
+                                     idBool             aMetaForUpdateFlag,
+                                     rpdMeta          * aMeta,
+                                     rpdReplSyncItem  * aSyncItemList );
+
+    // ReplicationÀÇ Minimum XSNÀ» º¯°æÇÑ´Ù.
     IDE_RC  updateXSN(smSN aSN);
 
     void    sleepForNextConnect();
@@ -422,6 +446,10 @@ private:
     IDE_RC        failbackNormal();
     IDE_RC        failbackMaster();
     IDE_RC        failbackSlave();
+    
+    IDE_RC        incrementalSyncMaster();
+    IDE_RC        removeReplGapOnLazyMode();
+
     inline UInt   makeChildID(UInt aChildIdxNum){ return aChildIdxNum + 1; }
 
     idBool        isFailbackComplete(smSN aLastSN);
@@ -437,7 +465,7 @@ private:
     IDE_RC        setRestartSNforSync();
     IDE_RC        allocNBeginParallelStatements( smiStatement ** aParallelStatements );
     void          destroyParallelStatements( smiStatement * aParallelStatements );
-    IDE_RC sendRebuildIndicesRemoteSyncTables( void );
+    IDE_RC sendSyncEnd( void );
     IDE_RC sendSyncTableInfo( void );
 
     IDE_RC ddlASyncStart( void );
@@ -448,17 +476,20 @@ private:
 
 public: // need public for FIX TABLE
 
-    SChar              * mRepName;
+    SChar                mRepName[QCI_MAX_NAME_LEN + 1];
 
     RP_SENDER_TYPE       mCurrentType;
+    RP_SENDER_TYPE       mStartType;
     UInt                 mParallelID;
     
+    UInt                 mApplyRetryCount;
+
     idBool               mStartComplete;
     idBool               mRetryError;
     idBool               mSetHostFlag;
     idBool               mStartError;
 
-    /* For Parallel Logging: LSN -> SNìœ¼ë¡œ ë³€ê²½ */
+    /* For Parallel Logging: LSN -> SNÀ¸·Î º¯°æ */
     smSN                 mXSN;
     smSN                 mOldMaxXSN;
     smSN                 mCommitXSN;
@@ -491,9 +522,9 @@ public:
     IDE_RC    waitThreadJoin(idvSQL *aStatistics);
 
     void      signalThreadJoin();
-    /* PROJ-1915 RemoteLogì— ë§ˆì§€ë§‰ SNì„ ë¦¬í„´ */
+    /* PROJ-1915 RemoteLog¿¡ ¸¶Áö¸· SNÀ» ¸®ÅÏ */
     IDE_RC    getRemoteLastUsedGSN(smSN * aSN);
-    /* PROJ-1915 RemoteLog ì •ë³´ë¥¼ ê²€ì¦ */
+    /* PROJ-1915 RemoteLog Á¤º¸¸¦ °ËÁõ */
     IDE_RC    checkOffLineLogInfo();
     IDE_RC    setHostForNetwork( SChar* aIP, SInt aPort );
 
@@ -502,9 +533,8 @@ public:
     IDE_RC    allocAndRebuildNewSentLogCount( void );
 
 private:
-
     idBool             mIsRemoteFaultDetect;
-    //sync startì¼ ê²½ìš° mStartCompleteë¥¼ ì²´í¬í•˜ê³  ìˆëŠ”ì§€ í™•ì¸
+    //sync startÀÏ °æ¿ì mStartComplete¸¦ Ã¼Å©ÇÏ°í ÀÖ´ÂÁö È®ÀÎ
     idBool             mCheckingStartComplete;
 
     SInt               mMetaIndex;
@@ -537,8 +567,8 @@ private:
     rpxPJMgr         * mSyncer;
     iduMutex           mSyncerMutex;
 
-    // PROJ-1296
-    qciSyncItems      *mSyncItems;
+    rpdReplSyncItem     * mSyncInsertItems;
+    rpdReplSyncItem     * mSyncTruncateItems;
 
     //PROJ-1541
     rpdSenderInfo     *mSenderInfoArray;
@@ -555,9 +585,9 @@ private:
     //for recovery sender
     smSN               mActiveRPRecoverySN; 
 
-    SInt               mFailbackStatus;   // Handshake ì‹œ ê²°ì •í•œ Failback ìƒíƒœ
+    SInt               mFailbackStatus;   // Handshake ½Ã °áÁ¤ÇÑ Failback »óÅÂ
 
-    /* BUG-31545 ìˆ˜í–‰ì‹œê°„ í†µê³„ì •ë³´ */
+    /* BUG-31545 ¼öÇà½Ã°£ Åë°èÁ¤º¸ */
     idvSQL             mOpStatistics;
     idvSession         mStatSession;
     idvSession         mOldStatSession;
@@ -570,9 +600,9 @@ private:
 
     idBool             mIsGroupingMode;
 
-    /* Key range êµ¬ì„±ì„ í• ë•Œ ì‚¬ìš©í•˜ëŠ” ë©”ëª¨ë¦¬ ì˜ì—­,
-     * Performanceë¥¼ ìœ„í•´ rpxSender ë‚´ì— ë¯¸ë¦¬ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•´ ë†“ê³ ,
-     * ë°˜ë³µí•˜ì—¬ ê·¸ ë©”ëª¨ë¦¬ë¥¼ ì¬ì‚¬ìš©í•˜ë„ë¡ í•œë‹¤.
+    /* Key range ±¸¼ºÀ» ÇÒ¶§ »ç¿ëÇÏ´Â ¸Ş¸ğ¸® ¿µ¿ª,
+     * Performance¸¦ À§ÇØ rpxSender ³»¿¡ ¹Ì¸® ¸Ş¸ğ¸®¸¦ ÇÒ´çÇØ ³õ°í,
+     * ¹İº¹ÇÏ¿© ±× ¸Ş¸ğ¸®¸¦ Àç»ç¿ëÇÏµµ·Ï ÇÑ´Ù.
      * Used Only - rpxSender::getKeyRange()
      * failbackMaster
      */                             
@@ -582,7 +612,9 @@ private:
     UInt                   mSentLogCountArraySize;
     rpxSentLogCount      * mSentLogCountArray;
     rpxSentLogCount     ** mSentLogCountSortedArray;
-    
+   
+    idBool               mIsSetRestartSNforSync;
+
     IDE_RC allocSentLogCount( void );
     void freeSentLogCount( void );
 
@@ -600,8 +632,8 @@ private:
 
 public:
     /* PROJ-1915 */
-    rpdMeta        * mRemoteMeta; /* Executorì— ë³´ê´€ ëœ ë©”íƒ€ë¥¼ ë°›ëŠ” ë©”íƒ€
-                                     ì´ê±¸ mMetaì— í´ë¡ ìœ¼ë¡œ í•˜ì—¬ offline senderê°€ ì¢…ì‘ í•œë‹¤. */
+    rpdMeta        * mRemoteMeta; /* Executor¿¡ º¸°ü µÈ ¸ŞÅ¸¸¦ ¹Ş´Â ¸ŞÅ¸
+                                     ÀÌ°É mMeta¿¡ Å¬·ĞÀ¸·Î ÇÏ¿© offline sender°¡ Á¾ÀÛ ÇÑ´Ù. */
     SChar          * mLogDirPath[SM_LFG_COUNT];
     UInt             mRemoteLFGCount;
 

@@ -2,17 +2,18 @@ include $(ALTIBASE_HOME)/install/altibase_env.mk
 
 BINS=connect1 connect2 free select insert update delete                       \
 	 cursor1 cursor2 dynamic1 dynamic2 dynamic3 dynamic4 psm1 psm2            \
-	 psm3 psm4 date varchar binary arrays1 arrays2 argument indicator         \
-	 runtime_error_check whenever mc1 mc2 mc3 mt1 mt2 pointer declare_stmt     
+	 psm3 psm4 anon date varchar binary arrays1 arrays2 argument indicator   \
+	 runtime_error_check whenever mc1 mc2 mc3 mt1 mt2 pointer declare_stmt numeric \
+	 diagnostics
 BINS2=cparsefull macro
 SRCS=connect1.sc connect2.sc free.sc                                       \
 	 select.sc insert.sc update.sc delete.sc                               \
 	 cursor1.sc cursor2.sc dynamic1.sc dynamic2.sc dynamic3.sc dynamic4.sc \
-	 psm1.sc psm2.sc psm3.sc psm4.sc date.sc varchar.sc binary.sc          \
+	 psm1.sc psm2.sc psm3.sc psm4.sc anon.sc date.sc varchar.sc binary.sc \
 	 arrays1.sc arrays2.sc argument.sc indicator.sc                        \
 	 runtime_error_check.sc whenever1.sc whenever2.sc                      \
 	 mc1.sc mc2.sc mc3.sc mt1.sc mt2.sc pointer.sc declare_stmt.sc         \
-	 cparsefull.sc macro.sc
+	 numeric.sc cparsefull.sc macro.sc diagnostics.sc
 
 APRES=$(SRCS:.sc=.cpp)
 OBJS=$(SRCS:.cpp=.$(OBJEXT))
@@ -73,6 +74,9 @@ psm3: psm3.$(OBJEXT)
 psm4: psm4.$(OBJEXT)
 	$(LD) $(LFLAGS) $(LDOUT)$@$(BINEXT) $^ $(LIBOPT)apre$(LIBAFT) $(LIBOPT)odbccli$(LIBAFT) $(LIBS)
 
+anon: anon.$(OBJEXT)
+	$(LD) $(LFLAGS) $(LDOUT)$@$(BINEXT) $^ $(LIBOPT)apre$(LIBAFT) $(LIBOPT)odbccli$(LIBAFT) $(LIBS)
+
 date: date.$(OBJEXT)
 	$(LD) $(LFLAGS) $(LDOUT)$@$(BINEXT) $^ $(LIBOPT)apre$(LIBAFT) $(LIBOPT)odbccli$(LIBAFT) $(LIBS)
 
@@ -119,6 +123,12 @@ pointer: pointer.$(OBJEXT)
 	$(LD) $(LFLAGS) $(LDOUT)$@$(BINEXT) $^ $(LIBOPT)apre$(LIBAFT) $(LIBOPT)odbccli$(LIBAFT) $(LIBS)
 
 declare_stmt: declare_stmt.$(OBJEXT)
+	$(LD) $(LFLAGS) $(LDOUT)$@$(BINEXT) $^ $(LIBOPT)apre$(LIBAFT) $(LIBOPT)odbccli$(LIBAFT) $(LIBS)
+
+numeric: numeric.$(OBJEXT)
+	$(LD) $(LFLAGS) $(LDOUT)$@$(BINEXT) $^ $(LIBOPT)apre$(LIBAFT) $(LIBOPT)odbccli$(LIBAFT) $(LIBS)
+
+diagnostics: diagnostics.$(OBJEXT)
 	$(LD) $(LFLAGS) $(LDOUT)$@$(BINEXT) $^ $(LIBOPT)apre$(LIBAFT) $(LIBOPT)odbccli$(LIBAFT) $(LIBS)
 
 parsefull:

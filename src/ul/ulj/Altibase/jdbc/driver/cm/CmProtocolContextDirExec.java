@@ -16,11 +16,18 @@
 
 package Altibase.jdbc.driver.cm;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 public class CmProtocolContextDirExec extends CmProtocolContext
 {
+    private final List<Map<String,Object>> mDeferredRequests;   // BUG-48431 deferred된 prepare 요청 목록
+
     public CmProtocolContextDirExec(CmChannel aChannel)
     {
         super(aChannel);
+        mDeferredRequests = new ArrayList<>();
     }
     
     public CmPrepareResult getPrepareResult()
@@ -66,5 +73,20 @@ public class CmProtocolContextDirExec extends CmProtocolContext
     public void setResultSetId(short aResultSetId)
     {
         getFetchResult().setResultSetId(aResultSetId);
+    }
+
+    public void addDeferredRequest(Map<String, Object> aMethodInfo)
+    {
+        mDeferredRequests.add(aMethodInfo);
+    }
+
+    public List<Map<String, Object>> getDeferredRequests()
+    {
+        return mDeferredRequests;
+    }
+
+    public void clearDeferredRequests()
+    {
+        mDeferredRequests.clear();
     }
 }

@@ -26,6 +26,7 @@ import Altibase.jdbc.driver.datatype.ColumnFactory;
 import Altibase.jdbc.driver.datatype.IntegerColumn;
 import Altibase.jdbc.driver.datatype.StringPropertyColumn;
 import Altibase.jdbc.driver.datatype.TinyIntColumn;
+import Altibase.jdbc.driver.sharding.core.GlobalTransactionLevel;
 import Altibase.jdbc.driver.util.AltibaseProperties;
 
 public class CmProtocolContextConnect extends CmProtocolContext
@@ -44,7 +45,7 @@ public class CmProtocolContextConnect extends CmProtocolContext
 
     public CmProtocolContextConnect()
     {
-        // PROJ-2690 CmProtocolContextShardConnnectÏóêÏÑú ÏÉÅÏÜçÌïòÍ∏∞ ÎïåÎ¨∏Ïóê default ÏÉùÏÑ±Ïûê Ï∂îÍ∞Ä
+        // PROJ-2690 CmProtocolContextShardConnnectø°º≠ ªÛº”«œ±‚ ∂ßπÆø° default ª˝º∫¿⁄ √ﬂ∞°
     }
 
     public CmHandshakeResult getHandshakeResult()
@@ -175,6 +176,27 @@ public class CmProtocolContextConnect extends CmProtocolContext
     public int getIsolationLevel() throws NumberFormatException, SQLException
     {
         return Integer.parseInt(getPropertyResult().getProperty(AltibaseProperties.PROP_CODE_ISOLATION_LEVEL));
+    }
+
+    public GlobalTransactionLevel getGlobalTransactionLevel() throws NumberFormatException, SQLException
+    {
+        short sPropValue = Short.parseShort(getPropertyResult().getProperty(AltibaseProperties.PROP_CODE_GLOBAL_TRANSACTION_LEVEL));
+        return GlobalTransactionLevel.get(sPropValue);
+    }
+
+    public short getShardStatementRetry() throws NumberFormatException, SQLException
+    {
+        return Short.parseShort(getPropertyResult().getProperty(AltibaseProperties.PROP_CODE_SHARD_STATEMENT_RETRY));
+    }
+
+    public int getIndoubtFetchTimeout() throws NumberFormatException, SQLException
+    {
+        return Integer.parseInt(getPropertyResult().getProperty(AltibaseProperties.PROP_CODE_INDOUBT_FETCH_TIMEOUT));
+    }
+
+    public short getIndoubtFetchMethod() throws NumberFormatException, SQLException
+    {
+        return Short.parseShort(getPropertyResult().getProperty(AltibaseProperties.PROP_CODE_INDOUBT_FETCH_METHOD));
     }
 
     int getPropertyCount()

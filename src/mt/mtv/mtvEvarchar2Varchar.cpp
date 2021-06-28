@@ -115,7 +115,7 @@ IDE_RC mtvCalculate_Evarchar2Varchar( mtcNode     * aNode,
                         "sEncColumn->module->id : %"ID_UINT32_FMT"\n",
                         sEncColumn->module->id );
         
-        if( sEncColumn->policy[0] != '\0' )
+        if ( sEncColumn->mColumnAttr.mEncAttr.mPolicy[0] != '\0' )
         {
             if( sEvarcharValue->mCipherLength > 0)
             {
@@ -126,7 +126,7 @@ IDE_RC mtvCalculate_Evarchar2Varchar( mtcNode     * aNode,
                           != IDE_SUCCESS );
                 
                 IDE_TEST( aTemplate->decrypt( & sDecryptInfo,
-                                              sEncColumn->policy,
+                                              sEncColumn->mColumnAttr.mEncAttr.mPolicy,
                                               sEvarcharValue->mValue,
                                               sEvarcharValue->mCipherLength,
                                               sPlain,

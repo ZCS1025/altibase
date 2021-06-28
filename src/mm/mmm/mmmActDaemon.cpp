@@ -46,7 +46,7 @@ static IDE_RC mmmPhaseActionDaemon(mmmPhase         /*aPhase*/,
         }
         else
         {
-            // daemonizeë˜ë©´, ëª¨ë“  FDê°€ ë‹«íˆë¯€ë¡œ, ë‹¤ì‹œ open í•˜ë„ë¡ í•œë‹¤.
+            // daemonizeµÇ¸é, ¸ğµç FD°¡ ´İÈ÷¹Ç·Î, ´Ù½Ã open ÇÏµµ·Ï ÇÑ´Ù.
             IDE_TEST(ideLog::destroyStaticModule() != IDE_SUCCESS);
     
             IDE_TEST(idlVA::daemonize(idp::getHomeDir(), 1) != 0);
@@ -55,7 +55,7 @@ static IDE_RC mmmPhaseActionDaemon(mmmPhase         /*aPhase*/,
         }
 
         /*
-         * PIDê°€ ë‹¬ë¼ì¡Œìœ¼ë‹ˆ main threadì˜ bucket listë¥¼ ì¬ì‘ì„±í•œë‹¤.
+         * PID°¡ ´Ş¶óÁ³À¸´Ï main threadÀÇ bucket list¸¦ ÀçÀÛ¼ºÇÑ´Ù.
          */
         idtContainer::initializeBucket();
     }

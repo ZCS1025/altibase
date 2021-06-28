@@ -16,13 +16,13 @@
  
 
 /***********************************************************************
- * $Id: qsfGroupingID.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: qsfGroupingID.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  *
  * GROUPING_ID ( Expression,... )
- *  Group By ì— í•´ë‹¹í•˜ëŠ”  Expression
- *  GROUP By ROLLUP, CUBE êµ¬ë¬¸ì´ í•­ìƒ ë‚˜ì™€ì•¼í•œë‹¤.
- *  sSFWGH->groupingDataAddr ì˜ Pseudo Columnì— Rollupì´ë‚˜ Cubeì˜
- *  í¬ì¸í„°ê°€ ìˆë‹¤. ì´ë¥¼ í†µí•´ì„œ ì°¸ì¡° ë°ì´í„°ë¥¼ ì–»ì–´ì„œ ê³„ì‚°í•œë‹¤.
+ *  Group By ¿¡ ÇØ´çÇÏ´Â  Expression
+ *  GROUP By ROLLUP, CUBE ±¸¹®ÀÌ Ç×»ó ³ª¿Í¾ßÇÑ´Ù.
+ *  sSFWGH->groupingDataAddr ÀÇ Pseudo Column¿¡ RollupÀÌ³ª CubeÀÇ
+ *  Æ÷ÀÎÅÍ°¡ ÀÖ´Ù. ÀÌ¸¦ ÅëÇØ¼­ ÂüÁ¶ µ¥ÀÌÅÍ¸¦ ¾ò¾î¼­ °è»êÇÑ´Ù.
  ***********************************************************************/
 
 #include <qsf.h>
@@ -159,8 +159,8 @@ static IDE_RC qsfGroupingIDMakeInfo( mtcNode     * aNode,
 
         sIsTrue    = ID_FALSE;
         sIsTrueTmp = ID_FALSE;
-        // GROUPING_ID()ëŠ” ë‹¤ìˆ˜ì˜ ì¸ìê°€ ì˜¬ ìˆ˜ ìˆìŒ
-        // PROJ-2415 Grouping Sets Clauseë¥¼ ì§„í–‰ í•˜ë©´ì„œ ë°œê²¬ ëœ ë²„ê·¸ ì²˜ë¦¬
+        // GROUPING_ID()´Â ´Ù¼öÀÇ ÀÎÀÚ°¡ ¿Ã ¼ö ÀÖÀ½
+        // PROJ-2415 Grouping Sets Clause¸¦ ÁøÇà ÇÏ¸é¼­ ¹ß°ß µÈ ¹ö±× Ã³¸®
         sLocation = -3;
 
         for ( sGroup = aSFWGH->group; sGroup != NULL; sGroup = sGroup->next )
@@ -196,9 +196,9 @@ static IDE_RC qsfGroupingIDMakeInfo( mtcNode     * aNode,
                 {
                     sIsTrueTmp = ID_TRUE;
                     
-                    // Grouping Sets Transform ì— ì˜í•´ ì†Œë©¸ ë  Groupì€ locationì´ -1 ë¡œ ì„¸íŒ… í•œë‹¤.
-                    // QMS_GROUPBY_NORMAL Typeì˜ Groupì´
-                    // ì¡´ì¬ í•  ê²½ìš° QMS_GROUPBY_NULLë³´ë‹¤ ìš°ì„ í•˜ê¸° ë•Œë¬¸ì— break í•˜ì§€ ì•ŠëŠ”ë‹¤.
+                    // Grouping Sets Transform ¿¡ ÀÇÇØ ¼Ò¸ê µÉ GroupÀº locationÀÌ -1 ·Î ¼¼ÆÃ ÇÑ´Ù.
+                    // QMS_GROUPBY_NORMAL TypeÀÇ GroupÀÌ
+                    // Á¸Àç ÇÒ °æ¿ì QMS_GROUPBY_NULLº¸´Ù ¿ì¼±ÇÏ±â ¶§¹®¿¡ break ÇÏÁö ¾Ê´Â´Ù.
                     sLocation = -1;
                 }
                 else
@@ -391,12 +391,12 @@ IDE_RC qsfGroupingIDFinalize( mtcNode     * aNode,
         {
             if ( sGroupingIDInfo->location[ sIndex ] == -2 )
             {
-                // QMS_GROUPBY_NORMAL ì¼ ê²½ìš°
+                // QMS_GROUPBY_NORMAL ÀÏ °æ¿ì
                 // Nothing to do.                
             }
             else if ( sGroupingIDInfo->location[ sIndex ] == -1 )
             {
-                // Grouping Sets Transform ì— ì˜í•´ ì†Œë©¸ ëœ Groupì€ locationì´
+                // Grouping Sets Transform ¿¡ ÀÇÇØ ¼Ò¸ê µÈ GroupÀº locationÀÌ
                 sValue |= sValueBit;
             }
             else
@@ -428,12 +428,12 @@ IDE_RC qsfGroupingIDFinalize( mtcNode     * aNode,
                     {
                         if ( sGroupingIDInfo->location[ sIndex ] == -2 )
                         {
-                            // QMS_GROUPBY_NORMAL Typeì˜ Group
+                            // QMS_GROUPBY_NORMAL TypeÀÇ Group
                             // Nothing to do.
                         }
                         else if ( sGroupingIDInfo->location[ sIndex ] == -1 )
                         {
-                            // Grouping Sets Transformì— ì˜í•´ ì†Œë©¸ ëœ Group
+                            // Grouping Sets Transform¿¡ ÀÇÇØ ¼Ò¸ê µÈ Group
                             sValue |= sValueBit;
                         }
                         else
@@ -459,12 +459,12 @@ IDE_RC qsfGroupingIDFinalize( mtcNode     * aNode,
                     {
                         if ( sGroupingIDInfo->location[ sIndex ] == -2 )
                         {
-                            // QMS_GROUPBY_NORMAL Typeì˜ Group
+                            // QMS_GROUPBY_NORMAL TypeÀÇ Group
                             // Nothing to do.
                         }
                         else if ( sGroupingIDInfo->location[sIndex] == -1 )
                         {
-                            // Grouping Sets Transformì— ì˜í•´ ì†Œë©¸ ëœ Group
+                            // Grouping Sets Transform¿¡ ÀÇÇØ ¼Ò¸ê µÈ Group
                             sValue |= sValueBit;
                         }
                         else

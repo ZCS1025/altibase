@@ -19,11 +19,11 @@
  * $Id$
  *
  * Description :
- *     Anti join graphë¥¼ ìœ„í•œ ì •ì˜
+ *     Anti join graph¸¦ À§ÇÑ Á¤ÀÇ
  *
- * ìš©ì–´ ì„¤ëª… :
+ * ¿ë¾î ¼³¸í :
  *
- * ì•½ì–´ :
+ * ¾à¾î :
  *
  **********************************************************************/
 
@@ -45,19 +45,19 @@ enum qmgAntiJoinMethod
 };
 
 //---------------------------------------------------
-// Anti join graph ë¥¼ ê´€ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
+// Anti join graph ¸¦ °ü¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
 //---------------------------------------------------
 
 class qmgAntiJoin
 {
 public:
-    // Join Relationì— ëŒ€ì‘í•˜ëŠ” qmgJoin Graph ì˜ ì´ˆê¸°í™”
+    // Join Relation¿¡ ´ëÀÀÇÏ´Â qmgJoin Graph ÀÇ ÃÊ±âÈ­
     static IDE_RC  init( qcStatement * aStatement,
                          qmgGraph    * aLeftGraph,
                          qmgGraph    * aRightGraph,
                          qmgGraph    * aGraph);
 
-    // Graphì˜ ìµœì í™” ìˆ˜í–‰
+    // GraphÀÇ ÃÖÀûÈ­ ¼öÇà
     static IDE_RC  optimize( qcStatement * aStatement, qmgGraph * aGraph );
 
 };

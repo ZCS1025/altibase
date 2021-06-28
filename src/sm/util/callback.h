@@ -55,6 +55,7 @@ smiGlobalCallBackList gCallBack =
     NULL,   // getColumnMapFromColumnHeaderFunc
     NULL,   // needMinMaxStatistics
     NULL,   // getColumnStoreLen
-    NULL    // isUsablePartialDirectKeyIndex
+    NULL,   // isUsablePartialDirectKeyIndex
+    NULL
 };
 

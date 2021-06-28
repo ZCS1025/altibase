@@ -1,4 +1,4 @@
-# $Id: Makefile 83627 2018-08-06 10:11:18Z lswhh $
+# $Id: Makefile 90308 2021-03-24 08:32:25Z donlet $
 #
 
 include ../../utEnv.mk
@@ -33,7 +33,7 @@ endif
 DEP_LIBS += $(LIBS)
 
 ILOADER_DEP_LIBS := $(DEP_LIBS) $(foreach i, altiutil id pd odbccli, $(LIBOPT)$(i)$(LIBAFT))
-SHARDLOADER_DEP_LIBS := $(DEP_LIBS) $(foreach i, altiutil id pd shardloadercli, $(LIBOPT)$(i)$(LIBAFT))
+SHARDLOADER_DEP_LIBS := $(DEP_LIBS) $(foreach i, altiutil id pd shardcli, $(LIBOPT)$(i)$(LIBAFT))
 
 ILOADERARC = $(LIBPRE)$(PRODUCT_PREFIX)iloaderobj.$(LIBEXT)
 SHARDLOADERARC = $(LIBPRE)$(PRODUCT_PREFIX)shardloaderobj.$(LIBEXT)
@@ -46,7 +46,7 @@ ILOADER_OBJS=$(SRCS:$(DEV_DIR)/%.cpp=$(TARGET_DIR)/%.$(OBJEXT))
 SHARDLOADER_OBJS=$(SRCS:$(DEV_DIR)/%.cpp=$(TARGET_DIR)/%_sdld.$(OBJEXT))
 
 quiet_cmd_c_o_cc_sdld = CC $@
-      cmd_c_o_cc_sdld = mkdir -p $(dir $@); $(COMPILE.cc) -DCOMPILE_SHARDCLI -DCOMPILE_SHARDLOADERCLI $(INCLUDES) $(CCOUT)$@ $<
+      cmd_c_o_cc_sdld = mkdir -p $(dir $@); $(COMPILE.cc) -DCOMPILE_SHARDCLI $(INCLUDES) $(CCOUT)$@ $<
 
 define COMPILE_IT_CC_SDLD
   $(Q) $(if $(quiet),echo ' $($(quiet)cmd_c_o_cc_sdld)')

@@ -20,6 +20,7 @@ package Altibase.jdbc.driver.sharding.executor;
 import Altibase.jdbc.driver.sharding.core.DataNode;
 
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -49,13 +50,18 @@ public class BatchPreparedStatementExecutor
     {
         List<BatchPreparedStatementUnit> sBatchStmtUnits = new ArrayList<BatchPreparedStatementUnit>(
                 mBatchPreparedStatementUnitMap.values());
+        List<Statement> sStmtList = new ArrayList<Statement>();
+        for (BatchPreparedStatementUnit sBatchUnit : sBatchStmtUnits)
+        {
+            sStmtList.add(sBatchUnit.getStatement());
+        }
 
-        return accumulate(mExecutorEngine.executeStatement(sBatchStmtUnits,
+        return accumulate(mExecutorEngine.executeStatement(sStmtList,
                           new ExecuteCallback<int[]>()
             {
-                public int[] execute(final BaseStatementUnit aBaseStatementUnit) throws SQLException
+                public int[] execute(final Statement aStatement) throws SQLException
                 {
-                    return aBaseStatementUnit.getStatement().executeBatch();
+                    return aStatement.executeBatch();
                 }
             })
         );
@@ -70,7 +76,7 @@ public class BatchPreparedStatementExecutor
             for (Map.Entry<Integer, Integer> sEntry : sEach.getAddBatchCallTimesMap().entrySet())
             {
                 int sValue = (aResults.get(sCount) == null) ? 0 : aResults.get(sCount)[sEntry.getValue()];
-                // BUG-46500 í•˜ë‚˜ì˜ addBatchì— ì—¬ëŸ¬ê°œì˜ ë…¸ë“œê°€ ì‹¤í–‰ ë  ìˆ˜ ìˆê¸° ë•Œë¬¸ì— ê°’ì„ ëˆ„ì í•´ì•¼ í•œë‹¤.
+                // BUG-46500 ÇÏ³ªÀÇ addBatch¿¡ ¿©·¯°³ÀÇ ³ëµå°¡ ½ÇÇà µÉ ¼ö ÀÖ±â ¶§¹®¿¡ °ªÀ» ´©ÀûÇØ¾ß ÇÑ´Ù.
                 sResult[sEntry.getKey()] += sValue;
             }
             sCount++;

@@ -42,8 +42,8 @@
 # define TSM_TYPE_POINT              ( 5)
 # define TSM_TYPE_LOB                ( 6)
 
-/* BUG-26667 TSM TESTì¤‘ sdnbModule.cpp assertë°œìƒ
- * Proj-1872 DiskIndexì €ì¥êµ¬ì¡°ìµœì í™”ì˜ ë¯¸ë°˜ì˜ëœ ë¶€ë¶„ì„ ì¶”ê°€ ë°˜ì˜í•©ë‹ˆë‹¤. */
+/* BUG-26667 TSM TESTÁß sdnbModule.cpp assert¹ß»ı
+ * Proj-1872 DiskIndexÀúÀå±¸Á¶ÃÖÀûÈ­ÀÇ ¹Ì¹İ¿µµÈ ºÎºĞÀ» Ãß°¡ ¹İ¿µÇÕ´Ï´Ù. */
 # define TSM_COLUMN_COMPARE_TYPE_MASK          (0x00000C00) //src : smiDef.h:827
 # define TSM_COLUMN_COMPARE_NORMAL             (0x00000000)
 # define TSM_COLUMN_COMPARE_KEY_AND_VROW       (0x00000400)
@@ -106,9 +106,9 @@ typedef struct tsmColumn
     UInt            vcInOutBaseSize;
     UInt                       size;
     void                     *value;
-    scSpaceID              colSpace; // PROJ-1362 LOB, LOB columnì—ì„œë§Œ ì˜ë¯¸ìˆë‹¤.
-    scGRID                   colSeg; // PROJ-1362 LOB, LOB columnì—ì„œë§Œ ì˜ë¯¸ìˆë‹¤.
-    void                   *descSeg; /* Disk Lob Segmentì— ëŒ€í•œ ê¸°ìˆ ì */
+    scSpaceID              colSpace; // PROJ-1362 LOB, LOB column¿¡¼­¸¸ ÀÇ¹ÌÀÖ´Ù.
+    scGRID                   colSeg; // PROJ-1362 LOB, LOB column¿¡¼­¸¸ ÀÇ¹ÌÀÖ´Ù.
+    void                   *descSeg; /* Disk Lob Segment¿¡ ´ëÇÑ ±â¼úÀÚ */
     SChar                  name[40];
     UInt                       type;
     UInt                     length;
@@ -150,14 +150,14 @@ IDE_RC tsmCallbackFuncForMessage( const SChar * /*aMsg*/, SInt );
 
 extern smiGlobalCallBackList gTsmGlobalCallBackList;
 
-// Tableì´ ì†í•˜ëŠ” Tablespaceì˜ IDë¥¼ ë¦¬í„´í•œë‹¤.
+// TableÀÌ ¼ÓÇÏ´Â TablespaceÀÇ ID¸¦ ¸®ÅÏÇÑ´Ù.
 scSpaceID tsmGetSpaceID( const void * aTable );
 
-// Column Listì•ˆì˜ Columnì— SpaceIDë¥¼ ì„¸íŒ…í•œë‹¤.
+// Column List¾ÈÀÇ Column¿¡ SpaceID¸¦ ¼¼ÆÃÇÑ´Ù.
 IDE_RC tsmSetSpaceID2Columns( smiColumnList * aColumnList,
                               scSpaceID aTBSID );
 
-/* BUG-23680 [5.3.1 Release] TSM ì •ìƒí™” */
+/* BUG-23680 [5.3.1 Release] TSM Á¤»óÈ­ */
 IDE_RC tsmClearVariableFlag( smiColumnList * aColumnList );
 
 void tsmLog(const SChar *aFmt, ...);
@@ -339,7 +339,7 @@ void tsmMakeFetchColumnList( const void            *aTable,
 
 timeval tsmGetCurTime();
 
-/*BUG-30517 tsmì€ offset useless fixed columnì„ ê³ ë ¤í•˜ì§€ ì•Šê³  ìˆìŠµë‹ˆë‹¤. */
+/*BUG-30517 tsmÀº offset useless fixed columnÀ» °í·ÁÇÏÁö ¾Ê°í ÀÖ½À´Ï´Ù. */
 const void* tsmGetVarColumn( const void*       aRow,
                              const smiColumn * aColumn,
                              UInt*             aLength,

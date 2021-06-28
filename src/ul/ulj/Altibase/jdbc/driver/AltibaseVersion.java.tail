@@ -14,7 +14,7 @@
                                                          | ((long) CM_MINOR_VERSION << 32L)
                                                          | ((long) CM_PATCH_VERSION);
 
-    private static final String  JAVA_VERSION_PATTERN_REGEX = "java version ([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:[\\._]([0-9]+))?";
+    private static final String  JAVA_VERSION_PATTERN_REGEX = "(?:openjdk|java) version ([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:[\\._]([0-9]+))?";
     private static final Pattern JAVA_VERSION_PATTERN       = Pattern.compile(JAVA_VERSION_PATTERN_REGEX);
     private static final int     JAVA_MAJOR_VERSION;
     private static final int     JAVA_MINOR_VERSION;
@@ -53,7 +53,7 @@
     {
         System.out.println("Altibase " + ALTIBASE_VERSION_STRING
                            + " with CMP " + CM_VERSION_STRING
-                           + " for JDBC 3.0"
+                           + " for JDBC 4.2"
                            + (TraceFlag.TRACE_COMPILE ? " trace" : "")
                            + " compiled with JDK " + JDK_VERSION_STRING + "(sharding included)");
     }

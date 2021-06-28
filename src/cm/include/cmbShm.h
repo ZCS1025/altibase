@@ -19,7 +19,7 @@
 
 #if !defined(CM_DISABLE_IPC)
 
-/**** ê³µìœ  ë©”ëª¨ë¦¬ êµ¬ì¡°
+/**** °øÀ¯ ¸Þ¸ð¸® ±¸Á¶
 
   shm buffer ---->0 + -------------+ <----+  <---- start of a channel info
                     | channel info |      |
@@ -62,7 +62,7 @@ that structures include information for extra-buffer.
 #define CMB_SHM_DEFAULT_BUFFER_COUNT   (2)
 
 // bug-27250 free Buf list can be crushed when client killed
-// semaphore undoìš© ì´ˆê¸°ê°’ (10ì€ ìž„ì˜ì˜ ë„‰ë„‰í•œ ê°’ìž„)
+// semaphore undo¿ë ÃÊ±â°ª (10Àº ÀÓÀÇÀÇ ³Ë³ËÇÑ °ªÀÓ)
 #define CMB_SHM_SEMA_UNDO_VALUE        10
 
 typedef struct cmbShmInfo
@@ -74,14 +74,14 @@ typedef struct cmbShmInfo
 } cmbShmInfo;
 
 /*
- * Shared Memoryì— ì¡´ìž¬
+ * Shared Memory¿¡ Á¸Àç
  */
 
 typedef struct cmbShmChannelInfo    // must be align by 8 byte
 {
-    UInt   mTicketNum;              // BUG-32398 íƒ€ìž„ìŠ¤íƒ¬í”„ì—ì„œ í‹°ì¼“ë²ˆí˜¸ë¡œ ë³€ê²½
-                                    // New Connectionì‹œ ì„¤ì •. prevent IPC ghost-connection
-    ULong  mPID;                    // Clientì˜ PID
+    UInt   mTicketNum;              // BUG-32398 Å¸ÀÓ½ºÅÆÇÁ¿¡¼­ Æ¼ÄÏ¹øÈ£·Î º¯°æ
+                                    // New Connection½Ã ¼³Á¤. prevent IPC ghost-connection
+    ULong  mPID;                    // ClientÀÇ PID
 } cmbShmChannelInfo;
 
 inline ULong cmbShmGetFullSize(UInt aChannelCount)

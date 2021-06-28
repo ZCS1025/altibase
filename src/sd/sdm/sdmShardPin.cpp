@@ -1,4 +1,4 @@
-#include <qci.h>
+#include <sdi.h>
 #include <sdm.h>
 #include <sdmShardPin.h>
 
@@ -33,28 +33,35 @@ void sdmShardPinMgr::initShardPinInfo( sdmShardPinInfo *aShardPinInfo )
     aShardPinInfo->mReserved        = (UChar)SDM_SHARD_PIN_RESEREVED;
     aShardPinInfo->mSeq             = 0;
 
-    initMetaNodeInfo( &aShardPinInfo->mMetaNodeInfo );
+    initShardNodeID( &aShardPinInfo->mShardNodeInfo );
 }
 
-void sdmShardPinMgr::initMetaNodeInfo( sdmMetaNodeInfo *aMetaNodeInfo )
+void sdmShardPinMgr::initShardNodeID( sdmShardNodeInfo *aMetaNodeInfo )
 {
-    aMetaNodeInfo->mMetaNodeId      = SDM_DEFAULT_META_NODE_ID;
+    aMetaNodeInfo->mShardNodeId      = SDM_DEFAULT_SHARD_NODE_ID;
 }
 
 void sdmShardPinMgr::loadShardPinInfo()
 {
-    sdiLocalMetaNodeInfo sMetaNodeInfo;
+    sdiLocalMetaInfo sLocalMetaInfo;
 
     IDE_TEST_CONT( isSupport()             == ID_FALSE, NO_SHARD_ENABLE );
     IDE_TEST_CONT( sdi::checkMetaCreated() == ID_FALSE, NO_SHARD_ENABLE );
 
-    if ( sdm::getLocalMetaNodeInfo( &sMetaNodeInfo ) == IDE_SUCCESS )
+    if ( sdm::getLocalMetaInfo( &sLocalMetaInfo ) == IDE_SUCCESS )
     {
-        copyMetaNodeInfo( &mShardPinInfo.mMetaNodeInfo, &sMetaNodeInfo );
+        if ( sLocalMetaInfo.mShardNodeId != SDM_DEFAULT_SHARD_NODE_ID )
+        {
+            copyShardNodeID( &mShardPinInfo.mShardNodeInfo, &sLocalMetaInfo );
+        }
+        else
+        {
+            initShardNodeID( &mShardPinInfo.mShardNodeInfo );
+        }
     }
     else
     {
-        initMetaNodeInfo( &mShardPinInfo.mMetaNodeInfo );
+        initShardNodeID( &mShardPinInfo.mShardNodeInfo );
     }
 
     mShardPinInfo.mVersion = getShardPinVersion();
@@ -68,16 +75,16 @@ sdiShardPin sdmShardPinMgr::toShardPin( sdmShardPinInfo *aShardPinInfo )
 
     sShardPin =   ( ( (sdiShardPin)aShardPinInfo->mVersion  & 0xff       ) << SDI_OFFSET_VERSION      )    /* << 7 byte */
                 | ( ( (sdiShardPin)aShardPinInfo->mReserved & 0xff       ) << SDI_OFFSET_RESERVED     )    /* << 6 byte */
-                | ( ( (sdiShardPin)aShardPinInfo->mMetaNodeInfo.mMetaNodeId
-                                                            & 0xffff     ) << SDI_OFFSET_META_NODE_ID )    /* << 4 byte */
+                | ( ( (sdiShardPin)aShardPinInfo->mShardNodeInfo.mShardNodeId
+                                                            & 0xffff     ) << SDI_OFFSET_SHARD_NODE_ID )    /* << 4 byte */
                 | ( ( (sdiShardPin)aShardPinInfo->mSeq      & 0xffffffff ) << SDI_OFFSET_SEQEUNCE     );   /* << 0 byte */
 
     return sShardPin;
 }
 
-void sdmShardPinMgr::updateShardPinInfoOnRuntime( sdiLocalMetaNodeInfo *aMetaNodeInfo )
+void sdmShardPinMgr::updateShardPinInfoOnRuntime( sdiLocalMetaInfo *aLocalMetaInfo )
 {
-    copyMetaNodeInfo( &mShardPinInfo.mMetaNodeInfo, aMetaNodeInfo );
+    copyShardNodeID( &mShardPinInfo.mShardNodeInfo, aLocalMetaInfo );
 }
 
 sdiShardPin sdmShardPinMgr::getNewShardPin()
@@ -110,9 +117,9 @@ void sdmShardPinMgr::copyShardPinInfo( sdmShardPinInfo *aDst, sdmShardPinInfo *a
     *aDst = *aSrc;
 }
 
-void sdmShardPinMgr::copyMetaNodeInfo( sdmMetaNodeInfo *aDst, sdiLocalMetaNodeInfo *aSrc )
+void sdmShardPinMgr::copyShardNodeID( sdmShardNodeInfo *aDst, sdiLocalMetaInfo *aSrc )
 {
-    aDst->mMetaNodeId = aSrc->mMetaNodeId;
+    aDst->mShardNodeId = aSrc->mShardNodeId;
 }
 
 idBool sdmShardPinMgr::isValidShardPinInfo( sdmShardPinInfo *aShardPinInfo )

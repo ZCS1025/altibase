@@ -27,19 +27,19 @@
 #include <smrDef.h>
 
 /*
-    Dirty Pageê¸°ë¡ ì˜µì…˜
-    - writeDirtyPages4AllTBS ì— ì˜µì…˜ì¸ìë¡œ ë„˜ê¸´ë‹¤.
+    Dirty Page±â·Ï ¿É¼Ç
+    - writeDirtyPages4AllTBS ¿¡ ¿É¼ÇÀÎÀÚ·Î ³Ñ±ä´Ù.
  */
 typedef enum smrWriteDPOption
 {
     SMR_WDP_NONE = 0,
-    SMR_WDP_NO_PID_LOGGING = 1, // Media Recovery ì™„ë£Œí›„ì—ëŠ” PIDë¡œê¹… ì•ˆí•¨
-    SMR_WDP_FINAL_WRITE    = 2  // Shutdown ì´ì „ì˜ ìµœì¢… Flush
+    SMR_WDP_NO_PID_LOGGING = 1, // Media Recovery ¿Ï·áÈÄ¿¡´Â PID·Î±ë ¾ÈÇÔ
+    SMR_WDP_FINAL_WRITE    = 2  // Shutdown ÀÌÀüÀÇ ÃÖÁ¾ Flush
 } smrWriteDPOption;
 
 
-// ì—¬ëŸ¬ Tablespaceì˜ Dirty Pageê´€ë¦¬ì ê°ì²´ë“¤(smrDirtyPageList)ì„
-// ê´€ë¦¬í•˜ëŠ” Class.
+// ¿©·¯ TablespaceÀÇ Dirty Page°ü¸®ÀÚ °´Ã¼µé(smrDirtyPageList)À»
+// °ü¸®ÇÏ´Â Class.
 
 class smrDPListMgr
 {
@@ -49,26 +49,26 @@ private:
     
 public :
 
-    // Tablespaceë³„ Dirty Pageê´€ë¦¬ìë¥¼ ê´€ë¦¬í•˜ëŠ” smrDPListMgrì„ ì´ˆê¸°í™”
+    // Tablespaceº° Dirty Page°ü¸®ÀÚ¸¦ °ü¸®ÇÏ´Â smrDPListMgrÀ» ÃÊ±âÈ­
     static IDE_RC initializeStatic();
 
-    // Tablespaceë³„ Dirty Pageê´€ë¦¬ìë¥¼ ê´€ë¦¬í•˜ëŠ” smrDPListMgrì„ íŒŒê´´
+    // Tablespaceº° Dirty Page°ü¸®ÀÚ¸¦ °ü¸®ÇÏ´Â smrDPListMgrÀ» ÆÄ±«
     static IDE_RC destroyStatic();
 
-    // íŠ¹ì • Tablespaceì˜ Dirty Pageê´€ë¦¬ìì— Dirty Pageë¥¼ ì¶”ê°€í•œë‹¤.
+    // Æ¯Á¤ TablespaceÀÇ Dirty Page°ü¸®ÀÚ¿¡ Dirty Page¸¦ Ãß°¡ÇÑ´Ù.
     static IDE_RC add(scSpaceID aSpaceID,
                       smmPCH*   aPCHPtr,
                       scPageID  aPageID);
 
-    // ëª¨ë“  Tablespaceì˜ Dirty Pageìˆ˜ë¥¼ ë¦¬í„´ 
+    // ¸ğµç TablespaceÀÇ Dirty Page¼ö¸¦ ¸®ÅÏ 
     static IDE_RC getTotalDirtyPageCnt( ULong * aDirtyPageCount);
     
-    // íŠ¹ì • Tablespaceì˜ Dirty Pageìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤.
+    // Æ¯Á¤ TablespaceÀÇ Dirty Page¼ö¸¦ °è»êÇÑ´Ù.
     static IDE_RC getDirtyPageCountOfTBS( scSpaceID   aTBSID,
-                                          scPageID  * aDirtyPageCount );
+                                          UInt      * aDirtyPageCount );
 
 
-    // ëª¨ë“  Tablespaceì˜ Dirty Pageë¥¼ Checkpoint Imageì— ê¸°ë¡ 
+    // ¸ğµç TablespaceÀÇ Dirty Page¸¦ Checkpoint Image¿¡ ±â·Ï 
     static IDE_RC writeDirtyPages4AllTBS(
                        sctStateSet                  aStateSet,
                        ULong                      * aTotalCnt,
@@ -78,65 +78,65 @@ public :
                        smmGetFlushTargetDBNoFunc    aGetFlushTargetDBNoFunc,
                        smrWriteDPOption             aOption );
     
-    // ëª¨ë“  Tablespaceì˜ Dirty Pageë¥¼ SMM=>SMRë¡œ ì´ë™í•œë‹¤.
+    // ¸ğµç TablespaceÀÇ Dirty Page¸¦ SMM=>SMR·Î ÀÌµ¿ÇÑ´Ù.
     static IDE_RC moveDirtyPages4AllTBS ( 
                            sctStateSet  aStateSet,
                            ULong *      aNewCnt,
                            ULong *      aDupCnt );
 
-    // ëª¨ë“  Tablespaceì˜ Dirty Pageë¥¼ Discard ì‹œí‚¨ë‹¤. 
+    // ¸ğµç TablespaceÀÇ Dirty Page¸¦ Discard ½ÃÅ²´Ù. 
     static IDE_RC discardDirtyPages4AllTBS();
     
 private :
-    // íŠ¹ì • Tablespaceë¥¼ ìœ„í•œ Dirty Pageê´€ë¦¬ìë¥¼ ìƒì„±í•œë‹¤.
+    // Æ¯Á¤ Tablespace¸¦ À§ÇÑ Dirty Page°ü¸®ÀÚ¸¦ »ı¼ºÇÑ´Ù.
     static IDE_RC createDPList(scSpaceID aSpaceID );
 
-    // íŠ¹ì • Tablespaceì˜ Dirty Pageê´€ë¦¬ìë¥¼ ì œê±°í•œë‹¤.
+    // Æ¯Á¤ TablespaceÀÇ Dirty Page°ü¸®ÀÚ¸¦ Á¦°ÅÇÑ´Ù.
     static IDE_RC removeDPList( scSpaceID aSpaceID );
 
 
-    // íŠ¹ì • Tablespaceë¥¼ ìœ„í•œ Dirty Pageê´€ë¦¬ìë¥¼ ì°¾ì•„ë‚¸ë‹¤.
-    // ì°¾ì§€ ëª»í•œ ê²½ìš° NULLì´ ë¦¬í„´ëœë‹¤.
+    // Æ¯Á¤ Tablespace¸¦ À§ÇÑ Dirty Page°ü¸®ÀÚ¸¦ Ã£¾Æ³½´Ù.
+    // Ã£Áö ¸øÇÑ °æ¿ì NULLÀÌ ¸®ÅÏµÈ´Ù.
     static IDE_RC findDPList( scSpaceID           aSpaceID,
                               smrDirtyPageList ** aDPList );
 
-    // smrDirtyPageList::writeDirtyPageë¥¼ ìˆ˜í–‰í•˜ëŠ” Actioní•¨ìˆ˜
+    // smrDirtyPageList::writeDirtyPage¸¦ ¼öÇàÇÏ´Â ActionÇÔ¼ö
     static IDE_RC writeDirtyPageAction( idvSQL            * aStatistics,
                                         sctTableSpaceNode * aTBSNode,
                                         void * aActionArg );
 
-    // smrDirtyPageList::writePIDLogsë¥¼ ìˆ˜í–‰í•˜ëŠ” Actioní•¨ìˆ˜
+    // smrDirtyPageList::writePIDLogs¸¦ ¼öÇàÇÏ´Â ActionÇÔ¼ö
     static IDE_RC writePIDLogAction( idvSQL            * aStatistics,
                                      sctTableSpaceNode * aTBSNode,
                                      void              * aActionArg );
     
-    // ê°ê°ì˜ Hash Elementì— ëŒ€í•´ í˜¸ì¶œë  Visitorí•¨ìˆ˜
+    // °¢°¢ÀÇ Hash Element¿¡ ´ëÇØ È£ÃâµÉ VisitorÇÔ¼ö
     static IDE_RC destoyingVisitor( vULong   aKey,
                                     void   * aData,
                                     void   * aVisitorArg);
 
-    //  Hashtableì— ë“±ë¡ëœ ëª¨ë“  smrDirtyPageListë¥¼ destroyí•œë‹¤.
+    //  Hashtable¿¡ µî·ÏµÈ ¸ğµç smrDirtyPageList¸¦ destroyÇÑ´Ù.
     static IDE_RC destroyAllMgrs();
 
-    // íŠ¹ì • Tablespaceì˜ Dirty Pageë¥¼ SMM=>SMRë¡œ ì´ë™í•œë‹¤.
-    static IDE_RC moveDirtyPages4TBS(scSpaceID aSpaceID,
-                                     scPageID  * aNewCnt,
-                                     scPageID  * aDupCnt );
+    // Æ¯Á¤ TablespaceÀÇ Dirty Page¸¦ SMM=>SMR·Î ÀÌµ¿ÇÑ´Ù.
+    static IDE_RC moveDirtyPages4TBS( scSpaceID   aSpaceID,
+                                      UInt      * aNewCnt,
+                                      UInt      * aDupCnt );
 
-    //  moveDirtyPages4AllTBS ë¥¼ ìœ„í•œ Actioní•¨ìˆ˜ 
+    //  moveDirtyPages4AllTBS ¸¦ À§ÇÑ ActionÇÔ¼ö 
     static IDE_RC moveDPAction( idvSQL*             aStatistics,
                                 sctTableSpaceNode * aTBSNode,
                                 void * aActionArg );
 
-    // getTotalDirtyPageCnt ë¥¼ ìœ„í•œ Actioní•¨ìˆ˜ 
+    // getTotalDirtyPageCnt ¸¦ À§ÇÑ ActionÇÔ¼ö 
     static IDE_RC countDPAction( idvSQL*             aStatistics,
                                  sctTableSpaceNode * aSpaceNode,
                                  void * aActionArg );
 
-    // íŠ¹ì • Tablespaceì˜ SMRì— ìˆëŠ” Dirty Pageë¥¼ ì œê±°í•œë‹¤. 
+    // Æ¯Á¤ TablespaceÀÇ SMR¿¡ ÀÖ´Â Dirty Page¸¦ Á¦°ÅÇÑ´Ù. 
     static IDE_RC discardDirtyPages4TBS( scSpaceID aSpaceID );
 
-    //  discardDirtyPages4AllTBS ë¥¼ ìœ„í•œ Actioní•¨ìˆ˜ 
+    //  discardDirtyPages4AllTBS ¸¦ À§ÇÑ ActionÇÔ¼ö 
     static IDE_RC discardDPAction( idvSQL            * aStatistics,
                                    sctTableSpaceNode * aTBSNode,
                                    void * aActionArg );

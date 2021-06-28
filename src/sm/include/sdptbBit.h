@@ -18,7 +18,7 @@
 /***********************************************************************
  * $Id: sdptbBit.h 27220 2008-07-23 14:56:22Z newdaily $
  *
- * ë¹„íŠ¸ë§µì„ íš¨ìœ¨ì ìœ¼ë¡œ ê´€ë¦¬í•˜ëŠ” ìœ í‹¸ë¦¬í‹° í•¨ìˆ˜ë“¤ì´ë‹¤.
+ * ºñÆ®¸ÊÀ» È¿À²ÀûÀ¸·Î °ü¸®ÇÏ´Â À¯Æ¿¸®Æ¼ ÇÔ¼öµéÀÌ´Ù.
  ***********************************************************************/
 
 #ifndef _O_SDPTB_BIT_H_
@@ -27,13 +27,27 @@
 #include <sdptb.h>
 #include <sdp.h>
 
+/* BUG-47666 little endian, big endian ¿¡ ±¸ºĞµÇÁö ¾Ê°í
+ *           »ç¿ë ÇÒ ¼ö ÀÖµµ·Ï ´ÙÀ½°ú °°ÀÌ ÇÕ´Ï´Ù. 
+ *           ±æÀÌ¸¦ ÁÙÀÌ°í ¹Ù·Î ÀÌÇØÇÏ±â ½±µµ·Ï
+ *           #defineÀ» »ç¿ëÇÏÁö ¾Ê°í ¼ıÀÚ¸¦ »ç¿ëÇÕ´Ï´Ù.
+ *           32 : Int ÀÇ bit size
+ *           8  : charÀÇ bit size
+ *
+ * UInt  [] : [         ][          ][          ]
+ * UChar [] :            [ ][ ][V][ ]        : aIndex % 32 / 8
+ *                               = 00100000  : 1 << ( aIndex % 8 ) */
+#define  SDPTB_SET_BIT_FOR_INT( aBit, aIndex )  \
+      (aBit) = 0;                              \
+      ((UChar*)&(aBit))[(((aIndex) % 32)/ 8)] = (1 << ( (aIndex) % 8 ));
+     
 class sdptbBit {
 public:
     static IDE_RC initialize(){ return IDE_SUCCESS; }
     static IDE_RC destroy(){ return IDE_SUCCESS; }
 
     /*
-     * íŠ¹ì • ì£¼ì†Œê°’ìœ¼ë¡œ ë¶€í„° aIndexë²ˆì§¸ì˜ ë¹„íŠ¸ë¥¼ 1ë¡œ ë§Œë“ ë‹¤
+     * Æ¯Á¤ ÁÖ¼Ò°ªÀ¸·Î ºÎÅÍ aIndex¹øÂ°ÀÇ ºñÆ®¸¦ 1·Î ¸¸µç´Ù
      */
     inline static void setBit( void * aAddr, UInt aIndex)
     {
@@ -43,8 +57,35 @@ public:
         *((UChar *)aAddr + sNBytes) |= (1 << sRest);
     }
 
+    /* BUG-47666 atomic À¸·Î µ¿½Ã¼ºÀ» Á¦¾îÇÏ´Â set bit
+     * int ·Î Ã³¸®ÇÏ¹Ç·Î aAddr Àº ¹İµå½Ã 4Byte Align ÀÌ ¸Â¾Æ¾ß ÇÑ´Ù. */
+    inline static void atomicSetBit32( UInt * aAddr, UInt aIndex )
+    {
+        UInt  sBefore ;
+        UInt  sBit;
+
+        IDE_DASSERT( ( (ULong)aAddr & 0x0000000000000003 ) == 0 );
+
+        SDPTB_SET_BIT_FOR_INT( sBit, aIndex );
+
+        aAddr += ( aIndex / SDPTB_BITS_PER_UINT );
+
+        do{
+            sBefore = idCore::acpAtomicGet32( aAddr );
+
+            if ( ( sBefore & sBit ) == sBit )
+            {
+                /* ÀÌ¹Ì Set µÇ¾î ÀÖÀ¸¸é Ãë¼Ò */
+                break;
+            }
+
+        }while ( (UInt)idCore::acpAtomicCas32( aAddr,          // position
+                                               sBefore | sBit, // set
+                                               sBefore )       // compage
+                 != sBefore );
+    }
     /*
-     * íŠ¹ì • ì£¼ì†Œê°’ìœ¼ë¡œ ë¶€í„° aIndexë²ˆì§¸ì˜ ë¹„íŠ¸ë¥¼ 0ìœ¼ë¡œ ë§Œë“ ë‹¤.
+     * Æ¯Á¤ ÁÖ¼Ò°ªÀ¸·Î ºÎÅÍ aIndex¹øÂ°ÀÇ ºñÆ®¸¦ 0À¸·Î ¸¸µç´Ù.
      */
     inline static void clearBit( void * aAddr, UInt aIndex )
     {
@@ -54,8 +95,36 @@ public:
         *((UChar *)aAddr + sNBytes) &= ~(1 << sRest);
     }
 
+    /* BUG-47666 atomic À¸·Î µ¿½Ã¼ºÀ» Á¦¾îÇÏ´Â set bit
+     * int ·Î Ã³¸®ÇÏ¹Ç·Î aAddr Àº ¹İµå½Ã 4Byte Align ÀÌ ¸Â¾Æ¾ß ÇÑ´Ù. */
+    inline static void atomicClearBit32( UInt * aAddr, UInt aIndex )
+    {
+        UInt  sBefore ;
+        UInt  sBit;
+
+        IDE_DASSERT( ( (ULong)aAddr & 0x0000000000000003 ) == 0 );
+
+        SDPTB_SET_BIT_FOR_INT( sBit, aIndex );
+
+        aAddr += ( aIndex / SDPTB_BITS_PER_UINT );
+
+        do{
+            sBefore = idCore::acpAtomicGet32( aAddr );
+
+            if ( ( sBefore & sBit ) == 0 )
+            {
+                /* ÀÌ¹Ì Clear µÇ¾î ÀÖÀ¸¸é Ãë¼Ò */
+                break;
+            }
+
+        }while ( (UInt)idCore::acpAtomicCas32( aAddr,             // position
+                                               sBefore & (~sBit), // clear
+                                               sBefore )          // compage
+                 != sBefore );
+    }
+
     /*
-     * íŠ¹ì • ì£¼ì†Œê°’ìœ¼ë¡œ ë¶€í„° aIndexë²ˆì§¸ì˜ ë¹„íŠ¸ê°€ 0ì¸ì§€ 1ì¸ì§€ë¥¼ ì•Œì•„ë‚¸ë‹¤.
+     * Æ¯Á¤ ÁÖ¼Ò°ªÀ¸·Î ºÎÅÍ aIndex¹øÂ°ÀÇ ºñÆ®°¡ 0ÀÎÁö 1ÀÎÁö¸¦ ¾Ë¾Æ³½´Ù.
      */
     inline static idBool getBit( void * aAddr, UInt  aIndex )
 
@@ -63,6 +132,8 @@ public:
         UInt    sNBytes = aIndex / SDPTB_BITS_PER_BYTE ;
         UInt    sRest = aIndex % SDPTB_BITS_PER_BYTE;
         idBool  sVal;
+
+        IDL_MEM_BARRIER; // BUG-47666
 
         if( *((UChar *)aAddr + sNBytes) & (1 << sRest))
         {
@@ -99,7 +170,7 @@ public:
                                      UInt    aHint,
                                      UInt *  aBitIdx);
 
-    /*íŠ¹ì •ì£¼ì†Œê°’ìœ¼ë¡œë¶€í„°  aCountê°œì˜ ë¹„íŠ¸ë¥¼ ëŒ€ìƒìœ¼ë¡œ 1ì¸ ë¹„íŠ¸ì˜ í•©ì„ êµ¬í•œë‹¤*/
+    /*Æ¯Á¤ÁÖ¼Ò°ªÀ¸·ÎºÎÅÍ  aCount°³ÀÇ ºñÆ®¸¦ ´ë»óÀ¸·Î 1ÀÎ ºñÆ®ÀÇ ÇÕÀ» ±¸ÇÑ´Ù*/
     static void sumOfZeroBit( void * aAddr,
                               UInt   aCount,
                               UInt * aRet);

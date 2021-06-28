@@ -19,18 +19,14 @@
  * $Id$
  **********************************************************************/
 
-#include <idl.h>
-#include <ideErrorMgr.h>
 #include <smu.h>
 #include <sdp.h>
 #include <sdn.h>
-
 #include <sdptb.h>
 #include <sdcTableCTL.h>
 #include <sdcLob.h>
 #include <sdcTSSegment.h>
 #include <sdcUndoSegment.h>
-
 #include <sdsBCB.h>
 #include <sdsBufferArea.h>
 #include <sdsFile.h>
@@ -68,8 +64,8 @@ SChar * gSbf               = NULL;
 idBool  gReadHexa          = ID_FALSE;
 idBool  gHideHexa          = ID_FALSE;
 
-/* ideLog::ideMemToHexStrì°¸ì¡° 
- * IDE_DUMP_FORMAT_PIECE_4BYTE ê¸°ì¤€ */
+/* ideLog::ideMemToHexStrÂüÁ¶ 
+ * IDE_DUMP_FORMAT_PIECE_4BYTE ±âÁØ */
 UInt    gReadHexaLineSize  = 32;
 UInt    gReadHexaBlockSize = 4;
 
@@ -92,7 +88,7 @@ SInt    gSBMetaTable       = -1;
 typedef struct dumpFuncType
 {
     smPageDump dumpLogicalHdr;    // logical hdr print
-    smPageDump dumpPageBody;      // pageì˜ ë‚´ìš© print
+    smPageDump dumpPageBody;      // pageÀÇ ³»¿ë print
 } dumpFuncType;
 
 dumpFuncType gDumpVector[ SDP_PAGE_TYPE_MAX ];
@@ -194,7 +190,7 @@ IDE_RC readPage( iduFile * aDataFile,
 
     sLineCount = aPageSize / gReadHexaLineSize;
 
-    /* ideLog::ideMemToHexStrì°¸ì¡°, Full format */
+    /* ideLog::ideMemToHexStrÂüÁ¶, Full format */
     sLineFormatSize = 
         gReadHexaLineSize * 2 +                  /* Body             */
         gReadHexaLineSize / gReadHexaBlockSize + /* Body Seperator   */
@@ -224,7 +220,7 @@ IDE_RC readPage( iduFile * aDataFile,
 
     for( i = 0 ;  i < sLineCount ; i ++ )
     {
-        /* Body ì‹œì‘ ë¶€ë¶„ íƒìƒ‰ */
+        /* Body ½ÃÀÛ ºÎºĞ Å½»ö */
         for( j = 0 ; 
              j < sLineFormatSize ; 
              j++, sOffsetInSrc ++ )
@@ -232,13 +228,13 @@ IDE_RC readPage( iduFile * aDataFile,
             if( ( sSrc[ sOffsetInSrc ] == '|' ) && 
                 ( sSrc[ sOffsetInSrc + 1 ] == ' ' ) )
             {
-                /* Address êµ¬ë¶„ì '| ' */
+                /* Address ±¸ºĞÀÚ '| ' */
                 sOffsetInSrc += 2;
                 break;
             }
         }
 
-        /* Address êµ¬ë¶„ìë¥¼ ì°¾ì§€ ëª»í–ˆì„ ê²½ìš° */
+        /* Address ±¸ºĞÀÚ¸¦ Ã£Áö ¸øÇßÀ» °æ¿ì */
         if( j == sLineFormatSize )
         {
             break;
@@ -401,10 +397,10 @@ IDE_RC dumpPage()
         (void)sSBufferFile.read( NULL, sOffset, (void*)sAlignedPage, SD_PAGE_SIZE, NULL);
     }
 
-    /* í•´ë‹¹ ë©”ëª¨ë¦¬ ì˜ì—­ì„ Dumpí•œ ê²°ê³¼ê°’ì„ ì €ì¥í•  ë²„í¼ë¥¼ í™•ë³´í•©ë‹ˆë‹¤.
-     * Stackì— ì„ ì–¸í•  ê²½ìš°, ì´ í•¨ìˆ˜ë¥¼ í†µí•´ ì„œë²„ê°€ ì¢…ë£Œë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-     * Heapì— í• ë‹¹ì„ ì‹œë„í•œ í›„, ì„±ê³µí•˜ë©´ ê¸°ë¡, ì„±ê³µí•˜ì§€ ì•Šìœ¼ë©´ ê·¸ëƒ¥
-     * returní•©ë‹ˆë‹¤. */
+    /* ÇØ´ç ¸Ş¸ğ¸® ¿µ¿ªÀ» DumpÇÑ °á°ú°ªÀ» ÀúÀåÇÒ ¹öÆÛ¸¦ È®º¸ÇÕ´Ï´Ù.
+     * Stack¿¡ ¼±¾ğÇÒ °æ¿ì, ÀÌ ÇÔ¼ö¸¦ ÅëÇØ ¼­¹ö°¡ Á¾·áµÉ ¼ö ÀÖÀ¸¹Ç·Î
+     * Heap¿¡ ÇÒ´çÀ» ½ÃµµÇÑ ÈÄ, ¼º°øÇÏ¸é ±â·Ï, ¼º°øÇÏÁö ¾ÊÀ¸¸é ±×³É
+     * returnÇÕ´Ï´Ù. */
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_ID, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )
@@ -413,7 +409,7 @@ IDE_RC dumpPage()
 
     if( gHideHexa != ID_TRUE )
     {
-        /* pageë¥¼ Hexa codeë¡œ dumpí•˜ì—¬ ì¶œë ¥í•œë‹¤. */
+        /* page¸¦ Hexa code·Î dumpÇÏ¿© Ãâ·ÂÇÑ´Ù. */
         if( ideLog::ideMemToHexStr( (UChar*)sAlignedPage, 
                                     SD_PAGE_SIZE,
                                     IDE_DUMP_FORMAT_NORMAL,
@@ -428,7 +424,7 @@ IDE_RC dumpPage()
             /* nothing to do ... */
         }
     } 
-    /* PhyPageHeaderë¥¼ dumpí•˜ì—¬ ì¶œë ¥í•œë‹¤. */
+    /* PhyPageHeader¸¦ dumpÇÏ¿© Ãâ·ÂÇÑ´Ù. */
     if( sdpPhyPage::dumpHdr( (UChar*) sAlignedPage,
                              sTempBuf,
                              IDE_DUMP_DEST_LIMIT )
@@ -442,8 +438,8 @@ IDE_RC dumpPage()
     }
     
     /* BUG-31628 [sm-util] dumpddf does not check checksum of DRDB page.
-     * sdpPhyPage::isPageCorrupted í•¨ìˆ˜ëŠ” propertyì— ë”°ë¼ Checksumê²€ì‚¬ë¥¼
-     * ì•ˆ í•  ìˆ˜ë„ ìˆê¸° ë•Œë¬¸ì— í•­ìƒ í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤. */
+     * sdpPhyPage::isPageCorrupted ÇÔ¼ö´Â property¿¡ µû¶ó Checksum°Ë»ç¸¦
+     * ¾È ÇÒ ¼öµµ ÀÖ±â ¶§¹®¿¡ Ç×»ó ÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù. */
     sPhyPageHdr = sdpPhyPage::getHdr( (UChar*)sAlignedPage );
     sCalculatedChecksum = sdpPhyPage::calcCheckSum( sPhyPageHdr );
     sChecksumInPage     = sdpPhyPage::getCheckSum( sPhyPageHdr );
@@ -464,7 +460,7 @@ IDE_RC dumpPage()
 
     sPageType = sdpPhyPage::getPageType( sPhyPageHdr );
 
-    // Logical Header ë° Bodyë¥¼ Dumpí•œë‹¤.
+    // Logical Header ¹× Body¸¦ DumpÇÑ´Ù.
     if( sPageType >= SDP_PAGE_TYPE_MAX )
     {
         idlOS::printf("invalidate page type(%"ID_UINT32_FMT")\n", sPageType );
@@ -560,10 +556,10 @@ IDE_RC dumpMetaTable()
                    sOffset, 
                    sOffset/SD_PAGE_SIZE);
 
-    /* í•´ë‹¹ ë©”ëª¨ë¦¬ ì˜ì—­ì„ Dumpí•œ ê²°ê³¼ê°’ì„ ì €ì¥í•  ë²„í¼ë¥¼ í™•ë³´í•©ë‹ˆë‹¤.
-     * Stackì— ì„ ì–¸í•  ê²½ìš°, ì´ í•¨ìˆ˜ë¥¼ í†µí•´ ì„œë²„ê°€ ì¢…ë£Œë  ìˆ˜ ìˆìœ¼ë¯€ë¡œ
-     * Heapì— í• ë‹¹ì„ ì‹œë„í•œ í›„, ì„±ê³µí•˜ë©´ ê¸°ë¡, ì„±ê³µí•˜ì§€ ì•Šìœ¼ë©´ ê·¸ëƒ¥
-     * returní•©ë‹ˆë‹¤. */
+    /* ÇØ´ç ¸Ş¸ğ¸® ¿µ¿ªÀ» DumpÇÑ °á°ú°ªÀ» ÀúÀåÇÒ ¹öÆÛ¸¦ È®º¸ÇÕ´Ï´Ù.
+     * Stack¿¡ ¼±¾ğÇÒ °æ¿ì, ÀÌ ÇÔ¼ö¸¦ ÅëÇØ ¼­¹ö°¡ Á¾·áµÉ ¼ö ÀÖÀ¸¹Ç·Î
+     * Heap¿¡ ÇÒ´çÀ» ½ÃµµÇÑ ÈÄ, ¼º°øÇÏ¸é ±â·Ï, ¼º°øÇÏÁö ¾ÊÀ¸¸é ±×³É
+     * returnÇÕ´Ï´Ù. */
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_ID, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )
@@ -578,7 +574,7 @@ IDE_RC dumpMetaTable()
 
     if( gHideHexa != ID_TRUE )
     {
-        /* pageë¥¼ Hexa codeë¡œ dumpí•˜ì—¬ ì¶œë ¥í•œë‹¤. */
+        /* page¸¦ Hexa code·Î dumpÇÏ¿© Ãâ·ÂÇÑ´Ù. */
         if( ideLog::ideMemToHexStr( (UChar*)sAlignedPage, 
                                     SDS_META_TABLE_SIZE,
                                     IDE_DUMP_FORMAT_NORMAL,
@@ -665,7 +661,7 @@ void parseArgs( int &aArgc, char **&aArgv )
             case 'p':
                 gPID = idlOS::atoi( optarg );
                 break;
-/* ìˆ¨ê²¨ì§„ ì˜µì…˜ë“¤ ?? */
+/* ¼û°ÜÁø ¿É¼Çµé ?? */
             case 'i':
                 gHideHexa = ID_TRUE;
                 break;
@@ -784,8 +780,8 @@ int main(int aArgc, char *aArgv[])
     return IDE_FAILURE;
 }
 
-// BUG-28510 dumpìœ í‹¸ë“¤ì˜ Bannerì–‘ì‹ì„ í†µì¼í•´ì•¼ í•©ë‹ˆë‹¤.
-// DUMPCI.banì„ í†µí•´ dumpciì˜ íƒ€ì´í‹€ì„ ì¶œë ¥í•´ì¤ë‹ˆë‹¤.
+// BUG-28510 dumpÀ¯Æ¿µéÀÇ Banner¾ç½ÄÀ» ÅëÀÏÇØ¾ß ÇÕ´Ï´Ù.
+// DUMPCI.banÀ» ÅëÇØ dumpciÀÇ Å¸ÀÌÆ²À» Ãâ·ÂÇØÁİ´Ï´Ù.
 void showCopyRight( void )
 {
     SChar         sBuf[1024 + 1];

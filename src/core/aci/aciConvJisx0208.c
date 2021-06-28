@@ -2358,7 +2358,7 @@ ACP_EXPORT acp_sint32_t aciConvConvertMbToWc4Jisx0208( void   * aSrc,
 /***********************************************************************
  *
  * Description :
- *      (EUCJP, SHIFT-JIS) ==> UTF16BE ì—ì„œ ì‚¬ìš©ë˜ëŠ” ë³€í™˜
+ *      (EUCJP, SHIFT-JIS) ==> UTF16BE ¿¡¼­ »ç¿ëµÇ´Â º¯È¯
  *
  * Implementation :
  *
@@ -2447,7 +2447,7 @@ ACP_EXPORT acp_sint32_t aciConvConvertWcToMb4Jisx0208( void   * aSrc,
 /***********************************************************************
  *
  * Description :
- *      (EUCJP, SHIFT-JIS) <== UTF16 ì—ì„œ ì‚¬ìš©ë˜ëŠ” ë³€í™˜
+ *      (EUCJP, SHIFT-JIS) <== UTF16 ¿¡¼­ »ç¿ëµÇ´Â º¯È¯
  *
  * Implementation :
  *

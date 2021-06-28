@@ -53,7 +53,7 @@ sdnbTDBuild::~sdnbTDBuild()
 /* ------------------------------------------------
  * Description :
  *
- * Index build ì“°ë ˆë“œ ì´ˆê¸°í™”
+ * Index build ¾²·¹µå ÃÊ±âÈ­
  * ----------------------------------------------*/
 IDE_RC sdnbTDBuild::initialize( UInt             aTotalThreadCnt,
                                 UInt             aID,
@@ -86,9 +86,9 @@ IDE_RC sdnbTDBuild::initialize( UInt             aTotalThreadCnt,
     sStatus = 1;
 
     /*
-      * TASK-2356 [ì œí’ˆë¬¸ì œë¶„ì„] altibase wait interface
-      * ì •í™•í•œ í†µê³„ì •ë³´ë¥¼ êµ¬í•˜ê¸° ìœ„í•´ì„œëŠ”
-      * Thread ê°œìˆ˜ë§Œí¼ idvSQL ì´ ì¡´ì¬í•´ì•¼ í•œë‹¤.
+      * TASK-2356 [Á¦Ç°¹®Á¦ºĞ¼®] altibase wait interface
+      * Á¤È®ÇÑ Åë°èÁ¤º¸¸¦ ±¸ÇÏ±â À§ÇØ¼­´Â
+      * Thread °³¼ö¸¸Å­ idvSQL ÀÌ Á¸ÀçÇØ¾ß ÇÑ´Ù.
       */
     IDE_TEST( smLayerCallback::beginTrans( mTrans,
                                            SMI_TRANSACTION_REPL_NONE,
@@ -114,19 +114,21 @@ IDE_RC sdnbTDBuild::initialize( UInt             aTotalThreadCnt,
 /* ------------------------------------------------
  * Description :
  *
- * buffer flush ì“°ë ˆë“œ í•´ì œ
+ * buffer flush ¾²·¹µå ÇØÁ¦
  * ----------------------------------------------*/
 IDE_RC sdnbTDBuild::destroy()
 {
 
-    UInt sStatus;
+    UInt sStatus = 0;
 
     if( mTrans != NULL )
     {
-        sStatus = 1;
+        sStatus = 2;
+        IDU_FIT_POINT( "1.BUG-48210@sdnbTDBuild::destroy" );
         IDE_TEST( smLayerCallback::commitTrans( mTrans ) != IDE_SUCCESS );
-        sStatus = 0;
+        sStatus = 1;
         IDE_TEST( smLayerCallback::freeTrans( mTrans ) != IDE_SUCCESS );
+        sStatus = 0;
         mTrans = NULL;
     }
 
@@ -134,10 +136,17 @@ IDE_RC sdnbTDBuild::destroy()
 
     IDE_EXCEPTION_END;
 
-    if(sStatus == 1)
+    /* BUG-48210 commit ½ÇÆĞ¿¡ ´ëÇÑ ¿¹¿Ü Ã³¸® º¸°­ */
+    switch( sStatus )
     {
-        (void)smLayerCallback::freeTrans( mTrans );
-        mTrans = NULL;
+        case 2:
+            (void)smLayerCallback::abortTrans( mTrans );
+        case 1:
+            (void)smLayerCallback::freeTrans(mTrans);
+            mTrans = NULL;
+            break;
+        default:
+            break;
     }
 
     return IDE_FAILURE;
@@ -148,10 +157,10 @@ IDE_RC sdnbTDBuild::destroy()
 /* ------------------------------------------------
  * Description :
  *
- * ì“°ë ˆë“œ ë©”ì¸ ì‹¤í–‰ ë£¨í‹´
+ * ¾²·¹µå ¸ŞÀÎ ½ÇÇà ·çÆ¾
  *
- * - interval ê¸°ê°„ë™ì•ˆ waití•˜ë‹¤ê°€ buffer flush
- *   ìˆ˜í–‰
+ * - interval ±â°£µ¿¾È waitÇÏ´Ù°¡ buffer flush
+ *   ¼öÇà
  * ----------------------------------------------*/
 void sdnbTDBuild::run()
 {
@@ -164,7 +173,6 @@ void sdnbTDBuild::run()
     smSCN              sInfiniteSCN;
     smSCN              sStmtSCN;
     idBool             sIsSuccess;
-    sdSID              sTSSlotSID = smLayerCallback::getTSSlotSID( mTrans );
     idBool             sIsUniqueIndex = ID_FALSE;
     idBool             sIsNotNullIndex = ID_FALSE;
     sdnbColumn       * sColumn;
@@ -286,9 +294,9 @@ void sdnbTDBuild::run()
                                                       SDB_MULTI_PAGE_READ,
                                                       sTBSID,
                                                       SMI_FETCH_VERSION_LAST,
-                                                      sTSSlotSID,
-                                                      NULL, /* aSCN */
-                                                      NULL, /* aInfiniteSCN */
+                                                      SD_NULL_RID, /* aTssRID */
+                                                      NULL,        /* aSCN */
+                                                      NULL,        /* aInfiniteSCN */
                                                       (UChar*)sRowBuf,
                                                       &sIsRowDeleted,
                                                       &sIsPageLatchReleased )
@@ -297,16 +305,16 @@ void sdnbTDBuild::run()
                 IDE_ASSERT( sIsRowDeleted == ID_FALSE );
 
                 /* BUG-23319
-                 * [SD] ì¸ë±ìŠ¤ Scanì‹œ sdcRow::fetch í•¨ìˆ˜ì—ì„œ Deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆìŒ. */
-                /* row fetchë¥¼ í•˜ëŠ”ì¤‘ì— next rowpieceë¡œ ì´ë™í•´ì•¼ í•˜ëŠ” ê²½ìš°,
-                 * ê¸°ì¡´ pageì˜ latchë¥¼ í’€ì§€ ì•Šìœ¼ë©´ deadlock ë°œìƒê°€ëŠ¥ì„±ì´ ìˆë‹¤.
-                 * ê·¸ë˜ì„œ page latchë¥¼ í‘¼ ë‹¤ìŒ next rowpieceë¡œ ì´ë™í•˜ëŠ”ë°,
-                 * ìƒìœ„ í•¨ìˆ˜ì—ì„œëŠ” page latchë¥¼ í’€ì—ˆëŠ”ì§€ ì—¬ë¶€ë¥¼ output parameterë¡œ í™•ì¸í•˜ê³ 
-                 * ìƒí™©ì— ë”°ë¼ ì ì ˆí•œ ì²˜ë¦¬ë¥¼ í•´ì•¼ í•œë‹¤. */
+                 * [SD] ÀÎµ¦½º Scan½Ã sdcRow::fetch ÇÔ¼ö¿¡¼­ Deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖÀ½. */
+                /* row fetch¸¦ ÇÏ´ÂÁß¿¡ next rowpiece·Î ÀÌµ¿ÇØ¾ß ÇÏ´Â °æ¿ì,
+                 * ±âÁ¸ pageÀÇ latch¸¦ Ç®Áö ¾ÊÀ¸¸é deadlock ¹ß»ı°¡´É¼ºÀÌ ÀÖ´Ù.
+                 * ±×·¡¼­ page latch¸¦ Ç¬ ´ÙÀ½ next rowpiece·Î ÀÌµ¿ÇÏ´Âµ¥,
+                 * »óÀ§ ÇÔ¼ö¿¡¼­´Â page latch¸¦ Ç®¾ú´ÂÁö ¿©ºÎ¸¦ output parameter·Î È®ÀÎÇÏ°í
+                 * »óÈ²¿¡ µû¶ó ÀûÀıÇÑ Ã³¸®¸¦ ÇØ¾ß ÇÑ´Ù. */
                 if( sIsPageLatchReleased == ID_TRUE )
                 {
                     /* BUG-25126
-                     * [5.3.1 SD] Index Bottom-up Build ì‹œ Page fetchì‹œ ì„œë²„ì‚¬ë§!! */
+                     * [5.3.1 SD] Index Bottom-up Build ½Ã Page fetch½Ã ¼­¹ö»ç¸Á!! */
                     IDE_TEST( sdbBufferMgr::getPage( mStatistics,
                                                      sTBSID,
                                                      sCurPageID,
@@ -321,8 +329,8 @@ void sdnbTDBuild::run()
                     sSlotDirPtr = sdpPhyPage::getSlotDirStartPtr(sPage);
                     sSlotCount  = sdpSlotDirectory::getCount(sSlotDirPtr);
 
-                    /* page latchê°€ í’€ë¦° ì‚¬ì´ì— ë‹¤ë¥¸ íŠ¸ëœì­ì…˜ì´
-                     * ë™ì¼ í˜ì´ì§€ì— ì ‘ê·¼í•˜ì—¬ ë³€ê²½ ì—°ì‚°ì„ ìˆ˜í–‰í•  ìˆ˜ ìˆë‹¤. */
+                    /* page latch°¡ Ç®¸° »çÀÌ¿¡ ´Ù¸¥ Æ®·£Àè¼ÇÀÌ
+                     * µ¿ÀÏ ÆäÀÌÁö¿¡ Á¢±ÙÇÏ¿© º¯°æ ¿¬»êÀ» ¼öÇàÇÒ ¼ö ÀÖ´Ù. */
                     if( sdpSlotDirectory::isUnusedSlotEntry(sSlotDirPtr, i)
                         == ID_TRUE )
                     {
@@ -361,13 +369,14 @@ void sdnbTDBuild::run()
                                                  sStmtSCN,
                                                  &sRowSID,
                                                  NULL,
-                                                 ID_ULONG_MAX /* aInsertWaitTime */ )
+                                                 ID_ULONG_MAX,/* aInsertWaitTime */
+                                                 ID_FALSE )   /* aForbiddenToRetry */
                                 != IDE_SUCCESS, ERR_INSERT );
             }
         }
 
-        /* BUG-23388: Top Down Buildì‹œ Meta Pageê°€ Scanë  ê²½ìš° SLatchë¥¼ í’€ì§€
-         *            ì•ŠìŠµë‹ˆë‹¤. */
+        /* BUG-23388: Top Down Build½Ã Meta Page°¡ ScanµÉ °æ¿ì SLatch¸¦ Ç®Áö
+         *            ¾Ê½À´Ï´Ù. */
         sIsPageLatchReleased = ID_TRUE;
         IDE_TEST( sdbBufferMgr::releasePage( mStatistics,
                                              sPage )
@@ -382,7 +391,7 @@ void sdnbTDBuild::run()
 
     return;
 
-    /* PRIMARY KEYëŠ” NULLê°’ì„ ìƒ‰ì¸í• ìˆ˜ ì—†ë‹¤ */
+    /* PRIMARY KEY´Â NULL°ªÀ» »öÀÎÇÒ¼ö ¾ø´Ù */
     IDE_EXCEPTION( ERR_NOTNULL_VIOLATION );
     {
         IDE_SET( ideSetErrorCode( smERR_ABORT_NOT_NULL_VIOLATION ) );

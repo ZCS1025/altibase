@@ -15,7 +15,7 @@
  */
 
 /***********************************************************************
- * $Id: mtxFromCharTo.cpp 85045 2019-03-20 01:40:10Z andrew.shin $
+ * $Id: mtxFromCharTo.cpp 84859 2019-02-01 06:07:08Z andrew.shin $
  **********************************************************************/
 
 #include <mtx.h>
@@ -140,12 +140,12 @@ static IDE_RC mtxFromCharToDate( mtxEntry ** aEntry )
                        0x00,
                        ID_SIZEOF( mtdDateType ) );
 
-        /* ÎÇ†Ïßú Ï¥àÍ∏∞Ìôî */
+        /* ≥Ø¬• √ ±‚»≠ */
         sReturn->year         = ID_SSHORT_MAX;
         sReturn->mon_day_hour = 0;
         sReturn->min_sec_mic  = 0;
 
-        /* 'Ïùº'ÏùÄ 1Î°ú ÏÑ§Ï†ï */
+        /* '¿œ'¿∫ 1∑Œ º≥¡§ */
         sReturn->mon_day_hour &= ~MTD_DATE_DAY_MASK;
         sReturn->mon_day_hour |= 1 << MTD_DATE_DAY_SHIFT;
 
@@ -156,10 +156,10 @@ static IDE_RC mtxFromCharToDate( mtxEntry ** aEntry )
                                             idlOS::strlen( sArg2Val ) )
                   != IDE_SUCCESS );
 
-        /* PROJ-1436 - dateFormatÏùÑ Ï∞∏Ï°∞ÌñàÏùåÏùÑ ÌëúÏãúÌïúÎã§. */
+        /* PROJ-1436 - dateFormat¿ª ¬¸¡∂«ﬂ¿Ω¿ª «•Ω√«—¥Ÿ. */
         *sArg3Val = ID_TRUE;
 
-        /* ÎÖÑ ÎòêÎäî ÏõîÏù¥ ÏÑ∏ÌåÖÏù¥ ÏïàÎêú Í≤ΩÏö∞Ïóê ÌòÑÏû¨ ÎÇ†ÏßúÎ°ú Îã§Ïãú ÏÑ∏ÌåÖÌï¥Ï§òÏïº Ìï®. */
+        /* ≥‚ ∂«¥¬ ø˘¿Ã ºº∆√¿Ã æ»µ» ∞ÊøÏø° «ˆ¿Á ≥Ø¬•∑Œ ¥ŸΩ√ ºº∆√«ÿ¡‡æﬂ «‘. */
         if ( ( sReturn->year == ID_SSHORT_MAX ) ||
              ( mtdDateInterface::month( sReturn ) == 0 ) )
         {
@@ -187,7 +187,7 @@ static IDE_RC mtxFromCharToDate( mtxEntry ** aEntry )
                 sRealMonth = (UShort)mtdDateInterface::month( sReturn );
             }
 
-            /* year, month, dayÏùò Ï°∞Ìï©Ïù¥ Ïò¨Î∞îÎ•∏ÏßÄ Ï≤¥ÌÅ¨ÌïòÍ≥†, sDateÏóê Îã§Ïãú ÏÑ∏ÌåÖÌï¥Ï§ÄÎã§. */
+            /* year, month, day¿« ¡∂«’¿Ã ø√πŸ∏•¡ˆ √º≈©«œ∞Ì, sDateø° ¥ŸΩ√ ºº∆√«ÿ¡ÿ¥Ÿ. */
             IDE_TEST( mtdDateInterface::checkYearMonthDayAndSetDateValue( sReturn,
                                                                           (SShort)sRealYear,
                                                                           (UChar)sRealMonth,
@@ -369,7 +369,7 @@ static IDE_RC mtxFromCharToReal( mtxEntry ** aEntry )
         IDE_TEST_RAISE( MTX_IS_NULL_REAL( sReturn ),
                         ERR_VALUE_OVERFLOW );
 
-        /* To fix BUG-12281 - underflow Í≤ÄÏÇ¨ */
+        /* To fix BUG-12281 - underflow ∞ÀªÁ */
         if ( idlOS::fabs( sDouble ) < MTD_REAL_MINIMUM )
         {
             *sReturn = 0;

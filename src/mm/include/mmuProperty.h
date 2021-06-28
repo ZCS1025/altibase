@@ -59,7 +59,7 @@ public:
     static UInt   mMmcMutexpoolMempoolSize;
     static UInt   mMmcStmtpagetableMempoolSize;
 
-    // BUG-19465 : CM_Bufferì˜ pending listë¥¼ ì œí•œ
+    // BUG-19465 : CM_BufferÀÇ pending list¸¦ Á¦ÇÑ
     static UInt   mCmMaxPendingList;
     static UInt   mAutoCommit;
     static UInt   mTxStartMode;
@@ -89,7 +89,6 @@ public:
     static UInt   mIpcChannelCount;
     static UInt   mAdminMode;
     static UInt   mMemoryCompactTime;
-    static SInt   mDdlLockTimeout;
     static UInt   mShowErrorStack;
     static UInt   mTxTabSize;
     static UInt   mXaComplete;
@@ -115,15 +114,15 @@ public:
     /* BUG-36205 Plan Cache On/Off property for PSM */
     static UInt   mSqlPlanCacheUseInPSM;
 
-    //fix BUG-23776, XA ROLLBACKì‹œ XIDê°€ ACTIVEì¼ë•Œ ëŒ€ê¸°ì‹œê°„ì„
-    //QueryTime Outì´ ì•„ë‹ˆë¼,Propertyë¥¼ ì œê³µí•´ì•¼ í•¨.
+    //fix BUG-23776, XA ROLLBACK½Ã XID°¡ ACTIVEÀÏ¶§ ´ë±â½Ã°£À»
+    //QueryTime OutÀÌ ¾Æ´Ï¶ó,Property¸¦ Á¦°øÇØ¾ß ÇÔ.
     static UInt   mXaRollbackTimeOut;
 
     static UInt   mQueryLoggingLevel;
     // bug-19279 remote sysdba enable + sys can kill session
     static UInt   mRemoteSysdbaEnable;
 
-    // BUG-24993 ë„¤íŠ¸ì›Œí¬ ì—ëŸ¬ ë©”ì‹œì§€ log ì—¬ë¶€
+    // BUG-24993 ³×Æ®¿öÅ© ¿¡·¯ ¸Ş½ÃÁö log ¿©ºÎ
     static UInt   mNetworkErrorLog;
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase  */
     static UInt   mServiceThrInitialLifeSpan;
@@ -138,8 +137,8 @@ public:
     static UInt   mShutdownImmediateTimeout;
 
     // fix BUG-30731
-    // V$STATEMENT, V$SQLTEXT, V$PLANTEXT ì¡°íšŒì‹œ
-    // ì…ë ¥ëœ ê°’ë§Œí¼ë§Œ í•œë²ˆì— ê²€ìƒ‰
+    // V$STATEMENT, V$SQLTEXT, V$PLANTEXT Á¶È¸½Ã
+    // ÀÔ·ÂµÈ °ª¸¸Å­¸¸ ÇÑ¹ø¿¡ °Ë»ö
     static UInt   mStatementListPartialScanCount;
     //fix BUG-30949 A waiting time for enqueue event in transformed dedicated thread should not be infinite. 
     static ULong  mMaxEnqWaitTime;
@@ -175,7 +174,7 @@ public:
     /* BUG-41168 SSL extension*/
     static UInt   mTcpEnable;
 
-    /* PROJ-2624 [ê¸°ëŠ¥ì„±] MM - ìœ ì—°í•œ access_list ê´€ë¦¬ë°©ë²• ì œê³µ */
+    /* PROJ-2624 [±â´É¼º] MM - À¯¿¬ÇÑ access_list °ü¸®¹æ¹ı Á¦°ø */
     static SChar* mIPACLFile;
 
     /* PROJ-2626 Snapshot Export */
@@ -193,6 +192,12 @@ public:
     static UInt   mIBListenerDisable;
     static UInt   mIBLatency;
     static UInt   mIBConChkSpin;
+
+    static UInt   mSharedTransHashBucketCount;
+
+    /* PROJ-2733 */
+    static UInt  mIndoubtFetchTimeout;
+    static UInt  mIndoubtFetchMethod;
 
 public:
     static void initialize();
@@ -229,7 +234,7 @@ public:
     static UInt   getMmcStmtpagetableMempoolSize() { return mMmcStmtpagetableMempoolSize; }
     static UInt   getCmDetectTime(){ return mCmDetectTime; }
 
-    // BUG-19465 : CM_Bufferì˜ pending listë¥¼ ì œí•œ
+    // BUG-19465 : CM_BufferÀÇ pending list¸¦ Á¦ÇÑ
     static UInt   getCmMaxPendingList(){ return mCmMaxPendingList; }
     static UInt   getAutoCommit()     { return mAutoCommit; }
     static UInt   getTxStartMode()    { return mTxStartMode; }
@@ -285,7 +290,6 @@ public:
                                     SChar *, void *, void *, void *);
 
     static UInt   getMemoryCompactTime()      { return mMemoryCompactTime; }
-    static SInt   getDdlLockTimeout()         { return mDdlLockTimeout; }
     static UInt   getShowErrorStack()         { return mShowErrorStack; }
     static IDE_RC callbackShowErrorStack(idvSQL * /*aStatistics*/,
                                          SChar *, void *, void *, void *);
@@ -344,8 +348,8 @@ public:
     /* BUG-41168 SSL extension */
     static UInt   getTcpEnable()      { return mTcpEnable; }
             
-    //fix BUG-23776, XA ROLLBACKì‹œ XIDê°€ ACTIVEì¼ë•Œ ëŒ€ê¸°ì‹œê°„ì„
-    //QueryTime Outì´ ì•„ë‹ˆë¼,Propertyë¥¼ ì œê³µí•´ì•¼ í•¨.
+    //fix BUG-23776, XA ROLLBACK½Ã XID°¡ ACTIVEÀÏ¶§ ´ë±â½Ã°£À»
+    //QueryTime OutÀÌ ¾Æ´Ï¶ó,Property¸¦ Á¦°øÇØ¾ß ÇÔ.
     static UInt   getXaRollbackTimeOut()       {  return mXaRollbackTimeOut; }
             
     // bug-19279 remote sysdba enable + sys can kill session
@@ -419,8 +423,8 @@ public:
                                                void  * /*aArg*/);
                                                 
 
-    //fix BUG-23776, XA ROLLBACKì‹œ XIDê°€ ACTIVEì¼ë•Œ ëŒ€ê¸°ì‹œê°„ì„
-    //QueryTime Outì´ ì•„ë‹ˆë¼,Propertyë¥¼ ì œê³µí•´ì•¼ í•¨.
+    //fix BUG-23776, XA ROLLBACK½Ã XID°¡ ACTIVEÀÏ¶§ ´ë±â½Ã°£À»
+    //QueryTime OutÀÌ ¾Æ´Ï¶ó,Property¸¦ Á¦°øÇØ¾ß ÇÔ.
     static IDE_RC callbackXaRollbackTimeOut(idvSQL * /*aStatistics*/,
                                             SChar * /*aName*/,
                                             void  * /*aOldValue*/,
@@ -432,7 +436,7 @@ public:
     static IDE_RC callbackQueryLoggingLevel(idvSQL * /*aStatistics*/,
                                             SChar *, void *, void *, void *);
 
-    // BUG-24993 ë„¤íŠ¸ì›Œí¬ ì—ëŸ¬ ë©”ì‹œì§€ log ì—¬ë¶€
+    // BUG-24993 ³×Æ®¿öÅ© ¿¡·¯ ¸Ş½ÃÁö log ¿©ºÎ
     static UInt   getNetworkErrorLog() { return mNetworkErrorLog; }
     /* TASK-4324  Applying lessons learned from CPBS-CAESE to altibase  */
     static IDE_RC callbackServiceThrInitialLifeSpan(idvSQL * /*aStatistics*/,
@@ -526,6 +530,7 @@ public:
                                                      void   * aNewValue,
                                                      void   * /*aArg*/ );
 
+    static UInt   getSharedTransHashBucketCount() { return mSharedTransHashBucketCount;  }
 
 private:
     static IDE_RC callbackUpdateMaxLogSize( idvSQL * /*aStatistics*/,
@@ -611,6 +616,20 @@ public:
                                                     void   * /*aOldValue*/,
                                                     void   * aNewValue,
                                                     void   * /*aArg*/);
+    /* PROJ-2733 ºĞ»ê Æ®·£Àè¼Ç Á¤ÇÕ¼º */
+    static UInt getIndoubtFetchTimeout() { return mIndoubtFetchTimeout; }
+    static IDE_RC callbackIndoubtFetchTimeout( idvSQL * /*aStatistics*/,
+                                               SChar  * /*aName*/,
+                                               void   * /*aOldValue*/,
+                                               void   * aNewValue,
+                                               void   * /*aArg*/ );
+    static UInt getIndoubtFetchMethod() { return mIndoubtFetchMethod; }
+    static IDE_RC callbackIndoubtFetchMethod( idvSQL * /*aStatistics*/,
+                                              SChar  * /*aName*/,
+                                              void   * /*aOldValue*/,
+                                              void   * aNewValue,
+                                              void   * /*aArg*/ );
+ 
 };
 
 /* ------------------------------------------------

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfConv_tz.cpp 85090 2019-03-28 01:15:28Z andrew.shin $
+ * $Id: mtfConv_tz.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
  **********************************************************************/
 
 #include <mte.h>
@@ -42,7 +42,7 @@ static IDE_RC mtfConvertTimezoneEstimate( mtcNode*     aNode,
 mtfModule mtfConvertTimezone = {
     1|MTC_NODE_OPERATOR_FUNCTION,
     ~(MTC_NODE_INDEX_MASK),
-    1.0,  // default selectivity (ë¹„êµ ì—°ì‚°ìžê°€ ì•„ë‹˜)
+    1.0,  // default selectivity (ºñ±³ ¿¬»êÀÚ°¡ ¾Æ´Ô)
     mtfConvertTimezoneFunctionName,
     NULL,
     mtf::initializeDefault,
@@ -81,10 +81,10 @@ IDE_RC mtfConvertTimezoneEstimate( mtcNode*     aNode,
  * Implementation :
  *    CONV_TIMEZONE( date, varchar(40), varchar(40) )
  *
- *    aStack[0] : ê²°ê³¼ date
- *    aStack[1] : date ( ìž…ë ¥ ë‚ ì§œ )
- *    aStack[2] : ì†ŒìŠ¤ íƒ€ìž„ì¡´ (Asia/Seoul , KST, +09:00 )
- *    aStack[3] : ëŒ€ìƒ íƒ€ìž„ì¡´ (Asia/Seoul , KST, +09:00 )
+ *    aStack[0] : °á°ú date
+ *    aStack[1] : date ( ÀÔ·Â ³¯Â¥ )
+ *    aStack[2] : ¼Ò½º Å¸ÀÓÁ¸ (Asia/Seoul , KST, +09:00 )
+ *    aStack[3] : ´ë»ó Å¸ÀÓÁ¸ (Asia/Seoul , KST, +09:00 )
  *
  *    ex) CONV_TIMEZONE( sysdate, 'KST', '-08:00' )
  *
@@ -159,17 +159,17 @@ IDE_RC mtfConvertTimezoneCalculate( mtcNode*     aNode,
  * Implementation :
  *    CONV_TIMEZONE( date, varchar(40), varchar(40) )
  *
- *    aStack[0] : ê²°ê³¼ date
- *    aStack[1] : date ( ìž…ë ¥ ë‚ ì§œ )
- *    aStack[2] : ì†ŒìŠ¤ íƒ€ìž„ì¡´ (Asia/Seoul , KST, +09:00 )
- *    aStack[3] : ëŒ€ìƒ íƒ€ìž„ì¡´ (Asia/Seoul , KST, +09:00 )
+ *    aStack[0] : °á°ú date
+ *    aStack[1] : date ( ÀÔ·Â ³¯Â¥ )
+ *    aStack[2] : ¼Ò½º Å¸ÀÓÁ¸ (Asia/Seoul , KST, +09:00 )
+ *    aStack[3] : ´ë»ó Å¸ÀÓÁ¸ (Asia/Seoul , KST, +09:00 )
  *
  *    ex) CONV_TIMEZONE( sysdate, 'KST', '-08:00' )
  *
  *    SRC TZ +09:00 DEST TZ -08:00
- *    +09:00ì˜ ë³´ìˆ˜ -09:00 + (-08:00) = -17:00ì´ ì´ offsetì´ë‹¤.
+ *    +09:00ÀÇ º¸¼ö -09:00 + (-08:00) = -17:00ÀÌ ÃÑ offsetÀÌ´Ù.
  *    09 -09 -08 = 24 - 08 =16
- *    ì˜¤ì „ 09ì‹œ --> ì–´ì œ ì˜¤í›„ 16
+ *    ¿ÀÀü 09½Ã --> ¾îÁ¦ ¿ÀÈÄ 16
  *
  ***********************************************************************/
     

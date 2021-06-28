@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: dumpddf.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: dumpddf.cpp 85333 2019-04-26 02:34:41Z et16 $
  **********************************************************************/
 
 #include <idl.h>
@@ -26,24 +26,30 @@
 #include <sdn.h>
 
 /* xxxxxxxxxxxxx */
-#include <sdtTempRow.h>
 #include <sdptb.h>
-#include <sdcTableCTL.h>
 #include <sdcLob.h>
+#include <sdtTempRow.h>
+#include <sdcTableCTL.h>
 #include <sdcTSSegment.h>
+#include <sdtHashModule.h>
 #include <sdcUndoSegment.h>
+
+
+#define SM_DUMP_TEMP_PAGE_NONE      (0)
+#define SM_DUMP_TEMP_PAGE_TEMP_HASH (1)
+#define SM_DUMP_TEMP_PAGE_TEMP_SORT (2)
 
 void showCopyRight( void );
 
-idBool  gDumpDatafileHdr   = ID_FALSE;
-idBool  gDisplayHeader     = ID_TRUE;
-idBool  gInvalidArgs       = ID_FALSE;
-SChar * gDbf               = NULL;
-idBool  gReadHexa          = ID_FALSE;
-idBool  gReadTempPage      = ID_FALSE;
+idBool  gDumpDatafileHdr  = ID_FALSE;
+idBool  gDisplayHeader    = ID_TRUE;
+idBool  gInvalidArgs      = ID_FALSE;
+SChar * gDbf              = NULL;
+idBool  gReadHexa         = ID_FALSE;
+UInt    gDumpTempPage     = SM_DUMP_TEMP_PAGE_NONE;
 
-/* ideLog::ideMemToHexStrì°¸ì¡° 
- * IDE_DUMP_FORMAT_PIECE_4BYTE ê¸°ì¤€ */
+/* ideLog::ideMemToHexStrÂüÁ¶
+ * IDE_DUMP_FORMAT_PIECE_4BYTE ±âÁØ */
 UInt    gReadHexaLineSize  = 32;
 UInt    gReadHexaBlockSize = 4;
 
@@ -66,7 +72,7 @@ UInt    gPageType          = 0;
 typedef struct dumpFuncType
 {
     smPageDump dumpLogicalHdr;    // logical hdr print
-    smPageDump dumpPageBody;      // pageì˜ ë‚´ìš© print
+    smPageDump dumpPageBody;      // pageÀÇ ³»¿ë print
 } dumpFuncType;
 
 dumpFuncType gDumpVector[ SDP_PAGE_TYPE_MAX ];
@@ -75,10 +81,10 @@ IDE_RC dummy( UChar * /*aPageHdr*/,
               SChar * aOutBuf,
               UInt    aOutSize )
 {
-     idlOS::snprintf( aOutBuf, 
-                      aOutSize,
-                      "dump : Nothing to display\n" );
- 
+    idlOS::snprintf( aOutBuf,
+                     aOutSize,
+                     "dump : Nothing to display\n" );
+
     return IDE_SUCCESS ;
 }
 
@@ -147,15 +153,15 @@ IDE_RC dumpMeta()
                                    IDV_WAIT_INDEX_NULL )
               != IDE_SUCCESS );
     sState = 1;
-    
+
     IDE_TEST( sDataFile.setFileName( gDbf ) != IDE_SUCCESS );
     IDE_TEST( sDataFile.open() != IDE_SUCCESS );
     sState = 2;
 
     (void)sDataFile.read( NULL,
-                          0, 
-                          (void*)sPage, 
-                          SM_DBFILE_METAHDR_PAGE_SIZE, 
+                          0,
+                          (void*)sPage,
+                          SM_DBFILE_METAHDR_PAGE_SIZE,
                           NULL );
 
     sDfHdr = (sddDataFileHdr*) sPage;
@@ -245,7 +251,7 @@ IDE_RC dumpMeta()
 
     sBackupType = sDfHdr->mBackupInfo.mBackupType;
     idlOS::printf( "        Backup Type                   [ " );
-    if( (sBackupType & SMI_BACKUP_TYPE_FULL) != 0 )   
+    if( (sBackupType & SMI_BACKUP_TYPE_FULL) != 0 )
     {
         idlOS::printf( "FULL" );
         sBackupType &= ~SMI_BACKUP_TYPE_FULL;
@@ -253,13 +259,13 @@ IDE_RC dumpMeta()
         {
             idlOS::printf( ", " );
         }
-        
+
     }
-    if( (sBackupType & SMI_BACKUP_TYPE_DIFFERENTIAL) != 0 )   
+    if( (sBackupType & SMI_BACKUP_TYPE_DIFFERENTIAL) != 0 )
     {
         idlOS::printf( "DIFFERENTIAL" );
     }
-    if( (sBackupType & SMI_BACKUP_TYPE_CUMULATIVE) != 0 )   
+    if( (sBackupType & SMI_BACKUP_TYPE_CUMULATIVE) != 0 )
     {
         idlOS::printf( "CUMULATIVE" );
     }
@@ -344,8 +350,8 @@ IDE_RC readPage( iduFile * aDataFile,
 
     sLineCount     = aPageSize / gReadHexaLineSize;
 
-    /* ideLog::ideMemToHexStrì°¸ì¡°, Full format */
-    sLineFormatSize = 
+    /* ideLog::ideMemToHexStrÂüÁ¶, Full format */
+    sLineFormatSize =
         gReadHexaLineSize * 2 +                  /* Body             */
         gReadHexaLineSize / gReadHexaBlockSize + /* Body Seperator   */
         20+                                      /* AbsAddr          */
@@ -358,7 +364,7 @@ IDE_RC readPage( iduFile * aDataFile,
 
     sSrcSize = sLineFormatSize * sLineCount;
 
-    IDE_TEST( iduMemMgr::malloc( IDU_MEM_ID, 
+    IDE_TEST( iduMemMgr::malloc( IDU_MEM_ID,
                                  (ULong)ID_SIZEOF( SChar ) * sSrcSize,
                                  (void**)&sSrc )
               != IDE_SUCCESS );
@@ -366,25 +372,25 @@ IDE_RC readPage( iduFile * aDataFile,
 
     (void)aDataFile->read( NULL, 0 , (void*)sSrc, sSrcSize, NULL);
 
-    sOffsetInSrc = 0 ; 
+    sOffsetInSrc = 0 ;
 
     for( i = 0 ;  i < sLineCount ; i ++ )
     {
-        /* Body ì‹œìž‘ ë¶€ë¶„ íƒìƒ‰ */
-        for( j = 0 ; 
-             j < sLineFormatSize ; 
+        /* Body ½ÃÀÛ ºÎºÐ Å½»ö */
+        for( j = 0 ;
+             j < sLineFormatSize ;
              j++, sOffsetInSrc ++ )
         {
-            if( ( sSrc[ sOffsetInSrc ] == '|' ) && 
+            if( ( sSrc[ sOffsetInSrc ] == '|' ) &&
                 ( sSrc[ sOffsetInSrc + 1 ] == ' ' ) )
             {
-                /* Address êµ¬ë¶„ìž '| ' */
+                /* Address ±¸ºÐÀÚ '| ' */
                 sOffsetInSrc += 2;
                 break;
             }
         }
 
-        /* Address êµ¬ë¶„ìžë¥¼ ì°¾ì§€ ëª»í–ˆì„ ê²½ìš° */
+        /* Address ±¸ºÐÀÚ¸¦ Ã£Áö ¸øÇßÀ» °æ¿ì */
         if( j == sLineFormatSize )
         {
             break;
@@ -394,7 +400,7 @@ IDE_RC readPage( iduFile * aDataFile,
         {
             for( k = 0 ; k < gReadHexaBlockSize ; k ++ )
             {
-                sTempValue = 
+                sTempValue =
                     ( htoi( &sSrc[ sOffsetInSrc ] ) * 16)
                     + htoi( &sSrc[ sOffsetInSrc + 1] ) ;
                 sOffsetInSrc += 2;
@@ -445,7 +451,7 @@ IDE_RC dumpPage()
                                    IDV_WAIT_INDEX_NULL )
               != IDE_SUCCESS );
     sState = 1;
-    
+
     IDE_TEST( sDataFile.setFileName(gDbf) != IDE_SUCCESS );
     IDE_TEST( sDataFile.open() != IDE_SUCCESS );
     sState = 2;
@@ -460,8 +466,8 @@ IDE_RC dumpPage()
     if( gReadHexa == ID_TRUE )
     {
         IDE_TEST( readPage( &sDataFile,
-                            sPage, 
-                            SD_PAGE_SIZE ) 
+                            sPage,
+                            SD_PAGE_SIZE )
                   != IDE_SUCCESS );
     }
     else
@@ -469,124 +475,137 @@ IDE_RC dumpPage()
         (void)sDataFile.read( NULL, sOffset , (void*)sPage, SD_PAGE_SIZE, NULL);
     }
 
-    if( gReadTempPage == ID_TRUE )
+    switch( gDumpTempPage )
     {
-        smuUtility::printFuncWithBuffer( sdtTempPage::dumpTempPage,
-                                         sPage );
-        smuUtility::printFuncWithBuffer( sdtTempRow::dumpTempPageByRow,
-                                         sPage );
-    }
-    else
-    {
-        /* í•´ë‹¹ ë©”ëª¨ë¦¬ ì˜ì—­ì„ Dumpí•œ ê²°ê³¼ê°’ì„ ì €ìž¥í•  ë²„í¼ë¥¼ í™•ë³´í•©ë‹ˆë‹¤.
-         * Stackì— ì„ ì–¸í•  ê²½ìš°, ì´ í•¨ìˆ˜ë¥¼ í†µí•´ ì„œë²„ê°€ ì¢…ë£Œë  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ
-         * Heapì— í• ë‹¹ì„ ì‹œë„í•œ í›„, ì„±ê³µí•˜ë©´ ê¸°ë¡, ì„±ê³µí•˜ì§€ ì•Šìœ¼ë©´ ê·¸ëƒ¥
-         * returní•©ë‹ˆë‹¤. */
-        IDE_TEST( iduMemMgr::calloc( IDU_MEM_ID, 1,
-                                     ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
-                                     (void**)&sTempBuf )
-                  != IDE_SUCCESS );
-        sState = 3;
-
-        /* pageë¥¼ Hexa codeë¡œ dumpí•˜ì—¬ ì¶œë ¥í•œë‹¤. */
-        if( ideLog::ideMemToHexStr( (UChar*)sPage, 
-                                    SD_PAGE_SIZE,
-                                    IDE_DUMP_FORMAT_NORMAL,
-                                    sTempBuf,
-                                    IDE_DUMP_DEST_LIMIT )
-            == IDE_SUCCESS )
-        {
-            idlOS::printf("%s\n", sTempBuf );
-        }
-        else
-        {
-            /* nothing to do ... */
-        }
-
-        /* PhyPageHeaderë¥¼ dumpí•˜ì—¬ ì¶œë ¥í•œë‹¤. */
-        if( sdpPhyPage::dumpHdr( (UChar*) sPage,
-                                 sTempBuf,
-                                 IDE_DUMP_DEST_LIMIT )
-            == IDE_SUCCESS )
-        {
-            idlOS::printf("%s", sTempBuf );
-        }
-        else
-        {
-            /* nothing to do ... */
-        }
-
-        /* BUG-31628 [sm-util] dumpddf does not check checksum of DRDB page.
-         * sdpPhyPage::isPageCorrupted í•¨ìˆ˜ëŠ” propertyì— ë”°ë¼ Checksumê²€ì‚¬ë¥¼
-         * ì•ˆ í•  ìˆ˜ë„ ìžˆê¸° ë•Œë¬¸ì— í•­ìƒ í•˜ë„ë¡ ìˆ˜ì •í•©ë‹ˆë‹¤. */
-        sPhyPageHdr = sdpPhyPage::getHdr( (UChar*)sPage );
-        sCalculatedChecksum = sdpPhyPage::calcCheckSum( sPhyPageHdr );
-        sChecksumInPage     = sdpPhyPage::getCheckSum( sPhyPageHdr );
-
-        if( sCalculatedChecksum == sChecksumInPage )
-        {
-            idlOS::printf( "This page(%"ID_UINT32_FMT") is not corrupted.\n",
-                           gPID );
-        }
-        else
-        {
-            idlOS::printf( "This page(%"ID_UINT32_FMT") is corrupted."
-                           "( %"ID_UINT32_FMT" == %"ID_UINT32_FMT" )\n",
-                           gPID,
-                           sCalculatedChecksum,
-                           sChecksumInPage );
-        }
-
-
-
-        /* PageTypeì„ ì§€ì •í•´ì£¼ì§€ ì•Šì•˜ì„ ê²½ìš°, PhyPageHeaderì—ì„œ ì½ì–´ì„œ ì ìš©í•œë‹¤ */
-        if( gPageType == 0 )
-        {
-            sPageType = sdpPhyPage::getPageType( sPhyPageHdr );
-        }
-        else
-        {
-            sPageType = gPageType;
-        }
-
-        // Logical Header ë° Bodyë¥¼ Dumpí•œë‹¤.
-        if( sPageType >= SDP_PAGE_TYPE_MAX )
-        {
-            idlOS::printf("invalidate page type(%"ID_UINT32_FMT")\n", sPageType );
-        }
-        else
-        {
-            if( gDumpVector[ sPageType ].dumpLogicalHdr( (UChar*) sPage,
-                                                         sTempBuf,
-                                                         IDE_DUMP_DEST_LIMIT )
-                == IDE_SUCCESS )
+        case SM_DUMP_TEMP_PAGE_TEMP_HASH :
             {
-                idlOS::printf( "%s", sTempBuf );
+                smuUtility::printFuncWithBuffer( sdtHashModule::dumpHashRowPage,
+                                                 sPage );
             }
-
-            if( gDumpVector[ sPageType ].dumpPageBody( (UChar*) sPage,
-                                                       sTempBuf,
-                                                       IDE_DUMP_DEST_LIMIT )
-                == IDE_SUCCESS )
+            break;
+        case SM_DUMP_TEMP_PAGE_TEMP_SORT :
             {
-                idlOS::printf( "%s", sTempBuf );
+                smuUtility::printFuncWithBuffer( sdtTempPage::dumpTempPage,
+                                                 sPage );
+                smuUtility::printFuncWithBuffer( sdtTempRow::dumpTempPageByRow,
+                                                 sPage );
             }
-        }
+            break;
+        case SM_DUMP_TEMP_PAGE_NONE :
+            {
+                /* ÇØ´ç ¸Þ¸ð¸® ¿µ¿ªÀ» DumpÇÑ °á°ú°ªÀ» ÀúÀåÇÒ ¹öÆÛ¸¦ È®º¸ÇÕ´Ï´Ù.
+                 * Stack¿¡ ¼±¾ðÇÒ °æ¿ì, ÀÌ ÇÔ¼ö¸¦ ÅëÇØ ¼­¹ö°¡ Á¾·áµÉ ¼ö ÀÖÀ¸¹Ç·Î
+                 * Heap¿¡ ÇÒ´çÀ» ½ÃµµÇÑ ÈÄ, ¼º°øÇÏ¸é ±â·Ï, ¼º°øÇÏÁö ¾ÊÀ¸¸é ±×³É
+                 * returnÇÕ´Ï´Ù. */
+                IDE_TEST( iduMemMgr::calloc( IDU_MEM_ID, 1,
+                                             ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
+                                             (void**)&sTempBuf )
+                          != IDE_SUCCESS );
+                sState = 3;
 
-        if( sdpSlotDirectory::dump( (UChar*) sPage,
-                                    sTempBuf,
-                                    IDE_DUMP_DEST_LIMIT )
-            == IDE_SUCCESS )
-        {
-            idlOS::printf("%s", sTempBuf );
-        }
-        else
-        {
-            /* nothing to do ... */
-        }
+                /* page¸¦ Hexa code·Î dumpÇÏ¿© Ãâ·ÂÇÑ´Ù. */
+                if( ideLog::ideMemToHexStr( (UChar*)sPage,
+                                            SD_PAGE_SIZE,
+                                            IDE_DUMP_FORMAT_NORMAL,
+                                            sTempBuf,
+                                            IDE_DUMP_DEST_LIMIT )
+                    == IDE_SUCCESS )
+                {
+                    idlOS::printf("%s\n", sTempBuf );
+                }
+                else
+                {
+                    /* nothing to do ... */
+                }
 
-        sState = 2;
-        IDE_TEST( iduMemMgr::free( sTempBuf ) != IDE_SUCCESS );
+                /* PhyPageHeader¸¦ dumpÇÏ¿© Ãâ·ÂÇÑ´Ù. */
+                if( sdpPhyPage::dumpHdr( (UChar*) sPage,
+                                         sTempBuf,
+                                         IDE_DUMP_DEST_LIMIT )
+                    == IDE_SUCCESS )
+                {
+                    idlOS::printf("%s", sTempBuf );
+                }
+                else
+                {
+                    /* nothing to do ... */
+                }
+
+                /* BUG-31628 [sm-util] dumpddf does not check checksum of DRDB page.
+                 * sdpPhyPage::isPageCorrupted ÇÔ¼ö´Â property¿¡ µû¶ó Checksum°Ë»ç¸¦
+                 * ¾È ÇÒ ¼öµµ ÀÖ±â ¶§¹®¿¡ Ç×»ó ÇÏµµ·Ï ¼öÁ¤ÇÕ´Ï´Ù. */
+                sPhyPageHdr = sdpPhyPage::getHdr( (UChar*)sPage );
+                sCalculatedChecksum = sdpPhyPage::calcCheckSum( sPhyPageHdr );
+                sChecksumInPage     = sdpPhyPage::getCheckSum( sPhyPageHdr );
+
+                if( sCalculatedChecksum == sChecksumInPage )
+                {
+                    idlOS::printf( "This page(%"ID_UINT32_FMT") is not corrupted.\n",
+                                   gPID );
+                }
+                else
+                {
+                    idlOS::printf( "This page(%"ID_UINT32_FMT") is corrupted."
+                                   "( %"ID_UINT32_FMT" == %"ID_UINT32_FMT" )\n",
+                                   gPID,
+                                   sCalculatedChecksum,
+                                   sChecksumInPage );
+                }
+
+
+
+                /* PageTypeÀ» ÁöÁ¤ÇØÁÖÁö ¾Ê¾ÒÀ» °æ¿ì, PhyPageHeader¿¡¼­ ÀÐ¾î¼­ Àû¿ëÇÑ´Ù */
+                if( gPageType == 0 )
+                {
+                    sPageType = sdpPhyPage::getPageType( sPhyPageHdr );
+                }
+                else
+                {
+                    sPageType = gPageType;
+                }
+
+                // Logical Header ¹× Body¸¦ DumpÇÑ´Ù.
+                if( sPageType >= SDP_PAGE_TYPE_MAX )
+                {
+                    idlOS::printf("invalidate page type(%"ID_UINT32_FMT")\n", sPageType );
+                }
+                else
+                {
+                    if( gDumpVector[ sPageType ].dumpLogicalHdr( (UChar*) sPage,
+                                                                 sTempBuf,
+                                                                 IDE_DUMP_DEST_LIMIT )
+                        == IDE_SUCCESS )
+                    {
+                        idlOS::printf( "%s", sTempBuf );
+                    }
+
+                    if( gDumpVector[ sPageType ].dumpPageBody( (UChar*) sPage,
+                                                               sTempBuf,
+                                                               IDE_DUMP_DEST_LIMIT )
+                        == IDE_SUCCESS )
+                    {
+                        idlOS::printf( "%s", sTempBuf );
+                    }
+                }
+
+                if( sdpSlotDirectory::dump( (UChar*) sPage,
+                                            sTempBuf,
+                                            IDE_DUMP_DEST_LIMIT )
+                    == IDE_SUCCESS )
+                {
+                    idlOS::printf("%s", sTempBuf );
+                }
+                else
+                {
+                    /* nothing to do ... */
+                }
+
+                sState = 2;
+                IDE_TEST( iduMemMgr::free( sTempBuf ) != IDE_SUCCESS );
+            }
+            break;
+        default:
+            break;
     }
 
     sState = 1;
@@ -617,7 +636,7 @@ void usage()
 {
     idlOS::printf( "\n%-6s:"
                    "dumpddf {-f file} [-m] [-p pid] [-t page_type] "
-                   "[-e]\n", 
+                   "[-e]\n",
                    "Usage" );
 
     idlOS::printf( "dumpddf (Altibase Ver. %s) ( SM Ver. version %s )\n\n",
@@ -626,17 +645,17 @@ void usage()
     idlOS::printf( " %-4s : %s\n", "-f", "specify database file name" );
     idlOS::printf( " %-4s : %s\n", "-m", "display datafile hdr" );
     idlOS::printf( " %-4s : %s\n", "-p", "specify page id" );
-    idlOS::printf( " %-4s : %s\n", "-t", "specify page type " );
-    idlOS::printf( " %-4s : %s\n", "-e", "read by temp page" );
+    idlOS::printf( " %-4s : specify page type [0~%"ID_UINT32_FMT",h,s]\n", "-t",
+                   SDP_PAGE_TYPE_MAX );
 }
 
 void parseArgs( int &aArgc, char **&aArgv )
 {
-    SChar sOptString[] = "f:mhl:b:p:t:xe";
+    SChar sOptString[] = "f:mhl:b:p:t:x";
     SInt  sOpr;
-    
+
     sOpr = idlOS::getopt(aArgc, aArgv, sOptString );
-    
+
     if( sOpr != EOF )
     {
         do
@@ -647,34 +666,45 @@ void parseArgs( int &aArgc, char **&aArgv )
                 gDbf = optarg;
                 break;
             case 'h':
-                gReadHexa               = ID_TRUE;
+                gReadHexa          = ID_TRUE;
                 break;
             case 'l':
-                gReadHexaLineSize       = idlOS::atoi( optarg );
+                gReadHexaLineSize  = idlOS::atoi( optarg );
                 break;
             case 'b':
-                gReadHexaBlockSize      = idlOS::atoi( optarg );
+                gReadHexaBlockSize = idlOS::atoi( optarg );
                 break;
             case 'm':
-                gDumpDatafileHdr        = ID_TRUE;
+                gDumpDatafileHdr   = ID_TRUE;
                 break;
             case 'p':
-                gPID                    = idlOS::atoi( optarg );
+                gPID               = idlOS::atoi( optarg );
                 break;
             case 't':
-                gPageType               = idlOS::atoi( optarg );
-                break;
-            case 'e':
-                gReadTempPage           = ID_TRUE;
+                if (( *optarg >= '0' ) && ( *optarg <= '9' ))
+                {
+                    gPageType      = idlOS::atoi( optarg );
+                }
+                else
+                {
+                    if( *optarg == 'h' )
+                    {
+                        gDumpTempPage = SM_DUMP_TEMP_PAGE_TEMP_HASH;
+                    }
+                    if( *optarg == 's' )
+                    {
+                        gDumpTempPage = SM_DUMP_TEMP_PAGE_TEMP_SORT;
+                    }
+                }
                 break;
             case 'x':
-                gDisplayHeader          = ID_FALSE;
+                gDisplayHeader     = ID_FALSE;
                 break;
             default:
-                gInvalidArgs            = ID_TRUE;
+                gInvalidArgs       = ID_TRUE;
                 break;
             }
-        }                                     
+        }
         while ( (sOpr = idlOS::getopt(aArgc, aArgv, sOptString)) != EOF) ;
     }
     else
@@ -728,7 +758,7 @@ int main(int aArgc, char *aArgv[])
                         err_with_ide_dump );
     }
 
-    IDE_TEST_RAISE( ( gDumpDatafileHdr != ID_TRUE ) && 
+    IDE_TEST_RAISE( ( gDumpDatafileHdr != ID_TRUE ) &&
                     ( gPID < 0 ) &&
                     ( gReadHexa != ID_TRUE ),
                     err_no_display_option );
@@ -771,14 +801,14 @@ int main(int aArgc, char *aArgv[])
 
         (void)usage();
     }
- 
+
     IDE_EXCEPTION_END;
-    
+
     return IDE_FAILURE;
 }
 
-// BUG-28510 dumpìœ í‹¸ë“¤ì˜ Bannerì–‘ì‹ì„ í†µì¼í•´ì•¼ í•©ë‹ˆë‹¤.
-// DUMPCI.banì„ í†µí•´ dumpciì˜ íƒ€ì´í‹€ì„ ì¶œë ¥í•´ì¤ë‹ˆë‹¤.
+// BUG-28510 dumpÀ¯Æ¿µéÀÇ Banner¾ç½ÄÀ» ÅëÀÏÇØ¾ß ÇÕ´Ï´Ù.
+// DUMPCI.banÀ» ÅëÇØ dumpciÀÇ Å¸ÀÌÆ²À» Ãâ·ÂÇØÁÝ´Ï´Ù.
 void showCopyRight( void )
 {
     SChar         sBuf[1024 + 1];
@@ -793,13 +823,13 @@ void showCopyRight( void )
 
     // make full path banner file name
     idlOS::memset(   sBannerFile, 0, ID_SIZEOF( sBannerFile ) );
-    idlOS::snprintf( sBannerFile, 
-                     ID_SIZEOF( sBannerFile ), 
+    idlOS::snprintf( sBannerFile,
+                     ID_SIZEOF( sBannerFile ),
                      "%s%c%s%c%s",
-                     sAltiHome, 
-                     IDL_FILE_SEPARATOR, 
+                     sAltiHome,
+                     IDL_FILE_SEPARATOR,
                      "msg",
-                     IDL_FILE_SEPARATOR, 
+                     IDL_FILE_SEPARATOR,
                      sBanner );
 
     sFP = idlOS::fopen( sBannerFile, "r" );
@@ -831,4 +861,3 @@ void showCopyRight( void )
 
     IDE_EXCEPTION_END;
 }
-

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcmProc.h 84053 2018-09-20 09:40:16Z khkwak $
+ * $Id: qcmProc.h 86373 2019-11-19 23:12:16Z khkwak $
  **********************************************************************/
 
 #ifndef _O_QCM_PROC_H_
@@ -117,7 +117,7 @@ public:
                   qsOID                 aProcOID,
                   qcmProcStatusType     aStatus);
    
-    // ë³„ë„ì˜ íŠ¸ëœì­ì…˜ì„ ì‚¬ìš©í•´ì„œ í”„ë¡œì‹œì €ì˜ ìƒíƒœë¥¼ ë°”ê¾¼ë‹¤. 
+    // º°µµÀÇ Æ®·£Àè¼ÇÀ» »ç¿ëÇØ¼­ ÇÁ·Î½ÃÀúÀÇ »óÅÂ¸¦ ¹Ù²Û´Ù. 
     static IDE_RC procUpdateStatusTx(
                   qcStatement         * aStatement,
                   qsOID                 aProcOID,
@@ -228,27 +228,27 @@ public:
              qcmConstraintRelated
     **************************************/
 
-    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
     static IDE_RC relInsertRelatedToConstraint(
                   qcStatement             * aStatement,
                   qsConstraintRelatedProc * aRelatedProc );
 
-    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
     static IDE_RC relRemoveRelatedToConstraintByUserID(
                   qcStatement * aStatement,
                   UInt          aUserID );
 
-    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
     static IDE_RC relRemoveRelatedToConstraintByTableID(
                   qcStatement * aStatement,
                   UInt          aTableID );
 
-    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
     static IDE_RC relRemoveRelatedToConstraintByConstraintID(
                   qcStatement * aStatement,
                   UInt          aConstraintID );
 
-    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
     static IDE_RC relIsUsedProcByConstraint(
                   qcStatement    * aStatement,
                   qcNamePosition * aRelatedProcName,
@@ -259,27 +259,27 @@ public:
              qcmIndexRelated
     **************************************/
 
-    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
     static IDE_RC relInsertRelatedToIndex(
                   qcStatement        * aStatement,
                   qsIndexRelatedProc * aRelatedProc );
 
-    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
     static IDE_RC relRemoveRelatedToIndexByUserID(
                   qcStatement * aStatement,
                   UInt          aUserID );
 
-    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
     static IDE_RC relRemoveRelatedToIndexByTableID(
                   qcStatement * aStatement,
                   UInt          aTableID );
 
-    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
     static IDE_RC relRemoveRelatedToIndexByIndexID(
                   qcStatement * aStatement,
                   UInt          aIndexID );
 
-    /* BUG-35445 Check Constraint, Function-Based Indexì—ì„œ ì‚¬ìš© ì¤‘ì¸ Functionì„ ë³€ê²½/ì œê±° ë°©ì§€ */
+    /* BUG-35445 Check Constraint, Function-Based Index¿¡¼­ »ç¿ë ÁßÀÎ FunctionÀ» º¯°æ/Á¦°Å ¹æÁö */
     static IDE_RC relIsUsedProcByIndex(
                   qcStatement    * aStatement,
                   qcNamePosition * aRelatedProcName,
@@ -301,6 +301,25 @@ public:
                                   void          * aFixedTableInfo );
     
     static IDE_RC buildRecordForPROCTEXT( idvSQL      * aStatistics,
+                                          void        * aHeader,
+                                          void        * aDumpObj,
+                                          iduFixedTableMemory   *aMemory);
+
+    /*************************************
+             X$PROCINFO
+    **************************************/
+    
+    static IDE_RC procSelectAllForBuildProcInfo (
+                  smiStatement         * aSmiStmt,
+                  vSLong                 aMaxProcedureCount,
+                  vSLong               * aSelectedProcedureCount,
+                  void                 * aFixedTableInfo );
+    
+    static IDE_RC buildProcInfo(  idvSQL        * aStatistics,
+                                  const void    * aRow,
+                                  void          * aFixedTableInfo );
+    
+    static IDE_RC buildRecordForPROCInfo( idvSQL      * aStatistics,
                                           void        * aHeader,
                                           void        * aDumpObj,
                                           iduFixedTableMemory   *aMemory);

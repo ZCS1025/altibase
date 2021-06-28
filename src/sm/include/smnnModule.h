@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnnModule.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smnnModule.h 89495 2020-12-14 05:19:22Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMNN_MODULE_H_
@@ -34,21 +34,21 @@ public:
 
     static IDE_RC releaseIteratorMem(const smnIndexModule* );
 
-    static IDE_RC init( idvSQL*          /* aStatistics */,
-                        smnnIterator*       aIterator,
-                        void*               aTrans,
-                        smcTableHeader*     aTable,
-                        smnIndexHeader*     aIndex,
-                        void*               aDumpObject,
-                        const smiRange*     aKeyRange,
-                        const smiRange*     aKeyFilter,
-                        const smiCallBack*  aRowFilter,
-                        UInt                aFlag,
-                        smSCN               aSCN,
-                        smSCN               aInfinite,
-                        idBool              sUntouchable,
-                        smiCursorProperties * aProperties,
-                        const smSeekFunc**  aSeekFunc );
+    static IDE_RC init( smnnIterator         * aIterator,
+                        void                 * aTrans,
+                        smcTableHeader       * aTable,
+                        smnIndexHeader       * aIndex,
+                        void                 * aDumpObject,
+                        const smiRange       * aKeyRange,
+                        const smiRange       * aKeyFilter,
+                        const smiCallBack    * aRowFilter,
+                        UInt                   aFlag,
+                        smSCN                  aSCN,
+                        smSCN                  aInfinite,
+                        idBool                 aUntouchable,
+                        smiCursorProperties  * aProperties,
+                        const smSeekFunc    ** aSeekFunc,
+                        smiStatement         * aStatement );
 
     static IDE_RC dest( smnnIterator* aIterator );
 

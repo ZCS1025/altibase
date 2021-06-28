@@ -35,7 +35,7 @@
 
 /* library internal functions */
 
-/* BUG-28209 : AIX ì—ì„œ c compilerë¡œ ì»´íŒŒì¼í•˜ë©´ ìƒì„±ì í˜¸ì¶œì•ˆë¨. */
+/* BUG-28209 : AIX ¿¡¼­ c compiler·Î ÄÄÆÄÀÏÇÏ¸é »ı¼ºÀÚ È£Ãâ¾ÈµÊ. */
 ACI_RC ulpInitializeConnMgr( void );
 
 ACI_RC ulpSetOptionThread( acp_char_t *aConnName, ulpSqlstmt *aSqlstmt, void *aReserved );

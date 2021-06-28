@@ -33,7 +33,7 @@ class isqlType
 {
 public:
     isqlType();
-    ~isqlType();
+    virtual ~isqlType();
 
     void    freeMem();
     void    SetName( SChar *aName );

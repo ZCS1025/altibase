@@ -56,7 +56,7 @@ IDE_RC cmpModuleInitializeStatic()
     UInt       i;
     UInt       j;
 
-    /* BUG-43080 Marshalì„ ìœ„í•œ ì„¤ì •ì€ mOpMaxA5ë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤. */
+    /* BUG-43080 MarshalÀ» À§ÇÑ ¼³Á¤Àº mOpMaxA5¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù. */
 #ifdef DEBUG
     for (i = CMP_MODULE_BASE; i < CMP_MODULE_MAX; i++)
     {
@@ -84,7 +84,7 @@ IDE_RC cmpModuleInitializeStatic()
     }
 #endif
 
-    /* BUG-46400 mCallbackFunctionì€ A7ìš©ì´ë¯€ë¡œ mOpMaxë¥¼ ì‚¬ìš©í•´ì•¼ í•œë‹¤. */
+    /* BUG-46400 mCallbackFunctionÀº A7¿ëÀÌ¹Ç·Î mOpMax¸¦ »ç¿ëÇØ¾ß ÇÑ´Ù. */
     for (i = CMP_MODULE_BASE + 1; i < CMP_MODULE_MAX; i++)
     {
         sModule = gCmpModule[i];

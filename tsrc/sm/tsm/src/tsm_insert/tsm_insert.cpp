@@ -266,7 +266,7 @@ void parseAndMakeTableScheme( SChar         * aSchemeFile,
         }
     }
     
-    /* Headerë¥¼ ë¬´ì‹œí•œë‹¤.*/
+    /* Header¸¦ ¹«½ÃÇÑ´Ù.*/
     sToken = idlOS::strtok( sBuffer,  sSeps);
     sToken = idlOS::strtok( NULL,  sSeps );
     sToken = idlOS::strtok( NULL,  sSeps );

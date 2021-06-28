@@ -39,12 +39,12 @@ static mmmPhaseAction *gPreProcessActions[] =
 
     /* 
      * BUG-32751
-     * Memory Managerì—ì„œ ë” ì´ìƒ Mutexë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šìœ¼ë©°
-     * iduMemPoolì—ì„œ server_mallocì„ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— ìœ„ì¹˜ë¥¼ ë³€ê²½í•©ë‹ˆë‹¤.
+     * Memory Manager¿¡¼­ ´õ ÀÌ»ó Mutex¸¦ »ç¿ëÇÏÁö ¾ÊÀ¸¸ç
+     * iduMemPool¿¡¼­ server_mallocÀ» »ç¿ëÇÏ±â ¶§¹®¿¡ À§Ä¡¸¦ º¯°æÇÕ´Ï´Ù.
      */
     &gMmmActInitMemoryMgr,
 
-    &gMmmActCheckIdeTSD, // Ide Layer ì´ˆê¸°í™” ê²€ì‚¬, mutex, latch ì´ˆê¸°í™”
+    &gMmmActCheckIdeTSD, // Ide Layer ÃÊ±âÈ­ °Ë»ç, mutex, latch ÃÊ±âÈ­
 
     &gMmmActInitMemPoolMgr,
 
@@ -62,7 +62,7 @@ static mmmPhaseAction *gPreProcessActions[] =
     &gMmmActDaemon,
     &gMmmActThread,
     &gMmmActPIDInfo,
-    &gMmmActInitLockFile,    // Daemonize ì´í›„ì— ì‚¬ìš©í•˜ë„ë¡ í•¨.
+    &gMmmActInitLockFile,    // Daemonize ÀÌÈÄ¿¡ »ç¿ëÇÏµµ·Ï ÇÔ.
 
     /* TASK-6780 */
     &gMmmActInitRBHash,
@@ -80,6 +80,7 @@ static mmmPhaseAction *gPreProcessActions[] =
     // &gMmmActInitNLS,
     &gMmmActInitQueryProfile,
     &gMmmActInitSD,
+    &gMmmActInitREPL,
     &gMmmActInitService,
 
     &gMmmActEndPreProcess,
