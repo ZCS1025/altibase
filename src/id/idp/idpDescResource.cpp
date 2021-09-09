@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idpDescResource.cpp 91426 2021-08-04 04:40:23Z jake.jang $
+ * $Id: idpDescResource.cpp 91628 2021-09-08 01:48:35Z ahra.cho $
  *
  * Description:
  *
@@ -1877,7 +1877,7 @@ IDE_RC registProperties()
             IDP_ATTR_RD_WRITABLE |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            0, 3, 1);
+            0, 3, 3);
 
     // BUG-41249 DISTINCT Elimination
     IDP_DEF(UInt, "__OPTIMIZER_DISTINCT_ELIMINATION_ENABLE",
@@ -5854,18 +5854,6 @@ IDE_RC registProperties()
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             0, 1, 1);
-
-    // 8개의 Extent, 4MB단위로 할당.
-    IDP_DEF(UInt, "__TEMP_MIN_INIT_WAEXTENT_COUNT",
-            IDP_ATTR_SL_ALL |
-            IDP_ATTR_SH_ALL |
-            IDP_ATTR_IU_ANY |
-            IDP_ATTR_MS_ANY |
-            IDP_ATTR_LC_INTERNAL |
-            IDP_ATTR_RD_WRITABLE |
-            IDP_ATTR_ML_JUSTONE  |
-            IDP_ATTR_CK_CHECK,
-            0, ID_UINT_MAX, 8 );
 
     // create temp table 시점에, 만약 TOTAL_WA_EXTENT 가 부족하면
     // 몇개를 초과해서 초기화 할당 하여 시작 할 것인지 수를 나타낸다.
@@ -12807,7 +12795,7 @@ IDP_ATTR_SH_ALL |
              IDP_ATTR_RD_WRITABLE |
              IDP_ATTR_ML_JUSTONE  |
              IDP_ATTR_CK_CHECK,
-             0, 3, 2 );
+             0, 3, 0 );
 
     /* PROJ-2632 */
     IDP_DEF( UInt, "SERIAL_EXECUTE_MODE",
@@ -13002,6 +12990,22 @@ IDP_ATTR_SH_ALL |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
             0, 1, 1 );
+
+    /* PROJ-2749
+     *    WITH에 관련된 optimizer property
+     *    value  0 : 기존과 동일한
+     *           1 : WITH 뷰에 대해 PUSH PROJECTION 기법을 적용
+     *           2 : COMPACT_MATERIALIZE 힌트를 사용했을 때만 compact with 수행
+     *           4 : 조건부 compact with 수행 */
+    IDP_DEF( UInt, "__OPTIMIZER_WITH_VIEW",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_INTERNAL |
+             IDP_ATTR_RD_WRITABLE |
+             IDP_ATTR_ML_JUSTONE  |
+             IDP_ATTR_CK_CHECK,
+             0, 5, 3 );
 
     return IDE_SUCCESS;
 
