@@ -448,6 +448,9 @@ IDE_RC qci::initializeSession( qciSession * aSession,
     /* BUG-43605 [mt] random함수의 seed 설정을 session 단위로 변경해야 합니다. */
     qciMisc::initRandomInfo( & sQPSpecific->mRandomInfo );
 
+    // BUG-48345 Lock procedure statement
+    sQPSpecific->mPSMLatchList = NULL;
+
     IDE_TEST( initializeStmtListInfo( &sQPSpecific->mStmtListInfo )
               != IDE_SUCCESS );
     sStage = 6;
@@ -522,9 +525,18 @@ IDE_RC qci::finalizeSession( qciSession * aSession,
     UInt                sErrorCode;
     SChar             * sErrorMsg;
     qcSessionSpecific * sQPSpecific;
-    UInt                sSessionID;
     idvSQL            * sStatistics;
+    UInt                sSessionID;
     UInt                i = 0;
+
+    // PROJ-2638
+    /* PROJ-2755
+     * sdi::finalizeSession 위치 이동. (함수 내 마지막에서 처음으로 변경)
+     * qciSession 을 sdi::finalizeSession 에서 사용하는데 (ex: mMmSession)
+     * 이미 초기화가 되어 있어 비정상 동작을 하는 경우가 있었음.
+     * 따라서 sd 가 모두 finalize 된 다음에 qciSession 을 finalize 한다.
+     */
+    sdi::finalizeSession( aSession );
 
     sSessionID = qci::mSessionCallback.mGetSessionID( aMmSession );
     sStatistics = qci::mSessionCallback.mGetStatistics( aMmSession );
@@ -669,12 +681,12 @@ IDE_RC qci::finalizeSession( qciSession * aSession,
 
     (void)finalizeStmtListInfo( &sQPSpecific->mStmtListInfo );
 
+    // BUG-48345 Lock procedure statement
+    qciMisc::freePSMLatchList( aSession, NULL );
+
     // BUG-47765
     sdi::unSetSessionPropertyFlag( aSession );
     
-    // PROJ-2638
-    sdi::finalizeSession( aSession );
-
     return IDE_SUCCESS;
 }
 
@@ -786,7 +798,7 @@ void qci::endTransForSession( qciSession * aSession,
                         /* shard meta update procedure of user session */
                         if( sdiZookeeper::updateSMN(aNewSMN) != IDE_SUCCESS )
                         {
-                            ideLog::log( IDE_SD_4, "[ZOOKEEPER_ERROR] fail. shard procedure after commit for smn: SMN(%"ID_UINT64_FMT")", aNewSMN );
+                            ideLog::log( IDE_SD_4, "[ZOOKEEPER_ERROR] procedure fail. shard procedure after commit for smn: SMN(%"ID_UINT64_FMT")", aNewSMN );
                         }
                         ideLog::log( IDE_SD_20, "[ZOOKEEPER] success. shard procedure zookeeper after commit for smn: SMN(%"ID_UINT64_FMT")", aNewSMN );
                     }
@@ -795,15 +807,17 @@ void qci::endTransForSession( qciSession * aSession,
                 {
                     /* self coordinator session of shard meta update procedure : do nothing, already update smn by user session */
                 }
-
-                ideLog::log( IDE_SD_17, "[SHARD_META] COMMIT" );
+                
+                sdiZookeeper::callAfterCommitFunc( aNewSMN, sBeforeSMN );
+                                    
+                ideLog::log( IDE_SD_17, "[SHARD_META] COMMIT procedure" );
             }
             else
             {
-                ideLog::log( IDE_SD_17, "[SHARD_META] ROLLBACK" );
-            }
-            //shard meta touch release shard meta lock
-            sdiZookeeper::releaseShardMetaLock();
+                sdiZookeeper::callAfterRollbackFunc();
+                                
+                ideLog::log( IDE_SD_17, "[SHARD_META] ROLLBACK procedure" );
+            }            
 
             sNeedUnsetSessionFlag = ID_TRUE;
         }
@@ -1530,6 +1544,7 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
     volatile SInt  sStage;
     volatile SInt  sOpState;
     volatile SInt  sTestState;
+    UInt           sPropertyValue;
 
     //---------------------------------------------
     // QCI_STMT_STATE_PARSED 상태에서만
@@ -1642,6 +1657,34 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
         IDE_FT_ROOT_BEGIN();
 
         IDE_FT_BEGIN();
+
+        /* PROJ-2749 */
+        if ( SDU_SHARD_ENABLE == 0 )
+        {
+            sPropertyValue = ( QCU_OPTIMIZER_WITH_VIEW & QCU_OPT_WITH_VIEW_MODE2_4_MASK );
+
+            switch ( sPropertyValue )
+            {
+                case QCU_OPT_WITH_VIEW_MODE2:
+                    QC_SHARED_TMPLATE( sStatement )->flag &= ~QC_TMP_COMPACT_WITH_VIEW_MASK;
+                    QC_SHARED_TMPLATE( sStatement )->flag |= QC_TMP_COMPACT_WITH_VIEW_ONLYHINT_TRUE;
+                    break;
+                case QCU_OPT_WITH_VIEW_MODE4:
+                case QCU_OPT_WITH_VIEW_MODE2_4_MASK:
+                    QC_SHARED_TMPLATE( sStatement )->flag &= ~QC_TMP_COMPACT_WITH_VIEW_MASK;
+                    QC_SHARED_TMPLATE( sStatement )->flag |= QC_TMP_COMPACT_WITH_VIEW_CONDITIONAL_TRUE;
+                    break;
+                default:
+                    QC_SHARED_TMPLATE( sStatement )->flag &= ~QC_TMP_COMPACT_WITH_VIEW_MASK;
+                    QC_SHARED_TMPLATE( sStatement )->flag |= QC_TMP_COMPACT_WITH_VIEW_FALSE;
+                    break;
+            }
+        }
+        else
+        {
+            QC_SHARED_TMPLATE( sStatement )->flag &= ~QC_TMP_COMPACT_WITH_VIEW_MASK;
+            QC_SHARED_TMPLATE( sStatement )->flag |= QC_TMP_COMPACT_WITH_VIEW_FALSE;
+        }
 
         IDE_TEST( sStatement->myPlan->parseTree->parse( sStatement )
                   != IDE_SUCCESS );
@@ -1873,6 +1916,10 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
         /* BUG-48161 */
         qcgPlan::registerPlanProperty( sStatement,
                                        PLAN_PROPERTY_OPTIMIZER_BUCKET_COUNT_MAX );
+
+        /* PROJ-2749 */
+        qcgPlan::registerPlanProperty( sStatement,
+                                       PLAN_PROPERTY_OPTIMIZER_WITH_VIEW );
 
         // environment의 기록
         IDE_TEST( qcgPlan::registerPlanProc(
@@ -3090,8 +3137,7 @@ IDE_RC qci::setBindParamInfo( qciStatement  * aStatement,
 
         // 호스트 변수의 값을 저장할 데이터 영역을 초기화 한다.
         // 이 영역은 variable tuple 의 row 로도 사용된다.
-        IDE_TEST_RAISE( qcg::initBindParamData( sStatement ) != IDE_SUCCESS,
-                        err_invalid_binding_init_data );
+        IDE_TEST( qcg::initBindParamData( sStatement ) != IDE_SUCCESS );
     }
     else
     {
@@ -3108,19 +3154,14 @@ IDE_RC qci::setBindParamInfo( qciStatement  * aStatement,
     {
         IDE_SET(ideSetErrorCode(qpERR_ABORT_BIND_COLUMN_COUNT_MISMATCH));
     }
-    IDE_EXCEPTION( err_invalid_binding_init_data );
-    {
-    }
     IDE_EXCEPTION_END;
 
+    /* BUG-47830 에러 발생시 bindParam의 isParamInfoBound 값을 초기화 하여 data 메모리 접근시 비정상종료를 방어한다. */
     // BUG-37405
     for( i = 0; i < sStatement->pBindParamCount; i++ )
     {
         sStatement->pBindParam[i].isParamInfoBound = ID_FALSE;
     }
-    
-    // PROJ-2163
-    //sStatement->pBindParam[aBindParam->id].isParamInfoBound = ID_FALSE;
 
     return IDE_FAILURE;
 }
@@ -9107,8 +9148,7 @@ IDE_RC qci::setBindParamInfoByNameInternal( qciStatement  * aStatement,
     {
         // 호스트 변수의 값을 저장할 데이터 영역을 초기화 한다.
         // 이 영역은 variable tuple 의 row 로도 사용된다.
-        IDE_TEST_RAISE( qcg::initBindParamData( sStatement ) != IDE_SUCCESS,
-                        err_invalid_binding_init_data );
+        IDE_TEST( qcg::initBindParamData( sStatement ) != IDE_SUCCESS );
     }
     else
     {
@@ -9121,18 +9161,14 @@ IDE_RC qci::setBindParamInfoByNameInternal( qciStatement  * aStatement,
     {
         IDE_SET(ideSetErrorCode(qpERR_ABORT_QCI_INVALID_BINDING));
     }
-    IDE_EXCEPTION( err_invalid_binding_init_data );
-    {
-        // BUG-37405
-        for ( i = 0; i < sStatement->pBindParamCount; i++ )
-        {
-            sStatement->pBindParam[i].isParamInfoBound = ID_FALSE;
-        }
-    }
     IDE_EXCEPTION_END;
 
-    // PROJ-2163
-    sStatement->pBindParam[aBindParam->id].isParamInfoBound = ID_FALSE;
+    /* BUG-47830 에러 발생시 bindParam의 isParamInfoBound 값을 초기화 하여 data 메모리 접근시 비정상종료를 방어한다. */
+    // BUG-37405
+    for ( i = 0; i < sStatement->pBindParamCount; i++ )
+    {
+        sStatement->pBindParam[i].isParamInfoBound = ID_FALSE;
+    }
 
     return IDE_FAILURE;
 }
