@@ -75,8 +75,6 @@ typedef enum
     SDT_WA_REUSE_LRU       /* LRU에 따라 페이지를 할당해줌 */
 } sdtWAReusePolicy;
 
-#define SDT_MAX_WAFLUSHER_COUNT (64)
-
 #define SDT_USED_PAGE_PTR_TERMINATED ((sdtWCB*)1)
 
 /* Extent 하나당 Page개수 64개로 설정 */
@@ -165,5 +163,7 @@ typedef enum
     (( (SInt)(aPartRatio) < 1 ) ?                                  \
      ( (aPartSize) * 100 ) :                                       \
      ( ((aPartSize) * 100 + (aPartRatio-1)) / (aPartRatio) ))
+
+#define SDT_INIT_WAEXTENT_COUNT  (8)
 
 #endif  // _O_SDT_DEF_H_

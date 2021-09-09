@@ -218,24 +218,25 @@ IDE_RC sdtSortSegment::createSortSegment( smiTempTableHeader * aHeader,
 
     if ( aInitWorkAreaSize == 0 )
     {
-        sInitWAExtentCount = smuProperty::getTmpMinInitWAExtCnt();
+        sInitWAExtentCount = SDT_INIT_WAEXTENT_COUNT;
+
+        if ( sMaxWAExtentCount < sInitWAExtentCount )
+        {
+            sInitWAExtentCount = sMaxWAExtentCount;
+        }
     }
     else
     {
-        sInitWAExtentCount = sdtWAExtentMgr::calcWAExtentCount( aInitWorkAreaSize );
+        sInitWAExtentCount = calcWAExtentCount( aInitWorkAreaSize );
 
-        // Sort Area와 Row Area각 1개씩
-        // 최소한 4개 이상은 되어야 한다.
-        if ( sInitWAExtentCount < smuProperty::getTmpMinInitWAExtCnt() )
+        if ( sInitWAExtentCount < SDT_INIT_WAEXTENT_COUNT )
         {
-            sInitWAExtentCount = smuProperty::getTmpMinInitWAExtCnt();
+            sInitWAExtentCount = SDT_INIT_WAEXTENT_COUNT;
         }
-        else
+
+        if ( sMaxWAExtentCount < sInitWAExtentCount )
         {
-            if ( sMaxWAExtentCount < sInitWAExtentCount )
-            {
-                sInitWAExtentCount = sMaxWAExtentCount;
-            }
+            sInitWAExtentCount = sMaxWAExtentCount;
         }
     }
 
@@ -276,7 +277,7 @@ IDE_RC sdtSortSegment::createSortSegment( smiTempTableHeader * aHeader,
     sInitGrpInfo = &sWASeg->mGroup[ 0 ];
     /* Segment 이후 WAExtentPtr가 배치된 후 Range의 시작이다. */
     sInitGrpInfo->mBeginWPID = 1;
-    sInitGrpInfo->mEndWPID = sMaxWAPageCount;
+    sInitGrpInfo->mEndWPID   = sMaxWAPageCount;
 
     sInitGrpInfo->mPolicy       = SDT_WA_REUSE_INMEMORY;
     sInitGrpInfo->mSortMapHdr   = NULL;
@@ -1429,7 +1430,9 @@ IDE_RC sdtSortSegment::moveWAPage( sdtSortSegHdr* aWASegment,
     }
 
     /* PagePtr을 서로 교환한다. */
-    // XXX Null 체크 필요
+    IDE_DASSERT ( aSrcWCBPtr->mWAPagePtr != NULL );
+    IDE_DASSERT ( aDstWCBPtr->mWAPagePtr != NULL );
+
     sSrcWAPagePtr          = aSrcWCBPtr->mWAPagePtr;
     aSrcWCBPtr->mWAPagePtr = aDstWCBPtr->mWAPagePtr;
     aDstWCBPtr->mWAPagePtr = sSrcWAPagePtr;

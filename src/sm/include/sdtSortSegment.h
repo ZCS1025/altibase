@@ -64,7 +64,7 @@ public:
 
     static ULong calcWAPageCount( ULong aSortAreaSize )
     {
-        return (ULong)calcWAExtentCount( aSortAreaSize) * SDT_WAEXTENT_PAGECOUNT ;
+        return (ULong)calcWAExtentCount( aSortAreaSize ) * SDT_WAEXTENT_PAGECOUNT ;
     }
     static ULong getWASegmentSize()
     {

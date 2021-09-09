@@ -465,24 +465,25 @@ IDE_RC sdtHashModule::createHashSegment( smiTempTableHeader * aHeader,
 
     if ( aInitWorkAreaSize == 0 )
     {
-        sInitWAExtentCount = smuProperty::getTmpMinInitWAExtCnt();
+        sInitWAExtentCount = SDT_INIT_WAEXTENT_COUNT;
+
+        if ( sMaxWAExtentCount < sInitWAExtentCount )
+        {
+            sInitWAExtentCount = sMaxWAExtentCount;
+        }
     }
     else
     {
-        sInitWAExtentCount = sdtWAExtentMgr::calcWAExtentCount( aInitWorkAreaSize );
+        sInitWAExtentCount = calcWAExtentCount( aInitWorkAreaSize );
 
-        // Hash Area와 Row Area각 1개씩
-        // 최소한 4개 이상은 되어야 한다.
-        if ( sInitWAExtentCount < smuProperty::getTmpMinInitWAExtCnt() )
+        if ( sInitWAExtentCount < SDT_INIT_WAEXTENT_COUNT )
         {
-            sInitWAExtentCount = smuProperty::getTmpMinInitWAExtCnt();
+            sInitWAExtentCount = SDT_INIT_WAEXTENT_COUNT;
         }
-        else
+
+        if ( sMaxWAExtentCount < sInitWAExtentCount )
         {
-            if ( sMaxWAExtentCount < sInitWAExtentCount )
-            {
-                sInitWAExtentCount = sMaxWAExtentCount;
-            }
+            sInitWAExtentCount = sMaxWAExtentCount;
         }
     }
 
@@ -781,6 +782,7 @@ IDE_RC sdtHashModule::truncateHashSegment( sdtHashSegHdr* aWASegment )
     aWASegment->mIsInMemory        = SDT_WORKAREA_IN_MEMORY;
     aWASegment->mOpenCursorType    = SMI_HASH_CURSOR_NONE;
     aWASegment->mSubHashBuildCount = 0;
+    aWASegment->mSubHashWCBPtr     = NULL;
     aWASegment->mHashSlotAllocPageCount = 0;
 
     return IDE_SUCCESS;
@@ -1447,6 +1449,7 @@ IDE_RC sdtHashModule::allocNewPage( sdtHashSegHdr    * aWASegment,
 {
     sdtWCB     * sTargetWCBPtr;
 
+
     if (( aWASegment->mInsertGrp.mReuseSeqWPID % SDT_WAEXTENT_PAGECOUNT ) == 0 )
     {
         /* Extent 단위로 flush 하거나, Discard 여부를 확인한다. */
@@ -1896,6 +1899,10 @@ IDE_RC sdtHashModule::buildSubHashAndResetInsertInfo( sdtHashSegHdr    * aWASegm
             IDE_ASSERT( aWASegment->mFetchGrp.mBeginWPID   < aWASegment->mFetchGrp.mEndWPID );
             IDE_ASSERT( aWASegment->mSubHashGrp.mBeginWPID < aWASegment->mSubHashGrp.mEndWPID );
         }
+        /* 아직 sub hash는 구성된적이 없다.*/
+        IDE_DASSERT( aWASegment->mSubHashBuildCount == 0 );
+        IDE_DASSERT( aWASegment->mSubHashWCBPtr == NULL );
+
         aWASegment->mIsInMemory = SDT_WORKAREA_OUT_MEMORY;
     }
     aWASegment->mInsertGrp.mReuseSeqWPID = aWASegment->mInsertGrp.mBeginWPID;
@@ -1955,7 +1962,6 @@ IDE_RC sdtHashModule::buildSubHash( sdtHashSegHdr * aWASegment )
                                  &aWASegment->mSubHashGrp,
                                  &aWASegment->mSubHashWCBPtr ) != IDE_SUCCESS );
 
-
         IDE_TEST( allocAndAssignNPage( aWASegment,
                                        &aWASegment->mNExtFstPIDList4SubHash,
                                        aWASegment->mSubHashWCBPtr ) != IDE_SUCCESS );
@@ -2005,7 +2011,7 @@ IDE_RC sdtHashModule::buildSubHash( sdtHashSegHdr * aWASegment )
 
             IDE_TEST( reserveSubHash( aWASegment,
                                       &aWASegment->mSubHashGrp,
-                                      5,
+                                      5,  //aReqMinSlotCount
                                       &sSubHash,
                                       &sSlotMaxCount,
                                       &sSubHashPageID,
@@ -2033,13 +2039,13 @@ IDE_RC sdtHashModule::buildSubHash( sdtHashSegHdr * aWASegment )
                 if ( sSubHash->mKeyCount == sSlotMaxCount )
                 {
                     addSubHashPageFreeOffset( aWASegment,
-                                              ((sSubHash->mKeyCount * ID_SIZEOF(sdtSubHashKey)) +
-                                               SDT_SUB_HASH_SIZE));
+                                              ( (sSubHash->mKeyCount * ID_SIZEOF(sdtSubHashKey)) +
+                                                SDT_SUB_HASH_SIZE) );
 
                     // 공간 확인, 없으면 다음 page
                     IDE_TEST( reserveSubHash( aWASegment,
                                               &aWASegment->mSubHashGrp,
-                                              5,
+                                              5,  //aReqMinSlotCount
                                               &sNextSubHash,
                                               &sSlotMaxCount,
                                               &sSubHash->mNextPageID,
@@ -2144,7 +2150,7 @@ IDE_RC sdtHashModule::reserveSubHash( sdtHashSegHdr * aWASegment,
     sPageHdr = (sdtHashPageHdr*)aWASegment->mSubHashWCBPtr->mWAPagePtr;
 
     IDE_ASSERT( sPageHdr->mFreeOffset <= SD_PAGE_SIZE );
-
+    
     if ( aReqMinSlotCount > SDT_ALLOC_SUBHASH_MIN_KEYCOUNT )
     {
         aReqMinSlotCount = SDT_ALLOC_SUBHASH_MIN_KEYCOUNT;
@@ -2451,7 +2457,7 @@ IDE_RC sdtHashModule::mergeSubHashOneSlot( sdtHashSegHdr* aWASegment,
 
     IDE_TEST( reserveSubHash( aWASegment,
                               &aWASegment->mInsertGrp,
-                              20,
+                              20,  //aReqMinSlotCount
                               &sNewSubHash,
                               &sSlotMaxCount,
                               &aHashSlot->mPageID,
@@ -2503,7 +2509,7 @@ IDE_RC sdtHashModule::mergeSubHashOneSlot( sdtHashSegHdr* aWASegment,
                     quickSortSubHash( sNewSubHash->mKey, 0, sNewSubHash->mKeyCount -1 );
                     IDE_TEST( reserveSubHash( aWASegment,
                                               &aWASegment->mInsertGrp,
-                                              20,
+                                              20,  //aReqMinSlotCount
                                               &sNewSubHash,
                                               &sSlotMaxCount,
                                               &sNewSubHash->mNextPageID,
@@ -2787,7 +2793,7 @@ void sdtHashModule::initToHashScan( sdtHashSegHdr* aWASegment )
     setInsertHintWCB( aWASegment, NULL );
 
     sAllExtCount = ( aWASegment->mEndWPID - aWASegment->mHashSlotPageCount )
-        / SDT_WAEXTENT_PAGECOUNT;
+                   / SDT_WAEXTENT_PAGECOUNT;
 
     if ( aWASegment->mNExtFstPIDList4SubHash.mCount < sAllExtCount )
     {
@@ -3841,6 +3847,8 @@ IDE_RC sdtHashModule::getFreeWAPage( sdtHashSegHdr* aWASegment,
                     // 이건 반드시 성공해야 한다.
                     IDE_TEST( set64WAPagesPtr( aWASegment,
                                                sWCBPtr ) != IDE_SUCCESS );
+
+                    IDE_DASSERT( SDT_IS_NOT_FIXED_PAGE( sWCBPtr ) );
                     break;
                 }
                 else
@@ -3854,7 +3862,7 @@ IDE_RC sdtHashModule::getFreeWAPage( sdtHashSegHdr* aWASegment,
 
         if ( SDT_IS_NOT_FIXED_PAGE( sWCBPtr ) )
         {
-            /* 제대로 골랐음 */
+            /* 사용중인 페이지를 할당 받음, 정리후 사용 가능 */
             if ( sWCBPtr->mWPState == SDT_WA_PAGESTATE_DIRTY )
             {
                 IDE_TEST( writeNPage( aWASegment,
@@ -3862,7 +3870,8 @@ IDE_RC sdtHashModule::getFreeWAPage( sdtHashSegHdr* aWASegment,
             }
             break;
         }
-    }
+
+    } // while
 
     /* 할당받은 페이지를 빈 페이지로 만듬 */
 
@@ -3887,7 +3896,6 @@ IDE_RC sdtHashModule::getFreeWAPage( sdtHashSegHdr* aWASegment,
 
     return IDE_FAILURE;
 }
-//XXX 이름 변경 getSlotPtr
 
 /**************************************************************************
  * Description :
@@ -4409,7 +4417,7 @@ sdtWCB * sdtHashModule::getFreePage4PreRead( sdtHashSegHdr * aWASegment,
                                  aWASegment->mFetchGrp.mReuseSeqWPID );
 
         }
-    }
+    }// while
 
     aWASegment->mFetchGrp.mReuseSeqWPID++;
 
@@ -4436,7 +4444,7 @@ IDE_RC sdtHashModule::allocAndAssignNPage( sdtHashSegHdr    * aWASegment,
 
     if ( aNExtFstPIDList->mPageSeqInLFE == SDT_WAEXTENT_PAGECOUNT )
     {
-        /* 마지막 NExtent를 다썼음 , 디스크 extent는 하나  할 당 받아온다. */
+        /* 마지막 NExtent를 다썼음 , 디스크 extent를 하나 할당 받아온다. */
         IDE_TEST( sdtWAExtentMgr::allocFreeNExtent( aWASegment->mStatistics,
                                                     aWASegment->mStatsPtr,
                                                     aWASegment->mSpaceID,
@@ -4448,8 +4456,7 @@ IDE_RC sdtHashModule::allocAndAssignNPage( sdtHashSegHdr    * aWASegment,
         /* 기존에 할당해둔 Extent에서 가져옴 */
     }
 
-    sFreeNPID = aNExtFstPIDList->mLastFreeExtFstPID
-        + aNExtFstPIDList->mPageSeqInLFE;
+    sFreeNPID = aNExtFstPIDList->mLastFreeExtFstPID + aNExtFstPIDList->mPageSeqInLFE;
     aNExtFstPIDList->mPageSeqInLFE++;
 
     ((sdtHashPageHdr*)aTargetWCBPtr->mWAPagePtr)->mSelfNPID = sFreeNPID;
@@ -4892,22 +4899,22 @@ IDE_RC sdtHashModule::importHashSegmentFromFile( SChar         * aFileName,
 
     if ( sWASegment->mUsedWCBPtr != NULL )
     {
-        sWASegment->mUsedWCBPtr =
-            (sdtWCB*)(((UChar*)sWASegment->mUsedWCBPtr)
-                      - sOldWASegPtr + (UChar*)sWASegment) ;
+        sWASegment->mUsedWCBPtr = (sdtWCB*)(((UChar*)sWASegment->mUsedWCBPtr)
+                                  - sOldWASegPtr 
+                                  + (UChar*)sWASegment) ;
     }
 
     if ( sWASegment->mInsertHintWCBPtr != NULL )
     {
-        sWASegment->mInsertHintWCBPtr =
-            (sdtWCB*)(((UChar*)sWASegment->mInsertHintWCBPtr)
-                      - sOldWASegPtr + (UChar*)sWASegment) ;
+        sWASegment->mInsertHintWCBPtr = (sdtWCB*)(((UChar*)sWASegment->mInsertHintWCBPtr)
+                                        - sOldWASegPtr 
+                                        + (UChar*)sWASegment) ;
     }
     if ( sWASegment->mSubHashWCBPtr != NULL )
     {
-        sWASegment->mSubHashWCBPtr =
-            (sdtWCB*)(((UChar*)sWASegment->mSubHashWCBPtr)
-                      - sOldWASegPtr + (UChar*)sWASegment) ;
+        sWASegment->mSubHashWCBPtr = (sdtWCB*)(((UChar*)sWASegment->mSubHashWCBPtr)
+                                     - sOldWASegPtr 
+                                     + (UChar*)sWASegment) ;
     }
 
     sState = 1;

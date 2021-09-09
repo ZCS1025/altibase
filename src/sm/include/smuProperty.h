@@ -694,7 +694,6 @@ public:
     SMU_PROPERTY_READONLY_DECLARE( ULong, InitTotalWASize ); /* Callback은 따로*/
     SMU_PROPERTY_READONLY_DECLARE( ULong, MaxTotalWASize );
     SMU_PROPERTY_WRITABLE_DECLARE( UInt,  TmpCheckUnique4Update );
-    SMU_PROPERTY_WRITABLE_DECLARE( UInt,  TmpMinInitWAExtCnt );
     SMU_PROPERTY_WRITABLE_DECLARE( UInt,  TmpOverInitWAExtCnt );
     SMU_PROPERTY_READONLY_DECLARE( UInt,  TmpInitWASegCnt ); /* Callback은 따로*/
 

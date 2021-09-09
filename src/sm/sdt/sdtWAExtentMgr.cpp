@@ -425,7 +425,7 @@ IDE_RC sdtWAExtentMgr::initWAExtents( idvSQL            * aStatistics,
     UInt             sTryCount4AllocWExtent = 0;
     SInt             sOverInitWAExtentCount;
 
-    IDE_ERROR( aInitWAExtentCount  > 0 );
+    IDE_DASSERT( aInitWAExtentCount > 0 );
     IDE_ERROR( aWAExtentInfo->mTail == NULL );
 
     // 초과 할당 가능한지 확인
@@ -478,7 +478,7 @@ IDE_RC sdtWAExtentMgr::initWAExtents( idvSQL            * aStatistics,
 
         lock();
         sIsLock = ID_TRUE;
-    }
+    } // while
 
     sIsLock = ID_FALSE;
     unlock();
@@ -488,6 +488,9 @@ IDE_RC sdtWAExtentMgr::initWAExtents( idvSQL            * aStatistics,
     aWAExtentInfo->mTail   = sWAExtent;
     aWAExtentInfo->mCount  = 1;
 
+    /* 요구되는 extent 가 1개 였으면 할당 종료. */
+    IDE_TEST_CONT( aInitWAExtentCount <= 1, SKIP )
+    
     sAllocState = 3;
 
     if ( allocWAExtents( aWAExtentInfo,
@@ -531,6 +534,8 @@ IDE_RC sdtWAExtentMgr::initWAExtents( idvSQL            * aStatistics,
             }
         }
     }
+
+    IDE_EXCEPTION_CONT( SKIP );
 
     return IDE_SUCCESS;
 
@@ -610,7 +615,7 @@ IDE_RC sdtWAExtentMgr::allocWAExtents( sdtWAExtentInfo * aWAExtentInfo,
         // free wa extent를 넘어서 초과 할당하는 경우,
         // init total wa extent 만으로는 부족한 경우
         sAllocWAExtentCount = aGetWAExtentCount - getFreeWAExtentCount();
-        sPopWAExtentCount = getFreeWAExtentCount();
+        sPopWAExtentCount   = getFreeWAExtentCount();
 
         // TC/FIT/Server/sm/Bugs/BUG-45857/BUG-45857.tc
         IDU_FIT_POINT_RAISE( "BUG-45857@sdtWAExtentMgr::allocWAExtents::ERROR_NOT_ENOUGH_WORKAREA",
@@ -619,7 +624,7 @@ IDE_RC sdtWAExtentMgr::allocWAExtents( sdtWAExtentInfo * aWAExtentInfo,
     else
     {
         sAllocWAExtentCount = 0;
-        sPopWAExtentCount = aGetWAExtentCount;
+        sPopWAExtentCount   = aGetWAExtentCount;
     }
 
     while( sPopWAExtentCount-- > 0 )
@@ -630,7 +635,8 @@ IDE_RC sdtWAExtentMgr::allocWAExtents( sdtWAExtentInfo * aWAExtentInfo,
                                        &sIsEmpty )
                   != IDE_SUCCESS );
 
-        IDE_ERROR( sIsEmpty == ID_FALSE ); /* 반드시 성공해야함 */
+        IDE_ERROR_RAISE( sIsEmpty == ID_FALSE,
+                         ERROR_NOT_ENOUGH_EXTENTPOOL ); /* 반드시 성공해야함 */
 
         aWAExtentInfo->mTail->mNextExtent = sWAExtent;
         aWAExtentInfo->mTail = sWAExtent;
@@ -664,6 +670,10 @@ IDE_RC sdtWAExtentMgr::allocWAExtents( sdtWAExtentInfo * aWAExtentInfo,
     IDE_EXCEPTION( ERROR_NOT_ENOUGH_WORKAREA );
     {
         IDE_SET( ideSetErrorCode( smERR_ABORT_NOT_ENOUGH_WORKAREA ) );
+    }
+    IDE_EXCEPTION( ERROR_NOT_ENOUGH_EXTENTPOOL )
+    {
+        IDE_SET( ideSetErrorCode( smERR_ABORT_INTERNAL ) );
     }
     IDE_EXCEPTION_END;
 
@@ -863,7 +873,8 @@ IDE_RC sdtWAExtentMgr::allocFreeNExtent( idvSQL            * aStatistics,
         aNExtFstPIDList->mTail = sNExtentArr;
         sNExtentArr->mNextArr = NULL;
     }
-    // TC/FIT/Server/sm/Bugs/BUG-45857/BUG-45857.tc
+
+    // TC/FIT/Server/sm/Bugs/BUG-45263/BUG-45263.tc
     IDU_FIT_POINT( "BUG-45857@sdtWAExtentMgr::allocFreeNExtent::ERROR_NOT_ENOUGH_NEXTENTSIZE" );
 
     IDE_TEST( sdptbExtent::allocTmpExt( aStatistics,

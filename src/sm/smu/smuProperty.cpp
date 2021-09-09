@@ -101,7 +101,6 @@ ULong   smuProperty::mHashAreaSize;
 UInt    smuProperty::mTempSortPartitionSize;
 ULong   smuProperty::mInitTotalWASize;
 ULong   smuProperty::mMaxTotalWASize;
-UInt    smuProperty::mTmpMinInitWAExtCnt;
 UInt    smuProperty::mTmpOverInitWAExtCnt;
 UInt    smuProperty::mTmpCheckUnique4Update;
 UInt    smuProperty::mTmpInitWASegCnt;
@@ -1475,8 +1474,6 @@ void smuProperty::loadForSMR()
 
     SMU_PROPERTY_WRITABLE_REGIST( "__TEMP_CHECK_UNIQUE_FOR_UPDATE",
                                   TmpCheckUnique4Update );
-    SMU_PROPERTY_WRITABLE_REGIST( "__TEMP_MIN_INIT_WAEXTENT_COUNT",
-                                  TmpMinInitWAExtCnt );
     SMU_PROPERTY_WRITABLE_REGIST( "__TEMP_OVER_INIT_WAEXTENT_COUNT",
                                   TmpOverInitWAExtCnt );
     SMU_PROPERTY_WRITABLE_REGIST( "__TEMP_INIT_WASEGMENT_COUNT",
