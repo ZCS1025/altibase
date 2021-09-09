@@ -5,7 +5,7 @@
 - Low cost: Open source costs with enterprise grade quality. Lower your TCO with flexible subscription fees. (Ref: http://altibase.com/product/low-cost-database/ )
 
 
-### Altibase: Enterprise grade High performance Relational DBMS
+### Features and Functions
 
 ![image](https://user-images.githubusercontent.com/85087821/132639866-159bf8b0-3433-4f68-96ea-c972e5a03395.png)
 ![image](https://user-images.githubusercontent.com/85087821/132639935-50994992-5bc8-40b9-878d-4c4c643abe11.png)
