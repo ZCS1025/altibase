@@ -20,7 +20,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: smiLogRec.cpp 90444 2021-04-02 10:15:58Z minku.kang $
+ * $Id: smiLogRec.cpp 91636 2021-09-09 00:08:58Z seulki $
  **********************************************************************/
 
 #include <smErrorCode.h>
@@ -2586,6 +2586,8 @@ IDE_RC smiLogRec::analyzeColumnValue( iduMemAllocator * aAllocator,
                          ID_SIZEOF(sErrorBuffer),
                          "[smiLogRec::analyzeColumnValue] Table Not Found (OID: %"ID_UINT64_FMT")",
                          (ULong)aLogRec->getTableOID() );
+        IDE_SET( ideSetErrorCode(smERR_ABORT_INTERNAL_ARG, sErrorBuffer) );
+        IDE_ERRLOG(IDE_RP_0);
     }
     IDE_EXCEPTION_END;
 

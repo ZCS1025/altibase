@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpdLogAnalyzer.cpp 90444 2021-04-02 10:15:58Z minku.kang $
+ * $Id: rpdLogAnalyzer.cpp 91636 2021-09-09 00:08:58Z seulki $
  **********************************************************************/
 
 
@@ -245,6 +245,7 @@ void rpdLogAnalyzer::freeColumnValue(idBool aIsAborted)
 void rpdLogAnalyzer::resetVariables(idBool aNeedInitMtdValueLen,
                                     UInt   aTableColCount)
 {
+    UInt j = 0;
 #ifdef DEBUG
     UInt i = 0;
 #endif
@@ -335,8 +336,25 @@ void rpdLogAnalyzer::resetVariables(idBool aNeedInitMtdValueLen,
             idlOS::memset(mBCols, 0, ID_SIZEOF(smiValue) * aTableColCount);
             idlOS::memset(mACols, 0, ID_SIZEOF(smiValue) * aTableColCount);
         }
-    }
+        else
+        {
+            for( j = 0; j < IDL_MAX( mRedoAnalyzedColCnt, mUndoAnalyzedColCnt ); j++ )
+            {
+                if( mCIDs[j] == ID_UINT_MAX )
+                {
+                    break;
+                }
+            }
 
+            if( j > 0 )
+            {
+                idlOS::memset(mBCols, 0, ID_SIZEOF(smiValue) * ( mCIDs[j-1] + 1 ) );
+                idlOS::memset(mACols, 0, ID_SIZEOF(smiValue) * ( mCIDs[j-1] + 1 ) );
+                idlOS::memset(mCIDs, ID_UINT_MAX, ID_SIZEOF(UInt) * j); 
+            }
+        }
+    }
+        
 #ifdef DEBUG
     for(i = 0; i < QCI_MAX_COLUMN_COUNT; i++)
     {
