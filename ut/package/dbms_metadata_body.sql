@@ -2035,19 +2035,21 @@ tableId        INTEGER;
 tbsType        INTEGER;
 maxRow         VARCHAR(40);
 tbsName        VARCHAR(40);
+deleteOn       VARCHAR(1);
 ddlStr         varchar(65534);
 begin
     SELECT /*+ USE_HASH( A, B ) */
             A.TABLE_ID,
             DECODE(A.MAXROW, 0, '', 'MAXROWS '||A.MAXROW),
-            B.TYPE, B.NAME
-        INTO tableId, maxRow, tbsType, tbsName
-    FROM SYSTEM_.SYS_TABLES_ A, V$TABLESPACES B
+            B.TYPE, B.NAME, Q.DELETE_ON
+        INTO tableId, maxRow, tbsType, tbsName, deleteOn
+    FROM SYSTEM_.SYS_TABLES_ A, V$TABLESPACES B, V$QUEUE Q
     WHERE A.USER_ID = userId
         AND A.TBS_ID = B.ID
         AND A.TABLE_TYPE ='Q'
         AND A.TEMPORARY = 'N'
         AND A.HIDDEN = 'N'
+        AND A.TABLE_OID = Q.TABLE_OID
         AND A.TABLE_NAME = object_name;
 
     ddlStr := 'CREATE QUEUE ' || get_object_clause(object_name, userName) || ' (';
@@ -2062,6 +2064,11 @@ begin
         ddlStr := ddlStr || chr(10) || maxRow;
     END IF;
     
+    -- DELETE ON/OFF
+    IF deleteOn = 'F' THEN
+        ddlStr := ddlStr || chr(10) || 'DELETE OFF';
+    END IF;
+
     IF param_segment_attributes = 'T' THEN
         -- tablespace
         IF param_tablespace = 'T' THEN
