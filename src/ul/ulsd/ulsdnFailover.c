@@ -83,15 +83,12 @@ SQLRETURN ulsdnGetFailoverIsNeeded( acp_sint16_t   aHandleType,
  *     -> ulsdModuleAlignDataNodeConnection_COORD/META()
  *     -> ulsdAlignDataNodeConnection()
  *      - Server-side failover and align data node connection.
- *  3. ulsdModuleOnCmError_NODE()
- *     -> ulsdFODoReconnect()
- *     -> ulsdnReconnectWithoutEnter()
- *      - Node connection retry.
  */
 ACI_RC ulsdnFailoverConnectToSpecificServer( ulnFnContext *aFnContext, ulnFailoverServerInfo *aNewServerInfo )
 {
-    ulnDbc       * sDbc       = NULL;
-    ACI_RC         sRC        = ACI_FAILURE;
+    ulnDbc             * sDbc    = NULL;
+    ACI_RC               sRC     = ACI_FAILURE;
+    ulsdFailoverResult   sResult = ULSDN_FAILOVER_FAILURE;
 
     ULN_FNCONTEXT_GET_DBC( aFnContext, sDbc );
     ACI_TEST_RAISE( sDbc == NULL, INVALID_HANDLE_EXCEPTION );
@@ -102,22 +99,32 @@ ACI_RC ulsdnFailoverConnectToSpecificServer( ulnFnContext *aFnContext, ulnFailov
 
     ULN_TRACE_LOG( aFnContext, ULN_TRACELOG_LOW, NULL, 0,
                    "%-18s| Server: %s:%d",
-                   "ulnFailoverConnectToSpecificServer",
+                   "ulsdnFailoverConnectToSpecificServer",
                    aNewServerInfo->mHost,
                    aNewServerInfo->mPort );
 
-    sRC = ulnFailoverConnect( aFnContext, ULN_FAILOVER_TYPE_STF, aNewServerInfo );
+    sRC = ulsdnDoFailoverAvailable( aFnContext, &sResult );
+    if ( sRC == ACI_SUCCESS )
+    {
+        ACI_TEST_CONT( sResult == ULSDN_FAILOVER_NODE_REMOVED,
+                       CONNECTED );
+    }
+    else
+    {
+        /* continue to ulnFailoverConnect() */
+    }
+
+    sRC = ulnFailoverConnect( aFnContext, ULN_FAILOVER_TYPE_STF, aNewServerInfo, &sResult );
+    ACI_TEST( sRC != ACI_SUCCESS );
+
+    ACI_EXCEPTION_CONT( CONNECTED );
+
 #ifdef COMPILE_SHARDCLI
-    if ( sRC == ACI_SUCCESS )
-    {
-        sRC = ulsdModuleUpdateNodeList( aFnContext, sDbc );
-    }
-    if ( sRC == ACI_SUCCESS )
-    {
-        sRC = ulsdModuleNotifyFailOver( sDbc );
-    }
+    sRC = ulsdModuleNotifyFailOver( aFnContext );
+    ACI_TEST( sRC != ACI_SUCCESS );
 #endif /* COMPILE_SHARDCLI */
-    if ( sRC == ACI_SUCCESS )
+
+    if ( sResult == ULSDN_FAILOVER_SUCCESS )
     {
         ulnDbcCloseAllStatement( sDbc );
         if ( sDbc->mXaConnection != NULL )
@@ -125,18 +132,25 @@ ACI_RC ulsdnFailoverConnectToSpecificServer( ulnFnContext *aFnContext, ulnFailov
             ulnDbcSetFailoverCallbackState(sDbc, ULN_FAILOVER_CALLBACK_IN_STATE);
             sRC = ulnFailoverXaReOpen( sDbc );
             ulnDbcSetFailoverCallbackState(sDbc, ULN_FAILOVER_CALLBACK_OUT_STATE);
+
+            ACI_TEST( sRC != ACI_SUCCESS );
         }
-        if ( sRC == ACI_SUCCESS )
-        {
-            sRC = ulnClearDiagnosticInfoFromObject( aFnContext->mHandle.mObj );
-            ACI_TEST_RAISE( sRC != ACI_SUCCESS, LABEL_MEM_MAN_ERR );
-        }
+
+        sRC = ulnClearDiagnosticInfoFromObject( aFnContext->mHandle.mObj );
+        ACI_TEST_RAISE( sRC != ACI_SUCCESS, LABEL_MEM_MAN_ERR );
+    }
+    else if ( sResult == ULSDN_FAILOVER_NODE_REMOVED )
+    {
+        ulnDbcSetIsConnected( sDbc, ACP_FALSE );
+    }
+    else
+    {
+        /* Impossible case */
+        ACE_DASSERT(0);
     }
 
-    ACI_TEST( sRC != ACI_SUCCESS );
-
     ULN_TRACE_LOG( aFnContext, ULN_TRACELOG_LOW, NULL, 0,
-                   "%-18s|", "ulnFailoverConnectToSpecificServer" );
+                   "%-18s|", "ulsdnFailoverConnectToSpecificServer" );
 
     return ACI_SUCCESS;
 
@@ -153,7 +167,7 @@ ACI_RC ulsdnFailoverConnectToSpecificServer( ulnFnContext *aFnContext, ulnFailov
     ACI_EXCEPTION_END;
 
     ULN_TRACE_LOG( aFnContext, ULN_TRACELOG_LOW, NULL, 0,
-                   "%-18s| fail", "ulnFailoverConnectToSpecificServer" );
+                   "%-18s| fail", "ulsdnFailoverConnectToSpecificServer" );
 
     if ( sDbc != NULL )
     {
@@ -163,8 +177,6 @@ ACI_RC ulsdnFailoverConnectToSpecificServer( ulnFnContext *aFnContext, ulnFailov
             ulnClosePhysicalConn( sDbc );
         }
     }
-
-    ulsdnRaiseShardNodeFailoverIsNotAvailableError( aFnContext );
 
     return sRC;
 }
@@ -180,13 +192,6 @@ SQLRETURN ulsdnReconnectCore( ulnFnContext * aFnContext )
     ACI_TEST_RAISE( sDbc == NULL, InvalidHandle );
 
     sServerInfo = ulnDbcGetCurrentServer( sDbc );
-    if ( sServerInfo == NULL )
-    {
-        /* No alternate server */
-        sHasAlternate = ACP_FALSE;
-        ACI_TEST( ulnFailoverCreatePrimaryServerInfo( aFnContext, &sServerInfo ) != ACI_SUCCESS );
-        ulnDbcSetCurrentServer( sDbc, sServerInfo );
-    }
     ACI_TEST_RAISE( sServerInfo == NULL, InvalidCurrrentServer );
     
     ACI_TEST( ulsdnFailoverConnectToSpecificServer( aFnContext,
@@ -221,10 +226,13 @@ SQLRETURN ulsdnReconnectCore( ulnFnContext * aFnContext )
     return ULN_FNCONTEXT_GET_RC(aFnContext);
 }
 
-SQLRETURN ulsdnReconnect( acp_sint16_t aHandleType, ulnObject *aObject )
+SQLRETURN ulsdnReconnect( acp_sint16_t        aHandleType,
+                          ulnObject         * aObject,
+                          const acp_uint8_t * aCause )
 {
     ULN_FLAG(sNeedExit);
-    ulnFnContext sFnContext;
+    ulnFnContext   sFnContext;
+    ulnErrorMgr    sErrorMgr;
 
     ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_FOR_SD, aObject, aHandleType );
 
@@ -233,8 +241,17 @@ SQLRETURN ulsdnReconnect( acp_sint16_t aHandleType, ulnObject *aObject )
     ACI_TEST(ulnEnter(&sFnContext, NULL) != ACI_SUCCESS);
     ULN_FLAG_UP(sNeedExit);
 
-    ACI_TEST( ulsdnReconnectCore( &sFnContext )
-              != SQL_SUCCESS );
+    ulnErrorMgrSetUlError( &sErrorMgr,
+                           ulERR_ABORT_COMMUNICATION_LINK_FAILURE,
+                           aCause );
+
+    ACI_TEST_RAISE( ulsdnReconnectCore( &sFnContext ) != SQL_SUCCESS,
+                    FAILOVER_FAIL );
+
+    ulnError( &sFnContext, ulERR_ABORT_FAILOVER_SUCCESS,
+              ulnErrorMgrGetErrorCode(&sErrorMgr),
+              ulnErrorMgrGetSQLSTATE(&sErrorMgr),
+              ulnErrorMgrGetErrorMessage(&sErrorMgr) );
 
     ULN_FLAG_DOWN(sNeedExit);
     ACI_TEST(ulnExit(&sFnContext) != ACI_SUCCESS);
@@ -244,6 +261,12 @@ SQLRETURN ulsdnReconnect( acp_sint16_t aHandleType, ulnObject *aObject )
     ACI_EXCEPTION( InvalidHandle )
     {
         ULN_FNCONTEXT_SET_RC( &sFnContext, SQL_INVALID_HANDLE );
+    }
+    ACI_EXCEPTION( FAILOVER_FAIL )
+    {
+        ulnError( &sFnContext,
+                  ulERR_ABORT_COMMUNICATION_LINK_FAILURE,
+                  aCause );
     }
 
     ACI_EXCEPTION_END;
@@ -256,37 +279,28 @@ SQLRETURN ulsdnReconnect( acp_sint16_t aHandleType, ulnObject *aObject )
     return ULN_FNCONTEXT_GET_RC(&sFnContext);
 }
 
-SQLRETURN ulsdnReconnectWithoutEnter( acp_sint16_t aHandleType, ulnObject *aObject )
+void ulsdnCheckShardNodeRemoved( ulnFnContext * aFnContext,
+                                 acp_bool_t   * aIsDrop )
 {
-    ulnFnContext sFnContext;
+    ulnDbc       * sDbc     = NULL;
+    ulnDbc       * sMetaDbc = NULL;
+    acp_uint64_t   sNewTargetSMN = 0UL;
 
-    ULN_INIT_FUNCTION_CONTEXT( sFnContext, ULN_FID_NONE, aObject, aHandleType );
+    ULN_FNCONTEXT_GET_DBC( aFnContext, sDbc );
 
-    ACI_TEST_RAISE( aObject == NULL, InvalidHandle );
+    ACE_DASSERT( sDbc->mShardDbcCxt.mParentDbc != NULL );
 
-    ACI_TEST_RAISE( ulnClearDiagnosticInfoFromObject( aObject )
-                    != ACI_SUCCESS,
-                    LABEL_MEM_MAN_ERR );
-
-    ACI_TEST( ulsdnReconnectCore( &sFnContext )
-              != SQL_SUCCESS );
-
-    return ULN_FNCONTEXT_GET_RC(&sFnContext);
-
-    ACI_EXCEPTION( InvalidHandle )
+    if ( sDbc->mShardDbcCxt.mParentDbc != NULL )
     {
-        ULN_FNCONTEXT_SET_RC( &sFnContext, SQL_INVALID_HANDLE );
-    }
-    ACI_EXCEPTION( LABEL_MEM_MAN_ERR )
-    {
-        (void)ulnError( &sFnContext,
-                        ulERR_FATAL_MEMORY_MANAGEMENT_ERROR,
-                        "ulsdnReconnectWithoutEnter" );
-    }
+        sMetaDbc = ulnDbcGetShardParentDbc( sDbc );
 
-    ACI_EXCEPTION_END;
+        sNewTargetSMN = ulnDbcGetTargetShardMetaNumber( sMetaDbc );
 
-    return ULN_FNCONTEXT_GET_RC(&sFnContext);
+        if ( sNewTargetSMN > sDbc->mShardDbcCxt.mNodeInfo->mSMN )
+        {
+            *aIsDrop = ACP_TRUE;
+        }
+    }
 }
 
 void ulsdnRaiseShardNodeFailoverIsNotAvailableError(ulnFnContext *aFnContext)
@@ -294,5 +308,118 @@ void ulsdnRaiseShardNodeFailoverIsNotAvailableError(ulnFnContext *aFnContext)
     (void)ulnClearDiagnosticInfoFromObject( aFnContext->mHandle.mObj );
 
     (void)ulnError( aFnContext, ulERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE );
+}
+
+void ulsdnRaiseShardNodeFailoverAbortError(ulnFnContext *aFnContext)
+{
+    (void)ulnClearDiagnosticInfoFromObject( aFnContext->mHandle.mObj );
+
+    (void)ulnError( aFnContext, ulERR_ABORT_FAILOVER_ABORT );
+}
+
+void ulsdnRaiseShardNodeFailoverSuccessError( ulnFnContext * aFnContext,
+                                              ulnErrorMgr  * aErrorMgr )
+{
+    (void)ulnClearDiagnosticInfoFromObject( aFnContext->mHandle.mObj );
+
+    ulnError( aFnContext,
+              ulERR_ABORT_FAILOVER_SUCCESS,
+              ulnErrorMgrGetErrorCode(aErrorMgr),
+              ulnErrorMgrGetSQLSTATE(aErrorMgr),
+              ulnErrorMgrGetErrorMessage(aErrorMgr) );
+}
+
+void ulsdnRaiseShardNodeFailoverError( ulnFnContext * aFnContext,
+                                       ulnErrorMgr  * aErrorMgr )
+{
+    ulnDbc     * sDbc        = NULL;
+    ulnDbc     * sMetaDbc    = NULL;
+    acp_bool_t   sIsNodeDrop = ACP_FALSE;
+
+    ULN_FNCONTEXT_GET_DBC( aFnContext, sDbc );
+
+    sMetaDbc = ulnDbcGetShardParentDbc( sDbc );
+
+    if ( ulsdnCheckConnectionLost( sMetaDbc ) == ACP_TRUE )
+    {
+        ulsdnRaiseShardNodeFailoverAbortError( aFnContext );
+    }
+    else
+    {
+        ulsdnCheckShardNodeRemoved( aFnContext, &sIsNodeDrop );
+
+        if ( sIsNodeDrop == ACP_TRUE )
+        {
+            ulsdnRaiseShardNodeFailoverSuccessError( aFnContext, aErrorMgr );
+        }
+        else
+        {
+            ulsdnRaiseShardNodeFailoverIsNotAvailableError( aFnContext );
+        }
+    }
+}
+
+acp_bool_t ulsdnCheckConnectionLost( ulnDbc * aDbc )
+{
+    acp_bool_t sConnectLost = ACP_FALSE;
+
+    if ( ulnDbcIsConnected( aDbc ) == ACP_FALSE )
+    {
+        sConnectLost = ACP_TRUE;
+    }
+
+    return sConnectLost;
+}
+
+ACI_RC ulsdnDoFailoverAvailable( ulnFnContext       * aFnContext,
+                                 ulsdFailoverResult * aResult )
+{
+    ulnDbc     * sDbc          = NULL;
+    acp_bool_t   sIsNodeDroped = ACP_FALSE;
+#ifdef COMPILE_SHARDCLI
+    SQLRETURN    sRc;
+#endif
+    ulnShardNodeRemovalCheckerContext * sCtx = NULL;
+
+    ULN_FNCONTEXT_GET_DBC( aFnContext, sDbc );
+
+    switch ( sDbc->mShardDbcCxt.mShardSessionType )
+    {
+        case ULSD_SESSION_TYPE_COORD :
+            sCtx = ulnDbcGetShardNodeRemovalCheckerContext( sDbc );
+
+            ACE_DASSERT( sCtx != NULL );
+            if ( ( sCtx != NULL ) && ( sCtx->mFunc != NULL ) )
+            {
+                sCtx->mFunc( sCtx->mSession, sCtx->mConnectInfo, &sIsNodeDroped );
+            }
+            break;
+
+        case ULSD_SESSION_TYPE_LIB :
+#ifdef COMPILE_SHARDCLI
+            sRc = ulsdCheckFailoverAvailable( aFnContext,
+                                              &sIsNodeDroped );
+            ACI_TEST( SQL_SUCCEEDED( sRc ) == 0 );
+#else
+            ACI_TEST( 0 );
+#endif
+            break;
+
+        case ULSD_SESSION_TYPE_USER :
+        default:
+            break;
+
+    }
+
+    if ( sIsNodeDroped == ACP_TRUE )
+    {
+        *aResult = ULSDN_FAILOVER_NODE_REMOVED;
+    }
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
 }
 

@@ -277,6 +277,8 @@ IDE_RC sdfCalculate_UnsetShardTableGlobal( mtcNode*     aNode,
 
         sdi::setShardMetaTouched( sStatement->session );
 
+        sdf::setProcedureJobType();
+        
         IDE_TEST( sdiZookeeper::getShardMetaLock( QC_SMI_STMT(sStatement)->getTrans()->getTransID() ) != IDE_SUCCESS );
         IDE_TEST( sdiZookeeper::checkAllNodeAlive( &sIsAlive ) != IDE_SUCCESS );
 
@@ -444,6 +446,19 @@ IDE_RC sdfCalculate_UnsetShardTableGlobal( mtcNode*     aNode,
                 }
             }
 
+            if ( sTableInfo.mObjectType == 'P' )
+            {
+                // BUG-48345 Lock procedure statement
+                idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                                 "LOCK PROCEDURE "QCM_SQL_STRING_SKIP_FMT"."QCM_SQL_STRING_SKIP_FMT" IN EXCLUSIVE MODE",
+                                 sUserNameStr,
+                                 sTableNameStr );
+
+                IDE_TEST( sdf::runRemoteQuery( sStatement,
+                                               sSqlStr )
+                          != IDE_SUCCESS );
+            }
+
             // 전체 Node 대상으로 Meta Update 실행
             idlOS::snprintf( sSqlStr, SDF_QUERY_LEN,
                              "exec dbms_shard.unset_shard_table_local( "
@@ -456,7 +471,7 @@ IDE_RC sdfCalculate_UnsetShardTableGlobal( mtcNode*     aNode,
                                             NULL,
                                             (SChar*)sSqlStr,
                                             (UInt) idlOS::strlen( sSqlStr ),
-                                            SDI_INTERNAL_OP_NORMAL,
+                                            SDI_INTERNAL_OP_SHARD_PKG,
                                             &sExecCount)
                       != IDE_SUCCESS );
 

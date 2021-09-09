@@ -225,6 +225,7 @@ extern "C" {
 #define ALTIBASE_UNUSED_06                           5009  /* ALTIBASE_SHARD_COORD_FIX_CTRL_CALLBACK */
 #define ALTIBASE_UNUSED_07                           5010  /* ALTIBASE_SHARD_META_NUMBER */
 #define ALTIBASE_UNUSED_08                           5011  /* ALTIBASE_REBUILD_SHARD_SHARD_META_NUMBER */
+#define ALTIBASE_UNUSED_09                           5012  /* ALTIBASE_SHARD_NODE_REMOVAL_CHECKER_CALLBACK */
 
 /* Below Ver 6 */
 #define ALTIBASE_UNUSED_01                           6001  /* ALTIBASE_NUMERIC_DOUBLE_MODE */

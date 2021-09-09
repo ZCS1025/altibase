@@ -360,6 +360,7 @@ IDE_RC sdfCalculate_SetNode( mtcNode*     aNode,
         {
             case SDI_INTERNAL_OP_NOT:
             case SDI_INTERNAL_OP_NORMAL:
+            case SDI_INTERNAL_OP_SHARD_PKG:
                 IDE_TEST( sdm::insertReplicaSet( sStatement,
                                                  sNodeID,
                                                  (SChar*)sNodeNameStr,

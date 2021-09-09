@@ -1664,7 +1664,7 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
       /* AttrType    */ tINT,
       /* Min         */ 0,
       /* Default     */ 0,
-      /* Max         */ 4,
+      /* Max         */ 5,
       /* Check       */ gNULL_LIST,
       /* User Conn   */ ACP_FALSE,
       /* Lib  Conn   */ ACP_FALSE
@@ -1788,6 +1788,17 @@ const ulnConnAttribute gUlnConnAttrTable[ULN_CONN_ATTR_MAX]  =
        /* Max         */ ACP_UINT64_MAX,
        /* Check       */ gULN_MUL,
        /* User Conn   */ ACP_FALSE,
+       /* Lib  Conn   */ ACP_FALSE
+     },
+     { /* ConnAttrID  */ ULN_CONN_ATTR_SHARD_NODE_REMOVAL_CHECKER_CALLBACK,
+       /* Keyword     */ "SHARD_NODE_REMOVAL_CHECKER_CALLBACK",
+       /* SQL_ATTR_ID */ ALTIBASE_UNUSED_09,
+       /* AttrType    */ tCB,
+       /* Min         */ 0,
+       /* Default     */ 0,
+       /* Max         */ 0,
+       /* Check       */ NULL,
+       /* User Conn   */ ACP_TRUE,
        /* Lib  Conn   */ ACP_FALSE
      },
 };

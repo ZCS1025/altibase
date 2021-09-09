@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmsParseTree.h 90311 2021-03-24 09:46:45Z ahra.cho $
+ * $Id: qmsParseTree.h 91627 2021-09-08 01:47:35Z ahra.cho $
  **********************************************************************/
 
 #ifndef _O_QMS_PARSE_TREE_H_
@@ -147,13 +147,6 @@
 #define QMS_TABLE_REF_HIER_VIEW_FALSE           (0x00000000)
 #define QMS_TABLE_REF_HIER_VIEW_TRUE            (0x00000100)
 
-// PROJ-2418 Cross/Outer APPLY & Lateral View
-// for qmsTableRef.flag
-// 해당 view가 Lateral View임을 설정
-#define QMS_TABLE_REF_LATERAL_VIEW_MASK         (0x00001000)
-#define QMS_TABLE_REF_LATERAL_VIEW_FALSE        (0x00000000)
-#define QMS_TABLE_REF_LATERAL_VIEW_TRUE         (0x00001000)
-
 // PROJ-2582 recursive with
 // for qmsTableRef.flag
 #define QMS_TABLE_REF_RECURSIVE_VIEW_MASK       (0x00000200)
@@ -171,6 +164,23 @@
 #define QMS_TABLE_REF_WITH_VIEW_MASK            (0x00000800)
 #define QMS_TABLE_REF_WITH_VIEW_FALSE           (0x00000000)
 #define QMS_TABLE_REF_WITH_VIEW_TRUE            (0x00000800)
+
+// PROJ-2418 Cross/Outer APPLY & Lateral View
+// for qmsTableRef.flag
+// 해당 view가 Lateral View임을 설정
+#define QMS_TABLE_REF_LATERAL_VIEW_MASK         (0x00001000)
+#define QMS_TABLE_REF_LATERAL_VIEW_FALSE        (0x00000000)
+#define QMS_TABLE_REF_LATERAL_VIEW_TRUE         (0x00001000)
+
+/* PROJ-2749 */
+#define QMS_TABLE_REF_COMPACT_WITH_MASK         (0x00002000)
+#define QMS_TABLE_REF_COMPACT_WITH_FALSE        (0x00000000)
+#define QMS_TABLE_REF_COMPACT_WITH_TRUE         (0x00002000)
+
+/* PROJ-2749 */
+#define QMS_TABLE_REF_OBYE_TRANSFORM_MASK       (0x00004000)
+#define QMS_TABLE_REF_OBYE_TRANSFORM_FALSE      (0x00000000)
+#define QMS_TABLE_REF_OBYE_TRANSFORM_TRUE       (0x00004000)
 
 // for qmsHierarchy.flag
 #define QMS_HIERARCHY_IGNORE_LOOP_MASK          (0x00000001)

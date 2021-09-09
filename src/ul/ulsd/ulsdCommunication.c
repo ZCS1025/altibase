@@ -21,6 +21,8 @@
 
 #include <uln.h>
 #include <ulnPrivate.h>
+#include <ulnConnectCore.h>
+
 #include <mtcc.h>
 
 #include <ulsd.h>
@@ -30,10 +32,6 @@ ACI_RC ulsdCallbackGetNodeListResult(cmiProtocolContext *aProtocolContext,
                                      cmiProtocol        *aProtocol,
                                      void               *aServiceSession,
                                      void               *aUserContext);
-ACI_RC ulsdCallbackUpdateNodeListResult(cmiProtocolContext *aProtocolContext,
-                                        cmiProtocol        *aProtocol,
-                                        void               *aServiceSession,
-                                        void               *aUserContext);
 ACI_RC ulsdCallbackAnalyzeResult(cmiProtocolContext *aProtocolContext,
                                  cmiProtocol        *aProtocol,
                                  void               *aServiceSession,
@@ -47,6 +45,11 @@ ACI_RC ulsdCallbackShardHandshakeResult( cmiProtocolContext *aProtocolContext,
                                          void               *aServiceSession,
                                          void               *aUserContext );
 
+ACI_RC ulsdCallbackCheckShardMetaUpdateResult(cmiProtocolContext *aProtocolContext,
+                                              cmiProtocol        *aProtocol,
+                                              void               *aServiceSession,
+                                              void               *aUserContext);
+
 static ACI_RC ulsdShardNodeConnectionReportRequest( ulnFnContext          * aFnContext,
                                                     ulnPtContext          * aPtContext,
                                                     acp_uint32_t            aNodeId,
@@ -55,6 +58,40 @@ static ACI_RC ulsdShardNodeConnectionReportRequest( ulnFnContext          * aFnC
     cmiProtocol               sPacket;
     cmiProtocolContext      * sCtx = &(aPtContext->mCmiPtContext);
     ulsdReportType            sType = ULSD_REPORT_TYPE_CONNECTION;
+
+    sPacket.mOpID = CMP_OP_DB_ShardNodeReport;
+
+    CMI_WRITE_CHECK( sCtx, 1 +
+                           4 +  // mType
+                           4 +  // NodeID
+                           1 ); // Destination
+
+    CMI_WOP( sCtx, CMP_OP_DB_ShardNodeReport );
+
+    CMI_WR4( sCtx, &sType );
+    CMI_WR4( sCtx, &aNodeId );
+    CMI_WR1( sCtx, aDestination );
+
+    ACI_TEST(ulnWriteProtocol( aFnContext,
+                               aPtContext,
+                               &sPacket)
+             != ACI_SUCCESS );
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION_END;
+
+    return ACI_FAILURE;
+}
+
+static ACI_RC ulsdShardNodeConnectionStatusReportRequest( ulnFnContext          * aFnContext,
+                                                          ulnPtContext          * aPtContext,
+                                                          acp_uint32_t            aNodeId,
+                                                          ulsdDataNodeConntectTo  aDestination )
+{
+    cmiProtocol               sPacket;
+    cmiProtocolContext      * sCtx = &(aPtContext->mCmiPtContext);
+    ulsdReportType            sType = ULSD_REPORT_TYPE_STATUS;
 
     sPacket.mOpID = CMP_OP_DB_ShardNodeReport;
 
@@ -117,8 +154,6 @@ static ACI_RC ulsdShardNodeReportMain( ulnFnContext     * aFnContext,
     cmiProtocolContext      * sCtx = NULL;
     ulsdNodeConnectReport   * sConnectReport;
 
-    ACI_TEST_RAISE( aDbc->mIsConnected == ACP_FALSE, LABEL_ABORT_NO_CONNECTION );
-
     ACI_TEST( ulnInitializeProtocolContext( aFnContext,
                                             &(aDbc->mPtContext),
                                             &(aDbc->mSession) )
@@ -140,6 +175,15 @@ static ACI_RC ulsdShardNodeReportMain( ulnFnContext     * aFnContext,
         case ULSD_REPORT_TYPE_TRANSACTION_BROKEN:
             ACI_TEST( ulsdShardNodeTransactionBrokenReportRequest( aFnContext,
                                                                   &(aDbc->mPtContext) )
+                      != ACI_SUCCESS );
+            break;
+
+        case ULSD_REPORT_TYPE_STATUS:
+            sConnectReport = &(aReport->mArg.mConnectReport);
+            ACI_TEST( ulsdShardNodeConnectionStatusReportRequest( aFnContext,
+                                                                  &(aDbc->mPtContext),
+                                                                  sConnectReport->mNodeId,
+                                                                  sConnectReport->mDestination )
                       != ACI_SUCCESS );
             break;
 
@@ -175,10 +219,6 @@ static ACI_RC ulsdShardNodeReportMain( ulnFnContext     * aFnContext,
 
     return ACI_SUCCESS;
 
-    ACI_EXCEPTION( LABEL_ABORT_NO_CONNECTION )
-    {
-        ulnError( aFnContext, ulERR_ABORT_NO_CONNECTION, "" );
-    }
     ACI_EXCEPTION_END;
 
     ULN_IS_FLAG_UP(sNeedFinPtContext)
@@ -266,50 +306,22 @@ ACI_RC ulsdHandshake(ulnFnContext *aFnContext)
 
         sTimeout = acpTimeFrom( ulnDbcGetLoginTimeout( sDbc ), 0 );
 
-        ACI_TEST( cmiRecv( sCtx,
-                           aFnContext,
-                           sTimeout)
-                  != ACI_SUCCESS );
+        ACI_TEST_RAISE( cmiRecv( sCtx,
+                                 aFnContext,
+                                 sTimeout)
+                        != ACI_SUCCESS, LABEL_CM_ERR);
     }
 
     ACI_TEST( SQL_SUCCEEDED( ULN_FNCONTEXT_GET_RC( aFnContext ) ) == 0 );
 
     return ACI_SUCCESS;
 
-    ACI_EXCEPTION_END;
-    
-    if ( aciGetErrorCode() != 0 )
+    ACI_EXCEPTION(LABEL_CM_ERR)
     {
         (void)ulnErrHandleCmError( aFnContext, NULL );
     }
-    else
-    {
-        /* Nothing to do */
-    }
-
-    return ACI_FAILURE;
-}
-
-ACI_RC ulsdUpdateNodeListRequest(ulnFnContext *aFnContext, ulnPtContext *aPtContext)
-{
-    cmiProtocol         sPacket;
-    cmiProtocolContext *sCtx            = &(aPtContext->mCmiPtContext);
-    acp_uint16_t        sOrgWriteCursor = CMI_GET_CURSOR( sCtx );
-
-    sPacket.mOpID = CMP_OP_DB_ShardNodeUpdateList;
-
-    CMI_WRITE_CHECK(sCtx, 1);
-
-    CMI_WOP(sCtx, CMP_OP_DB_ShardNodeUpdateList);
-
-    ACI_TEST(ulnWriteProtocol(aFnContext, aPtContext, &sPacket) != ACI_SUCCESS);
-
-    return ACI_SUCCESS;
-
     ACI_EXCEPTION_END;
-
-    CMI_SET_CURSOR( sCtx, sOrgWriteCursor );
-
+    
     return ACI_FAILURE;
 }
 
@@ -440,14 +452,45 @@ ACI_RC ulsdShardTransactionCommitRequest( ulnFnContext     * aFnContext,
     return ACI_FAILURE;
 }
 
+ACI_RC ulsdCheckShardMetaUpdateRequest( ulnFnContext                  * aFnContext,
+                                        ulnPtContext                  * aPtContext,
+                                        ulsdCheckShardMetaUpdateCause   aCause )
+{
+    cmiProtocol         sPacket;
+    cmiProtocolContext *sCtx            = &(aPtContext->mCmiPtContext);
+    ulnDbc             *sDbc            = NULL;
+    acp_uint16_t        sOrgWriteCursor = CMI_GET_CURSOR( sCtx );
+    acp_uint8_t         sCause          = (acp_uint8_t)aCause;
+    acp_uint64_t        sTargetSMN      = 0;
+
+    ULN_FNCONTEXT_GET_DBC( aFnContext, sDbc );
+
+    sTargetSMN = ulnDbcGetTargetShardMetaNumber( sDbc );
+
+    sPacket.mOpID = CMP_OP_DB_CheckShardMetaUpdateV3;
+
+    CMI_WRITE_CHECK(sCtx, 1+1+8);
+
+    CMI_WOP(sCtx, CMP_OP_DB_CheckShardMetaUpdateV3);
+    CMI_WR1(sCtx, sCause);
+    CMI_WR8(sCtx, &sTargetSMN);
+
+    ACI_TEST(ulnWriteProtocol(aFnContext, aPtContext, &sPacket) != ACI_SUCCESS);
+
+    return ACI_SUCCESS;
+
+    ACI_EXCEPTION_END;
+
+    CMI_SET_CURSOR( sCtx, sOrgWriteCursor );
+
+    return ACI_FAILURE;
+}
+
 ACI_RC ulsdInitializeDBProtocolCallbackFunctions(void)
 {
     /* PROJ-2598 Shard */
     ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ShardNodeGetListResult),
                             ulsdCallbackGetNodeListResult) != ACI_SUCCESS);
-    /* PROJ-2622 Shard Retry Execution */
-    ACI_TEST(cmiSetCallback(CMI_PROTOCOL(DB, ShardNodeUpdateListResult),
-                            ulsdCallbackUpdateNodeListResult) != ACI_SUCCESS);
 
     /*
      * PROJ-2598 Shard pilot(shard analyze)
@@ -469,54 +512,12 @@ ACI_RC ulsdInitializeDBProtocolCallbackFunctions(void)
     ACI_TEST( cmiSetCallback( CMI_PROTOCOL(DB, ShardRebuildNotiV3 ),
                               ulsdCallbackShardRebuildNoti ) != ACI_SUCCESS);
 
-    return ACI_SUCCESS;
-
-    ACI_EXCEPTION_END;
-
-    return ACI_FAILURE;
-}
-
-ACI_RC ulsdFODoSTF( ulnFnContext     * aFnContext,
-                    ulnDbc           * aDbc,
-                    ulnErrorMgr      * aErrorMgr )
-{
-    
-    ACP_UNUSED( aDbc );
-
-    ACI_TEST( ulnFailoverDoSTF( aFnContext ) != ACI_SUCCESS );
-
-    (void)ulnError( aFnContext,
-                    ulERR_ABORT_FAILOVER_SUCCESS,
-                    ulnErrorMgrGetErrorCode(aErrorMgr),
-                    ulnErrorMgrGetSQLSTATE(aErrorMgr),
-                    ulnErrorMgrGetErrorMessage(aErrorMgr) );
+    ACI_TEST(cmiSetCallback( CMI_PROTOCOL( DB, CheckShardMetaUpdateV3Result ),
+                             ulsdCallbackCheckShardMetaUpdateResult ) != ACI_SUCCESS );
 
     return ACI_SUCCESS;
 
     ACI_EXCEPTION_END;
-
-    (void)ulnErrHandleCmError( aFnContext, NULL );
-
-    return ACI_FAILURE;
-}
-
-ACI_RC ulsdFODoReconnect( ulnFnContext     * aFnContext,
-                          ulnDbc           * aDbc,
-                          ulnErrorMgr      * aErrorMgr )
-{
-    ACI_TEST( ulsdnReconnectWithoutEnter( SQL_HANDLE_DBC, &aDbc->mObj ) != SQL_SUCCESS );
-
-    (void)ulnError( aFnContext,
-                    ulERR_ABORT_FAILOVER_SUCCESS,
-                    ulnErrorMgrGetErrorCode(aErrorMgr),
-                    ulnErrorMgrGetSQLSTATE(aErrorMgr),
-                    ulnErrorMgrGetErrorMessage(aErrorMgr) );
-
-    return ACI_SUCCESS;
-
-    ACI_EXCEPTION_END;
-
-    (void)ulnErrHandleCmError(aFnContext, NULL);
 
     return ACI_FAILURE;
 }

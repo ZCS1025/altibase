@@ -120,6 +120,8 @@ static ODBCExecDirectAddCallback          SQLExecDirectAddCallback = NULL; // 72
 static ODBCSetPartialExecType             SQLSetPartialExecType   = NULL; // 73
 static ODBCSetStmtExecSeq                 SQLSetStmtExecSeq       = NULL; // 74
 
+static ODBCCheckErrorIsConnectionLost     SQLCheckErrorIsConnectionLost = NULL; // 75
+
 IDE_RC sdl::loadLibrary()
 {
 /***************************************************************
@@ -282,6 +284,9 @@ IDE_RC sdl::loadLibrary()
     ODBC_FUNC_DEF( SetPartialExecType );
     /* SQLSetStmtExecSeq */
     ODBC_FUNC_DEF( SetStmtExecSeq );
+
+    /* SQLCheckErrorIsConnectionLost */
+    ODBC_FUNC_DEF( CheckErrorIsConnectionLost );
 
     return IDE_SUCCESS;
 
@@ -465,6 +470,10 @@ IDE_RC sdl::allocConnect( sdiConnectInfo * aConnectInfo )
         sSqlReturn = SQLSetConnectAttr( sDbc, SDL_ALTIBASE_MESSAGE_CALLBACK,
                                         &(sConnectInfo->mLinkerParam->param.mMessageCallback), 0 );
         IDE_TEST_RAISE( sSqlReturn != SQL_SUCCESS, SetConnectAttrError );
+
+        sSqlReturn = SQLSetConnectAttr( sDbc, SDL_ALTIBASE_SHARD_NODE_REMOVAL_CHECKER_CALLBACK,
+                                        &(sConnectInfo->mLinkerParam->param.mShardNodeRemovalCheckerCallback), 0 );
+        IDE_TEST_RAISE( sSqlReturn != SQL_SUCCESS, SetConnectAttrError_SHARD_NODE_REMOVAL_CHECKER_CALLBACK );
     }
     else
     {
@@ -525,6 +534,13 @@ IDE_RC sdl::allocConnect( sdiConnectInfo * aConnectInfo )
         IDE_TEST_RAISE( sSqlReturn != SQL_SUCCESS, SetConnectAttrError_LOGIN_TIMEOUT );
     }
 
+    sS64 = (SLong)1;
+    sSqlReturn = SQLSetConnectAttr( sDbc,
+                                    SDL_ALTIBASE_SESSION_FAILOVER,
+                                    (SQLPOINTER)sS64,
+                                    0 );
+    IDE_TEST_RAISE( sSqlReturn != SQL_SUCCESS, SetConnectAttrError_SESSION_FAILOVER );
+
     if ( sClientInfo != NULL )
     {
         sSqlReturn = SQLSetConnectAttr( sDbc,
@@ -532,6 +548,12 @@ IDE_RC sdl::allocConnect( sdiConnectInfo * aConnectInfo )
                                         &sClientInfo->mShardCoordFixCtrlCtx,
                                         0 );
         IDE_TEST_RAISE( sSqlReturn != SQL_SUCCESS, SetConnectAttrError_SHARD_COORD_FIX_CTRL_CALLBACK );
+    }
+
+    if ( sClientInfo != NULL )
+    {
+        setFailoverSuspendToDbc( sClientInfo->mFailoverSuspendCmd.mSuspendType,
+                                 sDbc );
     }
 
     if ( ( sConnectInfo->mFlag & SDI_CONNECT_INITIAL_BY_NOTIFIER_MASK )
@@ -566,8 +588,10 @@ IDE_RC sdl::allocConnect( sdiConnectInfo * aConnectInfo )
     {
         /* dktNotifier::notifyXaResultForShard */
         sConnectInfo->mFailoverTarget = SDI_FAILOVER_ACTIVE_ONLY;
-    }
 
+        setFailoverSuspendToDbc( SDI_FAILOVER_SUSPEND_ALL,
+                                 sDbc );
+    }
 
     if ( hasNodeAlternate( sDataNode ) == ID_TRUE )
     {
@@ -740,11 +764,27 @@ IDE_RC sdl::allocConnect( sdiConnectInfo * aConnectInfo )
                       sConnectInfo,
                       &(sConnectInfo->mLinkFailure) );
     }
+    IDE_EXCEPTION( SetConnectAttrError_SESSION_FAILOVER )
+    {
+        processError( SQL_HANDLE_DBC,
+                      sDbc,
+                      ( (SChar*)"SQLSetConnectAttr(ALTIBASE_SESSION_FAILOVER)" ),
+                      sConnectInfo,
+                      &(sConnectInfo->mLinkFailure) );
+    }
     IDE_EXCEPTION( SetConnectAttrError_SHARD_COORD_FIX_CTRL_CALLBACK )
     {
         processError( SQL_HANDLE_DBC,
                       sDbc,
                       ( (SChar*)"SQLSetConnectAttr(ALTIBASE_SHARD_COORD_FIX_CTRL_CALLBACK)" ),
+                      sConnectInfo,
+                      &(sConnectInfo->mLinkFailure) );
+    }
+    IDE_EXCEPTION( SetConnectAttrError_SHARD_NODE_REMOVAL_CHECKER_CALLBACK )
+    {
+        processError( SQL_HANDLE_DBC,
+                      sDbc,
+                      ( (SChar*)"SQLSetConnectAttr(ALTIBASE_SHARD_NODE_REMOVAL_CHECKER_CALLBACK)" ),
                       sConnectInfo,
                       &(sConnectInfo->mLinkFailure) );
     }
@@ -795,25 +835,11 @@ IDE_RC sdl::internalConnectCore( void            * aDbc,
  ***********************************************************************/
 
     SQLRETURN   sRet             = SQL_ERROR;
-    SQLRETURN   sRetNeedFailover = SQL_ERROR;
     SQLHDBC     sDbc             = (SQLHDBC)aDbc;
     SQLCHAR   * sConnectString   = (SQLCHAR *)aConnectString;
-    idBool      sIsNotify        = ID_FALSE;
-    UInt        sCurRetryCnt     = 0;
-    UInt        sMaxRetryCnt     = sdi::getShardInternalConnAttrRetryCount();
-    UInt        sRetryDelay      = sdi::getShardInternalConnAttrRetryDelay();
-    SQLINTEGER  sIsNeedFailover  = 0; 
 
     IDE_ASSERT( mInitialized != ID_FALSE );
     IDE_ASSERT( sDbc != NULL );
-
-    if ( ( aConnectInfo->mFlag & SDI_CONNECT_INITIAL_BY_NOTIFIER_MASK )
-           == SDI_CONNECT_INITIAL_BY_NOTIFIER_TRUE )
-    
-    {
-        /* dktNotifier::notifyXaResultForShard */
-        sIsNotify = ID_TRUE;
-    }
 
     sRet = SQLDriverConnect( sDbc,
                              NULL,
@@ -823,42 +849,6 @@ IDE_RC sdl::internalConnectCore( void            * aDbc,
                              0,
                              NULL,
                              SQL_DRIVER_NOPROMPT );
-
-    if ( ( sRet                          != SQL_SUCCESS ) &&
-         ( aConnectInfo->mFailoverTarget != SDI_FAILOVER_ALL ) &&
-         ( sIsNotify                     == ID_FALSE ) )
-    {
-        for ( sCurRetryCnt = 0; sCurRetryCnt < sMaxRetryCnt; sCurRetryCnt++ )
-        {
-
-            if ( sCurRetryCnt > 0 )
-            {
-                idlOS::sleep( sRetryDelay );
-            }
-
-            sRetNeedFailover = SQLGetNeedFailover( SQL_HANDLE_DBC,
-                                                   sDbc,
-                                                   &sIsNeedFailover );
-            if ( ( sRetNeedFailover != SQL_SUCCESS ) || ( sIsNeedFailover == 0 ) )
-            {
-                break;
-            }
-
-            sRet = SQLDriverConnect( sDbc,
-                                     NULL,
-                                     sConnectString,
-                                     SQL_NTS,
-                                     NULL,
-                                     0,
-                                     NULL,
-                                     SQL_DRIVER_NOPROMPT );
-
-            if ( sRet == SQL_SUCCESS )
-            {
-                break;
-            }
-        }
-    }
 
     IDE_TEST_RAISE( sRet != SQL_SUCCESS, ConnectError );
 
@@ -1006,6 +996,8 @@ IDE_RC sdl::freeConnect( sdiConnectInfo * aConnectInfo,
     sEnv = SQLGetEnvHandle( aConnectInfo->mDbc );
 
     (void)SQLFreeConnect( aConnectInfo->mDbc );
+
+    aConnectInfo->mDbc = NULL;
 
     (void)SQLFreeHandle( SQL_HANDLE_ENV, sEnv );
 
@@ -2009,33 +2001,17 @@ void sdl::removeCallback( void * aCallback )
     }
 }
 
-IDE_RC sdl::setFailoverSuspend( sdiConnectInfo         * aConnectInfo,
-                               sdiFailoverSuspendType   aSuspendOnType,
-                               UInt                     aNewErrorCode )
+void sdl::setFailoverSuspendToDbc( sdiFailoverSuspendType   aSuspendType,
+                                   void                   * aDbc )
 {
-    SQLINTEGER sOnOff;
-
-    IDE_TEST_RAISE( mInitialized == ID_FALSE, UnInitializedError );
-    IDE_TEST_RAISE( aConnectInfo->mDbc == NULL, ErrorNullDbc );
-
-    if ( aConnectInfo->mFailoverSuspend.mSuspendType != aSuspendOnType )
+    if ( mInitialized == ID_TRUE )
     {
-        aConnectInfo->mFailoverSuspend.mSuspendType  = aSuspendOnType;
-        aConnectInfo->mFailoverSuspend.mNewErrorCode = aNewErrorCode;
-
-        sOnOff = ( aSuspendOnType == SDI_FAILOVER_SUSPEND_NONE ) ? 0 : 1;
-        
-        SQLSetFailoverSuspend( (SQLHDBC    )aConnectInfo->mDbc,
-                               (SQLINTEGER )sOnOff );
+        if ( aDbc != NULL )
+        {
+            SQLSetFailoverSuspend( (SQLHDBC     )aDbc,
+                                   (SQLUINTEGER )aSuspendType );
+        }
     }
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_UNINIT_LIBRARY( aConnectInfo, "setFailoverSuspend" )
-    IDE_EXCEPTION_NULL_DBC( aConnectInfo, "setFailoverSuspend" )
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
 }
 
 IDE_RC sdl::fetch( sdiConnectInfo * aConnectInfo,
@@ -2272,8 +2248,9 @@ IDE_RC sdl::setConnAttr( sdiConnectInfo * aConnectInfo,
                                            idlOS::strlen( aValueStr ))
                         != SQL_SUCCESS, SetConnectOptionErr );
     }
-    
+
     return IDE_SUCCESS;
+
     IDE_EXCEPTION_UNINIT_LIBRARY( aConnectInfo, "setConnAttr" );
     IDE_EXCEPTION_NULL_DBC( aConnectInfo, "setConnAttr" );
     IDE_EXCEPTION( SetConnectOptionErr )
@@ -2284,7 +2261,9 @@ IDE_RC sdl::setConnAttr( sdiConnectInfo * aConnectInfo,
                               aConnectInfo,
                               aIsLinkFailure );
     };
+
     IDE_EXCEPTION_END;
+
     return IDE_FAILURE;
 }
 
@@ -2352,6 +2331,76 @@ IDE_RC sdl::getConnAttr( sdiConnectInfo * aConnectInfo,
     return IDE_FAILURE;
 }
 
+IDE_RC sdl::setConnectAttr4ShardMetaNumber( sdiConnectInfo * aConnectInfo,
+                                            UShort           aAttrType,
+                                            ULong            aValue,
+                                            idBool         * aIsLinkFailure )
+{
+/***********************************************************************
+ *
+ * Description :
+ *
+ * Implementation : SQLSetConnectAttr For resharding
+ *
+ * Arguments
+ *     - aConnectInfo   [IN] : data node 접속 정보
+ *     - aAttyType      [IN] : Attribute Type
+ *                               SDL_ALTIBASE_SHARD_META_NUMBER
+ *                               SDL_ALTIBASE_REBUILD_SHARD_META_NUMBER
+ *     - aValue         [IN] : Attribute's Value Number.
+ *     - aIsLinkFailure [OUT]: Link-실패 여부에 대한 플래그.
+ *
+ * Return value
+ *     -
+ *
+ * Error handle
+ *     - SQL_SUCCESS
+ *     - SQL_SUCCESS_WITH_INFO
+ *     - SQL_INVALID_HANDLE
+ *     - SQL_ERROR
+ *
+ ***********************************************************************/
+    SQLRETURN  sRet           = SQL_ERROR;
+    idBool     sIsConnectLost = ID_FALSE;
+
+    IDE_TEST_RAISE( mInitialized == ID_FALSE, UnInitializedError );
+    IDE_TEST_RAISE( aConnectInfo->mDbc == NULL, ErrorNullDbc );
+
+    SET_LINK_FAILURE_FLAG( aIsLinkFailure, ID_FALSE );
+
+    IDU_FIT_POINT_RAISE( "sdl::setConnectAttr4ShardMetaNumber::SetConnectionAttr::Error",
+                         SetConnectOptionErr );
+    sRet = SQLSetConnectAttr( aConnectInfo->mDbc,
+                              aAttrType,
+                              (SQLPOINTER)aValue,
+                              0 );
+    if ( ( sRet != SQL_SUCCESS ) &&
+         ( sRet != SQL_SUCCESS_WITH_INFO ) )
+    {
+        sIsConnectLost = (idBool)SQLCheckErrorIsConnectionLost( aConnectInfo->mDbc );
+
+        IDE_TEST_RAISE( sIsConnectLost == ID_FALSE,
+                        SetConnectOptionErr );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_UNINIT_LIBRARY( aConnectInfo, "setConnectAttr4ShardMetaNumber" );
+    IDE_EXCEPTION_NULL_DBC( aConnectInfo, "setConnectAttr4ShardMetaNumber" );
+    IDE_EXCEPTION( SetConnectOptionErr )
+    {
+        processErrorOnNested( SQL_HANDLE_DBC,
+                              aConnectInfo->mDbc,
+                              ((SChar*)"SQLSetConnectAttr(setConnectAttr4ShardMetaNumber)"),
+                              aConnectInfo,
+                              aIsLinkFailure );
+    };
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 IDE_RC sdl::endPendingTran( sdiConnectInfo * aConnectInfo,
                             ID_XID         * aXID,
                             idBool           aIsCommit,
@@ -2412,6 +2461,17 @@ IDE_RC sdl::checkNode( sdiConnectInfo * aConnectInfo,
     IDE_EXCEPTION_NULL_DBC( aConnectInfo, "checkNode" );
     IDE_EXCEPTION( CheckNodeError )
     {
+        /* checkDbcAlive -> SQLGetConnectOption( SDL_SQL_ATTR_CONNECTION_DEAD )
+         * 위 함수는 connection lost 여부를 반환할 뿐
+         * connection failover 를 수행하지 않는다.
+         * 따라서 MTX Prepare 단계에서 수행하는 connection retry 를
+         * retryConnect 를 이용해 수행한다.
+         */
+        (void) retryConnect( aConnectInfo,
+                             SQL_HANDLE_DBC,
+                             aConnectInfo->mDbc,
+                             (const UChar*)"Connection dead detected" );
+
         processErrorOnNested( SQL_HANDLE_DBC,
                               aConnectInfo->mDbc,
                               ((SChar*)"checkNode"),
@@ -2503,6 +2563,7 @@ IDE_RC sdl::rollback( sdiConnectInfo * aConnectInfo,
  *
  ***********************************************************************/
     SQLRETURN  sRet           = SQL_ERROR;
+    idBool     sIsConnectLost = ID_FALSE;
 
     IDE_TEST_RAISE( mInitialized == ID_FALSE, UnInitializedError );
 
@@ -2513,9 +2574,15 @@ IDE_RC sdl::rollback( sdiConnectInfo * aConnectInfo,
     if ( aSavepoint == NULL )
     {
         sRet = SQLTransact( NULL, aConnectInfo->mDbc, SDL_TRANSACT_ROLLBACK );
-        IDE_TEST_RAISE( ( sRet != SQL_SUCCESS ) &&
-                        ( sRet != SQL_SUCCESS_WITH_INFO ),
-                        TransactErr );
+
+        if ( ( sRet != SQL_SUCCESS ) &&
+             ( sRet != SQL_SUCCESS_WITH_INFO ) )
+        {
+            sIsConnectLost = (idBool)SQLCheckErrorIsConnectionLost( aConnectInfo->mDbc );
+
+            IDE_TEST_RAISE( sIsConnectLost == ID_FALSE,
+                            TransactErr );
+        }
     }
     else
     {
@@ -2724,7 +2791,8 @@ IDE_RC sdl::checkNeedFailover( sdiConnectInfo * aConnectInfo,
 
 idBool sdl::retryConnect( sdiConnectInfo * aConnectInfo,
                           SShort           aHandleType,
-                          void           * aHandle )
+                          void           * aHandle,
+                          const UChar    * aCause )
 {
 /***********************************************************************
  *
@@ -2763,7 +2831,11 @@ idBool sdl::retryConnect( sdiConnectInfo * aConnectInfo,
 
     IDE_TEST_CONT( aHandle == NULL, SET_FALSE );
 
-    IDE_TEST_CONT( SQLReconnect( aHandleType, aHandle ) != SQL_SUCCESS, SET_FALSE );
+    IDE_TEST_CONT( SQLReconnect( aHandleType,
+                                 aHandle,
+                                 aCause )
+                   != SQL_SUCCESS,
+                   SET_FALSE );
 
     return ID_TRUE;
 
@@ -2864,7 +2936,7 @@ idBool sdl::isFatalError( SShort           aHandleType,
         /*  aConnectInfo->mDbc != NULL : STF case
          *  어떤 오류가 발생했던간에
          *  한번 연결되었던 Connection 은 
-         *  sdl::retryConnect 함수에서 재연결 한다.
+         *  ul STF 기능으로 재연결 한다.
          */
         if ( checkDbcAlive( aConnectInfo->mDbc ) == ID_FALSE )
         {
@@ -2877,9 +2949,10 @@ idBool sdl::isFatalError( SShort           aHandleType,
         {
             /*  aConnectInfo->mDbc == NULL : Initial connect case
              *  최초 접속이 실패 한 경우.
-             *  sdl::internalConnect 함수에서 Connect 재시도 수행을 이미 완료했다.
+             *  sdl::internalConnect 의 SQLDriverConnect 함수에서
+             *  Connect 재시도 수행을 이미 완료했다.
              *  이곳에서 Connect 에러 타입에 따라
-             *  Link failure 에러 코드를 반환할지 여부를 결정한다.
+             *  FATAL 에러 코드를 반환할지 여부를 결정한다.
              *  예) Invalid password 인 경우는 Link failure 에러 코드를 반환하지 않는다.
              */
             sSqlReturn = SQLGetNeedFailover( (SQLSMALLINT)aHandleType,
@@ -2912,9 +2985,12 @@ void sdl::processError( SShort           aHandleType,
  * Implementation :
  *     TASK-7218 Handling Multi-Error for SD
  *       - fatal인 경우 에러 메시지를 누적한 후,
- *         retryConnect 성공 여부에 따라 아래 중에서 한 개의 에러 반환
- *           - 성공시sdERR_ABORT_SHARD_LIBRARY_FAILOVER_SUCCESS
- *           - 실패시sdERR_ABORT_SHARD_LIBRARY_LINK_FAILURE_ERROR
+ *         Shard Meta 변경으로 fatal 노드가
+ *         Node List 에서 제외 되었다면
+ *           sdERR_ABORT_SHARD_LIBRARY_FAILOVER_SUCCESS
+ *         아니면 
+ *           sdERR_ABORT_SHARD_LIBRARY_LINK_FAILURE_ERROR
+ *         을 반환한다.
  *       - fatal이 아니면 NativeError 값에 따라 아래와 같이 반환
  *           - SD_ALTIBASE_FAILOVER_SUCCESS: sdERR_ABORT_SHARD_LIBRARY_FAILOVER_SUCCESS
  *           - 그 외: NativeError를 서버 에러로 변환해서 반환
@@ -2939,16 +3015,19 @@ void sdl::processError( SShort           aHandleType,
     SChar       sErrorMsg       [MAX_LAST_ERROR_MSG_LEN];
     SChar      *sErrorMsgPos    = sErrorMsg;
     SInt        sErrorMsgRemain = ID_SIZEOF(sErrorMsg);
-    idBool      sIsRetrySuccess = ID_FALSE;
     UInt        sNewErrorCode   = sdERR_ABORT_SHARD_LIBRARY_ERROR_1;
     UInt        sNumRecs        ;
+    void       *sMmSession      = NULL;
+    idBool      sIsShardNodeRemoved = ID_FALSE;
 
     SChar      *sNodeNamePtr = NULL;
     SChar      *sFirstErrorMsgPos;
 
+    sdiClientInfo          * sClientInfo = NULL;
+    sdiFailoverSuspendType   sFailoverSuspendType = SDI_FAILOVER_SUSPEND_DEFAULT_TYPE;
+
     sdlErrorType    sErrorType = SDL_ERROR_OTHER;
 
-    sNodeNamePtr = (SChar*)aConnectInfo->mNodeName;
 
     SET_LINK_FAILURE_FLAG( aIsLinkFailure, ID_FALSE );
 
@@ -2960,6 +3039,25 @@ void sdl::processError( SShort           aHandleType,
     else
     {
         IDE_TEST_RAISE( aHandle == NULL, ErrorNullDbc );
+    }
+
+    sNodeNamePtr = (SChar*)aConnectInfo->mNodeName;
+
+    if ( aConnectInfo->mSession != NULL )
+    {
+        sMmSession = aConnectInfo->mSession->mMmSession;
+        sClientInfo = aConnectInfo->mSession->mQPSpecific.mClientInfo;
+    }
+
+    if ( ( aConnectInfo->mFlag & SDI_CONNECT_INITIAL_BY_NOTIFIER_MASK )
+           == SDI_CONNECT_INITIAL_BY_NOTIFIER_FALSE )
+    {
+        sFailoverSuspendType = sdiFailoverSuspend::getFailoverSuspendType( sClientInfo );
+    }
+    else
+    {
+        /* Notify */
+        sFailoverSuspendType = SDI_FAILOVER_SUSPEND_ALL;
     }
 
     /* Setting prefix for normal error message, it can be changed... */
@@ -3055,8 +3153,12 @@ void sdl::processError( SShort           aHandleType,
 
             setTransactionBrokenByInternalConnection( aConnectInfo );
 
-            if ( aConnectInfo->mFailoverSuspend.mSuspendType != SDI_FAILOVER_SUSPEND_ALL )
+            if ( sFailoverSuspendType != SDI_FAILOVER_SUSPEND_ALL )
             {
+                sdi::shardNodeRemovalCheckerCallback( sMmSession,
+                                                      aConnectInfo,
+                                                      &sIsShardNodeRemoved );
+
                 /* aConnectInfo->mDbc == NULL : Initial connect case
                  * aConnectInfo->mDbc != NULL : STF case
                  */
@@ -3066,50 +3168,135 @@ void sdl::processError( SShort           aHandleType,
                     {
                         case SDI_FAILOVER_ACTIVE_ONLY    :
                         case SDI_FAILOVER_ALTERNATE_ONLY :
-                            sIsRetrySuccess = retryConnect( aConnectInfo,
-                                                            aHandleType,
-                                                            aHandle );
-                            break;
-
-                        case SDI_FAILOVER_ALL :
-                            if ( hasNodeAlternate( &aConnectInfo->mNodeInfo ) == ID_FALSE )
+                            /* Internal connection STF is failed
+                             *  - shardcli is used.
+                             *  - (or notify connection)
+                             */
+                            if ( sIsShardNodeRemoved == ID_TRUE )
                             {
-                                sIsRetrySuccess = retryConnect( aConnectInfo,
-                                                                aHandleType,
-                                                                aHandle );
+                                sNewErrorCode = sdERR_ABORT_SHARD_LIBRARY_FAILOVER_SUCCESS;
                             }
                             else
                             {
-                                if ( aConnectInfo->mFailoverSuspend.mSuspendType == SDI_FAILOVER_SUSPEND_ALLOW_RETRY )
-                                {
-                                    sIsRetrySuccess = retryConnect( aConnectInfo,
-                                                                    aHandleType,
-                                                                    aHandle );
-                                }
-                                else
-                                {
-                                    sIsRetrySuccess = ID_FALSE;
-                                }
+                                SET_LINK_FAILURE_FLAG( aIsLinkFailure, ID_TRUE );
+
+                                /* sdERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE 에러 발생 여부는
+                                 * shardcli 에서 library connection failover 시도 후 결과에 따라 결정한다.
+                                 */
+                                sNewErrorCode = sdERR_ABORT_SHARD_LIBRARY_LINK_FAILURE_ERROR;
+                            }
+                            break;
+
+                        case SDI_FAILOVER_ALL :
+                            /* Internal connection STF is failed
+                             *  - odbccli is used.
+                             */
+                            if ( sIsShardNodeRemoved == ID_TRUE )
+                            {
+                                sNewErrorCode = sdERR_ABORT_SHARD_LIBRARY_FAILOVER_SUCCESS;
+                            }
+                            else
+                            {
+                                SET_LINK_FAILURE_FLAG( aIsLinkFailure, ID_TRUE );
+
+                                /* shard-linker STF 로 failover 시도 한 결과가
+                                 * 실패이므로 더이상 failover 할수 없다.
+                                 */
+                                sNewErrorCode = sdERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE;
                             }
                             break;
 
                         default:
-                            sIsRetrySuccess = ID_FALSE;
+                            SET_LINK_FAILURE_FLAG( aIsLinkFailure, ID_TRUE );
+
+                            sNewErrorCode = sdERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE;
+
+                            IDE_DASSERT( 0 );
+                            break;
+                    } /* switch end */
+                }
+                else
+                {
+                    /* aConnectInfo->mDbc == NULL */
+
+                    switch ( aConnectInfo->mFailoverTarget )
+                    {
+                        case SDI_FAILOVER_ACTIVE_ONLY    :
+                        case SDI_FAILOVER_ALTERNATE_ONLY :
+                            /* Internal connection CTF is failed
+                             *  - shardcli is used.
+                             *  - internal connect 결과 값을 이용하여
+                             *    Server-side failover 를 계속 수행할 것인가에 대해 판단한다.
+                             *    Active/Alternate 노드에서 연속된 Failover 가 발생한 경우 
+                             *    sdERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE 에러 코드를 설정하고
+                             *    IDE_FAILURE 를 리턴하여 failover 가 중단되도록 한다.
+                             */
+                            setInternalConnectFailure( aConnectInfo );
+
+                            if ( sIsShardNodeRemoved == ID_TRUE )
+                            {
+                                sNewErrorCode = sdERR_ABORT_SHARD_LIBRARY_FAILOVER_SUCCESS;
+
+                                clearInternalConnectResult( aConnectInfo );
+                            }
+                            else
+                            {
+                                if ( isInternalConnectFailoverLimited( aConnectInfo ) == ID_TRUE )
+                                {
+                                    clearInternalConnectResult( aConnectInfo );
+
+                                    SET_LINK_FAILURE_FLAG( aIsLinkFailure, ID_TRUE );
+
+                                    sNewErrorCode = sdERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE;
+                                }
+                                else
+                                {
+                                    SET_LINK_FAILURE_FLAG( aIsLinkFailure, ID_TRUE );
+
+                                    /* Active 또는 Alternate 중 한개의 노드에서 connection lost 발생했으므로
+                                     * sdERR_ABORT_SHARD_LIBRARY_LINK_FAILURE_ERROR 로 에러 발생해야 한다.
+                                     */
+                                    sNewErrorCode = sdERR_ABORT_SHARD_LIBRARY_LINK_FAILURE_ERROR;
+                                }
+                            }
+                            break;
+
+                        case SDI_FAILOVER_ALL :
+                            /* Internal connection CTF is failed
+                             *  - odbccli is used.
+                             */
+                            if ( sIsShardNodeRemoved == ID_TRUE )
+                            {
+                                sNewErrorCode = sdERR_ABORT_SHARD_LIBRARY_FAILOVER_SUCCESS;
+                            }
+                            else
+                            {
+                                SET_LINK_FAILURE_FLAG( aIsLinkFailure, ID_TRUE );
+
+                                /* shard-linker CTF 시도 한 결과가
+                                 * 실패이므로 더이상 failover 할수 없다.
+                                 */
+                                sNewErrorCode = sdERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE;
+                            }
+                            break;
+
+                        default:
+                            SET_LINK_FAILURE_FLAG( aIsLinkFailure, ID_TRUE );
+
+                            sNewErrorCode = sdERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE;
+
                             IDE_DASSERT( 0 );
                             break;
                     }
                 }
             }
-
-            if ( sIsRetrySuccess == ID_TRUE )
-            {
-                sNewErrorCode = sdERR_ABORT_SHARD_LIBRARY_FAILOVER_SUCCESS;
-            }
             else
             {
+                /* aConnectInfo->mFailoverSuspend.mSuspendType == SDI_FAILOVER_SUSPEND_ALL */
+
                 SET_LINK_FAILURE_FLAG( aIsLinkFailure, ID_TRUE );
 
-                sNewErrorCode = sdERR_ABORT_SHARD_LIBRARY_LINK_FAILURE_ERROR;
+                sNewErrorCode = sdERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE;
             }
             break;
 
@@ -3123,10 +3310,11 @@ void sdl::processError( SShort           aHandleType,
     switch ( sNewErrorCode )
     {
         case sdERR_ABORT_SHARD_LIBRARY_FAILOVER_SUCCESS :
+        case sdERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE :
         case sdERR_ABORT_SHARD_LIBRARY_LINK_FAILURE_ERROR :
-            if ( aConnectInfo->mFailoverSuspend.mSuspendType != SDI_FAILOVER_SUSPEND_NONE )
+            if ( sdiFailoverSuspend::isFailoverSuspendHasNewErrorCode( sClientInfo ) == ID_TRUE )
             {
-                sNewErrorCode = aConnectInfo->mFailoverSuspend.mNewErrorCode;
+                sNewErrorCode = sdiFailoverSuspend::getFailoverSuspendNewErrorCode( sClientInfo );
             }
 
             addShardError( sNewErrorCode,
@@ -3463,29 +3651,6 @@ IDE_RC sdl::internalConnect( void           * aDbc,
         {
             clearInternalConnectResult( aConnectInfo );
         }
-        else
-        {
-            /* Internal connect is failed */
-            setInternalConnectFailure( aConnectInfo );
-
-            if ( isInternalConnectFailoverLimited( aConnectInfo ) == ID_TRUE )
-            {
-                clearInternalConnectResult( aConnectInfo );
-
-                /* TASK-7218 Handling Multi-Error */
-                /* replace error code */
-                ideErrorCollectionClear();
-                IDE_SET( ideSetErrorCode( sdERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE ) );
-                appendFootPrintToErrorMessage( aConnectInfo,
-                        sdERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE,
-                        ideGetErrorMsg() );
-                ideErrorCollectionAdd( ideGetErrorCode(), ideGetErrorMsg(), aConnectInfo->mNodeId );
-            }
-        }
-    }
-    else
-    {
-        /* Nothing to do */
     }
 
     return sConnectResult;
@@ -3493,10 +3658,33 @@ IDE_RC sdl::internalConnect( void           * aDbc,
 
 idBool sdl::isInternalConnectFailoverLimited( sdiConnectInfo * aConnectInfo )
 {
-    return ( ( aConnectInfo->mIsConnectSuccess[SDI_FAILOVER_ACTIVE_ONLY] == ID_FALSE ) &&
+    idBool sRet = ID_TRUE;
+
+    if ( aConnectInfo->mFailoverTarget == SDI_FAILOVER_ALL )
+    {
+        if ( aConnectInfo->mIsConnectSuccess[ aConnectInfo->mFailoverTarget ] == ID_FALSE )
+        {
+            sRet = ID_TRUE;
+        }
+        else
+        {
+            sRet = ID_FALSE;
+        }
+    }
+    else
+    {
+        if ( ( aConnectInfo->mIsConnectSuccess[SDI_FAILOVER_ACTIVE_ONLY] == ID_FALSE ) &&
              ( aConnectInfo->mIsConnectSuccess[SDI_FAILOVER_ALTERNATE_ONLY] == ID_FALSE ) )
-           ? ID_TRUE
-           : ID_FALSE;
+        {
+            sRet = ID_TRUE;
+        }
+        else
+        {
+            sRet = ID_FALSE;
+        }
+    }
+
+    return sRet;
 }
 
 inline void sdl::setTransactionBrokenByInternalConnection( sdiConnectInfo * aConnectInfo )

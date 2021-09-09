@@ -47,7 +47,7 @@ typedef struct sdtHashSegHdr
     UChar                mIsInMemory;    /*쫓겨난 Page가 있는가?*/
     scSpaceID            mSpaceID;
 
-    UInt                 mHashSlotCount;      /* Slot 개수 */
+    UInt                 mHashSlotCount; /* Slot 개수 */
 
     UShort               mUnique;
     UShort               mOpenCursorType;
@@ -66,7 +66,7 @@ typedef struct sdtHashSegHdr
     sdtHashGroup         mSubHashGrp;
     sdtWCB             * mSubHashWCBPtr;
 
-    sdtWAExtentInfo      mWAExtentInfo;  // 20Byte, // XXX
+    sdtWAExtentInfo      mWAExtentInfo;  
 
     UInt                 mMaxWAExtentCount;
     sdtWAExtent        * mNxtFreeWAExtent;
@@ -77,7 +77,7 @@ typedef struct sdtHashSegHdr
     sdtWCB            ** mNPageHashPtr;
     UInt                 mNPageHashBucketCnt;
 
-    UInt                 mNPageCount;     /*할당한 NPage의 개수 */
+    UInt                 mNPageCount;  /*할당한 NPage의 개수 */
     sdtNExtFstPIDList    mNExtFstPIDList4Row;  /*NormalExtent들을 보관하는 Map*/
     sdtNExtFstPIDList    mNExtFstPIDList4SubHash;  /*NormalExtent들을 보관하는 Map*/
 

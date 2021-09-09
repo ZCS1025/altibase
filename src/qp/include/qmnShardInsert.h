@@ -116,6 +116,8 @@ typedef struct qmncSDIN
     qmsNamePosition       tableName;          // Table Name
     qmsNamePosition       aliasName;          // Alias Name
 
+    qmmReturnInto       * returnInto;    /* BUG-47766 */
+
 } qmncSDIN;
 
 typedef struct qmndSDIN

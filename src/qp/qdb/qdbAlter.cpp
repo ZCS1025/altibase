@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdbAlter.cpp 91517 2021-08-24 01:25:47Z bethy $
+ * $Id: qdbAlter.cpp 91576 2021-09-02 06:39:41Z donghyun1 $
  **********************************************************************/
 
 #include <idl.h>
@@ -7087,10 +7087,10 @@ IDE_RC qdbAlter::executeAddCol(qcStatement * aStatement)
         //-----------------------------------------------------
         if ( sIsReplicatedTable == ID_TRUE )
         {
-            IDE_TEST( qci::mCatalogReplicationCallback.mUpdateReplItemsTableOIDArray( aStatement,
-                                                                                      sOldTableOIDArray,
-                                                                                      sNewTableOIDArray,
-                                                                                      sTableOIDCount)
+            IDE_TEST( qci::mCatalogReplicationCallback.mUpdateReplMetaTableOIDArray( aStatement,
+                                                                                     sOldTableOIDArray,
+                                                                                     sNewTableOIDArray,
+                                                                                     sTableOIDCount )
                       != IDE_SUCCESS );
         }
         else
@@ -8229,10 +8229,10 @@ IDE_RC qdbAlter::executeDropCol(qcStatement * aStatement)
             sTableOIDCount = 1;
         }
 
-        IDE_TEST( qci::mCatalogReplicationCallback.mUpdateReplItemsTableOIDArray( aStatement,
-                                                                                  sOldTableOIDArray,
-                                                                                  sNewTableOIDArray,
-                                                                                  sTableOIDCount )
+        IDE_TEST( qci::mCatalogReplicationCallback.mUpdateReplMetaTableOIDArray( aStatement,
+                                                                                 sOldTableOIDArray,
+                                                                                 sNewTableOIDArray,
+                                                                                 sTableOIDCount )
                   != IDE_SUCCESS );
     }
 
@@ -8531,10 +8531,10 @@ IDE_RC qdbAlter::executeDropCol(qcStatement * aStatement)
         //-----------------------------------------------------
         if ( sIsReplicatedTable == ID_TRUE )
         {
-            IDE_TEST( qci::mCatalogReplicationCallback.mUpdateReplItemsTableOIDArray( aStatement,
-                                                                                      sOldTableOIDArray,
-                                                                                      sNewTableOIDArray,
-                                                                                      sTableOIDCount )
+            IDE_TEST( qci::mCatalogReplicationCallback.mUpdateReplMetaTableOIDArray( aStatement,
+                                                                                     sOldTableOIDArray,
+                                                                                     sNewTableOIDArray,
+                                                                                     sTableOIDCount )
                       != IDE_SUCCESS );
         }
         else
@@ -16761,10 +16761,10 @@ IDE_RC qdbAlter::executeTruncatePartition( qcStatement * aStatement )
      */
     if(sIsReplicatedTable == ID_TRUE)
     {
-        IDE_TEST(qci::mCatalogReplicationCallback.mUpdateReplItemsTableOIDArray( aStatement,
-                                                                                 &sOldPartOID,
-                                                                                 &sNewPartOID,
-                                                                                 1 )
+        IDE_TEST(qci::mCatalogReplicationCallback.mUpdateReplMetaTableOIDArray( aStatement,
+                                                                                &sOldPartOID,
+                                                                                &sNewPartOID,
+                                                                                1 )
                  != IDE_SUCCESS);
     }
 
@@ -21883,10 +21883,10 @@ IDE_RC qdbAlter::executeModifyCol( qcStatement * aStatement )
 
         if ( sIsReplicatedTable == ID_TRUE )
         {
-            IDE_TEST( qci::mCatalogReplicationCallback.mUpdateReplItemsTableOIDArray( aStatement,
-                                                                                      sOldTableOIDArray,
-                                                                                      sNewTableOIDArray,
-                                                                                      sTableOIDCount )
+            IDE_TEST( qci::mCatalogReplicationCallback.mUpdateReplMetaTableOIDArray( aStatement,
+                                                                                     sOldTableOIDArray,
+                                                                                     sNewTableOIDArray,
+                                                                                     sTableOIDCount )
                       != IDE_SUCCESS);
         }
         else
@@ -31355,10 +31355,10 @@ IDE_RC qdbAlter::executeAlterPartition( qcStatement * aStatement )
     /* 5.1. SYS_REPL_ITEMS_의 TABLE_OID 컬럼 갱신 */
     if ( sIsReplicatedTable == ID_TRUE )
     {
-        IDE_TEST( qci::mCatalogReplicationCallback.mUpdateReplItemsTableOIDArray( aStatement,
-                                                                                  &sSrcPartOID,
-                                                                                  &sDstPartOID,
-                                                                                  1 )
+        IDE_TEST( qci::mCatalogReplicationCallback.mUpdateReplMetaTableOIDArray( aStatement,
+                                                                                 &sSrcPartOID,
+                                                                                 &sDstPartOID,
+                                                                                 1 )
                   != IDE_SUCCESS );
     }
     else
@@ -32191,10 +32191,10 @@ IDE_RC qdbAlter::executeAlterTablespace( qcStatement * aStatement )
      */
     if ( sIsReplicatedTable == ID_TRUE )
     {
-        IDE_TEST( qci::mCatalogReplicationCallback.mUpdateReplItemsTableOIDArray( aStatement,
-                                                                                  &sOldTableOID,
-                                                                                  &sNewTableOID,
-                                                                                  1 )
+        IDE_TEST( qci::mCatalogReplicationCallback.mUpdateReplMetaTableOIDArray( aStatement,
+                                                                                 &sOldTableOID,
+                                                                                 &sNewTableOID,
+                                                                                 1 )
                   != IDE_SUCCESS );
 
         IDE_TEST( qci::mManageReplicationCallback.mWriteTableMetaLog( aStatement,

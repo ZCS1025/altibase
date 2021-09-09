@@ -25,8 +25,7 @@ void ulsdNativeErrorToUlnError( ulnFnContext       *aFnContext,
                                 ulsdNodeInfo       *aNodeInfo,
                                 acp_char_t         *aOperation );
 
-void ulsdErrorHandleShardingError( ulnFnContext * aFnContext,
-                                   acp_uint32_t   aNodeId );
+void ulsdErrorHandleShardingError( ulnFnContext * aFnContext );
 
 void ulsdErrorCheckAndAlignDataNode( ulnFnContext * aFnContext );
 

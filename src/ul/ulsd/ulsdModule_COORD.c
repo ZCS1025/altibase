@@ -233,65 +233,23 @@ ulnStmt* ulsdModuleGetPreparedStmt_COORD(ulnStmt *aStmt)
 }
 
 void ulsdModuleOnCmError_COORD(ulnFnContext     *aFnContext,
-                               ulnDbc           *aDbc,
                                ulnErrorMgr      *aErrorMgr)
 {
-    ulsdDbc      *sShard = NULL;
-
-    (void)ulsdFODoSTF(aFnContext, aDbc, aErrorMgr);
-
-    if ( aDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_OFF )
-    {
-        sShard = aDbc->mShardDbcCxt.mShardDbc;
-        ulsdSetTouchedToAllNodes( sShard );
-    }
+    (void)ulsdFODoSTF(aFnContext, aErrorMgr);
 
     return;
 }
 
-ACI_RC ulsdModuleUpdateNodeList_COORD(ulnFnContext  *aFnContext,
-                                      ulnDbc        *aDbc)
+ACI_RC ulsdModuleNotifyFailOver_COORD( ulnFnContext * aFnContext )
 {
-    ACI_RC sRc;
+    ACI_RC sRc = ACI_SUCCESS;
 
-    /* BUG-47131 Stop shard META DBC failover. */
-    ulnDbcSetFailoverSuspendState( aDbc, ULN_FAILOVER_SUSPEND_ON_STATE );
-
-    sRc = ulsdUpdateNodeList(aFnContext, &(aDbc->mPtContext));
+    sRc = ulsdNotifyFailoverOnMeta( aFnContext );
     ACI_TEST( sRc != ACI_SUCCESS );
-
-    /* BUG-47131 Restore shard META DBC failover suspend status. */
-    ulnDbcSetFailoverSuspendState( aDbc, ULN_FAILOVER_SUSPEND_OFF_STATE );
 
     return sRc;
 
     ACI_EXCEPTION_END;
-
-    /* BUG-47131 Restore shard META DBC failover suspend status. */
-    ulnDbcSetFailoverSuspendState( aDbc, ULN_FAILOVER_SUSPEND_OFF_STATE );
-
-    return sRc;
-}
-
-ACI_RC ulsdModuleNotifyFailOver_COORD( ulnDbc *aDbc )
-{
-    ACI_RC sRc;
-
-    /* BUG-47131 Stop shard META DBC failover. */
-    ulnDbcSetFailoverSuspendState( aDbc, ULN_FAILOVER_SUSPEND_ON_STATE );
-
-    sRc = ulsdNotifyFailoverOnMeta( aDbc );
-    ACI_TEST( sRc != ACI_SUCCESS );
-
-    /* BUG-47131 Restore shard META DBC failover suspend status. */
-    ulnDbcSetFailoverSuspendState( aDbc, ULN_FAILOVER_SUSPEND_OFF_STATE );
-
-    return sRc;
-
-    ACI_EXCEPTION_END;
-
-    /* BUG-47131 Restore shard META DBC failover suspend status. */
-    ulnDbcSetFailoverSuspendState( aDbc, ULN_FAILOVER_SUSPEND_OFF_STATE );
 
     return sRc;
 }
@@ -529,7 +487,6 @@ ulsdModule gShardModuleCOORD =
     ulsdModuleMoreResults_COORD,
     ulsdModuleGetPreparedStmt_COORD,
     ulsdModuleOnCmError_COORD,
-    ulsdModuleUpdateNodeList_COORD,
     ulsdModuleNotifyFailOver_COORD,
     ulsdModuleAlignDataNodeConnection_COORD,
     ulsdModuleErrorCheckAndAlignDataNode_COORD,

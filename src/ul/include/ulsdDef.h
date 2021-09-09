@@ -22,6 +22,9 @@
 #ifndef _O_ULSD_DEF_H_
 #define _O_ULSD_DEF_H_ 1
 
+#include <ulsdnFailoverSuspendDef.h>
+
+
 #define ULSD_MAX_SERVER_IP_LEN      16
 #define ULSD_MAX_ALTERNATE_SERVERS_LEN 256
 #define ULSD_MAX_CONN_STR_LEN       512
@@ -177,9 +180,11 @@ struct ulsdConnectAttrInfo
 
 typedef enum ulsdReportType
 {
+    ULSD_REPORT_TYPE_NONE                 = 0,
     ULSD_REPORT_TYPE_CONNECTION           = 1,  /* CMP_DB_SHARD_NODE_CONNECTION_REPORT */
-    ULSD_REPORT_TYPE_TRANSACTION_BROKEN   = 2   /* CMP_DB_SHARD_NODE_TRANSACTION_BROKEN_REPORT */
-}ulsdReportType;
+    ULSD_REPORT_TYPE_TRANSACTION_BROKEN   = 2,  /* CMP_DB_SHARD_NODE_TRANSACTION_BROKEN_REPORT */
+    ULSD_REPORT_TYPE_STATUS               = 3   /* CMP_DB_SHARD_NODE_STATUS */
+} ulsdReportType;
 
 typedef struct ulsdNodeConnectReport
 {
@@ -264,6 +269,8 @@ struct ulsdDbcContext
     acp_list_t          mLobLocatorList;
 
     ulsdFuncCallback   *mFuncCallback;  /* BUG-46814 */
+
+    ulsdnFailoverSuspendCmd mFailoverSuspendCmd;
 };
 
 union ulsdValue

@@ -553,6 +553,8 @@ IDE_RC qmnSDIN::setParamInfo( qcTemplate   * aTemplate,
     UInt             i;
     UInt             j;
 
+    qmmReturnIntoValue * sReturnIntoValue;
+
     sTableForInsert = aCodePlan->tableRef->tableInfo;
     sCanonizedTuple = &(aTemplate->tmplate.rows[aCodePlan->canonizedTuple]);
 
@@ -583,6 +585,34 @@ IDE_RC qmnSDIN::setParamInfo( qcTemplate   * aTemplate,
         else
         {
             // Nothing to do.
+        }
+    }
+
+    /* BUG-47766 */
+    if ( aCodePlan->returnInto != NULL )
+    {
+        for ( sReturnIntoValue  = aCodePlan->returnInto->returnIntoValue;
+              sReturnIntoValue != NULL;
+              sReturnIntoValue  = sReturnIntoValue->next )
+        {
+            if ( (sReturnIntoValue->returningInto->node.lflag & MTC_NODE_BIND_MASK) == MTC_NODE_BIND_EXIST )
+            {
+                sMtcColumn = QTC_TMPL_COLUMN( aTemplate, sReturnIntoValue->returningInto );
+
+                aBindParams[j].mId        = j + 1;
+                aBindParams[j].mInoutType = CMP_DB_PARAM_OUTPUT;
+                aBindParams[j].mType      = sMtcColumn->module->id;
+                aBindParams[j].mData      = QTC_TMPL_FIXEDDATA( aTemplate, sReturnIntoValue->returningInto );
+                aBindParams[j].mDataSize  = sMtcColumn->column.size;
+                aBindParams[j].mPrecision = sMtcColumn->precision;
+                aBindParams[j].mScale     = sMtcColumn->scale;
+
+                /* BUG-46623 padding 변수를 0으로 초기화 해야 한다. */
+                aBindParams[j].padding    = 0;
+
+                j++;
+                IDE_DASSERT( j <= aCodePlan->shardParamCount );
+            }
         }
     }
 

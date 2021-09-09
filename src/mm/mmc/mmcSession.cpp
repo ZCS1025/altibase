@@ -289,7 +289,9 @@ qciSessionCallback mmcSession::mCallback =
     mmcSession::getStatementShardPartialExecTypeCallback,
 
     /* BUG-48770 */
-    mmcSession::checkSessionCountCallback
+    mmcSession::checkSessionCountCallback,
+
+    mmcSession::shardNodeRemovalCheckerCallback,
 };
 
 
@@ -1598,6 +1600,9 @@ IDE_RC mmcSession::endPendingTrans( ID_XID * aXID,
 {
     idBool  sIsDummyBegin = ID_FALSE;
 
+    // BUG-48345 Lock procedure statement
+    qciMisc::freePSMLatchList( &mQciSession, NULL );
+
     if ( getTransPrepared() == ID_TRUE )
     {
         setCoordGlobalCommitSCN( getShardClientInfo(), aGlobalCommitSCN );
@@ -1708,6 +1713,9 @@ IDE_RC mmcSession::commit(idBool aInStoredProc)
     
     if (getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT)
     {
+        // BUG-48345 Lock procedure statement
+        qciMisc::freePSMLatchList( &mQciSession, NULL );
+
         if (aInStoredProc == ID_FALSE)
         {
             /* BUG-48931 Sharding에서는 FAC, FAR이 아직 지원되지 않는다. */
@@ -1903,6 +1911,9 @@ IDE_RC mmcSession::rollback(const SChar *aSavePoint, idBool aInStoredProc)
 
         if (sDecidedSavePoint == NULL) // total rollback
         {
+            // BUG-48345 Lock procedure statement
+            qciMisc::freePSMLatchList( &mQciSession, sDecidedSavePoint );
+
             if (aInStoredProc == ID_FALSE)
             {
                 /* BUG-48931 Sharding에서는 FAC, FAR이 아직 지원되지 않는다. */
@@ -2015,10 +2026,16 @@ IDE_RC mmcSession::rollback(const SChar *aSavePoint, idBool aInStoredProc)
                                    idlOS::strlen(SAVEPOINT_FOR_SHARD_GLOBAL_PROC_PARTIAL_ROLLBACK) )
                   == 0) )
             {
+                // BUG-48345 Lock procedure statement
+                qciMisc::freePSMLatchList( &mQciSession, SAVEPOINT_FOR_SHARD_GLOBAL_PROC_PARTIAL_ROLLBACK );
+
                 IDE_TEST(mmcTrans::abortToPsmSvp(mTrans) != IDE_SUCCESS);
             }
             else
             {
+                // BUG-48345 Lock procedure statement
+                qciMisc::freePSMLatchList( &mQciSession, sDecidedSavePoint );
+
                 IDE_TEST(mmcTrans::rollback(mTrans, this, sDecidedSavePoint, SMI_DO_NOT_RELEASE_TRANSACTION) != IDE_SUCCESS);
             }
         }
@@ -2156,6 +2173,7 @@ IDE_RC mmcSession::rollbackForceDatabaseLink( idBool aInStoredProc )
 IDE_RC mmcSession::savepoint(const SChar *aSavePoint, idBool /*aInStoredProc*/)
 {
     idBool      sIsDummyBegin = ID_FALSE;
+    UInt        sState = 0;
 
     IDE_ASSERT(aSavePoint[0] != 0);
 
@@ -2185,16 +2203,35 @@ IDE_RC mmcSession::savepoint(const SChar *aSavePoint, idBool /*aInStoredProc*/)
               == 0) )
         {
             mmcTrans::reservePsmSvp(mTrans, ID_TRUE);
+
+            IDE_TEST( qciMisc::addSavepointToPSMLatchList( &mQciSession,
+                                                           SAVEPOINT_FOR_SHARD_GLOBAL_PROC_PARTIAL_ROLLBACK )
+                      != IDE_SUCCESS );
+            sState = 1;
         }
         else
         {
             IDE_TEST(mmcTrans::savepoint(mTrans, this, aSavePoint) != IDE_SUCCESS);
+
+            IDE_TEST( qciMisc::addSavepointToPSMLatchList( &mQciSession,
+                                                           aSavePoint )
+                      != IDE_SUCCESS );
+            sState = 2;
         }
     }
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    if ( sState == 1 )
+    {
+        qciMisc::freePSMLatchList( &mQciSession, SAVEPOINT_FOR_SHARD_GLOBAL_PROC_PARTIAL_ROLLBACK );
+    }
+    else if ( sState == 2 )
+    {
+        qciMisc::freePSMLatchList( &mQciSession, aSavePoint );
+    }
 
     return IDE_FAILURE;
 }
@@ -6288,11 +6325,14 @@ IDE_RC mmcSession::loadAccessListCallback()
     return IDE_FAILURE;
 }
 
-IDE_RC mmcSession::touchShardNode(UInt aNodeId)
+IDE_RC mmcSession::touchShardNode( UInt                    aNodeId,
+                                   sdiFailoverSuspendCmd * aFailoverSuspendCmd )
 {
-    ULong       sSMN = ID_ULONG(0);
-    ULong       sLastSMN = ID_ULONG(0);
-    idBool      sIsDummyBegin = ID_FALSE;
+    ULong  sSMN             = SDI_NULL_SMN;
+    ULong  sLastSMN         = SDI_NULL_SMN;
+    idBool sIsDummyBegin    = ID_FALSE;
+
+    sdiFailoverSuspend sFailoverSuspend;
     
     /* autocommit mode에서는 사용할 수 없다. */
     IDE_TEST_RAISE( isAutoCommit() == ID_TRUE, ERR_AUTOCOMMIT_MODE );
@@ -6331,11 +6371,23 @@ IDE_RC mmcSession::touchShardNode(UInt aNodeId)
         /* Nothing to do. */
     }
 
+    if ( aFailoverSuspendCmd != NULL )
+    {
+        sFailoverSuspend.set( getShardClientInfo(),
+                              aFailoverSuspendCmd );
+    }
+
     IDE_TEST( sdi::touchShardNode( &mQciSession,
                                    &mStatSQL,
                                    mmcTrans::getTransID(mTrans),
                                    aNodeId )
               != IDE_SUCCESS );
+
+    if ( aFailoverSuspendCmd != NULL )
+    {
+        sFailoverSuspend.unset( getShardClientInfo() );
+    }
+
 
     return IDE_SUCCESS;
 
@@ -6345,6 +6397,11 @@ IDE_RC mmcSession::touchShardNode(UInt aNodeId)
     }
     IDE_EXCEPTION_END;
 
+    if ( aFailoverSuspendCmd != NULL )
+    {
+        sFailoverSuspend.unset( getShardClientInfo() );
+    }
+
     return IDE_FAILURE;
 }
 
@@ -6352,7 +6409,7 @@ IDE_RC mmcSession::touchShardNode(UInt aNodeId)
 IDE_RC mmcSession::shardNodeConnectionReport( UInt              aNodeId, 
                                               UChar             aDestination )
 {
-    idBool sIsDummyBegin = ID_FALSE;
+    idBool sIsDummyBegin    = ID_FALSE;
 
     IDE_TEST_RAISE( isMetaNodeShardCli() != ID_TRUE, ERR_SHARD_META_CHANGE_BY_SHARDCLI );
 
@@ -6360,11 +6417,11 @@ IDE_RC mmcSession::shardNodeConnectionReport( UInt              aNodeId,
          ( sdi::isShardEnable() == ID_TRUE ) &&
          ( isShardUserSession() == ID_TRUE ) )
     {
-        (void)freeRemoteStatement( aNodeId, CMP_DB_FREE_DROP );
-
         if ( mQciSession.mQPSpecific.mClientInfo != NULL )
         {
             sdi::closeShardSessionByNodeId( &mQciSession,
+                                            getShardMetaNumber(),
+                                            getReceivedShardMetaNumber(),
                                             aNodeId,
                                             aDestination );
         }
@@ -6388,6 +6445,44 @@ IDE_RC mmcSession::shardNodeConnectionReport( UInt              aNodeId,
                                          ? ID_TRUE : ID_FALSE ),
                                        &mDatabaseLinkSession,
                                        mmcTrans::getSmiTrans(mTrans) );
+        }
+
+        IDE_TEST( mInfo.mDataNodeFailoverType.setClientConnectionStatus( aNodeId,
+                                                                         aDestination )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_SHARD_META_CHANGE_BY_SHARDCLI );
+    {
+        IDE_SET( ideSetErrorCode( mmERR_ABORT_MMI_NOT_IMPLEMENTED ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC mmcSession::shardNodeConnectionStatusReport( UInt              aNodeId, 
+                                                    UChar             aDestination )
+{
+    IDE_TEST_RAISE( isMetaNodeShardCli() != ID_TRUE, ERR_SHARD_META_CHANGE_BY_SHARDCLI );
+
+    if ( ( qci::getStartupPhase() == QCI_STARTUP_SERVICE ) &&
+         ( sdi::isShardEnable() == ID_TRUE ) &&
+         ( isShardUserSession() == ID_TRUE ) )
+    {
+        if ( mQciSession.mQPSpecific.mClientInfo != NULL )
+        {
+            sdi::closeShardSessionByNodeId( &mQciSession,
+                                            getShardMetaNumber(),
+                                            getReceivedShardMetaNumber(),
+                                            aNodeId,
+                                            aDestination );
         }
 
         IDE_TEST( mInfo.mDataNodeFailoverType.setClientConnectionStatus( aNodeId,
@@ -7006,55 +7101,14 @@ IDE_RC mmcSession::rebuildShardSession( ULong         aTargetSMN,
         sLastSMN = getShardMetaNumber();
     }
 
-    if ( getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT )
+    sTargetTrans = getTransForNonExecutionWithFix( &sLocked, aTrans );
+    if ( sTargetTrans != NULL )
     {
-        /* Non-Autocommit 일 경우 aTrans 는 사용하지 않고
-         * Session->mTrans 를 사용한다. */
-        sTargetTrans = getTransPtr();
-
-        if ( mmcTrans::isShareableTrans( sTargetTrans ) == ID_TRUE )
-        {
-            mmcTrans::fixSharedTrans( sTargetTrans, getSessionID() );
-            sLocked = ID_TRUE;
-
-            if ( mmcTrans::isSharableTransBegin( sTargetTrans ) == ID_TRUE )
-            {
-                sSmiTrans = &sTargetTrans->mSmiTrans;
-            }
-            else
-            {
-                sLocked = ID_FALSE;
-                mmcTrans::unfixSharedTrans( sTargetTrans, getSessionID() );
-
-                sSmiTrans = NULL;
-            }
-        }
-        else
-        {
-            /* No need to fix trans. */
-            if ( getTransBegin() == ID_TRUE )
-            {
-                sSmiTrans = &sTargetTrans->mSmiTrans;
-            }
-            else
-            {
-                sSmiTrans = NULL;
-            }
-        }
+        sSmiTrans = &sTargetTrans->mSmiTrans;
     }
     else
     {
-        /* Autocommit 일 경우 aTrans 를 사용한다. */
-        sTargetTrans = aTrans;
-
-        if ( sTargetTrans != NULL )
-        {
-            sSmiTrans = &sTargetTrans->mSmiTrans;
-        }
-        else
-        {
-            /* sSmiTrans = NULL */
-        }
+        /* sSmiTrans = NULL */
     }
 
     if ( ( getQciSession()->mQPSpecific.mFlag & QC_SESSION_SHARD_META_TOUCH_MASK ) ==
@@ -7070,21 +7124,13 @@ IDE_RC mmcSession::rebuildShardSession( ULong         aTargetSMN,
                                 SDI_REBUILD_SMN_DO_NOT_PROPAGATE )
               != IDE_SUCCESS );
 
-    if ( sLocked == ID_TRUE )
-    {
-        sLocked = ID_FALSE;
-        mmcTrans::unfixSharedTrans( sTargetTrans, getSessionID() );
-    }
+    unfixTransForNonExecution( &sLocked, sTargetTrans );
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
-    if ( sLocked == ID_TRUE )
-    {
-        sLocked = ID_FALSE;
-        mmcTrans::unfixSharedTrans( sTargetTrans, getSessionID() );
-    }
+    unfixTransForNonExecution( &sLocked, sTargetTrans );
 
     return IDE_FAILURE;
 }
@@ -7152,37 +7198,36 @@ void mmcSession::cleanupShardRebuildSession()
 {
     idBool sNodeRemoved = ID_FALSE;
 
-    if ( sdi::setFailoverSuspend( &mQciSession,
-                                  SDI_FAILOVER_SUSPEND_ALL,
-                                  sdERR_ABORT_FAILED_TO_PROPAGATE_SHARD_META_NUMBER )
-         == IDE_SUCCESS )
+    /* JHLEE_TODO test if failed propagateShardMetaNumber() */
+    if ( propagateShardMetaNumber() == IDE_SUCCESS )
     {
-        if ( propagateShardMetaNumber() == IDE_SUCCESS )
+        sdi::cleanupShardRebuildSession( &mQciSession, &sNodeRemoved );
+
+        if ( sNodeRemoved == ID_TRUE )
         {
-            sdi::cleanupShardRebuildSession( &mQciSession, &sNodeRemoved );
-
-            if ( sNodeRemoved == ID_TRUE )
-            {
-                clearShardDataInfoForRebuild();
-            }
-
-            clearLastShardMetaNumber();
-
-            if ( isShardClient() == ID_FALSE )
-            {
-                setReceivedShardMetaNumber( getShardMetaNumber() );
-            }
+            clearShardDataInfoForRebuild();
         }
 
-        (void)sdi::setFailoverSuspend( &mQciSession,
-                                       SDI_FAILOVER_SUSPEND_NONE );
+        clearLastShardMetaNumber();
+
+        if ( isShardClient() == ID_FALSE )
+        {
+            setReceivedShardMetaNumber( getShardMetaNumber() );
+        }
     }
 }
 
 IDE_RC mmcSession::propagateRebuildShardMetaNumber()
 {
+    sdiFailoverSuspend sFailoverSuspend;
+
+    sFailoverSuspend.set( getShardClientInfo(),
+                          SDI_FAILOVER_SUSPEND_ALL );
+
     IDE_TEST( sdi::propagateRebuildShardMetaNumber( &mQciSession )
               != IDE_SUCCESS );
+
+    sFailoverSuspend.unset( getShardClientInfo() );
 
     return IDE_SUCCESS;
 
@@ -7193,8 +7238,15 @@ IDE_RC mmcSession::propagateRebuildShardMetaNumber()
 
 IDE_RC mmcSession::propagateShardMetaNumber()
 {
+    sdiFailoverSuspend sFailoverSuspend;
+
+    sFailoverSuspend.set( getShardClientInfo(),
+                          SDI_FAILOVER_SUSPEND_ALL );
+
     IDE_TEST( sdi::propagateShardMetaNumber( &mQciSession )
               != IDE_SUCCESS );
+
+    sFailoverSuspend.unset( getShardClientInfo() );
 
     return IDE_SUCCESS;
 
@@ -7450,4 +7502,152 @@ sdiShardPartialExecType mmcSession::getStatementShardPartialExecTypeCallback( vo
 UInt mmcSession::checkSessionCountCallback()
 {
     return mmtSessionManager::getSessionCount();
+}
+
+void mmcSession::shardNodeRemovalCheckerCallback( void   * aMmSession,
+                                                  void   * aConnectInfo,
+                                                  idBool * aIsDroped )
+{
+    mmcSession * sMmSession = (mmcSession*)aMmSession;
+
+    IDE_DASSERT( sMmSession != NULL );
+
+    if ( sMmSession != NULL )
+    {
+        sMmSession->shardNodeRemovalChecker( aConnectInfo,
+                                             aIsDroped );
+    }
+}
+
+void mmcSession::shardNodeRemovalChecker( void   * aConnectInfo,
+                                          idBool * aIsDroped )
+{
+    sdiConnectInfo * sConnectInfo       = (sdiConnectInfo *)aConnectInfo;
+    mmcTransObj    * sTargetTrans       = NULL;
+    ULong            sNewSMN            = ID_ULONG(0);
+    mmcTransObj    * sTrans             = NULL;
+    smiTrans       * sSmiTrans          = NULL;
+    idBool           sLocked            = ID_FALSE;
+
+    *aIsDroped = ID_FALSE;
+
+    if ( detectShardMetaChange() == ID_TRUE )
+    {
+        sNewSMN = sdi::getSMNForDataNode();
+
+        if ( getExecutingStatement() != NULL )
+        {
+            sTrans = getExecutingStatement()->getExecutingTrans();
+        }
+
+        sTargetTrans = getTransForNonExecutionWithFix( &sLocked, sTrans );
+        if ( sTargetTrans != NULL )
+        {
+            sSmiTrans = &sTargetTrans->mSmiTrans;
+        }
+        else
+        {
+            /* sSmiTrans = NULL */
+        }
+
+        IDE_TEST( sdi::shardNodeRemovalChecker( sSmiTrans,
+                                                sNewSMN,
+                                                sConnectInfo,
+                                                aIsDroped )
+                  != IDE_SUCCESS );
+
+        unfixTransForNonExecution( &sLocked, sTargetTrans );
+    }
+    else
+    {
+        sNewSMN = getShardMetaNumber();
+
+        if ( sNewSMN > sConnectInfo->mNodeInfo.mSMN )
+        {
+            /* Resharding 이 이미 진행중인 경우
+             * SHARD NODE DROP or FAILOVER 에 의해
+             * 현재 SMN 보다 낮은 SMN 을 가지는 노드가 있을 수 있다.
+             */
+            *aIsDroped = ID_TRUE;
+        }
+    }
+
+    return;
+
+    IDE_EXCEPTION_END;
+
+    unfixTransForNonExecution( &sLocked, sTargetTrans );
+
+    return;
+}
+
+mmcTransObj * mmcSession::getTransForNonExecutionWithFix( idBool      * aIsLocked,
+                                                          mmcTransObj * aTrans )
+{
+    mmcTransObj * sTargetTrans = NULL;
+
+    * aIsLocked = ID_FALSE;
+
+    if ( getCommitMode() == MMC_COMMITMODE_NONAUTOCOMMIT )
+    {
+        /* Non-Autocommit 일 경우 aTrans 는 사용하지 않고
+         * Session->mTrans 를 사용한다. */
+        sTargetTrans = getTransPtr();
+
+        if ( mmcTrans::isShareableTrans( sTargetTrans ) == ID_TRUE )
+        {
+            mmcTrans::fixSharedTrans( sTargetTrans, getSessionID() );
+            * aIsLocked = ID_TRUE;
+
+            if ( mmcTrans::isSharableTransBegin( sTargetTrans ) == ID_TRUE )
+            {
+                /* Nothing to do */
+            }
+            else
+            {
+                * aIsLocked = ID_FALSE;
+                mmcTrans::unfixSharedTrans( sTargetTrans, getSessionID() );
+
+                sTargetTrans = NULL;
+            }
+        }
+        else
+        {
+            /* No need to fix trans. */
+            if ( getTransBegin() == ID_TRUE )
+            {
+                /* Nothing to do */
+            }
+            else
+            {
+                sTargetTrans = NULL;
+            }
+        }
+    }
+    else
+    {
+        /* Autocommit 일 경우 aTrans 를 사용한다. */
+        sTargetTrans = aTrans;
+
+        if ( sTargetTrans != NULL )
+        {
+            /* Nothing to do */
+        }
+        else
+        {
+            sTargetTrans = NULL;
+        }
+    }
+
+    return sTargetTrans;
+}
+
+void mmcSession::unfixTransForNonExecution( idBool      * aIsLocked,
+                                            mmcTransObj * aTrans )
+{
+    if ( * aIsLocked == ID_TRUE )
+    {
+        * aIsLocked = ID_FALSE;
+        mmcTrans::unfixSharedTrans( aTrans, getSessionID() );
+    }
 }

@@ -16398,7 +16398,7 @@ IDE_RC sdcRow::removeOldLobPage4Upt( idvSQL                       *aStatistics,
  *   aMtx        - [IN]  Mini Transaction
  *   aRow        - [IN]
  *   aLobDesc    - [OUT] ÀÐÀº Lob Descriptor
- *   aLobColSeqInRowPiece - [OUT]  XXX
+ *   aLobColSeqInRowPiece - [OUT] 
  *   aCTSlotIdx  - [OUT] CTS Slot Index
  **********************************************************************/
 IDE_RC sdcRow::getLobDesc4Write( idvSQL             * aStatistics,

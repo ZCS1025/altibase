@@ -248,7 +248,9 @@ IDE_RC sdfCalculate_SetShardProcedureClone( mtcNode*     aNode,
                   != IDE_SUCCESS );
 
         sdi::setShardMetaTouched( sStatement->session );
-                
+
+        sdf::setProcedureJobType();
+        
         IDE_TEST( sdiZookeeper::checkAllNodeAlive( &sIsAlive ) != IDE_SUCCESS );
 
         IDE_TEST_RAISE( sIsAlive != ID_TRUE, ERR_CLUSTER_STATE );

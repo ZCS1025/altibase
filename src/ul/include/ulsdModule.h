@@ -60,13 +60,10 @@ typedef SQLRETURN (*ulsdModuleMoreResultsFunc)(ulnFnContext *aFnContext,
                                                ulnStmt      *aStmt);
 typedef ulnStmt* (*ulsdModuleGetPreparedStmtFunc)(ulnStmt *aStmt);
 typedef void (*ulsdModuleOnCmErrorFunc)(ulnFnContext     *aFnContext,
-                                        ulnDbc           *aDbc,
                                         ulnErrorMgr      *aErrorMgr);
-typedef ACI_RC (*ulsdModuleUpdateNodeListFunc)(ulnFnContext  *aFnContext,
-                                               ulnDbc        *aDbc);
 typedef acp_bool_t (*ulsdModuleHasNoDataFunc)( ulnStmt * aStmt );
 
-typedef ACI_RC (*ulsdModuleNofityFailOverFunc)( ulnDbc       *aNodeDbc );
+typedef ACI_RC (*ulsdModuleNofityFailOverFunc)( ulnFnContext * aFnContext );
 
 typedef void (*ulsdModuleAlignDataNodeConnectionFunc)( ulnFnContext * aFnContext,
                                                        ulnDbc       * aNodeDbc );
@@ -128,7 +125,6 @@ struct ulsdModule
     ulsdModuleMoreResultsFunc                   ulsdModuleMoreResults;
     ulsdModuleGetPreparedStmtFunc               ulsdModuleGetPreparedStmt;
     ulsdModuleOnCmErrorFunc                     ulsdModuleOnCmError;
-    ulsdModuleUpdateNodeListFunc                ulsdModuleUpdateNodeList;
     ulsdModuleNofityFailOverFunc                ulsdModuleNotifyFailOver;
     ulsdModuleAlignDataNodeConnectionFunc       ulsdModuleAlignDataNodeConnection;
     ulsdModuleErrorCheckAndAlignDataNodeFunc    ulsdModuleErrorCheckAndAlignDataNode;
@@ -185,12 +181,13 @@ ulnStmt* ulsdModuleGetPreparedStmt(ulnStmt *aStmt);
 void ulsdModuleOnCmError(ulnFnContext     *aFnContext,
                          ulnDbc           *aDbc,
                          ulnErrorMgr      *aErrorMgr);
-ACI_RC ulsdModuleUpdateNodeList(ulnFnContext  *aFnContext,
-                                ulnDbc        *aDbc);
 
 acp_bool_t ulsdModuleHasNoData( ulnStmt * aStmt );
 
-ACI_RC ulsdModuleNotifyFailOver( ulnDbc       *aDbc );
+ACI_RC ulsdModuleNotifyFailOver( ulnFnContext * aFnContext );
+
+SQLRETURN ulsdModuleCheckShardMetaUpdate( ulnFnContext * aFnContext,
+                                          acp_bool_t   * aIsShardMetaChanged );
 
 void ulsdModuleAlignDataNodeConnection( ulnFnContext * aFnContext,
                                         ulnDbc       * aNodeDbc );

@@ -25,6 +25,7 @@
 #include <ulsdnFailover.h>
 #include <ulsdnLob.h>
 #include <ulsdnDistTxInfo.h>
+#include <ulsdnFailoverSuspend.h>
 
 #include <sqlcli.h>
 
@@ -328,12 +329,15 @@ void SQL_API SQLSetShardMetaNumber( SQLHDBC aConnectionHandle,
     ulnDbcSetShardMetaNumber( (ulnDbc *)aConnectionHandle, aShardMetaNumber );
 }
 
-SQLRETURN SQL_API SQLReconnect( SQLSMALLINT  HandleType,
-                                SQLHANDLE    InputHandle )
+SQLRETURN SQL_API SQLReconnect( SQLSMALLINT     HandleType,
+                                SQLHANDLE       InputHandle,
+                                const SQLCHAR * aCause )
 {
     ULN_TRACE( SQLReconnect );
 
-    return ulsdnReconnect( HandleType, InputHandle );
+    return ulsdnReconnect( HandleType,
+                           InputHandle,
+                           aCause );
 }
 
 SQLRETURN SQL_API SQLGetNeedFailover( SQLSMALLINT  HandleType,
@@ -346,16 +350,18 @@ SQLRETURN SQL_API SQLGetNeedFailover( SQLSMALLINT  HandleType,
 }
 
 
-void SQL_API SQLSetFailoverSuspend( SQLHDBC    aConnectionHandle,
-                                    SQLINTEGER aSuspendOnOff )
+void SQL_API SQLSetFailoverSuspend( SQLHDBC     aConnectionHandle,
+                                    SQLUINTEGER aSuspendOnOff )
 {
-    if ( aSuspendOnOff == 1 )
+    ulsdnFailoverSuspendState sFOState = (ulsdnFailoverSuspendState)aSuspendOnOff;
+
+    if ( aSuspendOnOff <  ULSDN_FAILOVER_SUSPEND_MAX )
     {
-        ulnDbcSetFailoverSuspendState( aConnectionHandle, ULN_FAILOVER_SUSPEND_ON_STATE );
+        ulsdnDbcSetFailoverSuspendStateWithoutBackup( aConnectionHandle, sFOState );
     }
     else
     {
-        ulnDbcSetFailoverSuspendState( aConnectionHandle, ULN_FAILOVER_SUSPEND_OFF_STATE );
+        ACE_DASSERT( 0 );
     }
 }
 
@@ -547,4 +553,11 @@ void SQL_API SQLSetStmtExecSeq( SQLHDBC      aConnectionHandle,
     ULN_TRACE(SQLSetStmtExecSeq);
     ulnDbcSetExecSeqForShardTx( (ulnDbc *)aConnectionHandle,
                                 (acp_uint32_t)aExecSequence );
+}
+
+SQLINTEGER SQL_API SQLCheckErrorIsConnectionLost( SQLHDBC aConnectionHandle )
+{
+    ULN_TRACE(SQLCheckErrorIsConnectionLost);
+
+    return (SQLINTEGER)ulsdnCheckConnectionLost( aConnectionHandle );
 }

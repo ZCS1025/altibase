@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdc.h 82630 2018-03-27 00:23:41Z kclee $
+ * $Id: qdc.h 91540 2021-08-26 08:11:23Z hykim $
  **********************************************************************/
 #ifndef _O_QDC_H_
 #define _O_QDC_H_  1
@@ -34,6 +34,7 @@ typedef enum qdcFeatureVersion
     QDC_OPTIMIZER_FEATURE_VERSION_6_3_1_0_1,
     QDC_OPTIMIZER_FEATURE_VERSION_6_5_1_0_0,
     QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
+    QDC_OPTIMIZER_FEATURE_VERSION_7_2_0_0_0,
     QDC_OPTIMIZER_FEATURE_VERSION_MAX
 } qdcFeatureVersion;
 
@@ -42,6 +43,7 @@ typedef struct qdcFeatureProperty
     SChar * mName;       // optimizer property name
     SChar * mOldValue;   // old value
     SChar * mNewValue;   // new value
+    qdcFeatureVersion    mOldVersion; // BUG-48959 pre-change old version
     qdcFeatureVersion    mVersion;    // enum for version compare
     qcPlanPropertyKind   mPlanName;   // enum for plan property
 } qdcFeatureProperty;

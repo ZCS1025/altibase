@@ -17,7 +17,7 @@
 
 /***********************************************************************
 
-* $Id: rpcManager.cpp 91413 2021-08-03 05:01:56Z lswhh $
+* $Id: rpcManager.cpp 91576 2021-09-02 06:39:41Z donghyun1 $
 
 ***********************************************************************/
 
@@ -2551,7 +2551,7 @@ IDE_RC rpcManager::createReplication( void        * aQcStatement )
             /* Nothing to do */
         }
     }
-
+    
     sIsSndLock = 0;
     IDE_ASSERT( mMyself->mSenderLatch.unlock() == IDE_SUCCESS );
 
@@ -3101,7 +3101,7 @@ IDE_RC rpcManager::deleteOnePartitionForDDL( void                * aQcStatement,
                                               aReplication,
                                               1 )
               != IDE_SUCCESS );
-
+    
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -3190,6 +3190,11 @@ IDE_RC rpcManager::dropPartition( void             * aQcStatement,
                                         NULL )
               != IDE_SUCCESS );
 
+    IDE_TEST( rpdCatalog::deleteReplTableOIDInUseNewOID( QCI_SMI_STMT( aQcStatement ),
+                                                         aReplication->mRepName,
+                                                         aSrcReplItem->mTableOID )  
+              != IDE_SUCCESS );     
+    
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -3254,6 +3259,24 @@ IDE_RC rpcManager::mergePartition( void             * aQcStatement,
                                         aDstPartInfo )
               != IDE_SUCCESS );
 
+    if ( aSrcPartInfo1->tableOID != aDstPartInfo->tableOID )
+    {    
+        IDE_TEST( rpdCatalog::insertReplTableOIDInUse( QCI_SMI_STMT( aQcStatement ), 
+                                                       aSrcReplItem1->mRepName,
+                                                       aSrcPartInfo1->tableOID,
+                                                       aDstPartInfo->tableOID )            
+              != IDE_SUCCESS )
+    }
+    
+    if ( aSrcPartInfo2->tableOID != aDstPartInfo->tableOID )
+    {  
+        IDE_TEST( rpdCatalog::insertReplTableOIDInUse( QCI_SMI_STMT( aQcStatement ), 
+                                                       aSrcReplItem2->mRepName,
+                                                       aSrcPartInfo2->tableOID,
+                                                       aDstPartInfo->tableOID )            
+                  != IDE_SUCCESS )
+    }
+    
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -3685,6 +3708,24 @@ IDE_RC rpcManager::splitPartition( void             * aQcStatement,
                                         aDstPartInfo2 )
               != IDE_SUCCESS );
 
+    if ( aSrcPartInfo->tableOID != aDstPartInfo1->tableOID )
+    {    
+        IDE_TEST( rpdCatalog::insertReplTableOIDInUse( QCI_SMI_STMT( aQcStatement ), 
+                                                       aDstReplItem1->mRepName,
+                                                       aSrcPartInfo->tableOID,
+                                                       aDstPartInfo1->tableOID )            
+              != IDE_SUCCESS )
+    }
+    
+    if ( aSrcPartInfo->tableOID != aDstPartInfo2->tableOID )
+    {  
+        IDE_TEST( rpdCatalog::insertReplTableOIDInUse( QCI_SMI_STMT( aQcStatement ), 
+                                                       aDstReplItem2->mRepName,
+                                                       aSrcPartInfo->tableOID,
+                                                       aDstPartInfo2->tableOID )            
+                  != IDE_SUCCESS )
+    }
+    
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -3946,6 +3987,7 @@ IDE_RC rpcManager::alterReplicationAddTable( void        * aQcStatement )
     smSCN             sSCN = SM_SCN_INIT;
     idBool            sIsEagerExist  = ID_FALSE;
     void            * sTableHandle;
+    UInt              sTableOIDInUseCount = 0;
 
     IDE_TEST( isEnabled() != IDE_SUCCESS );
 
@@ -3959,6 +4001,18 @@ IDE_RC rpcManager::alterReplicationAddTable( void        * aQcStatement )
                                      & sTableHandle) != IDE_SUCCESS );
     sTableOID = sTableInfo->tableOID;
 
+    idlOS::memset( &sReplications, 0, ID_SIZEOF(rpdReplications) );
+    // replication name
+    QCI_STR_COPY( sReplications.mRepName, sParseTree->replName );
+    
+    IDE_TEST( rpdCatalog::getReplTableOIDInUseCount( sSmiStmt,
+                                                     sReplications.mRepName,
+                                                     sTableInfo->tableOID,
+                                                     &sTableOIDInUseCount )
+            != IDE_SUCCESS );
+    
+    IDE_TEST_RAISE( sTableOIDInUseCount != 0, ERR_TABLEOID_IN_USE_EXIST );
+    
     /* 
      * PROJ-2453
      * DeadLock 걸리는 문제로 TableLock을 먼저 걸고 SendLock을 걸어야  함
@@ -3977,10 +4031,6 @@ IDE_RC rpcManager::alterReplicationAddTable( void        * aQcStatement )
 
     IDE_ASSERT(mMyself->mRecoveryMutex.lock(NULL /* idvSQL* */) == IDE_SUCCESS);
     sIsRecoLock = 1;
-
-    idlOS::memset( &sReplications, 0, ID_SIZEOF(rpdReplications) );
-    // replication name
-    QCI_STR_COPY( sReplications.mRepName, sParseTree->replName );
 
     IDE_TEST( mMyself->isRunningEagerByTableInfoInternal( aQcStatement,
                                                           sTableInfo,
@@ -4110,6 +4160,10 @@ IDE_RC rpcManager::alterReplicationAddTable( void        * aQcStatement )
     IDE_EXCEPTION( ERR_REPLICATION_DDL_EAGER_MODE )
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QDB_REPLICATION_DDL_EAGER_MODE ) );
+    }
+    IDE_EXCEPTION( ERR_TABLEOID_IN_USE_EXIST );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_TABLEOID_IN_USE_EXIST ) );
     }
     IDE_EXCEPTION_END;
 
@@ -6720,6 +6774,9 @@ IDE_RC rpcManager::dropReplication( void        * aQcStatement )
     //DELETE FROM SYS_REPL_recovery_infos_ WHERE REPLICATION_NAME = 'sRepName' 
     IDE_TEST(rpdCatalog::removeReplRecoveryInfos( sSmiStmt, sRepName ) != IDE_SUCCESS);
 
+    //DELETE FROM SYS_REPL_TABLE_OID_IN_USE_ WHERE REPLICATION_NAME = 'sRepName' 
+    IDE_TEST( rpdCatalog::deleteReplTableOIDInUseRepName( sSmiStmt, sRepName )!= IDE_SUCCESS );
+    
     /* PROJ-1915 DELETE FROM SYS_REPL_OFFLINE_DIR_ where REPLICATION_NAME ='sRepNam' */
     if((sMeta.mReplication.mOptions & RP_OPTION_OFFLINE_MASK) ==
        RP_OPTION_OFFLINE_SET)
@@ -10842,6 +10899,12 @@ IDE_RC rpcManager::deleteOneReplObject( void          * aQcStatement,
                                              ID_TRUE )
                           != IDE_SUCCESS );
 
+                IDE_TEST( rpdCatalog::deleteReplTableOIDInUseNewOID( QCI_SMI_STMT( aQcStatement ),
+                                                                     aReplName,
+                                                                     sPartInfo->tableOID )
+              
+                != IDE_SUCCESS );
+                
                 sReplItemCount++;
             }
             else
@@ -10860,9 +10923,14 @@ IDE_RC rpcManager::deleteOneReplObject( void          * aQcStatement,
                                                  sTempPartInfoList->partitionInfo,
                                                  ID_TRUE )
                               != IDE_SUCCESS );
-
+                    
+                    IDE_TEST( rpdCatalog::deleteReplTableOIDInUseNewOID( QCI_SMI_STMT( aQcStatement ),
+                                                                         aReplName,
+                                                                         sPartInfo->tableOID )
+                  
+                              != IDE_SUCCESS );
+                    
                     sReplItemCount++;
-
                 }
                 else
                 {
@@ -10886,7 +10954,13 @@ IDE_RC rpcManager::deleteOneReplObject( void          * aQcStatement,
                                      NULL,
                                      ID_FALSE )
                   != IDE_SUCCESS );
-
+        
+        IDE_TEST( rpdCatalog::deleteReplTableOIDInUseNewOID( QCI_SMI_STMT( aQcStatement ),
+                                                             aReplName,
+                                                             aTableInfo->tableOID )
+      
+                    != IDE_SUCCESS );
+   
         sReplItemCount++;
     }
 

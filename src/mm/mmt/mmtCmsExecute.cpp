@@ -1701,7 +1701,9 @@ IDE_RC mmtServiceThread::executeProtocol(cmiProtocolContext *aProtocolContext,
         {
             for (i = 0; i < sClientTouchNodeCount; i++)
             {
-                IDE_TEST(sSession->touchShardNode(sClientTouchNodeArr[i]) != IDE_SUCCESS);
+                IDE_TEST( sSession->touchShardNode( sClientTouchNodeArr[i],
+                                                    NULL )
+                          != IDE_SUCCESS);
             }
         }
     }

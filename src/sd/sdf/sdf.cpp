@@ -1185,7 +1185,7 @@ IDE_RC sdf::runRemoteQuery( qcStatement * aStatement,
                                               NULL,
                                               (SChar*)aSqlStr,
                                               (UInt) idlOS::strlen( aSqlStr ),
-                                              SDI_INTERNAL_OP_NORMAL,
+                                              SDI_INTERNAL_OP_SHARD_PKG,
                                               &sExecCount)
                   != IDE_SUCCESS );
 
@@ -1210,4 +1210,9 @@ IDE_RC sdf::runRemoteQuery( qcStatement * aStatement,
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
+}
+
+void sdf::setProcedureJobType()
+{
+    sdiZookeeper::procedureJob();
 }

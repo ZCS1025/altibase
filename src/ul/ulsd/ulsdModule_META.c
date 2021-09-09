@@ -156,8 +156,6 @@ SQLRETURN ulsdModuleExecute_META(ulnFnContext *aFnContext,
 #endif
     }
 
-    ulsdSetOnTransactionNodeIndex(aStmt->mParentDbc, sNodeDbcIndex);
-
 #if 0
     /* BUG-48384 정책변경으로 LIB Session으로는 보내지 않아도 된다.
                  (Shard, Solo Clone 프로시져)
@@ -177,6 +175,11 @@ SQLRETURN ulsdModuleExecute_META(ulnFnContext *aFnContext,
 #endif
 
     sNodeResult = ulsdExecuteNodes(aFnContext, aStmt);
+
+    ACE_DASSERT( sNodeResult == ULN_FNCONTEXT_GET_RC(aFnContext) );
+    ACI_TEST( SQL_SUCCEEDED(sNodeResult) == 0 );
+
+    ulsdSetOnTransactionNodeIndex(aStmt->mParentDbc, sNodeDbcIndex);
 
     return sNodeResult;
 
@@ -207,6 +210,9 @@ SQLRETURN ulsdModuleExecute_META(ulnFnContext *aFnContext,
         return SQL_ERROR;
     }
     ACI_EXCEPTION_END;
+
+    /* Revert change of value from ulsdNodeDecideStmt() -> ulsdNodeDecideStmtByValues() */
+    aStmt->mShardStmtCxt.mNodeDbcIndexCount = 0;
 
     ULN_TRACE_LOG(aFnContext, ULN_TRACELOG_LOW, NULL, 0,
             "%-18s| fail: %"ACI_INT32_FMT,
@@ -339,65 +345,23 @@ ulnStmt* ulsdModuleGetPreparedStmt_META(ulnStmt *aStmt)
 }
 
 void ulsdModuleOnCmError_META(ulnFnContext     *aFnContext,
-                              ulnDbc           *aDbc,
                               ulnErrorMgr      *aErrorMgr)
 {
-    ulsdDbc      *sShard = NULL;
-
-    (void)ulsdFODoSTF(aFnContext, aDbc, aErrorMgr);
-
-    if ( aDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_OFF )
-    {
-        sShard = aDbc->mShardDbcCxt.mShardDbc;
-        ulsdSetTouchedToAllNodes( sShard );
-    }
+    (void)ulsdFODoSTF(aFnContext, aErrorMgr);
 
     return;
 }
 
-ACI_RC ulsdModuleUpdateNodeList_META(ulnFnContext  *aFnContext,
-                                     ulnDbc        *aDbc)
+ACI_RC ulsdModuleNotifyFailOver_META( ulnFnContext * aFnContext )
 {
-    ACI_RC sRc;
+    ACI_RC sRc = ACI_SUCCESS;
 
-    /* BUG-47131 Stop shard META DBC failover. */
-    ulnDbcSetFailoverSuspendState( aDbc, ULN_FAILOVER_SUSPEND_ON_STATE );
-
-    sRc = ulsdUpdateNodeList(aFnContext, &(aDbc->mPtContext));
+    sRc = ulsdNotifyFailoverOnMeta( aFnContext );
     ACI_TEST( sRc != ACI_SUCCESS );
-
-    /* BUG-47131 Restore shard META DBC failover suspend status. */
-    ulnDbcSetFailoverSuspendState( aDbc, ULN_FAILOVER_SUSPEND_OFF_STATE );
 
     return sRc;
 
     ACI_EXCEPTION_END;
-
-    /* BUG-47131 Restore shard META DBC failover suspend status. */
-    ulnDbcSetFailoverSuspendState( aDbc, ULN_FAILOVER_SUSPEND_OFF_STATE );
-
-    return sRc;
-}
-
-ACI_RC ulsdModuleNotifyFailOver_META( ulnDbc *aDbc )
-{
-    ACI_RC sRc;
-
-    /* BUG-47131 Stop shard META DBC failover. */
-    ulnDbcSetFailoverSuspendState( aDbc, ULN_FAILOVER_SUSPEND_ON_STATE );
-
-    sRc = ulsdNotifyFailoverOnMeta( aDbc );
-    ACI_TEST( sRc != ACI_SUCCESS );
-
-    /* BUG-47131 Restore shard META DBC failover suspend status. */
-    ulnDbcSetFailoverSuspendState( aDbc, ULN_FAILOVER_SUSPEND_OFF_STATE );
-
-    return sRc;
-
-    ACI_EXCEPTION_END;
-
-    /* BUG-47131 Restore shard META DBC failover suspend status. */
-    ulnDbcSetFailoverSuspendState( aDbc, ULN_FAILOVER_SUSPEND_OFF_STATE );
 
     return sRc;
 }
@@ -611,7 +575,6 @@ ulsdModule gShardModuleMETA =
     ulsdModuleMoreResults_META,
     ulsdModuleGetPreparedStmt_META,
     ulsdModuleOnCmError_META,
-    ulsdModuleUpdateNodeList_META,
     ulsdModuleNotifyFailOver_META,
     ulsdModuleAlignDataNodeConnection_META,
     ulsdModuleErrorCheckAndAlignDataNode_META,

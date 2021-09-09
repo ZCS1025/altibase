@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpdMeta.h 91356 2021-07-27 06:07:52Z donghyun1 $
+ * $Id: rpdMeta.h 91576 2021-09-02 06:39:41Z donghyun1 $
  **********************************************************************/
 
 #ifndef _O_RPD_META_H_
@@ -285,6 +285,13 @@ typedef struct rpdRecoveryInfo
     smSN mReplicatedBeginSN;
     smSN mReplicatedCommitSN;
 } rpdRecoveryInfo;
+
+typedef struct rpdTableOIDInUse
+{
+    SChar   mRepName          [QC_MAX_NAME_LEN + 1];
+    ULong   mOldTableOID;     /* Old Table OID */
+    ULong   mTableOID;        /* Table OID */
+} rpdTableOIDInUse;
 
 extern "C" int
 rpdRecoveryInfoCompare( const void* aElem1, const void* aElem2 );

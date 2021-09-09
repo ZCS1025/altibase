@@ -322,7 +322,9 @@ IDE_RC sdfCalculate_SetShardTableSolo( mtcNode*     aNode,
                   != IDE_SUCCESS );
 
         sdi::setShardMetaTouched( sStatement->session );
-        
+
+        sdf::setProcedureJobType();
+                
         IDE_TEST( sdiZookeeper::checkAllNodeAlive( &sIsAlive )
                   != IDE_SUCCESS );
 
@@ -442,13 +444,6 @@ IDE_RC sdfCalculate_SetShardTableSolo( mtcNode*     aNode,
                   != IDE_SUCCESS );
     }
 
-    // revert job all remove
-    if ( sdiZookeeper::isExistRevertJob() == ID_TRUE )
-    {
-        (void) sdiZookeeper::removeRevertJob();
-        IDE_DASSERT( sdiZookeeper::isExistRevertJob() != ID_TRUE );
-    }
-    
     idlOS::snprintf( sSqlStr, SDF_QUERY_LEN,
                      "COMMIT " );
 
@@ -515,15 +510,6 @@ IDE_RC sdfCalculate_SetShardTableSolo( mtcNode*     aNode,
     IDE_EXCEPTION_END;
 
     IDE_PUSH();
-
-    if ( sdiZookeeper::isExistRevertJob() == ID_TRUE )
-    {
-        (void) sdiZookeeper::executeRevertJob( ZK_REVERT_JOB_REPL_ITEM_DROP );
-        (void) sdiZookeeper::executeRevertJob( ZK_REVERT_JOB_REPL_DROP );
-        (void) sdiZookeeper::executeRevertJob( ZK_REVERT_JOB_TABLE_ALTER );        
-        (void) sdiZookeeper::removeRevertJob();
-        IDE_DASSERT( sdiZookeeper::isExistRevertJob() != ID_TRUE );
-    }
 
     idlOS::snprintf( sSqlStr, SDF_QUERY_LEN,
                      "ROLLBACK " );
@@ -639,6 +625,9 @@ IDE_RC executeRemainDataToBackupTableSync( qcStatement    * aStatement,
 
     sState = 0;
     QC_SMI_STMT(aStatement) = sOldStmt;
+
+    // drop replication 되어 revert job에 등록된 replication revert query제거
+    sdiZookeeper::removeRevertJob();
 
     return IDE_SUCCESS;
     

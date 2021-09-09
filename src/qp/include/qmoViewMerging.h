@@ -116,6 +116,11 @@ public:
 
     static IDE_RC  doTransformForMultiDML( qcStatement  * aStatement,
                                            qmsQuerySet  * aQuerySet );
+
+    // PROJ-2749 compact with 조건 확인
+    static IDE_RC canMergedWithStmt( qcStatement   * aStatement, 
+                                     qmsParseTree  * aParseTree,
+                                     idBool        * aIsMerge );
 private:
 
     //------------------------------------------

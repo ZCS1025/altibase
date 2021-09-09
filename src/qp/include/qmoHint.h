@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmoHint.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmoHint.h 91627 2021-09-08 01:47:35Z ahra.cho $
  *
  * Description :
  *
@@ -332,7 +332,8 @@ typedef enum qmoViewOptMtrType
 {
     QMO_VIEW_OPT_MATERIALIZE_NOT_DEFINED = 0,
     QMO_VIEW_OPT_MATERIALIZE,
-    QMO_VIEW_OPT_NO_MATERIALIZE
+    QMO_VIEW_OPT_NO_MATERIALIZE,
+    QMO_VIEW_OPT_COMPACT_WITH
 }qmoViewOptMtrType;
 
 //-------------------------------------------

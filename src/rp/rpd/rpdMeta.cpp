@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: rpdMeta.cpp 91356 2021-07-27 06:07:52Z donghyun1 $
+ * $Id: rpdMeta.cpp 91576 2021-09-02 06:39:41Z donghyun1 $
  **********************************************************************/
 
 #include <idl.h>
@@ -4978,6 +4978,11 @@ IDE_RC rpdMeta::deleteOldMetaItem(smiStatement * aSmiStmt,
                                                      aItemOID )
               != IDE_SUCCESS );
 
+    IDE_TEST( rpdCatalog::deleteReplTableOIDInUseOldOID( aSmiStmt,
+                                                         aRepName,
+                                                         aItemOID )
+              != IDE_SUCCESS );
+    
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;

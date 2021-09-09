@@ -14,7 +14,7 @@
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 /***********************************************************************
- * $Id: sdo.h 90192 2021-03-12 02:01:03Z jayce.park $
+ * $Id: sdo.h 91579 2021-09-02 09:21:23Z andrew.shin $
  **********************************************************************/
 
 #ifndef _O_SDO_H_
@@ -110,6 +110,10 @@ public:
 
     static IDE_RC setShardStmtType( qcStatement * aStatement,
                                     qcStatement * aViewStatement );
+
+    /* BUG-48847 Non-deterministic for shard */
+    static IDE_RC analyzeStatementForKeyword( qcStatement * aStatement );
+
 private:
 
     /* */
@@ -167,5 +171,17 @@ private:
     /* */
     static IDE_RC setPrintInfoFromAnalyzeInfo( qcStatement    * aStatement,
                                                sdiAnalyzeInfo * aAnalyzeInfo );
+
+    /* BUG-48847 Non-deterministic for shard */
+    static IDE_RC analyzeQuerySetForKeyword( qcStatement * aStatement,
+                                             ULong         aSMN,
+                                             qmsQuerySet * aQuerySet );
+
+    static IDE_RC analyzeFromForKeyword( qcStatement * aStatement,
+                                         ULong         aSMN,
+                                         qmsFrom     * aFrom );
+
+    static IDE_RC raiseUnsupportedShardQueryError( sdiObjectInfo * aShardObjectInfo,
+                                                   ULong           aSMN );
 };
 #endif /* _O_SDO_H_ */

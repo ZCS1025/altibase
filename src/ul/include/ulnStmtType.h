@@ -69,6 +69,8 @@ enum ulnStmtKind
     ULN_STMT_MERGE,
     // BUG-42397 Ref Cursor Static SQL
     ULN_STMT_SELECT_FOR_CURSOR,
+    // BUG-48345 Lock procedure statement
+    ULN_STMT_LOCK_SP,
 
     //----------------------------------------------------
     //  DCL + SESSION + SYSTEM

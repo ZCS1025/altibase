@@ -278,43 +278,53 @@ IDE_RC sda::analyzeSelectCore( qcStatement * aStatement,
                                idBool        aIsSubKey )
 {
     /* TASK-7219 Shard Transformer Refactoring */
-    qcShardStmtType    sStmtType  = aStatement->myPlan->parseTree->stmtShard;
+    qcShardStmtType    sShardType  = aStatement->myPlan->parseTree->stmtShard;
     qmsParseTree     * sParseTree = (qmsParseTree * ) (aStatement->myPlan->parseTree );
     sdiShardAnalysis * sAnalysis  = NULL;
 
     /* BUG-45823 */
     increaseAnalyzeCount( aStatement );
 
+    /* BUG-48847 Non-deterministic for shard */
     /* TASK-7219 Shard Transformer Refactoring
      *  Shard 여부에 상관없이 수행되는
      *   DATA, META 키워드인 구문은 더이상 분석하지 않는다.
      */
-    switch ( sStmtType )
+    if ( ( sShardType == QC_STMT_SHARD_META )
+         ||
+         ( sShardType == QC_STMT_SHARD_DATA ) )
     {
-        case QC_STMT_SHARD_DATA:
-        case QC_STMT_SHARD_META:
-            IDE_TEST( allocAnalysis( aStatement,
-                                     &( sAnalysis ) )
-                      != IDE_SUCCESS );
+        IDE_TEST( allocAnalysis( aStatement,
+                                 &( sAnalysis ) )
+                  != IDE_SUCCESS );
 
-            sAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_SHARD_KEYWORD_EXISTS ] = ID_TRUE;
+        sAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_SHARD_KEYWORD_EXISTS ] = ID_TRUE;
 
-            if ( aIsSubKey == ID_FALSE )
-            {
-                sParseTree->querySet->mShardAnalysis = sAnalysis;
-                sParseTree->mShardAnalysis           = sAnalysis;
-            }
-            else
-            {
-                sParseTree->querySet->mShardAnalysis->mNext = sAnalysis;
-                sParseTree->mShardAnalysis->mNext           = sAnalysis;
-            }
+        if ( sShardType == QC_STMT_SHARD_META )
+        {
+            sAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_NODE_META_KEYWORD_EXISTS ] = ID_TRUE;
+        }
+        else
+        {
+            /* Nothing do to */
+        }
 
-            IDE_CONT( NORMAL_EXIT );
-            break;
+        if ( aIsSubKey == ID_FALSE )
+        {
+            sParseTree->querySet->mShardAnalysis = sAnalysis;
+            sParseTree->mShardAnalysis           = sAnalysis;
+        }
+        else
+        {
+            sParseTree->querySet->mShardAnalysis->mNext = sAnalysis;
+            sParseTree->mShardAnalysis->mNext           = sAnalysis;
+        }
 
-        default:
-            break;
+        IDE_CONT( NORMAL_EXIT );
+    }
+    else
+    {
+        /* Nothing do to */
     }
 
     /* BUG-48872 */
@@ -1073,7 +1083,6 @@ IDE_RC sda::setShardInfo4Subquery( qcStatement         * aStatement,
                 {
                     IDE_DASSERT( sSubqueryShardInfo->mSplitMethod == SDI_SPLIT_NONE );
                 }
-            
             }
             else if ( sOuterQueryShardInfo->mSplitMethod == SDI_SPLIT_SOLO )
             {
@@ -1950,6 +1959,30 @@ IDE_RC sda::analyzeSFWGHCore( qcStatement      * aStatement,
     qmsFrom    * sFrom             = NULL;
     idBool       sIsOneNodeSQL     = ID_TRUE;
     UInt         sDistKeyCount     = 0;
+    qmsTarget  * sTarget           = NULL;
+
+    /* BUG-48847 Non-deterministic for shard */
+    for ( sTarget  = aQuerySet->SFWGH->target;
+          sTarget != NULL;
+          sTarget  = sTarget->next )
+    {
+        IDE_TEST( setAnalysisFlag4NonDeterministic( aStatement,
+                                                    sTarget->targetColumn,
+                                                    &( aQuerySetAnalysis->mAnalysisFlag ) )
+                  != IDE_SUCCESS );
+    }
+
+    if ( aQuerySet->SFWGH->where != NULL )
+    {
+        IDE_TEST( setAnalysisFlag4NonDeterministic( aStatement,
+                                                    aQuerySet->SFWGH->where,
+                                                    &( aQuerySetAnalysis->mAnalysisFlag ) )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
 
     //------------------------------------------
     // Analyze FROM
@@ -2104,10 +2137,7 @@ IDE_RC sda::analyzeSFWGHCore( qcStatement      * aStatement,
     }
     else
     {
-        //------------------------------------------
-        // Shard table이 존재하지 않는 SFWGH
-        //------------------------------------------
-        aQuerySetAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NON_SHARD_OBJECT_EXISTS ] = ID_TRUE;
+        /* Nothing to do. */
     }
 
     /* TASK-7219 Shard Transformer Refactoring */
@@ -6856,7 +6886,6 @@ IDE_RC sda::setAnalysisFlag4ParseTree( qmsParseTree * aParseTree,
         /* Nothing to do. */
     }
 
-
     /* BUG-49088
      * TOP QUERY FLAG 에 SELECT FOR UPDATE 사용 여부를 설정한다.
      * Local table(non-shard table) records 에 대한 SELECT FOR UPDATE 의 경우에는 설정하지 않고,
@@ -6919,13 +6948,23 @@ IDE_RC sda::setAnalysisFlag4ParseTree( qmsParseTree * aParseTree,
         /* Nothing to do. */
     }
 
+    /* BUG-48847 Non-deterministic for shard */
+    if ( aParseTree->limit != NULL )
+    {
+        sShardAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_CLONE_NON_DETERMINISTIC ] = ID_TRUE;
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
+
     // Shard query 여부를 세팅한다.
     IDE_TEST( isShardQuery( &( sShardAnalysis->mAnalysisFlag ),
                             &( sShardAnalysis->mIsShardQuery ) )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
-    
+
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -7825,6 +7864,29 @@ IDE_RC sda::analyzeUpdateCore( qcStatement       * aStatement,
         }
     }
 
+    /* BUG-48847 Non-deterministic for shard */
+    if ( ( sAnalysis->mShardInfo.mSplitMethod == SDI_SPLIT_CLONE )
+         &&
+         ( sAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_CLONE_NON_DETERMINISTIC ] == ID_TRUE ) )
+    {
+        sAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NON_DETERMINISTIC_EXISTS ] = ID_TRUE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( ( sAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_NODE_META_KEYWORD_EXISTS ] == ID_TRUE )
+         ||
+         ( sAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_LOCAL_OBJECT_EXISTS ] == ID_TRUE ) )
+    {
+        sAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NON_SHARD_OBJECT_EXISTS ] = ID_TRUE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_UNSUPPORTED_SPLIT_METHOD )
@@ -7892,11 +7954,11 @@ IDE_RC sda::analyzeDeleteCore( qcStatement       * aStatement,
     //------------------------------------------
     // Analyze sub-query
     //------------------------------------------
-    IDE_TEST ( subqueryAnalysis4DML( aStatement,
-                                     aSMN,
-                                     sAnalysis,
-                                     aIsSubKey )
-               != IDE_SUCCESS );
+    IDE_TEST( subqueryAnalysis4DML( aStatement,
+                                    aSMN,
+                                    sAnalysis,
+                                    aIsSubKey )
+              != IDE_SUCCESS );
 
     //------------------------------------------
     // Check Limit
@@ -7933,6 +7995,29 @@ IDE_RC sda::analyzeDeleteCore( qcStatement       * aStatement,
         {
             IDE_RAISE( ERR_UNSUPPORTED_SPLIT_METHOD );
         }
+    }
+
+    /* BUG-48847 Non-deterministic for shard */
+    if ( ( sAnalysis->mShardInfo.mSplitMethod == SDI_SPLIT_CLONE )
+         &&
+         ( sAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_CLONE_NON_DETERMINISTIC ] == ID_TRUE ) )
+    {
+        sAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NON_DETERMINISTIC_EXISTS ] = ID_TRUE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( ( sAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_NODE_META_KEYWORD_EXISTS ] == ID_TRUE )
+         ||
+         ( sAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_LOCAL_OBJECT_EXISTS ] == ID_TRUE ) )
+    {
+        sAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NON_SHARD_OBJECT_EXISTS ] = ID_TRUE;
+    }
+    else
+    {
+        /* Nothing to do */
     }
 
     return IDE_SUCCESS;
@@ -8014,6 +8099,29 @@ IDE_RC sda::analyzeInsertCore( qcStatement       * aStatement,
     else
     {
         IDE_RAISE( ERR_INVALID_INSERTION_STMT_TYPE );
+    }
+
+    /* BUG-48847 Non-deterministic for shard */
+    if ( ( sAnalysis->mShardInfo.mSplitMethod == SDI_SPLIT_CLONE )
+         &&
+         ( sAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_CLONE_NON_DETERMINISTIC ] == ID_TRUE ) )
+    {
+        sAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NON_DETERMINISTIC_EXISTS ] = ID_TRUE;
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( ( sAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_NODE_META_KEYWORD_EXISTS ] == ID_TRUE )
+         ||
+         ( sAnalysis->mAnalysisFlag.mTopQueryFlag[ SDI_TQ_LOCAL_OBJECT_EXISTS ] == ID_TRUE ) )
+    {
+        sAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NON_SHARD_OBJECT_EXISTS ] = ID_TRUE;
+    }
+    else
+    {
+        /* Nothing to do */
     }
 
     return IDE_SUCCESS;
@@ -8271,7 +8379,14 @@ IDE_RC sda::setInsertSelectAnalysis( qcStatement      * aStatement,
                        == QTC_NODE_ISLEAF_EXIST )
                      ||
                      ( ( sSelectTarget->targetColumn->lflag & QTC_NODE_COLUMN_RID_MASK )
-                       == QTC_NODE_COLUMN_RID_EXIST ) )
+                       == QTC_NODE_COLUMN_RID_EXIST )
+                     /* BUG-48847 Non-deterministic for shard */
+                     ||
+                     ( ( sSelectTarget->targetColumn->lflag & QTC_NODE_SYSDATE_MASK )
+                       == QTC_NODE_SYSDATE_EXIST )
+                     ||
+                     ( ( sSelectTarget->targetColumn->lflag & QTC_NODE_LOOP_LEVEL_MASK )
+                       == QTC_NODE_LOOP_LEVEL_EXIST ) )
                 {
                     sPartialTransformable = ID_FALSE;
                 }
@@ -8571,12 +8686,12 @@ IDE_RC sda::subqueryAnalysis4DML( qcStatement      * aStatement,
                                   sdiShardAnalysis * aAnalysis,
                                   idBool             aIsSubKey )
 {
-    qciStmtType               sStmtType = aStatement->myPlan->parseTree->stmtKind;
-    qtcNode                 * sNode = NULL;
-    sdaSubqueryAnalysis     * sSubqueryAnalysis = NULL;
-    sdiAnalysisFlag         * sAnalysisFlag = NULL;
-    qmmValueNode            * sValues = NULL;
-    qmmSubqueries           * sSetSubqueries = NULL;
+    qciStmtType           sStmtType = aStatement->myPlan->parseTree->stmtKind;
+    qtcNode             * sNode = NULL;
+    sdaSubqueryAnalysis * sSubqueryAnalysis = NULL;
+    sdiAnalysisFlag     * sAnalysisFlag = NULL;
+    qmmValueNode        * sValues = NULL;
+    qmmSubqueries       * sSetSubqueries = NULL;
 
     sAnalysisFlag = &( aAnalysis->mAnalysisFlag );
 
@@ -8607,6 +8722,12 @@ IDE_RC sda::subqueryAnalysis4DML( qcStatement      * aStatement,
                     {
                         /* Nothing to do. */
                     }
+
+                    /* BUG-48847 Non-deterministic for shard */
+                    IDE_TEST( setAnalysisFlag4NonDeterministic( aStatement,
+                                                                sValues->value,
+                                                                sAnalysisFlag )
+                              != IDE_SUCCESS );
                 }
             }
             else
@@ -8638,6 +8759,12 @@ IDE_RC sda::subqueryAnalysis4DML( qcStatement      * aStatement,
                 {
                     /* Nothing to do. */
                 }
+
+                /* BUG-48847 Non-deterministic for shard */
+                IDE_TEST( setAnalysisFlag4NonDeterministic( aStatement,
+                                                            sNode,
+                                                            sAnalysisFlag )
+                          != IDE_SUCCESS );
             }
             else
             {
@@ -8663,6 +8790,12 @@ IDE_RC sda::subqueryAnalysis4DML( qcStatement      * aStatement,
                 {
                     /* Nothing to do. */
                 }
+
+                /* BUG-48847 Non-deterministic for shard */
+                IDE_TEST( setAnalysisFlag4NonDeterministic( aStatement,
+                                                            sValues->value,
+                                                            sAnalysisFlag )
+                              != IDE_SUCCESS );
             }
 
             for ( ;
@@ -8700,12 +8833,18 @@ IDE_RC sda::subqueryAnalysis4DML( qcStatement      * aStatement,
                 {
                     /* Nothing to do. */
                 }
+
+                /* BUG-48847 Non-deterministic for shard */
+                IDE_TEST( setAnalysisFlag4NonDeterministic( aStatement,
+                                                            sNode,
+                                                            sAnalysisFlag )
+                          != IDE_SUCCESS );
             }
             else
             {
                 /* Nothing to do. */
             }
-            
+
             break;
         case QCI_STMT_EXEC_PROC :
             break;
@@ -8722,7 +8861,7 @@ IDE_RC sda::subqueryAnalysis4DML( qcStatement      * aStatement,
                                          ID_FALSE, // aIsSelect
                                          aIsSubKey,
                                          sAnalysisFlag )
-                  != IDE_SUCCESS );      
+                  != IDE_SUCCESS );
     }
     else
     {
@@ -8740,7 +8879,7 @@ IDE_RC sda::subqueryAnalysis4DML( qcStatement      * aStatement,
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
-}                                 
+}
 
 IDE_RC sda::getKeyValueID4InsertValue( qcStatement     * aStatement,
                                        ULong             aSMN,
@@ -12113,6 +12252,19 @@ IDE_RC sda::setAnalysisFlag( qmsQuerySet * aQuerySet,
         /* Nothing to do */
     }
 
+    /* BUG-48847 Non-deterministic for shard */
+    if ( aQuerySet->mPreAnalysis != NULL )
+    {
+        IDE_TEST( mergeFlag( aQuerySet->mPreAnalysis->mAnalysisFlag.mTopQueryFlag,
+                             sAnalysisFlag->mTopQueryFlag,
+                             SDI_ANALYSIS_TOP_QUERY_FLAG_MAX )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_NULL_QUERYSET )
@@ -12530,6 +12682,89 @@ IDE_RC sda::setAnalysisFlag4PsmLob( qcStatement     * aStatement,
     {
         IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
                                   "sda::setAnalysisFlag4PsmLob",
+                                  "analysis flag is NULL" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* BUG-48847 Non-deterministic for shard */
+IDE_RC sda::setAnalysisFlag4NonDeterministic( qcStatement     * aStatement,
+                                              qtcNode         * aNode,
+                                              sdiAnalysisFlag * aAnalysisFlag )
+{
+    qtcNode * sNode = NULL;
+
+    IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
+    IDE_TEST_RAISE( aNode == NULL, ERR_NULL_NODE );
+    IDE_TEST_RAISE( aAnalysisFlag == NULL, ERR_NULL_FLAG );
+
+    if ( ( aNode->lflag & QTC_NODE_ROWNUM_MASK )
+         == QTC_NODE_ROWNUM_EXIST )
+    {
+        aAnalysisFlag->mNonShardFlag[ SDI_NON_DETERMINISTIC_EXISTS ] = ID_TRUE;
+    }
+    else if ( ( aNode->lflag & QTC_NODE_LOOP_LEVEL_MASK )
+              == QTC_NODE_LOOP_LEVEL_EXIST )
+    {
+        /* LOOP_LEVEL 컬럼이 사용되면 Non-Shard Plan 을 수행한다. */
+        aAnalysisFlag->mNonShardFlag[ SDI_NODE_TO_NODE_LOOP_EXISTS ] = ID_TRUE;
+    }
+    else if ( ( aNode->lflag & QTC_NODE_PROC_FUNCTION_MASK )
+              == QTC_NODE_PROC_FUNCTION_TRUE )
+    {
+        /* PSM Function 은 Local Object 로 동작한다. */
+        aAnalysisFlag->mTopQueryFlag[ SDI_TQ_LOCAL_OBJECT_EXISTS ] = ID_TRUE;
+    }
+    else if ( ( ( aNode->lflag & QTC_NODE_SEQUENCE_MASK )
+                == QTC_NODE_SEQUENCE_EXIST )
+              ||
+              ( ( aNode->lflag & QTC_NODE_COLUMN_RID_MASK )
+                == QTC_NODE_COLUMN_RID_EXIST )
+              ||
+              ( ( aNode->lflag & QTC_NODE_SYSDATE_MASK )
+                == QTC_NODE_SYSDATE_EXIST )
+              ||
+              ( ( aNode->lflag & QTC_NODE_VAR_FUNCTION_MASK )
+                == QTC_NODE_VAR_FUNCTION_EXIST )
+              ||
+              ( ( aNode->lflag & QTC_NODE_LEVEL_MASK )
+                == QTC_NODE_LEVEL_EXIST ) )
+    {
+        aAnalysisFlag->mTopQueryFlag[ SDI_TQ_CLONE_NON_DETERMINISTIC ] = ID_TRUE;
+    }
+    else
+    {
+        for ( sNode  = (qtcNode *)( aNode->node.arguments );
+              sNode != NULL;
+              sNode  = (qtcNode *)( sNode->node.next ) )
+        {
+            IDE_TEST( setAnalysisFlag4NonDeterministic( aStatement,
+                                                        sNode,
+                                                        aAnalysisFlag )
+                      != IDE_SUCCESS );
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_STATEMENT )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::setAnalysisFlag4NonDeterministic",
+                                  "statement is NULL" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_NODE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::setAnalysisFlag4NonDeterministic",
+                                  "node is NULL" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_FLAG )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sda::setAnalysisFlag4NonDeterministic",
                                   "analysis flag is NULL" ) );
     }
     IDE_EXCEPTION_END;

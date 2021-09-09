@@ -1,4 +1,4 @@
-# $Id: E_SD_US7ASCII.msg 91517 2021-08-24 01:25:47Z bethy $
+# $Id: E_SD_US7ASCII.msg 91539 2021-08-26 07:50:46Z mason.lee $
 #
 # Error Message File (used by genErrMsg)
 #
@@ -348,7 +348,7 @@ SECTION = 14
 # *Cause: Alternate shard node information is missing from external or internal network settings.
 # *Action: Verify the alternate host IP and port number of the shard node.
 
-315,sdERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE = Failover is not available.
+315,sdERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE = Failover is not available when performing <1%s> on remote node <0%s>.: <2%s>
 # *Cause: Failed to connect to shard library or coordinates.
 # *Action: Check the shard node status or network.
 

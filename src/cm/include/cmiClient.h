@@ -631,6 +631,12 @@ ACP_INLINE void cmNoEndianAssign8( acp_uint64_t* aDst, acp_uint64_t* aSrc)
 #define CMI_GET_CURSOR(aCtx) \
         ((aCtx)->mWriteBlock->mCursor)
 
+#define CMI_GET_READ_CURSOR(aCtx) \
+        ((aCtx)->mReadBlock->mCursor)
+
+#define CMI_SET_READ_CURSOR(aCtx , aPos) \
+        (((aCtx)->mReadBlock->mCursor) = (aPos))
+
 /*********************************************************/
 // proj_2160 cm_type removal
 // cmpHeaderRead is put here because of a compile error

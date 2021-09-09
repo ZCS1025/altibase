@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdnbModule.cpp 90899 2021-05-27 08:55:20Z jiwon.kim $
+ * $Id: sdnbModule.cpp 91592 2021-09-06 01:26:48Z emlee $
  **********************************************************************/
 
 /*********************************************************************
@@ -14410,6 +14410,7 @@ IDE_RC sdnbBTree::findInsertPos4Unique( idvSQL         * aStatistics,
     idvWeArgs              sWeArgs;
     sdnbConvertedKeyInfo   sConvertedKeyInfo;
     smiValue               sSmiValueList[SMI_MAX_IDX_COLUMNS];
+    SInt                   sState = 0;
 
     idlOS::memset( &sLeafSP, 0, ID_SIZEOF(sLeafSP) );
 
@@ -14570,11 +14571,23 @@ IDE_RC sdnbBTree::findInsertPos4Unique( idvSQL         * aStatistics,
         /* BUG-38216 detect hang on index module in abnormal state */
         IDE_TEST( iduCheckSessionEvent( aStatistics ) != IDE_SUCCESS );
 
+        IDV_WEARGS_SET( &sWeArgs,
+                        IDV_WAIT_INDEX_ENQ_DATA_ROW_LOCK_CONTENTION,
+                        0, /* WaitParam1 */
+                        0, /* WaitParam2 */
+                        0  /* WaitParam3 */ );
+
+        IDV_BEGIN_WAIT_EVENT( aStatistics, &sWeArgs );
+        sState = 1;
+
         IDE_TEST( smLayerCallback::waitForTrans( aTrans,
                                                  sWaitTID,
                                                  ((smcTableHeader *)aTable)->mSpaceID,
                                                  aInsertWaitTime )
                   != IDE_SUCCESS );
+
+        sState = 0;
+        IDV_END_WAIT_EVENT( aStatistics, &sWeArgs );
 
         *aIsRetry = ID_TRUE;
 
@@ -14790,6 +14803,11 @@ IDE_RC sdnbBTree::findInsertPos4Unique( idvSQL         * aStatistics,
         IDE_SET( ideSetErrorCode( smERR_ABORT_smnUniqueViolation ) );
     }
     IDE_EXCEPTION_END;
+
+    if ( sState != 0 )
+    {
+        IDV_END_WAIT_EVENT( aStatistics, &sWeArgs );
+    }
 
     return IDE_FAILURE;
 }

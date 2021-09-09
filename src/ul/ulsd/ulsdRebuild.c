@@ -23,8 +23,11 @@
 #include <ulnPrivate.h>
 
 #include <ulsdRebuild.h>
+#include <ulsdnFailover.h>
+#include <ulsdnFailoverSuspend.h>
 #include <smErrorCodeClient.h>
 #include <sdErrorCodeClient.h>
+#include <mmErrorCodeClient.h>
 
 
 static SQLRETURN ulsdPropagateRebuildShardMetaNumber( ulnDbc       * aMetaDbc,
@@ -41,52 +44,76 @@ static SQLRETURN ulsdPropagateRebuildShardMetaNumber( ulnDbc       * aMetaDbc,
     SQLRETURN      sErrorResult     = SQL_ERROR;
     acp_bool_t     sSuccess         = ACP_TRUE;
 
+    ulsdnFailoverSuspendBackup sBackup;
+    ulsdnClearFailoverSuspendBackup( &sBackup );
+
     sNewSMN = ulnDbcGetTargetShardMetaNumber( aMetaDbc );
+
+    ulsdnDbcSetFailoverSuspendState( aMetaDbc,
+                                     ULSDN_FAILOVER_SUSPEND_ALL,
+                                     &sBackup);
+    ulnDbcSetFailoverSuspendSkipError( aMetaDbc );
 
     for ( i = 0; i < sShard->mNodeCount; i++ )
     {
         sNodeDbc = sShard->mNodeInfo[i]->mNodeDbc;
         sSentSMN = ACP_MAX( ulnDbcGetSentShardMetaNumber( sNodeDbc ),
                             ulnDbcGetSentRebuildShardMetaNumber( sNodeDbc ) );
-        if ( ( sShard->mNodeInfo[i]->mSMN == sNewSMN ) &&
-             ( sNewSMN != sSentSMN ) )
+        if ( sNewSMN != sSentSMN )
         {
-            ACE_DASSERT( sNewSMN > sSentSMN );
-
-            ULN_FNCONTEXT_SET_RC( aFnContext, SQL_SUCCESS );
-
-            sNodeResult = ulsdSetConnectAttrNode( sShard->mNodeInfo[i]->mNodeDbc,
-                                                  ULN_PROPERTY_REBUILD_SHARD_META_NUMBER,
-                                                  (void *)sNewSMN );
-            if ( sNodeResult == SQL_SUCCESS )
+            if ( sShard->mNodeInfo[i]->mSMN == sNewSMN )
             {
-                ulnDbcSetSentRebuildShardMetaNumber( sShard->mNodeInfo[i]->mNodeDbc,
-                                                     sNewSMN );
+                ACE_DASSERT( sNewSMN > sSentSMN );
+
+                sNodeResult = ulsdSetConnectAttrNode( sNodeDbc,
+                                                      ULN_PROPERTY_REBUILD_SHARD_META_NUMBER,
+                                                      (void *)sNewSMN );
+
+                if ( sNodeResult == SQL_SUCCESS )
+                {
+                    ulnDbcSetSentRebuildShardMetaNumber( sNodeDbc,
+                                                         sNewSMN );
+                }
+                else if ( sNodeResult == SQL_SUCCESS_WITH_INFO )
+                {
+                    ulnDbcSetSentRebuildShardMetaNumber( sNodeDbc,
+                                                         sNewSMN );
+
+                    /* info의 전달 */
+                    ulsdNativeErrorToUlnError( aFnContext,
+                                               SQL_HANDLE_DBC,
+                                               (ulnObject *)sNodeDbc,
+                                               sShard->mNodeInfo[i],
+                                               (acp_char_t *)"SetConnectAtt(REBUILD_SHARD_META_NUMBER)" );
+
+                    sSuccessResult = sNodeResult;
+                }
+                else if ( sNodeResult == SQL_ERROR )
+                {
+                    ulsdNativeErrorToUlnError( aFnContext,
+                                               SQL_HANDLE_DBC,
+                                               (ulnObject *)sNodeDbc,
+                                               sShard->mNodeInfo[i],
+                                               (acp_char_t *)"SetConnectAtt(REBUILD_SHARD_META_NUMBER)");
+
+                    sErrorResult = sNodeResult;
+                    sSuccess = ACP_FALSE;
+                }
+                else
+                {
+                    sErrorResult = sNodeResult;
+                    sSuccess = ACP_FALSE;
+                }
             }
-            else if ( sNodeResult == SQL_SUCCESS_WITH_INFO )
+            else if ( sShard->mNodeInfo[i]->mSMN < sNewSMN )
             {
-                ulnDbcSetSentRebuildShardMetaNumber( sShard->mNodeInfo[i]->mNodeDbc,
-                                                     sNewSMN );
-
-                /* info의 전달 */
-                ulsdNativeErrorToUlnError( aFnContext,
-                                           SQL_HANDLE_DBC,
-                                           (ulnObject *)sShard->mNodeInfo[i]->mNodeDbc,
-                                           sShard->mNodeInfo[i],
-                                           (acp_char_t *)"SetConnectAtt(REBUILD_SHARD_META_NUMBER)" );
-
-                sSuccessResult = sNodeResult;
+                /* Node drop case.
+                 * Nothing to do */
             }
             else
             {
-                ulsdNativeErrorToUlnError( aFnContext,
-                                           SQL_HANDLE_DBC,
-                                           (ulnObject *)sShard->mNodeInfo[i]->mNodeDbc,
-                                           sShard->mNodeInfo[i],
-                                           (acp_char_t *)"SetConnectAtt(REBUILD_SHARD_META_NUMBER)");
-
-                sErrorResult = sNodeResult;
-                sSuccess = ACP_FALSE;
+                /* sShard->mNodeInfo[i]->mSMN > sNewSMN */
+                ACE_DASSERT( 0 );
             }
         }
         else
@@ -127,6 +154,9 @@ static SQLRETURN ulsdPropagateRebuildShardMetaNumber( ulnDbc       * aMetaDbc,
         }
     }
 
+    ulsdnDbcUnsetFailoverSuspendState( aMetaDbc,
+                                       &sBackup);
+
     ACI_TEST_RAISE( sSuccess == ACP_FALSE,
                     ERR_SEND_SHARD_META_NUMBER_FAIL );
 
@@ -139,6 +169,9 @@ static SQLRETURN ulsdPropagateRebuildShardMetaNumber( ulnDbc       * aMetaDbc,
         ULN_FNCONTEXT_SET_RC( aFnContext, sErrorResult );
     }
     ACI_EXCEPTION_END;
+
+    ulsdnDbcUnsetFailoverSuspendState( aMetaDbc,
+                                       &sBackup);
 
     return ULN_FNCONTEXT_GET_RC( aFnContext );
 }
@@ -157,56 +190,80 @@ static SQLRETURN ulsdPropagateShardMetaNumber( ulnDbc       * aMetaDbc,
     SQLRETURN      sErrorResult     = SQL_ERROR;
     acp_bool_t     sSuccess         = ACP_TRUE;
 
+    ulsdnFailoverSuspendBackup sBackup;
+    ulsdnClearFailoverSuspendBackup( &sBackup );
+
     sNewSMN = ulnDbcGetTargetShardMetaNumber( aMetaDbc );
+
+    ulsdnDbcSetFailoverSuspendState( aMetaDbc,
+                                     ULSDN_FAILOVER_SUSPEND_ALL,
+                                     &sBackup);
+    ulnDbcSetFailoverSuspendSkipError( aMetaDbc );
 
     for ( i = 0; i < sShard->mNodeCount; i++ )
     {
         sNodeDbc = sShard->mNodeInfo[i]->mNodeDbc;
         sSentSMN = ulnDbcGetSentShardMetaNumber( sNodeDbc );
 
-        if ( ( sShard->mNodeInfo[i]->mSMN == sNewSMN ) &&
-             ( sNewSMN != sSentSMN ) )
+        if ( sNewSMN != sSentSMN )
         {
-            ACE_DASSERT( sNewSMN > sSentSMN );
-
-            ULN_FNCONTEXT_SET_RC( aFnContext, SQL_SUCCESS );
-
-            sNodeResult = ulsdSetConnectAttrNode( sShard->mNodeInfo[i]->mNodeDbc,
-                                                  ULN_PROPERTY_SHARD_META_NUMBER,
-                                                  (void *)sNewSMN );
-            if ( sNodeResult == SQL_SUCCESS )
+            if ( sShard->mNodeInfo[i]->mSMN == sNewSMN )
             {
-                ulnDbcSetSentShardMetaNumber( sShard->mNodeInfo[i]->mNodeDbc,
+                ACE_DASSERT( sNewSMN > sSentSMN );
+
+                sNodeResult = ulsdSetConnectAttrNode( sNodeDbc,
+                                                      ULN_PROPERTY_SHARD_META_NUMBER,
+                                                      (void *)sNewSMN );
+
+                if ( sNodeResult == SQL_SUCCESS )
+                {
+                    ulnDbcSetSentShardMetaNumber( sNodeDbc,
+                                                  sNewSMN );
+                    ulnDbcSetShardMetaNumber( sNodeDbc,
                                               sNewSMN );
-                ulnDbcSetShardMetaNumber( sShard->mNodeInfo[i]->mNodeDbc,
-                                          sNewSMN );
+                }
+                else if ( sNodeResult == SQL_SUCCESS_WITH_INFO )
+                {
+                    ulnDbcSetSentShardMetaNumber( sNodeDbc,
+                                                  sNewSMN );
+                    ulnDbcSetShardMetaNumber( sNodeDbc,
+                                              sNewSMN );
+
+                    /* info의 전달 */
+                    ulsdNativeErrorToUlnError( aFnContext,
+                                               SQL_HANDLE_DBC,
+                                               (ulnObject *)sNodeDbc,
+                                               sShard->mNodeInfo[i],
+                                               (acp_char_t *)"SetConnectAtt(SHARD_META_NUMBER)" );
+
+                    sSuccessResult = sNodeResult;
+                }
+                else if ( sNodeResult == SQL_ERROR )
+                {
+                    ulsdNativeErrorToUlnError( aFnContext,
+                                               SQL_HANDLE_DBC,
+                                               (ulnObject *)sNodeDbc,
+                                               sShard->mNodeInfo[i],
+                                               (acp_char_t *)"SetConnectAtt(SHARD_META_NUMBER)");
+
+                    sErrorResult = sNodeResult;
+                    sSuccess = ACP_FALSE;
+                }
+                else
+                {
+                    sErrorResult = sNodeResult;
+                    sSuccess = ACP_FALSE;
+                }
             }
-            else if ( sNodeResult == SQL_SUCCESS_WITH_INFO )
+            else if ( sShard->mNodeInfo[i]->mSMN < sNewSMN )
             {
-                ulnDbcSetSentShardMetaNumber( sShard->mNodeInfo[i]->mNodeDbc,
-                                              sNewSMN );
-                ulnDbcSetShardMetaNumber( sShard->mNodeInfo[i]->mNodeDbc,
-                                          sNewSMN );
-
-                /* info의 전달 */
-                ulsdNativeErrorToUlnError( aFnContext,
-                                           SQL_HANDLE_DBC,
-                                           (ulnObject *)sShard->mNodeInfo[i]->mNodeDbc,
-                                           sShard->mNodeInfo[i],
-                                           (acp_char_t *)"SetConnectAtt(SHARD_META_NUMBER)" );
-
-                sSuccessResult = sNodeResult;
+                /* Node drop case.
+                 * Nothing to do */
             }
             else
             {
-                ulsdNativeErrorToUlnError( aFnContext,
-                                           SQL_HANDLE_DBC,
-                                           (ulnObject *)sShard->mNodeInfo[i]->mNodeDbc,
-                                           sShard->mNodeInfo[i],
-                                           (acp_char_t *)"SetConnectAtt(SHARD_META_NUMBER)");
-
-                sErrorResult = sNodeResult;
-                sSuccess = ACP_FALSE;
+                /* sShard->mNodeInfo[i]->mSMN > sNewSMN */
+                ACE_DASSERT( 0 );
             }
         }
         else
@@ -249,6 +306,9 @@ static SQLRETURN ulsdPropagateShardMetaNumber( ulnDbc       * aMetaDbc,
         }
     }
 
+    ulsdnDbcUnsetFailoverSuspendState( aMetaDbc,
+                                       &sBackup);
+
     ACI_TEST_RAISE( sSuccess == ACP_FALSE,
                     ERR_SEND_SHARD_META_NUMBER_FAIL );
 
@@ -262,6 +322,9 @@ static SQLRETURN ulsdPropagateShardMetaNumber( ulnDbc       * aMetaDbc,
     }
     ACI_EXCEPTION_END;
 
+    ulsdnDbcUnsetFailoverSuspendState( aMetaDbc,
+                                       &sBackup);
+
     return ULN_FNCONTEXT_GET_RC( aFnContext );
 }
 
@@ -270,7 +333,8 @@ static SQLRETURN ulsdUpdateShardSession( ulnDbc       * aMetaDbc,
                                          acp_bool_t     aSendRebuildSMN )
 {
     ACI_TEST( ulsdUpdateShardMetaNumber( aMetaDbc,
-                                         aFnContext )
+                                         aFnContext,
+                                         ULSD_CHECK_SHARD_META_UPDATE_CAUSED_BY_RESHARDING )
               != SQL_SUCCESS );
 
     if ( aMetaDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_OFF )
@@ -398,10 +462,10 @@ static void ulsdCheckErrorIsShardRetry( ulnStmt                * aStmt,
     acp_sint16_t    sRecNum         = 0;
     acp_sint32_t    sNativeError    = 0;
 
-    acp_sint32_t    sErrCnt_RebuilRetry = 0; 
-    acp_sint32_t    sErrCnt_StmtViewOld = 0;
-    acp_sint32_t    sErrCnt_SMNProp     = 0; 
-    acp_sint32_t    sErrCnt_Others      = 0; 
+    acp_sint32_t    sErrCnt_RebuilRetry    = 0; 
+    acp_sint32_t    sErrCnt_StmtViewOld    = 0;
+    acp_sint32_t    sErrCnt_SMNProp        = 0; 
+    acp_sint32_t    sErrCnt_Others         = 0; 
 
     /* Autocommit on + global transaction 이면서
      * 여러 참여 노드로 실행되는 구문은
@@ -411,7 +475,7 @@ static void ulsdCheckErrorIsShardRetry( ulnStmt                * aStmt,
     *aRetryType = ULSD_STMT_SHARD_RETRY_NONE;
 
     sDiagHeader = ulnGetDiagHeaderFromObject( &aStmt->mObj );
-    ulnDiagGetNumber( sDiagHeader, (acp_sint32_t *)&sDiagCount );
+    ulnDiagGetNumber( sDiagHeader, &sDiagCount );
 
     ACI_TEST_CONT( sDiagCount == 0,
                    EndOfFunction );
@@ -448,7 +512,7 @@ static void ulsdCheckErrorIsShardRetry( ulnStmt                * aStmt,
         else
         {
             /* PROJ-2745
-             * 위 에러 이외의 에러가 함께 발생하면 Rebuild Retry 하지 않는다.
+             * 위 에러 이외의 에러가 함께 발생하면 Statement Retry (by Statement Too Old) 하지 않는다.
              * */
             ++sErrCnt_Others;
         }
@@ -466,10 +530,10 @@ static void ulsdCheckErrorIsShardRetry( ulnStmt                * aStmt,
         {
             /* Rebuild event 를 우선한다.
              * Statement Too Old 에러가 발생했을때 Rebuild Retry 를 수행해도 된다.
-             * */
+             */
             *aRetryType = ULSD_STMT_SHARD_REBUILD_RETRY;
         }
-        else
+        else if ( sErrCnt_StmtViewOld != 0 )
         {
             /* Statement Too Old 에러 인 경우 */
             *aRetryType = ULSD_STMT_SHARD_VIEW_OLD_RETRY;
@@ -806,6 +870,13 @@ void ulsdApplyNodeInfo_RemoveOldSMN( ulnDbc  * aDbc )
     acp_uint64_t    sShardMetaNumber = 0;
     acp_uint16_t    i                = 0;
 
+    ulsdnFailoverSuspendBackup sBackup;
+    ulsdnClearFailoverSuspendBackup( &sBackup );
+
+    ulsdnDbcSetFailoverSuspendState( aDbc,
+                                     ULSDN_FAILOVER_SUSPEND_ALL,
+                                     &sBackup );
+
     sShardMetaNumber = ulnDbcGetTargetShardMetaNumber( sMetaDbc );
 
     sShard = sMetaDbc->mShardDbcCxt.mShardDbc;
@@ -827,5 +898,99 @@ void ulsdApplyNodeInfo_RemoveOldSMN( ulnDbc  * aDbc )
             ++i;
         }
     }
+
+    ulsdnDbcUnsetFailoverSuspendState( aDbc,
+                                       &sBackup);
+}
+
+SQLRETURN ulsdCheckShardMetaChangeFromServer( ulnFnContext * aFnContext,
+                                              acp_bool_t   * aIsSMNChanged )
+{
+    ulnFnContext   sNewFnContext;
+    ulnDbc       * sDbc     = NULL;
+    ulnDbc       * sMetaDbc = NULL;
+    SQLRETURN      sRc;
+    acp_uint64_t   sOldTargetSMN = 0UL;
+    acp_uint64_t   sNewTargetSMN = 0UL;
+
+    ulsdnFailoverSuspendBackup sBackup;
+    ulsdnClearFailoverSuspendBackup( &sBackup );
+
+    ULN_FNCONTEXT_GET_DBC( aFnContext, sDbc );
+
+    *aIsSMNChanged = ACP_FALSE;
+    sMetaDbc       = ulnDbcGetShardParentDbc( sDbc );
+    sOldTargetSMN  = ulnDbcGetTargetShardMetaNumber( sMetaDbc );
+
+    ULN_INIT_FUNCTION_CONTEXT( sNewFnContext, ULN_FID_RESHARD, sMetaDbc, ULN_OBJ_TYPE_DBC );
+
+    ulsdnDbcSetFailoverSuspendState( sMetaDbc,
+                                     ULSDN_FAILOVER_SUSPEND_ALL,
+                                     &sBackup);
+
+    sRc = ulsdUpdateShardMetaNumber( sMetaDbc,
+                                     &sNewFnContext,
+                                     ULSD_CHECK_SHARD_META_UPDATE_CAUSED_BY_FAILOVER );
+
+    ulsdnDbcUnsetFailoverSuspendState( sMetaDbc,
+                                       &sBackup);
+
+    ACI_TEST_RAISE( SQL_SUCCEEDED( sRc ) == 0,
+                    ERR_UPDATE_SHARD_META_NUMBER );
+
+    sNewTargetSMN = ulnDbcGetTargetShardMetaNumber( sMetaDbc );
+
+    if ( sNewTargetSMN > sOldTargetSMN )
+    {
+        *aIsSMNChanged = ACP_TRUE;
+    }
+
+    return sRc;
+
+    ACI_EXCEPTION( ERR_UPDATE_SHARD_META_NUMBER )
+    {
+        ULN_FNCONTEXT_SET_RC( aFnContext, sRc );
+    }
+    ACI_EXCEPTION_END;
+
+    return sRc;
+}
+
+SQLRETURN ulsdCheckFailoverAvailable( ulnFnContext * aFnContext,
+                                      acp_bool_t   * aIsNodeDroped )
+{
+    ulnDbc       * sDbc     = NULL;
+    SQLRETURN      sRc;
+    acp_bool_t     sIsSMNChanged = ACP_FALSE;
+    acp_bool_t     sIsNodeDrop   = ACP_FALSE;
+
+    ULN_FNCONTEXT_GET_DBC( aFnContext, sDbc );
+
+    * aIsNodeDroped = ACP_FALSE;
+
+    ACE_DASSERT( sDbc->mShardDbcCxt.mParentDbc != NULL );
+
+    if ( sDbc->mShardDbcCxt.mParentDbc != NULL )
+    {
+        sRc = ulsdCheckShardMetaChangeFromServer( aFnContext, &sIsSMNChanged );
+
+        ACI_TEST( SQL_SUCCEEDED( sRc ) == 0 );
+
+        if ( sIsSMNChanged == ACP_TRUE )
+        {
+            ulsdnCheckShardNodeRemoved( aFnContext, &sIsNodeDrop );
+
+            if ( sIsNodeDrop == ACP_TRUE )
+            {
+                * aIsNodeDroped = ACP_TRUE;
+            }
+        }
+    }
+
+    return sRc;
+
+    ACI_EXCEPTION_END;
+
+    return sRc;
 }
 

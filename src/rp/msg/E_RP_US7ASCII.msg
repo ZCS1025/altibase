@@ -21,7 +21,7 @@
 # 브랜치에서 에러코드를 할당받으시면 안됩니다.
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
-# Last Number = 438
+# Last Number = 439
 
 SECTION = 6
 
@@ -2610,6 +2610,12 @@ SECTION = 6
 #   - Offline ALA Sender read DDL log.
 # *Action:
 #   - After executing DDL on the target DB, Offline Adapter should be executed again.
+
+439, rpERR_ABORT_TABLEOID_IN_USE_EXIST = ADD TABLE operation has failed because TABLE OID of this table is included in replication gap.
+# *Cause:
+#   - Reused TABLE OID is included in replication gap.
+# *Action:
+#   - Resolve the replication gap before operating ADD TABLE query.
 
 INTERNAL_TRACE_MESSAGE_BEGIN
 

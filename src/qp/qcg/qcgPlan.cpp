@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcgPlan.cpp 91102 2021-06-30 04:35:30Z jayce.park $
+ * $Id: qcgPlan.cpp 91627 2021-09-08 01:47:35Z ahra.cho $
  **********************************************************************/
 
 #include <qc.h>
@@ -838,6 +838,12 @@ void qcgPlan::registerPlanProperty( qcStatement        * aStatement,
                 QCG_REGISTER_PLAN_PROPERTY( mGlobalTransactionLevelRef,
                                             mGlobalTransactionLevel,
                                             QCG_GET_SESSION_GTX_LEVEL( aStatement ) );
+                break;
+                /* PROJ-2749 */
+            case PLAN_PROPERTY_OPTIMIZER_WITH_VIEW:
+                QCG_REGISTER_PLAN_PROPERTY( mOptimizerWithViewRef,
+                                            mOptimizerWithView,
+                                            QCU_OPTIMIZER_WITH_VIEW );
                 break;
             default:
                 IDE_DASSERT( 0 );
@@ -2107,6 +2113,11 @@ IDE_RC qcgPlan::isMatchedPlanProperty( qcStatement    * aStatement,
                                mGlobalTransactionLevel,
                                QCG_GET_SESSION_GTX_LEVEL( aStatement ) );
 
+    /* PROJ-2749 */
+    QCG_MATCHED_PLAN_PROPERTY( mOptimizerWithViewRef,
+                               mOptimizerWithView,
+                               QCU_OPTIMIZER_WITH_VIEW );
+
     ////////////////////////////////////////////////////////////////////
     // QCG_MATCHED_PLAN_PROPERTY 매크로로 체크할수 없는 경우
     ////////////////////////////////////////////////////////////////////
@@ -2683,6 +2694,11 @@ IDE_RC qcgPlan::rebuildPlanProperty( qcStatement    * aStatement,
     QCG_REBUILD_PLAN_PROPERTY( mGlobalTransactionLevelRef,
                                mGlobalTransactionLevel,
                                QCG_GET_SESSION_GTX_LEVEL( aStatement ) );    
+
+    /* PROJ-2749 */
+    QCG_REBUILD_PLAN_PROPERTY( mOptimizerWithViewRef,
+                               mOptimizerWithView,
+                               QCU_OPTIMIZER_WITH_VIEW );
 
     ////////////////////////////////////////////////////////////////////
     // QCG_REBUILD_PLAN_PROPERTY 매크로로 체크할수 없는 경우

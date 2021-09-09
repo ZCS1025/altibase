@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcm.cpp 90270 2021-03-21 23:20:18Z bethy $
+ * $Id: qcm.cpp 91576 2021-09-02 06:39:41Z donghyun1 $
  **********************************************************************/
 
 #include <idl.h>
@@ -131,6 +131,10 @@ const void * gQcmReplOfflineDirsIndex [QCM_MAX_META_INDICES];
 
 const void * gQcmReplItemReplaceHistory;
 const void * gQcmReplItemReplaceHistoryIndex [ QCM_MAX_META_INDICES ];
+
+/* BUG-48603 TableOID in use */
+const void * gQcmReplTableOIDInUse;
+const void * gQcmReplTableOIDInUseIndex [QCM_MAX_META_INDICES];
 
 /* PROJ-2422 srid */
 const void * gQcmGeometries;
@@ -334,6 +338,9 @@ void qcm::initializeGlobalVariables( const void * aTable )
     gQcmReplRecoveryInfos     = NULL;
     
     gQcmReplItemReplaceHistory       = NULL;
+    
+    /* BUG-48603 TableOID in use */
+    gQcmReplTableOIDInUse     = NULL; 
 #endif
 
     gQcmPrivileges            = NULL;
@@ -416,6 +423,9 @@ void qcm::initializeGlobalVariables( const void * aTable )
         gQcmReplOfflineDirsIndex[i]       = NULL;
         
         gQcmReplItemReplaceHistoryIndex[i]       = NULL;
+        
+        /* BUG-48603 TableOID in use */
+        gQcmReplTableOIDInUseIndex[i]     = NULL;
 #endif
 
         gQcmProceduresIndex[i]            = NULL;
@@ -918,6 +928,7 @@ IDE_RC qcm::initMetaHandles(  smiStatement * aSmiStmt,
     IDE_TEST( qcm::getMetaTable( QCM_REPL_ITEM_REPLACE_HISTORY,
                                  & gQcmReplItemReplaceHistory,
                                  aSmiStmt ) != IDE_SUCCESS );
+
 #endif
 
     IDE_TEST( qcm::getMetaTable( QCM_PRIVILEGES,
@@ -1032,6 +1043,11 @@ IDE_RC qcm::initMetaHandles(  smiStatement * aSmiStmt,
     IDE_TEST( qcm::getMetaTable( QCM_GEOMETRIES,
                                  &gQcmGeometries,
                                  aSmiStmt ) != IDE_SUCCESS );
+
+    /* BUG-48603 TableOID in use */
+    IDE_TEST( qcm::getMetaTable( QCM_REPL_TABLE_OID_IN_USE,
+                                 &gQcmReplTableOIDInUse,
+                                 aSmiStmt ) != IDE_SUCCESS ); 
 
     //-------------------------------------------
     // get index handle
@@ -1230,6 +1246,10 @@ IDE_RC qcm::initMetaHandles(  smiStatement * aSmiStmt,
     IDE_TEST( getMetaIndex( gQcmGeometriesIndex,
                             gQcmGeometries ) != IDE_SUCCESS );
     
+    /* BUG-48603 TableOID in use */
+    IDE_TEST( getMetaIndex( gQcmReplTableOIDInUseIndex,
+                            gQcmReplTableOIDInUse ) != IDE_SUCCESS);  
+            
     // PROJ-1488 Altibase Spatio-Temporal DBMS
     for ( i = 0; i < gExternModule.mCnt; i++ )
     {

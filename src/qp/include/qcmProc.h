@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcmProc.h 86373 2019-11-19 23:12:16Z khkwak $
+ * $Id: qcmProc.h 91584 2021-09-03 07:55:16Z khkwak $
  **********************************************************************/
 
 #ifndef _O_QCM_PROC_H_
@@ -47,6 +47,14 @@ typedef struct qcmProcedures
     qsOID        procOID;
     SChar        procName[ QC_MAX_OBJECT_NAME_LEN + 1 ] ;
 } qcmProcedures;
+
+// BUG-48345 Lock procedure statement
+// Get procedure OID and type
+typedef struct qcmProcType
+{
+    qsOID procOID;
+    UInt  objType;
+} qcmProcType;
 
 #define QCM_MAX_PROC_LEN (100)
 #define QCM_MAX_PROC_LEN_STR "100"
@@ -111,7 +119,26 @@ public:
          SChar           * aProcName,
          SInt              aProcNameSize,
          qsOID           * aProcOID );
+ 
+     // BUG-48345 Lock procedure statement
+     static IDE_RC getProcExistWithEmptyByName(
+                   qcStatement     * aStatement,
+                   UInt              aUserID,
+                   qcNamePosition    aProcName,
+                   qsOID           * aProcOID,
+                   UInt            * aObjType,
+                   smSCN           * aProcSCN );
     
+     // BUG-48345 Lock procedure statement
+     static IDE_RC getProcExistWithEmptyByNamePtr(
+                   qcStatement     * aStatement,
+                   UInt              aUserID,
+                   SChar           * aProcName,
+                   SInt              aProcNameSize,
+                   qsOID           * aProcOID,
+                   UInt            * aObjType,
+                   smSCN           * aProcSCN );
+   
     static IDE_RC procUpdateStatus(
                   qcStatement         * aStatement,
                   qsOID                 aProcOID,

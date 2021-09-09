@@ -330,13 +330,6 @@ IDE_RC sdfCalculate_SetShardSoloGlobal( mtcNode*     aNode,
 
     *(mtdIntegerType*)aStack[0].value = 0;
 
-    // revert job all remove
-    if ( sdiZookeeper::isExistRevertJob() == ID_TRUE )
-    {
-        (void) sdiZookeeper::removeRevertJob();
-        IDE_DASSERT( sdiZookeeper::isExistRevertJob() != ID_TRUE );
-    }
-
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERR_CLUSTER_STATE )
@@ -414,12 +407,6 @@ IDE_RC sdfCalculate_SetShardSoloGlobal( mtcNode*     aNode,
             break;
     }
 
-    if ( sdiZookeeper::isExistRevertJob() == ID_TRUE )
-    {
-        (void) sdiZookeeper::executeRevertJob( ZK_REVERT_JOB_REPL_ITEM_DROP );
-        (void) sdiZookeeper::removeRevertJob();
-        IDE_DASSERT( sdiZookeeper::isExistRevertJob() != ID_TRUE );
-    }
     IDE_POP();
     
     return IDE_FAILURE;

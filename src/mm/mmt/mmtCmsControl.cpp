@@ -395,6 +395,7 @@ IDE_RC mmtServiceThread::shardNodeReport( cmiProtocolContext *aProtocolContext,
     switch( sType )
     {
         case CMP_DB_SHARD_NODE_CONNECTION_REPORT:
+        case CMP_DB_SHARD_NODE_STATUS:
             CMI_RD4( aProtocolContext, &sNodeId );
             CMI_RD1( aProtocolContext, sDestination );
             break;
@@ -421,6 +422,12 @@ IDE_RC mmtServiceThread::shardNodeReport( cmiProtocolContext *aProtocolContext,
 
         case CMP_DB_SHARD_NODE_TRANSACTION_BROKEN_REPORT:
             IDE_TEST( sSession->shardNodeTransactionBrokenReport() != IDE_SUCCESS );
+            break;
+
+        case CMP_DB_SHARD_NODE_STATUS:
+            IDE_TEST( sSession->shardNodeConnectionStatusReport( sNodeId,
+                                                                 sDestination )
+                      != IDE_SUCCESS );
             break;
 
         default:

@@ -249,15 +249,21 @@ static ACI_RC ulnDrvConnInitialPropertySet(ulnFnContext *aFnContext, ulnPtContex
 
     /* BUG-46090 Meta Node SMN ÀüÆÄ */
     /* ULN_PROPERTY_SHARD_META_NUMBER */
-    if ( sDbc->mShardDbcCxt.mParentDbc != NULL )
+    switch ( sDbc->mShardDbcCxt.mShardSessionType )
     {
-        sSMN = ACP_MAX( sDbc->mShardDbcCxt.mShardMetaNumber,
-                        sDbc->mShardDbcCxt.mParentDbc->mShardDbcCxt.mTargetShardMetaNumber );
-    }
-    else
-    {
-        sSMN = ACP_MAX( sDbc->mShardDbcCxt.mShardMetaNumber,
-                        sDbc->mShardDbcCxt.mTargetShardMetaNumber );
+        case ULSD_SESSION_TYPE_USER:
+            sSMN = sDbc->mShardDbcCxt.mShardMetaNumber;
+            break;
+
+        case ULSD_SESSION_TYPE_COORD:
+            sSMN = ACP_MAX( sDbc->mShardDbcCxt.mShardMetaNumber,
+                            sDbc->mShardDbcCxt.mTargetShardMetaNumber );
+            break;
+
+        case ULSD_SESSION_TYPE_LIB:
+            sSMN = ACP_MAX( sDbc->mShardDbcCxt.mShardMetaNumber,
+                            sDbc->mShardDbcCxt.mParentDbc->mShardDbcCxt.mTargetShardMetaNumber );
+            break;
     }
 
     if ( sSMN != 0 )

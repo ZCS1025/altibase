@@ -362,7 +362,9 @@ IDE_RC sdfCalculate_SetShardTableShardKey( mtcNode*     aNode,
                   != IDE_SUCCESS );
 
         sdi::setShardMetaTouched( sStatement->session );
-        
+
+        sdf::setProcedureJobType();
+    
         IDE_TEST( sdiZookeeper::checkAllNodeAlive( &sIsAlive )
                   != IDE_SUCCESS );
 
@@ -525,13 +527,6 @@ IDE_RC sdfCalculate_SetShardTableShardKey( mtcNode*     aNode,
         }
     }
     
-    // revert job all remove
-    if ( sdiZookeeper::isExistRevertJob() == ID_TRUE )
-    {
-        (void) sdiZookeeper::removeRevertJob();
-        IDE_DASSERT( sdiZookeeper::isExistRevertJob() != ID_TRUE );
-    }
-    
     idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                      "COMMIT " );
 
@@ -594,15 +589,6 @@ IDE_RC sdfCalculate_SetShardTableShardKey( mtcNode*     aNode,
     IDE_EXCEPTION_END;
 
     IDE_PUSH();
-
-    if ( sdiZookeeper::isExistRevertJob() == ID_TRUE )
-    {
-        (void) sdiZookeeper::executeRevertJob( ZK_REVERT_JOB_REPL_ITEM_DROP );
-        (void) sdiZookeeper::executeRevertJob( ZK_REVERT_JOB_REPL_DROP );
-        (void) sdiZookeeper::executeRevertJob( ZK_REVERT_JOB_TABLE_ALTER );        
-        (void) sdiZookeeper::removeRevertJob();
-        IDE_DASSERT( sdiZookeeper::isExistRevertJob() != ID_TRUE );
-    }
     
     idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
                      "ROLLBACK " );
@@ -722,6 +708,9 @@ IDE_RC executeRemainDataToBackupTableSync( qcStatement    * aStatement,
     sState = 0;
     QC_SMI_STMT(aStatement) = sOldStmt;
 
+    // drop replication 되어 revert job에 등록된 replication revert query제거
+    sdiZookeeper::removeRevertJob();
+                    
     return IDE_SUCCESS;
     
     IDE_EXCEPTION_END;
@@ -868,11 +857,12 @@ IDE_RC executeReplicationFunction( qcStatement            * aStatement,
                               sPartAndNodeIterator != NULL;
                               sPartAndNodeIterator = sPartAndNodeIterator->mNext )
                         {                
-                            if ( idlOS::strMatch(
+                            if ( ( sSendFoundReplicaSetInfo.mCount > 0 ) &&
+                                 ( idlOS::strMatch(
                                      sPartAndNodeIterator->mArgument2,
                                      idlOS::strlen(sPartAndNodeIterator->mArgument2),
                                      sSendFoundReplicaSetInfo.mReplicaSets[0].mPrimaryNodeName,
-                                     idlOS::strlen(sSendFoundReplicaSetInfo.mReplicaSets[0].mPrimaryNodeName)) == 0 )
+                                     idlOS::strlen(sSendFoundReplicaSetInfo.mReplicaSets[0].mPrimaryNodeName)) == 0 ) )
                             {
                                 IDE_TEST( sdf::searchReplicaSet( aStatement,
                                                                  aNodeInfoList,
@@ -893,11 +883,12 @@ IDE_RC executeReplicationFunction( qcStatement            * aStatement,
                               sPartAndNodeIterator != NULL;
                               sPartAndNodeIterator = sPartAndNodeIterator->mNext )
                         {                
-                            if ( idlOS::strMatch(
+                            if ( ( sRecvFoundReplicaSetInfo.mCount > 0 ) &&
+                                 ( idlOS::strMatch(
                                      sPartAndNodeIterator->mArgument2,
                                      idlOS::strlen(sPartAndNodeIterator->mArgument2),
                                      sRecvFoundReplicaSetInfo.mReplicaSets[0].mPrimaryNodeName,
-                                     idlOS::strlen(sRecvFoundReplicaSetInfo.mReplicaSets[0].mPrimaryNodeName)) == 0 )
+                                     idlOS::strlen(sRecvFoundReplicaSetInfo.mReplicaSets[0].mPrimaryNodeName)) == 0 ) )
                             {
                                 IDE_TEST( sdf::searchReplicaSet( aStatement,
                                                                  aNodeInfoList,

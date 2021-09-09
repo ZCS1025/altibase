@@ -297,7 +297,8 @@ typedef SQLRETURN (*ODBCGetNeedFailover)( SQLSMALLINT,
                                           SQLINTEGER *);    // 50
 
 typedef SQLRETURN (*ODBCReconnect)( SQLSMALLINT,
-                                    SQLHANDLE );            // 51
+                                    SQLHANDLE,
+                                    const SQLCHAR * );      // 51
 
 typedef SQLRETURN (*ODBCSetSavepoint)( SQLHDBC,
                                        const SQLCHAR *,
@@ -316,8 +317,8 @@ typedef SQLRETURN (*ODBCEndPendingTranAddCallback)( SQLUINTEGER,
                                                     SQLSMALLINT,
                                                     SQLPOINTER** );  // 56
 
-typedef void (*ODBCSetFailoverSuspend)( SQLHDBC    aConnectionHandle,
-                                        SQLINTEGER aSuspendOnOff ); // 57
+typedef void (*ODBCSetFailoverSuspend)( SQLHDBC     aConnectionHandle,
+                                        SQLUINTEGER aSuspendOnOff ); // 57
 
 /* PROJ-2728 Sharding LOB */
 typedef SQLRETURN (*ODBCGetLobForSd)(SQLSMALLINT  aHandleType,
@@ -412,6 +413,8 @@ typedef SQLRETURN (*ODBCSetPartialExecType)( SQLHSTMT   aStmt,
 typedef void      (*ODBCSetStmtExecSeq)( SQLHDBC      aConnectionHandle,
                                          SQLUINTEGER  aExecSequence ); // 74
 
+typedef SQLINTEGER (*ODBCCheckErrorIsConnectionLost)( SQLHDBC aConnectionHandle ); // 75
+
 /* SQL Function Name Tag */
 #define STR_SQLAllocHandle                    "SQLAllocHandle"                    // 01
 #define STR_SQLFreeHandle                     "SQLFreeHandle"                     // 02
@@ -485,6 +488,7 @@ typedef void      (*ODBCSetStmtExecSeq)( SQLHDBC      aConnectionHandle,
 #define STR_SQLSetTargetShardMetaNumber       "SQLSetTargetShardMetaNumber"       // 72
 #define STR_SQLSetPartialExecType             "SQLSetPartialExecType"             // 73
 #define STR_SQLSetStmtExecSeq                 "SQLSetStmtExecSeq"                 // 74
+#define STR_SQLCheckErrorIsConnectionLost     "SQLCheckErrorIsConnectionLost"     // 75
 
 typedef enum sdlTransactionOp
 {

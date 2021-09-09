@@ -140,15 +140,12 @@ IDE_RC sdtWASortMap::expand( sdtWASortMapHdr * aWAMapHdr,
 
     sSlotSize = aWAMapHdr->mSlotSize;
     /* SlotCount를 변경하였을때 추가 페이지를 필요로 하는 경우 */
-    if ( ( aWAMapHdr->mSlotCount * sSlotSize * aWAMapHdr->mVersionCount )
-         / SD_PAGE_SIZE !=
-         ( ( aWAMapHdr->mSlotCount + 1 ) * sSlotSize * aWAMapHdr->mVersionCount
-           / SD_PAGE_SIZE ) )
+    if ( ( aWAMapHdr->mSlotCount * sSlotSize * aWAMapHdr->mVersionCount ) / SD_PAGE_SIZE !=
+         ( ( aWAMapHdr->mSlotCount + 1 ) * sSlotSize * aWAMapHdr->mVersionCount / SD_PAGE_SIZE ) )
     {
         sPID = aWAMapHdr->mBeginWPID
-            + ( ( aWAMapHdr->mSlotCount + 1 )
-                * sSlotSize * aWAMapHdr->mVersionCount
-                / SD_PAGE_SIZE );
+            + ( ( aWAMapHdr->mSlotCount + 1 ) * sSlotSize * aWAMapHdr->mVersionCount / SD_PAGE_SIZE );
+
         if ( sPID >= aLimitPID )
         {
             (*aIdx) = SDT_WASLOT_UNUSED;

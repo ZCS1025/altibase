@@ -190,7 +190,8 @@ ULSDN_SRCS      = $(UL_DIR)/ulsd/ulsdnExecute.c         \
                   $(UL_DIR)/ulsd/ulsdnStmt.c            \
                   $(UL_DIR)/ulsd/ulsdnFailover.c        \
                   $(UL_DIR)/ulsd/ulsdnLob.c             \
-                  $(UL_DIR)/ulsd/ulsdnDistTxInfo.c
+                  $(UL_DIR)/ulsd/ulsdnDistTxInfo.c      \
+                  $(UL_DIR)/ulsd/ulsdnFailoverSuspend.c
 
 ULSD_SRC        = $(UL_DIR)/ulsd/ulsdError.c            \
                   $(UL_DIR)/ulsd/ulsdCommunication.c    \

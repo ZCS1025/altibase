@@ -763,6 +763,12 @@ static inline void cmEndianAssign8( ULong* aDst,  ULong* aSrc)
 #define CMI_GET_CURSOR(aCtx) \
         ((aCtx)->mWriteBlock->mCursor)
 
+#define CMI_GET_READ_CURSOR(aCtx) \
+        ((aCtx)->mReadBlock->mCursor)
+
+#define CMI_SET_READ_CURSOR(aCtx , aPos) \
+        (((aCtx)->mReadBlock->mCursor) = (aPos))
+
 #define CMI_GET_CURRENT_POSITION_IN_READ_BLOCK( aCtx ) \
         (UChar *)(((aCtx)->mReadBlock->mData) + ((aCtx)->mReadBlock->mCursor))
 

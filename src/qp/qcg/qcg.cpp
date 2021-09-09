@@ -421,6 +421,9 @@ qcg::allocStatement( qcStatement * aStatement,
         // BUG-38129
         sSession->mQPSpecific.mLastRowGRID = SC_NULL_GRID;
 
+        // BUG-48345 Lock procedure statement
+        sSession->mQPSpecific.mPSMLatchList = NULL;
+
         // BUG-24470
         // 내부에서 생성된 session userID는 qcg::mInternalUserID 이다.
         sSession->mUserID = qcg::mInternalUserID;

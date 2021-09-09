@@ -27,10 +27,26 @@ SQLRETURN ulsdnGetFailoverIsNeeded( acp_sint16_t   aHandleType,
 
 ACI_RC ulsdnFailoverConnectToSpecificServer( ulnFnContext *aFnContext, ulnFailoverServerInfo *aNewServerInfo );
 
-SQLRETURN ulsdnReconnect( acp_sint16_t aHandleType, ulnObject *aObject );
+SQLRETURN ulsdnReconnect( acp_sint16_t        aHandleType,
+                          ulnObject         * aObject,
+                          const acp_uint8_t * aCause );
 
-SQLRETURN ulsdnReconnectWithoutEnter( acp_sint16_t aHandleType, ulnObject *aObject );
+void ulsdnCheckShardNodeRemoved( ulnFnContext * aFnContext,
+                                 acp_bool_t   * aIsDrop );
 
 void ulsdnRaiseShardNodeFailoverIsNotAvailableError( ulnFnContext *aFnContext );
+
+acp_bool_t ulsdCheckConnectionLost( ulnObject * aObject );
+
+void ulsdnRaiseShardNodeFailoverSuccessError( ulnFnContext * aFnContext,
+                                              ulnErrorMgr  * aErrorMgr );
+
+void ulsdnRaiseShardNodeFailoverError( ulnFnContext * aFnContext,
+                                       ulnErrorMgr  * aErrorMgr );
+
+acp_bool_t ulsdnCheckConnectionLost( ulnDbc * aDbc );
+
+ACI_RC ulsdnDoFailoverAvailable( ulnFnContext       * aFnContext,
+                                 ulsdFailoverResult * aResult );
 
 #endif // _O_ULSDN_FAILOVER_H_

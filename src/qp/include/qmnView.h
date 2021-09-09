@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmnView.h 82075 2018-01-17 06:39:52Z jina.kim $ 
+ * $Id: qmnView.h 91627 2021-09-08 01:47:35Z ahra.cho $ 
  *
  * Description :
  *     VIEW(VIEW) Node
@@ -39,6 +39,10 @@
 //-----------------
 // Code Node Flags
 //-----------------
+#define QMNC_VIEW_COMPACT_WITH_MASK        (0x00000001)
+#define QMNC_VIEW_COMPACT_WITH_FALSE       (0x00000000)
+#define QMNC_VIEW_COMPACT_WITH_TRUE        (0x00000001)
+
 
 //-----------------
 // Data Node Flags

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmo.h 90192 2021-03-12 02:01:03Z jayce.park $
+ * $Id: qmo.h 91627 2021-09-08 01:47:35Z ahra.cho $
  *
  * Description :
  *     Query Optimizer
@@ -189,6 +189,9 @@ private:
     static IDE_RC adjustArgumentNodeForMerge( qcStatement  * aStatement,
                                               mtcNode      * sSrcNode,
                                               mtcNode      * sDstNode );
+
+    // PROJ-2749
+    static IDE_RC setCompactWithFlag( qcStatement * aStatement );
 };
 
 #endif /* _O_QMO_H_ */

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmoOneNonPlan.cpp 91445 2021-08-10 01:09:08Z andrew.shin $
+ * $Id: qmoOneNonPlan.cpp 91627 2021-09-08 01:47:35Z ahra.cho $
  *
  * Description :
  *     Plan Generator
@@ -4386,6 +4386,20 @@ qmoOneNonPlan::makeVIEW( qcStatement  * aStatement ,
                                        &( sVIEW->viewName ) ,
                                        &( sVIEW->aliasName ) )
                   != IDE_SUCCESS );
+
+        // PROJ-2749 compact with일때 플랜에 표기하기 위해 code plan 플래깅
+        if ( aFrom->tableRef != NULL )
+        {
+            if ( ( aFrom->tableRef->view          != NULL ) && 
+                 ( aFrom->tableRef->withStmt      != NULL ) &&
+                 ( aFrom->tableRef->recursiveView == NULL ) )
+            {
+                if ( aFrom->tableRef->withStmt->stmt == aFrom->tableRef->view )
+                {
+                    sVIEW->flag |= QMNC_VIEW_COMPACT_WITH_TRUE;
+                }
+            }
+        }
     }
     else
     {
@@ -4579,6 +4593,14 @@ IDE_RC qmoOneNonPlan::makeVSCN( qcStatement  * aStatement,
     {
         // nothing to do
     }
+
+
+    // PROJ-2749 compact with일때 플랜에 표기하기 위해 code plan 플래깅
+    if ( ( aFrom->tableRef->flag & QMS_TABLE_REF_COMPACT_WITH_MASK )
+         == QMS_TABLE_REF_COMPACT_WITH_TRUE )
+    {
+        sVSCN->flag    |= QMNC_VSCN_COMPACT_WITH_TRUE;
+    } 
 
     //-------------------------------------------------------------
     // 메인 작업
@@ -9536,6 +9558,9 @@ IDE_RC qmoOneNonPlan::makeSDIN( qcStatement    * aStatement ,
     qmsFrom             sFrom;
     UInt                i;
 
+    /* BUG-47766 */
+    qmmReturnIntoValue  * sReturnIntoValue;
+
     IDU_FIT_POINT_FATAL( "qmoOneNonPlan::makeSDIN::__FT__" );
 
     //----------------------------------
@@ -9646,6 +9671,22 @@ IDE_RC qmoOneNonPlan::makeSDIN( qcStatement    * aStatement ,
         else
         {
             // Nothing to do.
+        }
+    }
+
+    /* BUG-47766 */
+    sSDIN->returnInto = aINSTInfo->returnInto;
+
+    if ( aINSTInfo->returnInto != NULL )
+    {
+        for ( sReturnIntoValue  = aINSTInfo->returnInto->returnIntoValue;
+              sReturnIntoValue != NULL;
+              sReturnIntoValue  = sReturnIntoValue->next )
+        {
+            if ( (sReturnIntoValue->returningInto->node.lflag & MTC_NODE_BIND_MASK) == MTC_NODE_BIND_EXIST )
+            {
+                sSDIN->shardParamCount++;
+            }
         }
     }
 

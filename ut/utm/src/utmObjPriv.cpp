@@ -157,6 +157,7 @@ SQLRETURN getObjPrivQuery( FILE  *aFp,
         case UTM_SEQUENCE:
         case UTM_VIEW:
         case UTM_MVIEW : /* PROJ-2211 Materialized View */
+        case UTM_QUEUE:
             sTempCol   = (SChar *)"b.table_id";
             sTempTable = (SChar *)"system_.sys_tables_ b";
             break;
@@ -193,6 +194,7 @@ SQLRETURN getObjPrivQuery( FILE  *aFp,
         case UTM_SEQUENCE:
         case UTM_VIEW:
         case UTM_MVIEW : /* PROJ-2211 Materialized View */
+        case UTM_QUEUE:
             idlOS::sprintf( sQuery + sPos,
                             "and b.table_name='%s' ",
                             aObjName );
@@ -673,6 +675,7 @@ SQLRETURN resultObjPrivQuery( FILE *aFp,
         case UTM_SEQUENCE:
         case UTM_VIEW:
         case UTM_MVIEW : /* PROJ-2211 Materialized View */
+        case UTM_QUEUE:
             sTempCol   = (SChar *)"f.table_name";
             sTempTable = (SChar *)"system_.sys_tables_ f";
             sTempWhere = (SChar *)"and a.obj_id=f.table_id";    

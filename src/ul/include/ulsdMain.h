@@ -25,6 +25,7 @@
 #include <ulsdDef.h>
 #include <ulsdError.h>
 #include <ulsdDriverConnect.h>
+#include <ulsdRebuild.h>
 
 #define SHARD_DEBUG 0
 #define SHARD_PRINT_TAG "[SHARD] "
@@ -32,6 +33,7 @@
     do { if (SHARD_DEBUG) acpFprintf( acpStdGetStderr(), SHARD_PRINT_TAG __VA_ARGS__); } while (0)
 
 void ulsdSetNodeInfo( ulsdNodeInfo * aShardNodeInfo,
+                      acp_uint64_t   aSMN,
                       acp_uint32_t   aNodeId,
                       acp_char_t   * aNodeName,
                       acp_char_t   * aServerIP,
@@ -378,8 +380,9 @@ acp_bool_t ulsdStmtHasNoDataOnNodes( ulnStmt * aMetaStmt );
 acp_bool_t ulsdHasNoData( ulnDbc * aMetaDbc );
 
 /* BUG-46100 Session SMN Update */
-SQLRETURN ulsdUpdateShardMetaNumber( ulnDbc       * aMetaDbc,
-                                     ulnFnContext * aFnContext );
+SQLRETURN ulsdUpdateShardMetaNumber( ulnDbc                        * aMetaDbc,
+                                     ulnFnContext                  * aFnContext,
+                                     ulsdCheckShardMetaUpdateCause   aCause );
 
 /* BUG-46100 Session SMN Update */
 SQLRETURN ulsdSetConnectAttrNode( ulnDbc        * aDbc,
@@ -475,17 +478,17 @@ SQLRETURN ulsdNodeEndTranDbc(ulnFnContext  *aFnContext,
 void ulsdGetTouchNodeCount(ulsdDbc       *aShard,
                            acp_sint16_t  *aTouchNodeCount);
 
-ACI_RC ulsdUpdateNodeList(ulnFnContext *aFnContext, ulnPtContext *aPtContext);
-
 ACI_RC ulsdGetNodeList(ulnDbc *aDbc,
                        ulnFnContext *aFnContext,
                        ulnPtContext *aPtContext);
 
 ACI_RC ulsdHandshake(ulnFnContext *aFnContext);
 
-ACI_RC ulsdUpdateNodeListRequest(ulnFnContext *aFnContext, ulnPtContext *aPtContext);
-
 ACI_RC ulsdGetNodeListRequest(ulnFnContext *aFnContext, ulnPtContext *aPtContext);
+
+ACI_RC ulsdCheckShardMetaUpdateRequest( ulnFnContext                  * aFnContext,
+                                        ulnPtContext                  * aPtContext,
+                                        ulsdCheckShardMetaUpdateCause   aCause );
 
 ACI_RC ulsdAnalyzeRequest(ulnFnContext  *aFnContext,
                           ulnPtContext  *aProtocolContext,
@@ -501,12 +504,10 @@ ACI_RC ulsdShardTransactionCommitRequest( ulnFnContext     * aFnContext,
 ACI_RC ulsdInitializeDBProtocolCallbackFunctions(void);
 
 ACI_RC ulsdFODoSTF(ulnFnContext     *aFnContext,
-                   ulnDbc           *aDbc,
                    ulnErrorMgr      *aErrorMgr);
 
-ACI_RC ulsdFODoReconnect( ulnFnContext     *aFnContext,
-                          ulnDbc           *aDbc,
-                          ulnErrorMgr      *aErrorMgr );
+ACI_RC ulsdFODoSTF4LibConn( ulnFnContext     * aFnContext,
+                            ulnErrorMgr      * aErrorMgr );
 
 ACP_INLINE void ulsdFnContextSetHandle( ulnFnContext * aFnContext,
                                         ulnObjType     aObjType,

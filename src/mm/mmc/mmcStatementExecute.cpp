@@ -149,6 +149,7 @@ IDE_RC mmcStatement::executeDML(mmcStatement *aStmt, SLong *aAffectedRowCount, S
     switch (sStmtType)
     {
         case QCI_STMT_LOCK_TABLE:
+        case QCI_STMT_LOCK_SP:
             if (sSession->getCommitMode() == MMC_COMMITMODE_AUTOCOMMIT)
             {
                 IDE_RAISE(AutocommitError);
@@ -170,7 +171,15 @@ IDE_RC mmcStatement::executeDML(mmcStatement *aStmt, SLong *aAffectedRowCount, S
 
     IDE_EXCEPTION(AutocommitError);
     {
-        IDE_SET(ideSetErrorCode(mmERR_ABORT_MMC_CANT_LOCK_TABLE_IN_AUTOCOMMIT_MODE));
+        if ( sStmtType == QCI_STMT_LOCK_TABLE )
+        {
+            IDE_SET(ideSetErrorCode(mmERR_ABORT_MMC_CANT_LOCK_TABLE_IN_AUTOCOMMIT_MODE));
+        }
+        else
+        {
+            // BUG-48345 Lock procedure statement
+            IDE_SET(ideSetErrorCode(mmERR_ABORT_MMC_CANT_LOCK_PSM_IN_AUTOCOMMIT_MODE));
+        }
     }
     IDE_EXCEPTION_END;
 

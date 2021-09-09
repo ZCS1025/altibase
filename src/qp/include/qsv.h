@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsv.h 90176 2021-03-10 10:14:18Z seulki $
+ * $Id: qsv.h 91584 2021-09-03 07:55:16Z khkwak $
  **********************************************************************/
 
 #ifndef _Q_QSV_H_
@@ -124,6 +124,16 @@ public:
         qcNamePosition    aProcName,
         UInt            * aUserID,
         qsOID           * aProcOID);
+
+    // BUG-48345 Lock procedure statement
+    static IDE_RC checkUserAndProcedure(
+        qcStatement     * aStatement,
+        qcNamePosition    aUserName,
+        qcNamePosition    aProcName,
+        UInt            * aUserID,
+        qsOID           * aProcOID,
+        UInt            * aObjType,
+        smSCN           * aProcSCN );
     
     // PROJ-1073 Package
     static IDE_RC checkUserAndPkg(

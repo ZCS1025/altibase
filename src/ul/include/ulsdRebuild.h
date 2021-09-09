@@ -26,11 +26,19 @@
 
 typedef enum 
 {
-    ULSD_STMT_SHARD_RETRY_NONE       = 0, 
-    ULSD_STMT_SHARD_VIEW_OLD_RETRY   ,
-    ULSD_STMT_SHARD_REBUILD_RETRY    ,    
-    ULSD_STMT_SHARD_SMN_PROPAGATION  ,
+    ULSD_STMT_SHARD_RETRY_NONE          = 0, 
+    ULSD_STMT_SHARD_VIEW_OLD_RETRY      ,
+    ULSD_STMT_SHARD_REBUILD_RETRY       ,    
+    ULSD_STMT_SHARD_SMN_PROPAGATION     ,
 } ulsdStmtShardRetryType;
+
+typedef enum 
+{
+    ULSD_CHECK_SHARD_META_UPDATE_CAUSED_INIT          = 0, 
+    ULSD_CHECK_SHARD_META_UPDATE_CAUSED_BY_RESHARDING = 1, 
+    ULSD_CHECK_SHARD_META_UPDATE_CAUSED_BY_FAILOVER   = 2, 
+    ULSD_CHECK_SHARD_META_UPDATE_CAUSED_MAX           = 3
+} ulsdCheckShardMetaUpdateCause;  /* = sdiCheckShardMetaUpdateCause */
 
 SQLRETURN ulsdProcessShardRetryError( ulnFnContext           * aFnContext,
                                       ulnStmt                * aStmt,
@@ -56,5 +64,8 @@ ACI_RC ulsdApplyNodeInfo_OnlyAdd( ulnFnContext  * aFnContext,
                                   acp_uint8_t     aIsTestEnable );
 
 void ulsdApplyNodeInfo_RemoveOldSMN( ulnDbc  * aDbc );
+
+SQLRETURN ulsdCheckFailoverAvailable( ulnFnContext * aFnContext,
+                                      acp_bool_t   * aIsNodeDroped );
 
 #endif /* ULSD_REBUILD_H_ */

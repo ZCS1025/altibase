@@ -88,7 +88,7 @@ smiColumn * rpdCatalog::rpdGetTableColumns( const void * aTable,
 
 qciCatalogReplicationCallback rpdCatalog::mCallback =
 {
-    rpdCatalog::updateReplItemsTableOIDArray,
+    rpdCatalog::updateReplMetaTableOIDArray,
     rpdCatalog::checkReplicationExistByName,
     rpdCatalog::isConsistentReplication
 };
@@ -7759,10 +7759,10 @@ rpdCatalog::setReplRecoveryInfoMember( rpdRecoveryInfo * aRepl,
     aRepl->mReplicatedCommitSN = *( (smSN*) &sBigIntData );
 }
 
-IDE_RC rpdCatalog::updateReplItemsTableOIDArray( void           * aQcStatement,
-                                                 smOID          * aBeforeTableOIDArray,
-                                                 smOID          * aAfterTableOIDArray,
-                                                 UInt             aTableOIDCount )
+IDE_RC rpdCatalog::updateReplMetaTableOIDArray( void           * aQcStatement,
+                                                smOID          * aBeforeTableOIDArray,
+                                                smOID          * aAfterTableOIDArray,
+                                                UInt             aTableOIDCount )
 {
     UInt                       i = 0;
     rpdUpdateTableOID       * sUpdateTableOIDArray = NULL;
@@ -7788,9 +7788,9 @@ IDE_RC rpdCatalog::updateReplItemsTableOIDArray( void           * aQcStatement,
         sUpdateTableOID = &sUpdateTableOIDArray[i];
         if ( sUpdateTableOID->mBeforeTableOID != sUpdateTableOID->mAfterTableOID )
         {
-            IDE_TEST( updateReplItemsTableOID( QCI_SMI_STMT( aQcStatement ),
-                                               sUpdateTableOID->mBeforeTableOID,
-                                               sUpdateTableOID->mAfterTableOID )
+            IDE_TEST( updateReplMetaTableOID( QCI_SMI_STMT( aQcStatement ),
+                                              sUpdateTableOID->mBeforeTableOID,
+                                              sUpdateTableOID->mAfterTableOID )
                       != IDE_SUCCESS );
         }
     }
@@ -7802,9 +7802,80 @@ IDE_RC rpdCatalog::updateReplItemsTableOIDArray( void           * aQcStatement,
     return IDE_FAILURE;
 }
 
+IDE_RC rpdCatalog::updateReplMetaTableOID( smiStatement * aSmiStmt,
+                                           smOID          aBeforeTableOID,
+                                           smOID          aAfterTableOID )
+{
+    UInt               i                    = 0;
+    vSLong             sItemRowCount        = 0;
+    rpdReplItems     * sReplItems           = NULL;
+
+    if ( aBeforeTableOID != aAfterTableOID )
+    {
+        IDE_TEST( updateReplItemsTableOID( aSmiStmt,
+                                           aBeforeTableOID,
+                                           aAfterTableOID,
+                                           &sItemRowCount )
+                  != IDE_SUCCESS );
+
+        if ( sItemRowCount != 0 )
+        {        
+            IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_RP_RPD,
+                                               sItemRowCount,
+                                               ID_SIZEOF(rpdReplItems),
+                                               (void**)&sReplItems,
+                                               IDU_MEM_IMMEDIATE)
+                            != IDE_SUCCESS, ERR_MEMORY_ALLOC_REPL_ITEMS);
+            
+            IDE_TEST( selectReplItemsWhereTableOID( aSmiStmt,
+                                                    aAfterTableOID,
+                                                    sReplItems,
+                                                    sItemRowCount )
+                      != IDE_SUCCESS );    
+            
+            for ( i = 0 ; i < sItemRowCount ; i++ )
+            {
+                IDE_TEST( insertReplTableOIDInUse( aSmiStmt,
+                                                   sReplItems[i].mRepName,
+                                                   aBeforeTableOID,
+                                                   aAfterTableOID )
+                          != IDE_SUCCESS );
+            }
+            
+            IDE_TEST( updateReplTableOIDInUse( aSmiStmt,
+                                               aBeforeTableOID,
+                                               aAfterTableOID )
+                      != IDE_SUCCESS );
+        
+            (void)iduMemMgr::free( sReplItems );
+            sReplItems = NULL;
+        }
+    }
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_MEMORY_ALLOC_REPL_ITEMS);
+    {
+        IDE_ERRLOG( IDE_RP_0 );
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_MEMORY_ALLOC,
+                                 "rpcManager::updateReplTableOIDInUse",
+                                 "sReplItems") );
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sReplItems != NULL )
+    {
+        (void)iduMemMgr::free( sReplItems );
+        sReplItems = NULL;
+    }
+    
+    return IDE_FAILURE;
+}
+
 IDE_RC rpdCatalog::updateReplItemsTableOID(smiStatement * aSmiStmt,
                                            smOID          aBeforeTableOID,
-                                           smOID          aAfterTableOID)
+                                           smOID          aAfterTableOID,
+                                           vSLong       * aRowCnt)
 {
     SChar  sBuffer[QD_MAX_SQL_LENGTH];
     vSLong sRowCnt = 0;
@@ -7922,6 +7993,8 @@ IDE_RC rpdCatalog::updateReplItemsTableOID(smiStatement * aSmiStmt,
     IDE_TEST( sCursor.close() != IDE_SUCCESS );
 
     RP_LABEL(NORMAL_EXIT);
+
+    *aRowCnt = sRowCnt;
 
     return IDE_SUCCESS;
 
@@ -8285,6 +8358,283 @@ rpdCatalog::setTableOIDReferToItemReplaceHistory( smiStatement  * aSmiStmt,
         (void) sCursor.close();
         sStage = 0;
     }
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC
+rpdCatalog::selectReplItemsWhereTableOID( smiStatement   * aSmiStmt,
+                                          ULong            aTableOID,
+                                          rpdReplItems  *  aReplItems,
+                                          SInt             aItemCount )
+{
+    SInt                sStage = 0;
+    smiRange            sRange;
+    qriMetaRangeColumn  sFirstMetaRange;
+    SInt                sCount = 0;
+    const void        * sRow;
+    rpdReplItems      * sReplItem;
+    scGRID               sRid;
+    smiCursorProperties sProperty;
+    smiTableCursor      sCursor;
+    mtdBigintType       sTableOID;
+
+    sCursor.initialize();
+
+    sTableOID = (mtdBigintType)aTableOID;
+    
+    qciMisc::makeMetaRangeSingleColumn( &sFirstMetaRange,
+                                        (mtcColumn*)rpdGetTableColumns(gQcmReplItems,QCM_REPLITEM_TABLE_OID),
+                                        &sTableOID,
+                                        &sRange );
+
+    SMI_CURSOR_PROP_INIT( &sProperty,
+                          NULL, 
+                          gQcmReplItemsIndex[QCM_REPLITEM_INDEX_OID] );
+    
+    IDE_TEST( sCursor.open( aSmiStmt,
+                            gQcmReplItems,
+                            gQcmReplItemsIndex[QCM_REPLITEM_INDEX_OID],
+                            smiGetRowSCN( gQcmReplItems ),
+                            NULL,
+                            &sRange,
+                            smiGetDefaultKeyRange(),
+                            smiGetDefaultFilter(),
+                            QCM_META_CURSOR_FLAG,
+                            SMI_SELECT_CURSOR,
+                            &sProperty ) != IDE_SUCCESS );
+    sStage = 1;
+
+    IDE_TEST( sCursor.beforeFirst() != IDE_SUCCESS );
+    IDE_TEST( sCursor.readRow( & sRow, &sRid, SMI_FIND_NEXT ) != IDE_SUCCESS );
+
+    while ( sRow != NULL )
+    {
+        IDE_TEST_RAISE( sCount >= aItemCount, err_too_many_repl_items );
+        
+        sReplItem = &aReplItems[sCount];
+
+        setReplItemMember( sReplItem, sRow );
+
+        sCount++;
+        
+        IDE_TEST( sCursor.readRow( & sRow, &sRid, SMI_FIND_NEXT ) != IDE_SUCCESS );
+    }
+    
+    sStage = 0;
+
+    IDE_TEST( sCursor.close() != IDE_SUCCESS );
+
+    IDE_TEST_RAISE( sCount != aItemCount, err_not_enough_repl_items );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( err_too_many_repl_items );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RPD_TOO_MANY_REPLICATION_ITEMS ) );
+    }
+    IDE_EXCEPTION( err_not_enough_repl_items );
+    {
+        IDE_SET( ideSetErrorCode( rpERR_ABORT_RPD_NOT_ENOUGH_REPLICATION_ITEMS ) );
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sStage == 1 )
+    {
+        (void) sCursor.close();
+        sStage = 0;
+    }
+
+    return IDE_FAILURE;
+}
+
+IDE_RC
+rpdCatalog::getReplTableOIDInUseCount( smiStatement * aSmiStmt,
+                                       SChar        * aReplName,
+                                       ULong          aOldTableOID, 
+                                       UInt         * aReplTableOIDInUseCount )
+{
+    smiRange            sRange;
+    qriMetaRangeColumn  sFirstMetaRange;
+    qriMetaRangeColumn  sSecondMetaRange;
+    qriNameCharBuffer   sReplNameBuffer;
+    mtdCharType       * sReplName = ( mtdCharType * )&sReplNameBuffer;
+    vSLong              sRowCount = 0;
+    mtdBigintType       sTableOID;
+
+    qciMisc::setVarcharValue( sReplName,
+                              NULL,
+                              aReplName,
+                              idlOS::strlen(aReplName) );
+    sTableOID = (mtdBigintType)aOldTableOID;
+    
+    qciMisc::makeMetaRangeDoubleColumn( &sFirstMetaRange,
+                                        &sSecondMetaRange,
+                                        (mtcColumn*)rpdGetTableColumns(
+                                            gQcmReplTableOIDInUse,
+                                            QCM_REPLTABLEOIDINUSE_REPLICATION_NAME),
+                                        (const void*)sReplName,
+                                        (mtcColumn*)rpdGetTableColumns(
+                                            gQcmReplTableOIDInUse,
+                                            QCM_REPLTABLEOIDINUSE_OLD_TABLE_OID),
+                                        &sTableOID,
+                                        &sRange );
+    
+    IDE_TEST( qciMisc::selectCount( aSmiStmt,
+                                    gQcmReplTableOIDInUse,
+                                    &sRowCount,
+                                    smiGetDefaultFilter(),
+                                    &sRange,
+                                    gQcmReplTableOIDInUseIndex[QCM_REPLTABLEOIDINUSE_INDEX_NAME_N_OLD_OID] )
+              != IDE_SUCCESS );
+
+    *aReplTableOIDInUseCount = sRowCount;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC
+rpdCatalog::insertReplTableOIDInUse( smiStatement    * aSmiStmt,
+                                     SChar           * aRepName,
+                                     ULong             aOldTableOID,
+                                     ULong             aTableOID )
+{
+    SChar   sBuffer[QD_MAX_SQL_LENGTH];
+    vSLong  sRowCnt             = 0;
+    vSLong  sOldItemRawCount    = 0;
+    
+    IDE_TEST( getReplOldItemsCount( aSmiStmt,
+                                    aRepName,
+                                    &sOldItemRawCount )
+              != IDE_SUCCESS );
+    
+    if ( sOldItemRawCount != 0 )
+    {
+        idlOS::snprintf( sBuffer, ID_SIZEOF(sBuffer),
+                         "INSERT INTO SYS_REPL_TABLE_OID_IN_USE_ VALUES ( "
+                         "CHAR'%s', "
+                         "BIGINT'%"ID_INT64_FMT"', "
+                         "BIGINT'%"ID_INT64_FMT"' )",
+                         aRepName,
+                         (SLong)aOldTableOID,
+                         (SLong)aTableOID );
+    
+        IDE_TEST( qciMisc::runDMLforDDL( aSmiStmt, sBuffer, & sRowCnt )
+                  != IDE_SUCCESS );
+    
+        IDE_TEST_RAISE( sRowCnt != 1, ERR_EXECUTE );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_EXECUTE );
+    {
+        ideLog::log(IDE_RP_0, "[rpdCatalog::insertReplTableOIDInUse] "
+                              "[INSERT SYS_REPL_TABLE_OID_IN_USE_ = %ld]\n",
+                              sRowCnt);
+        IDE_SET( ideSetErrorCode( rpERR_FATAL_RPD_REPL_META_CRASH ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC rpdCatalog::updateReplTableOIDInUse( smiStatement * aSmiStmt,
+                                            ULong          aBeforeTableOID,
+                                            ULong          aAfterTableOID )
+{
+    SChar   sBuffer[QD_MAX_SQL_LENGTH] = { 0, };
+    vSLong  sRowCnt = 0;
+
+    idlOS::snprintf( sBuffer, ID_SIZEOF(sBuffer),
+                     "UPDATE SYS_REPL_TABLE_OID_IN_USE_ "
+                     "SET TABLE_OID = BIGINT'%"ID_INT64_FMT"' "
+                     "WHERE TABLE_OID = BIGINT'%"ID_INT64_FMT"'",
+                     (SLong)aAfterTableOID,
+                     (SLong)aBeforeTableOID );
+
+    IDE_TEST( qciMisc::runDMLforDDL( aSmiStmt, sBuffer, & sRowCnt )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC
+rpdCatalog::deleteReplTableOIDInUseRepName( smiStatement*  aSmiStmt,
+                                            SChar*         aRepName )
+{
+    SChar   sBuffer[QD_MAX_SQL_LENGTH];
+    vSLong  sRowCnt = 0;
+
+    idlOS::snprintf( sBuffer, ID_SIZEOF(sBuffer),
+                     "DELETE FROM SYS_REPL_TABLE_OID_IN_USE_ "
+                     "WHERE REPLICATION_NAME = CHAR'%s' ",
+                     aRepName );
+
+    IDE_TEST( qciMisc::runDMLforDDL( aSmiStmt, sBuffer, & sRowCnt )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC
+rpdCatalog::deleteReplTableOIDInUseOldOID( smiStatement*  aSmiStmt,
+                                           SChar*         aRepName,
+                                           ULong          aOldTableOID )
+{
+    SChar   sBuffer[QD_MAX_SQL_LENGTH];
+    vSLong  sRowCnt = 0;
+
+    idlOS::snprintf( sBuffer, ID_SIZEOF(sBuffer),
+                     "DELETE FROM SYS_REPL_TABLE_OID_IN_USE_ "
+                     "WHERE REPLICATION_NAME = CHAR'%s' "
+                     "AND OLD_TABLE_OID = BIGINT'%"ID_INT64_FMT"'",
+                     aRepName,
+                     (SLong)aOldTableOID );
+
+    IDE_TEST( qciMisc::runDMLforDDL( aSmiStmt, sBuffer, & sRowCnt )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC
+rpdCatalog::deleteReplTableOIDInUseNewOID( smiStatement*  aSmiStmt,
+                                           SChar*         aRepName,
+                                           ULong          aTableOID )
+{
+    SChar   sBuffer[QD_MAX_SQL_LENGTH];
+    vSLong  sRowCnt = 0;
+
+    idlOS::snprintf( sBuffer, ID_SIZEOF(sBuffer),
+                     "DELETE FROM SYS_REPL_TABLE_OID_IN_USE_ "
+                     "WHERE REPLICATION_NAME = CHAR'%s' "
+                     "AND TABLE_OID = BIGINT'%"ID_INT64_FMT"'",
+                     aRepName,
+                     (SLong)aTableOID );
+
+    IDE_TEST( qciMisc::runDMLforDDL( aSmiStmt, sBuffer, & sRowCnt )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 

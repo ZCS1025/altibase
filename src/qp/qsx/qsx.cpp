@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsx.cpp 90976 2021-06-09 01:45:59Z khkwak $
+ * $Id: qsx.cpp 91584 2021-09-03 07:55:16Z khkwak $
  **********************************************************************/
 
 #include <idl.h>
@@ -4306,10 +4306,14 @@ IDE_RC qsx::execAT( qsxExecutorInfo * aExecInfo,
     idBool                sIsSwapTransSuccess = ID_FALSE;
     qcuSqlSourceInfo      sSqlInfo;
     SChar               * sErrorMsg = NULL;
+    qcPSMLatchList      * sPSMLatchListOrg = NULL;
 
     /* BUG-43197 */
     sOriFlag = aQcStmt->spxEnv->mFlag;
     sOrgNumRows = QC_PRIVATE_TMPLATE(aQcStmt)->numRows; 
+
+    // BUG-48345 Lock procedure statement
+    sPSMLatchListOrg = aQcStmt->session->mQPSpecific.mPSMLatchList;
 
     // TASK-7244 Shard에서는 Autonomous transaction을 지원하지 않는다.
     IDE_TEST_RAISE( SDU_SHARD_ENABLE == 1,
@@ -4327,7 +4331,9 @@ IDE_RC qsx::execAT( qsxExecutorInfo * aExecInfo,
     IDE_TEST( qci::mSessionCallback.mSwapTransaction( &sContext , ID_TRUE )
               != IDE_SUCCESS );
     sIsSwapTransSuccess = ID_TRUE;
+
     aQcStmt->spxEnv->mFlag = QSX_ENV_DURING_AT;
+    aQcStmt->session->mQPSpecific.mPSMLatchList = NULL;
 
     IDE_TEST( qsxExecutor::execPlan( aExecInfo,
                                      aQcStmt,
@@ -4335,8 +4341,23 @@ IDE_RC qsx::execAT( qsxExecutorInfo * aExecInfo,
                                      aStackRemain )
               != IDE_SUCCESS );
     sContext.mIsExecSuccess   = ID_TRUE;
+
+    /**************************************** 
+     * Begin restore
+     * 이 구간에는 exception 발생하면 안된다.
+     ****************************************/
     aQcStmt->spxEnv->mFlag = sOriFlag;
     QC_PRIVATE_TMPLATE(aQcStmt)->numRows = sOrgNumRows;
+
+    if ( aQcStmt->session->mQPSpecific.mPSMLatchList != NULL )
+    {
+        qciMisc::freePSMLatchList( (qciSession*)&(aQcStmt->session), NULL );
+    }
+    aQcStmt->session->mQPSpecific.mPSMLatchList = sPSMLatchListOrg;
+    sPSMLatchListOrg = NULL;
+    /****************** 
+     * End restore 
+     ******************/
 
     sIsSwapTransSuccess = ID_FALSE;
     /* swap transaction to original transaction */
@@ -4380,6 +4401,14 @@ IDE_RC qsx::execAT( qsxExecutorInfo * aExecInfo,
     {
         aQcStmt->spxEnv->mFlag = sOriFlag;
         QC_PRIVATE_TMPLATE(aQcStmt)->numRows = sOrgNumRows;
+
+        if ( aQcStmt->session->mQPSpecific.mPSMLatchList != NULL )
+        {
+            qciMisc::freePSMLatchList( (qciSession*)&(aQcStmt->session), NULL );
+        }
+        aQcStmt->session->mQPSpecific.mPSMLatchList = sPSMLatchListOrg;
+        sPSMLatchListOrg = NULL;
+
         (void)qci::mSessionCallback.mSwapTransaction( &sContext , ID_FALSE );
     }
 

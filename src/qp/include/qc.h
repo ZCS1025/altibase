@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qc.h 91517 2021-08-24 01:25:47Z bethy $
+ * $Id: qc.h 91627 2021-09-08 01:47:35Z ahra.cho $
  **********************************************************************/
 
 #ifndef _O_QC_H_
@@ -261,6 +261,12 @@ typedef struct qcCondValueCharBuffer {
 #define QC_TMP_OBYE_2_MASK                   (0x00200000)
 #define QC_TMP_OBYE_2_FALSE                  (0x00000000)
 #define QC_TMP_OBYE_2_TRUE                   (0x00200000)
+
+/* PROJ-2749 */
+#define QC_TMP_COMPACT_WITH_VIEW_MASK                 (0x00C00000)
+#define QC_TMP_COMPACT_WITH_VIEW_FALSE                (0x00000000)
+#define QC_TMP_COMPACT_WITH_VIEW_ONLYHINT_TRUE        (0x00400000)
+#define QC_TMP_COMPACT_WITH_VIEW_CONDITIONAL_TRUE     (0x00800000)
 
 // PROJ-2551 simple query 최적화
 // simple query인가
@@ -995,6 +1001,26 @@ typedef struct qcBakSessionProperty
     UInt mGlobalTransactionLevel;
 } qcBakSessionProperty;
 
+// BUG-48345 Lock procedure statement
+typedef struct qcPSMLatchList
+{
+    UInt             mType;
+
+    // [LatchCount + mProcOID]
+    // [mLstrLen   + mStr]
+    union
+    {
+        UInt             mLatchCount;
+        UInt             mSvpStrLen;
+    };
+    union
+    {
+        smOID            mProcOID;
+        SChar          * mSvpStr;
+    };
+    qcPSMLatchList * mNext;
+} qcPSMLatchList;
+
 // session으로 공유해야 하는 정보이지만,
 // qp에서만 사용하는 정보들의 집합.
 typedef struct qcSessionSpecific
@@ -1044,6 +1070,10 @@ typedef struct qcSessionSpecific
 
     idBool                     mIsGTx;
     idBool                     mIsGCTx;
+
+    // BUG-48345 Lock procedure statement
+    // Session에 있지만 transaction 단위로 동작한다.
+    qcPSMLatchList           * mPSMLatchList;
 } qcSessionSpecific;
 
 // session 정보
@@ -1443,6 +1473,8 @@ typedef struct qcSessionCallback
 
     /* BUG-48770 */
     UInt         (*mCheckSessionCount)();
+
+    void         (*mShardNodeRemovalChecker)( void * aMmSession, void * aConnectionInfo, idBool * aIsDroped );
 } qcSessionCallback;
 
 /*
@@ -1814,6 +1846,7 @@ enum qcPlanPropertyKind
     PLAN_PROPERTY_SHARD_INTERNAL_LOCAL_OPERATION,
     PLAN_PROPERTY_LEFT_OUTER_SKIP_RIGHT_ENABLE, /* PROJ-2750 */
     PLAN_PROPERTY_GLOBAL_TRANSACTION_LEVEL, /* BUG-49093 */
+    PLAN_PROPERTY_OPTIMIZER_WITH_VIEW, /* PROJ-2749 */
     PLAN_PROPERTY_MAX
 };
 
@@ -2118,7 +2151,11 @@ typedef struct qcPlanProperty
     /* BUG-49093 */
     idBool mGlobalTransactionLevelRef;
     UInt   mGlobalTransactionLevel;
-    
+
+    /* PROJ-2749 */
+    idBool mOptimizerWithViewRef;
+    UInt   mOptimizerWithView;
+
 } qcPlanProperty;
 
 typedef struct qcTemplate
@@ -2237,6 +2274,21 @@ typedef struct qcPrepTemplateHeader
 // PROJ-2206 With clause
 // with 자료구조
 //---------------------------------------------------
+
+// qcWithStmt.mFlag
+#define QC_WITH_STMT_USED_COUNT_MASK                          (0x00000003)
+#define QC_WITH_STMT_USED_COUNT_0                             (0x00000000)
+#define QC_WITH_STMT_USED_COUNT_1                             (0x00000001)
+#define QC_WITH_STMT_USED_COUNT_OVER2                         (0x00000002)
+
+#define QC_WITH_STMT_QUERY_TRANSFROM_FINISH_MASK              (0x00000004)
+#define QC_WITH_STMT_QUERY_TRANSFROM_FINISH_FALSE             (0x00000000)
+#define QC_WITH_STMT_QUERY_TRANSFROM_FINISH_TRUE              (0x00000004)
+
+#define QC_WITH_STMT_IS_COMPACT_WITH_MASK                     (0x00000008)
+#define QC_WITH_STMT_IS_COMPACT_WITH_FALSE                    (0x00000000)
+#define QC_WITH_STMT_IS_COMPACT_WITH_TRUE                     (0x00000008)
+
 typedef struct qcWithStmt
 {
     qcNamePosition        stmtName;
@@ -2249,6 +2301,7 @@ typedef struct qcWithStmt
     idBool                isTop;
     struct qcmTableInfo * tableInfo;       // recursive view의 하위 tableInfo
     UInt                  tableID;        // stmt에 할당된 table id
+    UInt                  mFlag;
 
     qcWithStmt          * next;
 } qcWithStmt;

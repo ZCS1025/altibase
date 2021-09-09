@@ -35,6 +35,7 @@
 #include <qmnShardDML.h>
 #include <qmx.h>
 #include <qmxShard.h>
+#include <qdnTrigger.h>
 
 IDE_RC qmnSDEX::init( qcTemplate * aTemplate,
                       qmnPlan    * aPlan )
@@ -125,6 +126,13 @@ IDE_RC qmnSDEX::firstInit( qcTemplate * aTemplate,
 
     UInt            sLobBindCount = 0;
 
+    /* BUG-47768 */
+    qmmUptParseTree * sUptParseTree = NULL;
+    idBool            sIsNeedRebuild = ID_FALSE;
+
+    // exception 발생시 lobInfo가 NULL이 아니면 qmx::finalizeLobInfo에서 비정상 종료할 수 있다.
+    aDataPlan->lobInfo = NULL;        
+
     //-------------------------------
     // 수행노드 초기화
     //-------------------------------
@@ -134,6 +142,24 @@ IDE_RC qmnSDEX::firstInit( qcTemplate * aTemplate,
 
     aDataPlan->mDataInfo = ((sdiDataNodes*)aTemplate->shardExecData.execInfo)
         + aCodePlan->shardDataIndex;
+
+    /* BUG-47768 */
+    if ( aTemplate->stmt->myPlan->parseTree->stmtKind == QCI_STMT_UPDATE )
+    {
+        sUptParseTree = ((qmmUptParseTree*)aTemplate->stmt->myPlan->parseTree);
+
+        if ( sUptParseTree->updateTableRef->tableInfo->triggerCount > 0 )
+        {
+            IDE_TEST( qdnTrigger::verifyTriggers( aTemplate->stmt,
+                                                  sUptParseTree->updateTableRef->tableInfo,
+                                                  sUptParseTree->uptColumnList,
+                                                  &sIsNeedRebuild )
+                      != IDE_SUCCESS );
+
+            IDE_TEST_RAISE( sIsNeedRebuild == ID_TRUE,
+                            trigger_invalid );
+        }
+    }
 
     // shard linker 검사 & 초기화
     IDE_TEST( sdi::checkShardLinker( aTemplate->stmt ) != IDE_SUCCESS );
@@ -249,6 +275,10 @@ IDE_RC qmnSDEX::firstInit( qcTemplate * aTemplate,
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
                                   "qmnSDEX::firstInit",
                                   "Shard Info is not found" ) );
+    }
+    IDE_EXCEPTION( trigger_invalid )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_REBUILD_TRIGGER_INVALID ) );
     }
     IDE_EXCEPTION_END;
 

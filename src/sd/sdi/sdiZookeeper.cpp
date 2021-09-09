@@ -7040,8 +7040,30 @@ void sdiZookeeper::executePendingJob( ZKPendingJobType aPendingType )
     sdiZKPendingJob * sJob = NULL;
     idBool          sIsExecute = ID_FALSE;
 
+    // revert job for shard package
+    switch ( aPendingType )
+    {
+        case ZK_PENDING_JOB_AFTER_COMMIT:
+            executeRevertJob( ZK_REVERT_JOB_NONE );
+            break;    
+        case ZK_PENDING_JOB_AFTER_ROLLBACK:
+            executeRevertJob( ZK_REVERT_JOB_REPL_ITEM_DROP );
+            executeRevertJob( ZK_REVERT_JOB_REPL_DROP );
+            executeRevertJob( ZK_REVERT_JOB_TABLE_ALTER );        
+            executeRevertJob( ZK_REVERT_JOB_NONE );
+            break;
+        case ZK_PENDING_JOB_AFTER_END_ALL:
+        case ZK_PENDING_JOB_NONE:
+            break;
+        default:
+            break;
+    }
+    
+    // pending job for shard ddl 
     if ( IDU_LIST_IS_EMPTY( &mJobAfterTransEnd ) != ID_TRUE )
     {
+        IDE_DASSERT( isExistRevertJob() != ID_TRUE );
+            
         IDU_LIST_ITERATE_SAFE( &mJobAfterTransEnd, sIterator, sNextNode )
         {
             sJob = (sdiZKPendingJob *)sIterator->mObj;
@@ -7104,6 +7126,7 @@ void sdiZookeeper::executePendingJob( ZKPendingJobType aPendingType )
 
 void sdiZookeeper::removePendingJob()
 {
+    sdiZookeeper::executeRevertJob( ZK_REVERT_JOB_NONE );
     sdiZookeeper::executePendingJob( ZK_PENDING_JOB_NONE );
 }
 
@@ -7212,20 +7235,21 @@ void sdiZookeeper::callAfterCommitFunc( ULong   aNewSMN, ULong aBeforeSMN )
             releaseZookeeperMetaLock();
             break;
         case ZK_JOB_RESHARD:
-            sdiZookeeper::updateSMN( sNewSMN );
+            updateSMN( sNewSMN );
             releaseShardMetaLock();
             releaseZookeeperMetaLock();
             break;
 
         /* PROJ-2757 Advanced Global DDL */
         case ZK_JOB_GLOBAL_DDL:
-            if ( aNewSMN != aBeforeSMN )
+        case ZK_JOB_PROCEDURE :           
+            if ( aNewSMN > aBeforeSMN )
             {
-                sdiZookeeper::updateSMN( sNewSMN );
+                updateSMN( sNewSMN );
             }
             releaseShardMetaLock();
-            break;
-
+            mRunningJobType = ZK_JOB_NONE;
+            break;            
         case ZK_JOB_NONE:
             releaseShardMetaLock();
             releaseZookeeperMetaLock();
@@ -7258,8 +7282,17 @@ void sdiZookeeper::callAfterCommitFunc( ULong   aNewSMN, ULong aBeforeSMN )
 
     IDE_ERRLOG(IDE_SD_0);
     releaseShardMetaLock();
-    releaseZookeeperMetaLock();
-
+    
+    if (( mRunningJobType == ZK_JOB_GLOBAL_DDL ) ||
+        ( mRunningJobType == ZK_JOB_PROCEDURE ))
+    {    
+        mRunningJobType = ZK_JOB_NONE;
+    }
+    else
+    {
+        releaseZookeeperMetaLock();
+    }
+    
     ideLog::log( IDE_SD_4, "[ZOOKEEPER_ERROR] after commit for smn: SMN(%"ID_UINT64_FMT")", aNewSMN );
 
     return;
@@ -7326,9 +7359,10 @@ void sdiZookeeper::callAfterRollbackFunc( ULong   aNewSMN, ULong aBeforeSMN )
 
         /* PROJ-2757 Advanced Global DDL */
         case ZK_JOB_GLOBAL_DDL:
+        case ZK_JOB_PROCEDURE:
             releaseShardMetaLock();
+            mRunningJobType = ZK_JOB_NONE;
             break;
-
         case ZK_JOB_NONE:
             releaseShardMetaLock();
             releaseZookeeperMetaLock();
@@ -7353,7 +7387,7 @@ IDE_RC sdiZookeeper::addRevertJob( SChar           * aSQL,
     UInt             sJobSize = 0;
 
     sJobSQLLen = idlOS::strlen(aSQL);
-    sJobSize   = idlOS::align8((UInt)(offsetof(sdiZKPendingJob, mSQL) + sJobSQLLen + 1));
+    sJobSize   = idlOS::align8((UInt)(offsetof(sdiZKRevertJob, mSQL) + sJobSQLLen + 1));
     
     IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_SDI,
                                      1,
@@ -7405,6 +7439,8 @@ void sdiZookeeper::executeRevertJob( ZKRevertJobType aRevertType )
 
     if ( IDU_LIST_IS_EMPTY( &mRevertJobList ) != ID_TRUE )
     {
+        IDE_DASSERT( isExistPendingJob() != ID_TRUE );
+        
         IDU_LIST_ITERATE_SAFE( &mRevertJobList, sIterator, sNextNode )
         {
             sJob = (sdiZKRevertJob *)sIterator->mObj;
@@ -7774,5 +7810,10 @@ IDE_RC sdiZookeeper::insertList4PV( iduList * aList,
 void sdiZookeeper::globalDDLJob()
 {
     mRunningJobType = ZK_JOB_GLOBAL_DDL;
+}
+
+void sdiZookeeper::procedureJob()
+{
+    mRunningJobType = ZK_JOB_PROCEDURE;
 }
 

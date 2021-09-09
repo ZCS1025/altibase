@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdd.cpp 91517 2021-08-24 01:25:47Z bethy $
+ * $Id: qdd.cpp 91576 2021-09-02 06:39:41Z donghyun1 $
  **********************************************************************/
 
 #include <idl.h>
@@ -4068,18 +4068,18 @@ IDE_RC qdd::executeTruncateTable(qcStatement * aStatement)
     {
         if(sIsPartitioned == ID_TRUE)
         {
-            IDE_TEST(qci::mCatalogReplicationCallback.mUpdateReplItemsTableOIDArray( aStatement,
-                                                                                     sOldPartitionOID,
-                                                                                     sNewPartitionOID,
-                                                                                     sPartitionCount )
+            IDE_TEST(qci::mCatalogReplicationCallback.mUpdateReplMetaTableOIDArray( aStatement,
+                                                                                    sOldPartitionOID,
+                                                                                    sNewPartitionOID,
+                                                                                    sPartitionCount )
                      != IDE_SUCCESS);
         }
         else
         {
-            IDE_TEST(qci::mCatalogReplicationCallback.mUpdateReplItemsTableOIDArray( aStatement,
-                                                                                     &sOldTableOID,
-                                                                                     &sTableOID,
-                                                                                     1 )
+            IDE_TEST(qci::mCatalogReplicationCallback.mUpdateReplMetaTableOIDArray( aStatement,
+                                                                                    &sOldTableOID,
+                                                                                    &sTableOID,
+                                                                                    1 )
                      != IDE_SUCCESS);
         }
     }

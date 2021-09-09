@@ -456,7 +456,8 @@ public:
     static IDE_RC getNodeByID( smiStatement * aSmiStmt,
                                UInt           aNodeID,
                                ULong          aSMN,
-                               sdiNode      * aNode );
+                               sdiNode      * aNode,
+                               idBool         aErrorRaiseWhenNotExist );
 
     static IDE_RC getTableInfo( smiStatement * aSmiStmt,
                                 SChar        * aUserName,

@@ -297,10 +297,10 @@ typedef struct qciExecuteReplicationCallback
 /* Catalog */
 typedef struct qciCatalogReplicationCallback
 {
-    IDE_RC    ( * mUpdateReplItemsTableOIDArray ) ( void         * aQcStatement,
-                                                    smOID        * aBeforeTableOIDArray,
-                                                    smOID        * aAfterTableOIDArray,
-                                                    UInt           aTableOIDCount );
+    IDE_RC    ( * mUpdateReplMetaTableOIDArray ) ( void         * aQcStatement,
+                                                   smOID        * aBeforeTableOIDArray,
+                                                   smOID        * aAfterTableOIDArray,
+                                                   UInt           aTableOIDCount );
     IDE_RC    ( * mCheckReplicationExistByName ) ( void            * aQcStatement,
                                                    qciNamePosition   aReplName,
                                                    idBool          * aIsTrue );
@@ -2643,6 +2643,12 @@ public:
     static IDE_RC   makeProcStatusInvalidAndSetShardSplitMethodByName( qcStatement * aQcStatement,
                                                                        qsOID         aProcOID,
                                                                        SChar       * aShardSplitMethodStr );
+    // BUG-48345 Lock procedure statement
+    static void freePSMLatchList( qciSession  * aQciSession,
+                                  const SChar * aSavepoint );
+
+    static IDE_RC addSavepointToPSMLatchList( qciSession  * aQciSession,
+                                              const SChar * aSavepoint );
 };
 
 #endif /* _O_QCI_H_ */

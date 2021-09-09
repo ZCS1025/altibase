@@ -174,7 +174,6 @@ IDE_RC sdfCalculate_UnsetShardTable( mtcNode*     aNode,
     sdiReplicaSetInfo         sReplicaSetInfo;
     sdiReplicaSetInfo         sFoundReplicaSetInfo;
 
-    UInt                      sLatchState = 0;
     UInt                      sUserID;
     qsOID                     sProcOID;
     
@@ -207,6 +206,13 @@ IDE_RC sdfCalculate_UnsetShardTable( mtcNode*     aNode,
                              != QC_SESSION_ALTER_META_ENABLE),
                         ERR_INTERNAL_OPERATION );
     }
+
+    // shard package에서 subprogram으로 수행 되는 경우 procedure job type 설정
+    if ( (sdiInternalOperation)QCG_GET_SESSION_SHARD_INTERNAL_LOCAL_OPERATION( sStatement ) ==
+         SDI_INTERNAL_OP_SHARD_PKG )
+    {
+        sdf::setProcedureJobType();
+    }    
 
     IDE_TEST( mtf::postfixCalculate( aNode,
                                      aStack,
@@ -384,11 +390,6 @@ IDE_RC sdfCalculate_UnsetShardTable( mtcNode*     aNode,
 
             if ( sProcOID != QS_EMPTY_OID )
             {
-                IDE_TEST( qsxProc::latchX( sProcOID,
-                                           ID_TRUE )
-                          != IDE_SUCCESS );
-                sLatchState = 1;
-
                 // BUG-48911
                 // A shard split method in a procedure info is lost due to a related object modified.
                 //   => A 3rd argument is changed to "N" from NULL.
@@ -435,24 +436,9 @@ IDE_RC sdfCalculate_UnsetShardTable( mtcNode*     aNode,
                                        SDI_SPLIT_NONE,
                                        ID_FALSE ); // IsNewTrans
 
-            if ( ( sRc != IDE_SUCCESS ) &&
-                 ( ideGetErrorCode() != qpERR_ABORT_QCV_NOT_EXISTS_TABLE ) )
-            {
-                ideLog::log(IDE_SD_0, "[DEBUG] SHARD NONE ERR-%"ID_XINT32_FMT" %s\n",
-                                      ideGetErrorCode(),
-                                      ideGetErrorMsg());
-            }
-            else
-            {
-                /* Nothing to do */
-            }
+            IDE_TEST ( ( sRc != IDE_SUCCESS ) &&
+                       ( ideGetErrorCode() != qpERR_ABORT_QCV_NOT_EXISTS_TABLE ) );
         }
-    }
-
-    if ( sLatchState == 1 )
-    {
-        sLatchState = 0;
-        IDE_TEST( qsxProc::unlatch( sProcOID ) != IDE_SUCCESS );
     }
 
     *(mtdIntegerType*)aStack[0].value = 0;
@@ -521,14 +507,6 @@ IDE_RC sdfCalculate_UnsetShardTable( mtcNode*     aNode,
     else
     {
         sdi::unsetShardMetaTouched( sStatement->session );
-    }
-
-    if ( sLatchState == 1 )
-    {
-        if ( qsxProc::unlatch( sProcOID ) != IDE_SUCCESS )
-        {
-            (void) IDE_ERRLOG(IDE_QP_1);
-        }
     }
 
     IDE_POP();

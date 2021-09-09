@@ -185,7 +185,6 @@ IDE_RC sdfCalculate_SetShardProcedure( mtcNode*     aNode,
 
     // BUG-49047
     UInt                      sEaction;
-    UInt                      sLatchState = 0;
     UInt                      sUserID;
     qsOID                     sProcOID;
     qsxProcInfo             * sProcInfo = NULL;
@@ -218,6 +217,13 @@ IDE_RC sdfCalculate_SetShardProcedure( mtcNode*     aNode,
                         ( ( sStatement->session->mQPSpecific.mFlag & QC_SESSION_ALTER_META_MASK )
                              != QC_SESSION_ALTER_META_ENABLE),
                         ERR_INTERNAL_OPERATION );
+    }
+
+    // shard package에서 subprogram으로 수행 되는 경우 procedure job type 설정
+    if ( (sdiInternalOperation)QCG_GET_SESSION_SHARD_INTERNAL_LOCAL_OPERATION( sStatement ) ==
+         SDI_INTERNAL_OP_SHARD_PKG )
+    {
+        sdf::setProcedureJobType();
     }
 
     IDE_TEST( mtf::postfixCalculate( aNode,
@@ -423,11 +429,6 @@ IDE_RC sdfCalculate_SetShardProcedure( mtcNode*     aNode,
 
         IDE_TEST_RAISE( sProcOID == QS_EMPTY_OID, ERR_NOT_EXIST_OBJECT );
 
-        IDE_TEST( qsxProc::latchX( sProcOID,
-                                   ID_TRUE )
-                  != IDE_SUCCESS );
-        sLatchState = 1;
-
         IDE_TEST( qsxProc::getProcInfo( sProcOID,
                                         &sProcInfo )
                   != IDE_SUCCESS );
@@ -497,9 +498,6 @@ IDE_RC sdfCalculate_SetShardProcedure( mtcNode*     aNode,
 
         IDE_TEST_RAISE( sRowCnt == 0,
                         ERR_INVALID_SHARD_NODE );
-
-        sLatchState = 0;
-        IDE_TEST( qsxProc::unlatch( sProcOID ) != IDE_SUCCESS );
     }
 
     *(mtdIntegerType*)aStack[0].value = 0;
@@ -598,14 +596,6 @@ IDE_RC sdfCalculate_SetShardProcedure( mtcNode*     aNode,
     else
     {
         sdi::unsetShardMetaTouched( sStatement->session );
-    }
-
-    if ( sLatchState == 1 )
-    {
-        if ( qsxProc::unlatch( sProcOID ) != IDE_SUCCESS )
-        {
-            (void) IDE_ERRLOG(IDE_QP_1);
-        }
     }
 
     IDE_POP();

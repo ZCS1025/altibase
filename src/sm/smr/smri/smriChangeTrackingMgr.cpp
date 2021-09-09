@@ -734,7 +734,6 @@ IDE_RC smriChangeTrackingMgr::addAllExistingDataFile2CTFile(
 {
     UInt    sState = 0;
 
-    // XXX 왜 필요하지? 일단 놔두자
     IDE_TEST( sctTableSpaceMgr::lockForCrtTBS() != IDE_SUCCESS );
     sState = 1;
 

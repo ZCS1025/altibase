@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmnView.cpp 86122 2019-09-04 07:20:21Z donovan.seo $
+ * $Id: qmnView.cpp 91627 2021-09-08 01:47:35Z ahra.cho $
  *
  * Description :
  *     VIEW(VIEW) Node
@@ -33,6 +33,7 @@
 #include <ide.h>
 #include <qcuProperty.h>
 #include <qmnView.h>
+#include <qcg.h>
 
 IDE_RC 
 qmnVIEW::init( qcTemplate * aTemplate,
@@ -235,6 +236,14 @@ qmnVIEW::printPlan( qcTemplate   * aTemplate,
 
     iduVarStringAppend( aString,
                         "VIEW ( " );
+
+    if ( ( QCG_GET_SESSION_TRCLOG_DETAIL_INFORMATION( aTemplate->stmt ) == 1 ) &&
+         ( ( sCodePlan->flag & QMNC_VIEW_COMPACT_WITH_MASK )
+           == QMNC_VIEW_COMPACT_WITH_TRUE ) )
+    {
+        iduVarStringAppend( aString,
+                            "* " );
+    }
 
     if ( sCodePlan->viewName.name != NULL &&
          sCodePlan->viewName.size != QC_POS_EMPTY_SIZE )

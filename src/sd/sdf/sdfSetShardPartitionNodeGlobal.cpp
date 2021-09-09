@@ -490,13 +490,6 @@ IDE_RC sdfCalculate_SetShardPartitionNodeGlobal( mtcNode*     aNode,
         IDE_RAISE( ERR_NODE_NOT_EXIST );
     }
     
-    // revert job all remove
-    if ( sdiZookeeper::isExistRevertJob() == ID_TRUE )
-    {
-        (void) sdiZookeeper::removeRevertJob();
-        IDE_DASSERT( sdiZookeeper::isExistRevertJob() != ID_TRUE );
-    }
-
     *(mtdIntegerType*)aStack[0].value = 0;
 
     return IDE_SUCCESS;
@@ -588,14 +581,7 @@ IDE_RC sdfCalculate_SetShardPartitionNodeGlobal( mtcNode*     aNode,
             QC_SMI_STMT(sStatement) = sOldStmt;
         default:
             break;
-    }
-    
-    if ( sdiZookeeper::isExistRevertJob() == ID_TRUE )
-    {
-        (void) sdiZookeeper::executeRevertJob( ZK_REVERT_JOB_REPL_ITEM_DROP );
-        (void) sdiZookeeper::removeRevertJob();
-        IDE_DASSERT( sdiZookeeper::isExistRevertJob() != ID_TRUE );
-    }
+    }    
 
     IDE_POP();
 

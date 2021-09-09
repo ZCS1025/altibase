@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmoCheckViewColumnRef.cpp 89448 2020-12-07 04:24:14Z cory.chae $
+ * $Id: qmoCheckViewColumnRef.cpp 91627 2021-09-08 01:47:35Z ahra.cho $
  *
  * PROJ-2469 Optimize View Materialization
  *
@@ -160,8 +160,23 @@ qmoCheckViewColumnRef::checkQuerySet( qmsQuerySet      * aQuerySet,
     qmsTarget        * sTarget;
     qmsFrom          * sFrom;
     idBool             sAllColumnUsed;
+    idBool             sWithViewProperty;
 
     IDU_FIT_POINT_FATAL( "qmoCheckViewColumnRef::checkQuerySet::__FT__" );
+
+    // PROJ-2749 BUG-48090 적용사항 on/off 프로퍼티 추가
+    //        __optimizer_with_view = 1인 경우 
+    //         with 뷰에 PUSH PROJECTION 기법 적용한다.
+    //         ( 단, recursive with 뷰 제외 )
+    if ( ( QCU_OPTIMIZER_WITH_VIEW & QCU_OPT_WITH_VIEW_MODE1 )
+         == QCU_OPT_WITH_VIEW_MODE1 )
+    {
+        sWithViewProperty = ID_TRUE;
+    }
+    else
+    {
+        sWithViewProperty = ID_FALSE;
+    }
 
     /********************************************
      * 1. 모든 Column을 사용해야 하는지 확인
@@ -192,7 +207,8 @@ qmoCheckViewColumnRef::checkQuerySet( qmsQuerySet      * aQuerySet,
 
                 // BUG-48090 현재 QuerySet 절을 탐색하여 With View 플래그가 설정되어 있으면, 
                 // 모든 컬럼이 유효하도록 설정한다.
-                if ( sAllColumnUsed == ID_FALSE )
+                if ( ( sAllColumnUsed == ID_FALSE ) &&
+                     ( sWithViewProperty == ID_FALSE ) )
                 {
                     IDE_TEST( checkWithViewFlagFromQuerySet( aQuerySet,
                                                              &sAllColumnUsed /* sIsWithView */ )
@@ -296,7 +312,9 @@ qmoCheckViewColumnRef::checkQuerySet( qmsQuerySet      * aQuerySet,
             IDE_TEST( checkFromTree( sFrom,
                                      aParentColumnRef,
                                      aOrderBy,
-                                     sAllColumnUsed ) != IDE_SUCCESS );
+                                     sAllColumnUsed,
+                                     sWithViewProperty )
+                      != IDE_SUCCESS );
         }
     }
     else // SET OPERATORS
@@ -326,7 +344,8 @@ IDE_RC
 qmoCheckViewColumnRef::checkFromTree( qmsFrom          * aFrom,
                                       qmsColumnRefList * aParentColumnRef,
                                       qmsSortColumns   * aOrderBy,
-                                      idBool             aAllColumnUsed )
+                                      idBool             aAllColumnUsed,
+                                      idBool             aOptWithViewProperty )
 {
 /***********************************************************************
  *
@@ -349,6 +368,7 @@ qmoCheckViewColumnRef::checkFromTree( qmsFrom          * aFrom,
  *
  ***********************************************************************/
     qmsTableRef      * sTableRef;
+    qmsColumnRefList * sColumnRef;
 
     IDU_FIT_POINT_FATAL( "qmoCheckViewColumnRef::checkFromTree::__FT__" );
 
@@ -357,7 +377,9 @@ qmoCheckViewColumnRef::checkFromTree( qmsFrom          * aFrom,
         sTableRef = aFrom->tableRef;
 
         // 하위에 View가 없는 경우 수행하지 않는다.
-        if ( sTableRef->view != NULL )
+        // PROJ-2749 recursive with 뷰는 수행하지 않는다(viewColumnRefList가 null임)
+        if ( ( sTableRef->view != NULL ) &&
+             ( sTableRef->recursiveView == NULL ) )
         {
             /*
              * Top Query Block, Merged View 또는 Set Operation으로 인해 모든 Column이 유효하면 수행하지 않는다.
@@ -374,11 +396,16 @@ qmoCheckViewColumnRef::checkFromTree( qmsFrom          * aFrom,
             {
                 // Nothing to do.
             }
-
+ 
             // BUG-48090 sTableRef에 With View 플래그가 설정되어 있으면, 
             // sTableRef의 하위 View를 최적화할 때, 모든 컬럼이 유효하도록 설정한다.
-            if ( ( sTableRef->flag & QMS_TABLE_REF_WITH_VIEW_MASK ) 
-                 == QMS_TABLE_REF_WITH_VIEW_TRUE )
+            // PROJ-2749 __optimizer_with_view = 1 off 일때 BUG-48090 적용되도록 합니다.
+            //           compact with인 경우 제외
+            if ( ( aOptWithViewProperty == ID_FALSE ) && 
+                 ( ( sTableRef->flag & QMS_TABLE_REF_WITH_VIEW_MASK ) 
+                   == QMS_TABLE_REF_WITH_VIEW_TRUE ) &&
+                 ( ( sTableRef->flag & QMS_TABLE_REF_COMPACT_WITH_MASK )
+                   == QMS_TABLE_REF_COMPACT_WITH_FALSE ) )
             {
                 IDE_TEST( checkViewColumnRef( sTableRef->view,
                                               NULL,
@@ -394,7 +421,11 @@ qmoCheckViewColumnRef::checkFromTree( qmsFrom          * aFrom,
             }
 
             // Same View Reference 가 있을 경우 처리
-            if ( sTableRef->sameViewRef != NULL )
+            // PROJ-2749 compact with인 경우
+            //           sameViewRef->stmt 와 sTableRef->view 가 같다.
+            if ( ( sTableRef->sameViewRef != NULL ) &&
+                 ( ( sTableRef->flag & QMS_TABLE_REF_COMPACT_WITH_MASK )
+                   == QMS_TABLE_REF_COMPACT_WITH_FALSE ) )
             {
                 /* BUG-47787 recursive with 구문이 중첩되고 CASE WHEN의
                  * Subquery로 사용될 경우 FATAL
@@ -415,6 +446,20 @@ qmoCheckViewColumnRef::checkFromTree( qmsFrom          * aFrom,
             {
                 // Nothing to do.
             }
+
+            // PROJ-2749 compact with는 statement를 공유하고 있어서
+            //           checkUselessViewColumnRef에서 변경한 isUsed를 초기화해야한다
+            // Shard인 경우 초기화 하면 push projection이 수행되지 않는다. 
+            if ( ( SDU_SHARD_ENABLE == 0 ) &&
+                 ( aAllColumnUsed == ID_FALSE ) )
+            {
+                for ( sColumnRef  = sTableRef->viewColumnRefList;
+                      sColumnRef != NULL;
+                      sColumnRef  = sColumnRef->next )
+                {
+                    sColumnRef->isUsed = ID_TRUE;
+                }
+            }
         }
         else
         {
@@ -427,13 +472,15 @@ qmoCheckViewColumnRef::checkFromTree( qmsFrom          * aFrom,
         IDE_TEST( checkFromTree( aFrom->left,
                                  aParentColumnRef,
                                  aOrderBy,
-                                 aAllColumnUsed )
+                                 aAllColumnUsed,
+                                 aOptWithViewProperty )
                   != IDE_SUCCESS );
 
         IDE_TEST( checkFromTree( aFrom->right,
                                  aParentColumnRef,
                                  aOrderBy,
-                                 aAllColumnUsed )
+                                 aAllColumnUsed,
+                                 aOptWithViewProperty )
                   != IDE_SUCCESS );
     }
 
@@ -717,8 +764,11 @@ IDE_RC qmoCheckViewColumnRef::checkWithViewFlagFromFromTree( qmsFrom      * aFro
             {
                 sTableRef = aFrom->tableRef;
 
-                if ( ( sTableRef->flag & QMS_TABLE_REF_WITH_VIEW_MASK ) 
-                     == QMS_TABLE_REF_WITH_VIEW_TRUE )
+                // PROJ-2749 compact with인 경우 BUG-48090이 적용되지 않습니다.
+                if ( ( ( sTableRef->flag & QMS_TABLE_REF_WITH_VIEW_MASK ) 
+                       == QMS_TABLE_REF_WITH_VIEW_TRUE ) &&
+                     ( ( sTableRef->flag & QMS_TABLE_REF_COMPACT_WITH_MASK )
+                       == QMS_TABLE_REF_COMPACT_WITH_FALSE ) )
                 {
                     *aIsWithView = ID_TRUE;
                 }

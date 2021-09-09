@@ -2514,7 +2514,7 @@ void sdi::freeLinkerParam( sdiConnectInfo * aConnectInfo )
     }
 }
 
-void sdi::setLinkerParam( sdiConnectInfo * aConnectInfo )
+void sdi::setLinkerParam( void * aSession, sdiConnectInfo * aConnectInfo )
 {
     sdiLinkerParam * sLinkerParam = NULL;
 
@@ -2524,6 +2524,10 @@ void sdi::setLinkerParam( sdiConnectInfo * aConnectInfo )
 
         sLinkerParam->param.mMessageCallback.mFunction = sdi::printMessage;
         sLinkerParam->param.mMessageCallback.mArgument = aConnectInfo;
+
+        sLinkerParam->param.mShardNodeRemovalCheckerCallback.mSession     = aSession;
+        sLinkerParam->param.mShardNodeRemovalCheckerCallback.mConnectInfo = aConnectInfo;
+        sLinkerParam->param.mShardNodeRemovalCheckerCallback.mFunc        = sdi::shardNodeRemovalCheckerCallback;
     }
 }
 
@@ -2636,6 +2640,8 @@ IDE_RC sdi::initializeSession( qcSession * aSession,
                 qci::mSessionCallback.mGetSessionTypeString( aSession->mMmSession );
         }
 
+        sdiFailoverSuspend::clear( &sClientInfo->mFailoverSuspendCmd );
+
         sState = 1;
 
         sConnectInfo = sClientInfo->mConnectInfo;
@@ -2654,7 +2660,7 @@ IDE_RC sdi::initializeSession( qcSession * aSession,
 
             IDE_DASSERT( SDI_LINKER_PARAM_IS_USED( sConnectInfo ) == ID_TRUE )
 
-            setLinkerParam( sConnectInfo );
+            setLinkerParam( aSession->mMmSession, sConnectInfo );
 
 
             // qcSession
@@ -2667,8 +2673,6 @@ IDE_RC sdi::initializeSession( qcSession * aSession,
             sConnectInfo->mShardMetaNumber        = aConnectSMN;
             sConnectInfo->mRebuildShardMetaNumber = aConnectSMN;
             sConnectInfo->mFailoverTarget         = SDI_FAILOVER_NOT_USED;
-            sConnectInfo->mFailoverSuspend.mSuspendType  = SDI_FAILOVER_SUSPEND_NONE;
-            sConnectInfo->mFailoverSuspend.mNewErrorCode = idERR_IGNORE_NoError;
 
             sdl::clearInternalConnectResult( sConnectInfo );
 
@@ -2921,6 +2925,8 @@ IDE_RC sdi::initializeSessionWithNodeList( qcSession * aSession,
                 qci::mSessionCallback.mGetSessionTypeString( aSession->mMmSession );
         }
 
+        sdiFailoverSuspend::clear( &sClientInfo->mFailoverSuspendCmd );
+
         sState = 1;
 
         sConnectInfo = sClientInfo->mConnectInfo;
@@ -2939,7 +2945,7 @@ IDE_RC sdi::initializeSessionWithNodeList( qcSession * aSession,
 
             IDE_DASSERT( SDI_LINKER_PARAM_IS_USED( sConnectInfo ) == ID_TRUE )
 
-            setLinkerParam( sConnectInfo );
+            setLinkerParam( aSession->mMmSession, sConnectInfo );
 
 
             // qcSession
@@ -2952,8 +2958,6 @@ IDE_RC sdi::initializeSessionWithNodeList( qcSession * aSession,
             sConnectInfo->mShardMetaNumber        = aConnectSMN;
             sConnectInfo->mRebuildShardMetaNumber = aConnectSMN;
             sConnectInfo->mFailoverTarget         = SDI_FAILOVER_NOT_USED;
-            sConnectInfo->mFailoverSuspend.mSuspendType  = SDI_FAILOVER_SUSPEND_NONE;
-            sConnectInfo->mFailoverSuspend.mNewErrorCode = idERR_IGNORE_NoError;
 
             sdl::clearInternalConnectResult( sConnectInfo );
 
@@ -3214,6 +3218,8 @@ IDE_RC sdi::updateSession( qcSession * aSession,
 
         IDE_DASSERT( sNewNodeCount > sClientInfo->mCount );
 
+        sdiFailoverSuspend::clear( &sClientInfo->mFailoverSuspendCmd );
+
         /* set Added node info */
         sState = 1;
 
@@ -3234,7 +3240,7 @@ IDE_RC sdi::updateSession( qcSession * aSession,
 
             IDE_DASSERT( SDI_LINKER_PARAM_IS_USED( sConnectInfo ) == ID_TRUE )
 
-            setLinkerParam( sConnectInfo );
+            setLinkerParam( aSession->mMmSession, sConnectInfo );
 
 
             // qcSession
@@ -3247,8 +3253,6 @@ IDE_RC sdi::updateSession( qcSession * aSession,
             sConnectInfo->mShardMetaNumber               = aNewSMN;
             sConnectInfo->mRebuildShardMetaNumber        = aNewSMN;
             sConnectInfo->mFailoverTarget                = SDI_FAILOVER_NOT_USED;
-            sConnectInfo->mFailoverSuspend.mSuspendType  = SDI_FAILOVER_SUSPEND_NONE;
-            sConnectInfo->mFailoverSuspend.mNewErrorCode = idERR_IGNORE_NoError;
 
             sdl::clearInternalConnectResult( sConnectInfo );
 
@@ -3395,9 +3399,16 @@ void sdi::cleanupShardRebuildSession( qcSession * aSession, idBool * aRemoved )
             {
                 IDE_DASSERT( SDI_LINKER_PARAM_IS_USED( sConnectInfo ) == ID_TRUE )
 
+                /* PROJ-2745
+                 * sClientInfo->mConnectInfo[i] 에서 
+                 * 현재 arrary offset (i) 보다 앞서 위치한 노드가 제거 되었다면
+                 * ConnectInfo 의 위치(arrary offset)가 변경되었다.
+                 * 따라서 setLinkerParam 함수를 다시 호출해서
+                 * 변경된 ConnectInfo 의 주소를 다시 저장한다.
+                 */
                 if ( SDI_LINKER_PARAM_IS_USED( sConnectInfo ) == ID_TRUE )
                 {
-                    setLinkerParam( sConnectInfo );
+                    setLinkerParam( aSession->mMmSession, sConnectInfo );
                 }
 
                 ++i;
@@ -3508,13 +3519,29 @@ IDE_RC sdi::allocConnect( sdiConnectInfo * aConnectInfo )
 
 void sdi::freeConnectImmediately( sdiConnectInfo * aConnectInfo )
 {
+    qcSession          * sQcSession  = NULL;
+    sdiClientInfo      * sClientInfo = NULL;
+    sdiFailoverSuspend   sFailoverSuspend;
+
     if ( aConnectInfo->mDbc != NULL )
     {
+        sQcSession = aConnectInfo->mSession;
+
+        if ( sQcSession != NULL )
+        {
+            sClientInfo = sQcSession->mQPSpecific.mClientInfo;
+        }
+
+        sFailoverSuspend.set( sClientInfo,
+                              SDI_FAILOVER_SUSPEND_ALL );
+
         (void)sdl::disconnectLocal( aConnectInfo );
 
-        if ( aConnectInfo->mSession != NULL )
+        sFailoverSuspend.unset( sClientInfo );
+
+        if ( sQcSession != NULL )
         {
-            if ( aConnectInfo->mSession->mMmSession != NULL )
+            if ( sQcSession->mMmSession != NULL )
             {
                 qci::mSessionCallback.mFreeShardStmt( aConnectInfo->mSession->mMmSession,
                                                       aConnectInfo->mNodeInfo.mNodeId,
@@ -3524,7 +3551,6 @@ void sdi::freeConnectImmediately( sdiConnectInfo * aConnectInfo )
 
         (void)sdl::freeConnect( aConnectInfo );
 
-        aConnectInfo->mDbc = NULL;
         aConnectInfo->mLinkFailure = ID_FALSE;
     }
     else
@@ -6777,64 +6803,6 @@ void sdi::removeCallback( void * aCallback )
     sdl::removeCallback( aCallback );
 }
 
-IDE_RC sdi::setFailoverSuspend( qcSession              * aSession,
-                                sdiFailoverSuspendType   aSuspendOnType,
-                                UInt                     aNewErrorCode )
-{
-    sdiClientInfo  * sClientInfo    = NULL;
-    sdiConnectInfo * sConnectInfo   = NULL;
-    SInt             i;
-
-    if ( aSuspendOnType != SDI_FAILOVER_SUSPEND_NONE )
-    {
-        IDE_DASSERT( aNewErrorCode != idERR_IGNORE_NoError );
-    }
-
-    sClientInfo = aSession->mQPSpecific.mClientInfo;
-    if ( sClientInfo != NULL )
-    {
-        sConnectInfo = sClientInfo->mConnectInfo;
-
-        for ( i = 0 ; i < sClientInfo->mCount; i++, sConnectInfo++ )
-        {
-            if ( sConnectInfo->mDbc != NULL )
-            {
-                IDE_TEST( sdl::setFailoverSuspend( sConnectInfo,
-                                                   aSuspendOnType,
-                                                   aNewErrorCode )
-                          != IDE_SUCCESS );
-            }
-        }
-    }
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
-IDE_RC sdi::setFailoverSuspend( sdiConnectInfo         * aConnectInfo,
-                                sdiFailoverSuspendType   aSuspendOnType,
-                                UInt                     aNewErrorCode )
-{
-    if ( aSuspendOnType != SDI_FAILOVER_SUSPEND_NONE )
-    {
-        IDE_DASSERT( aNewErrorCode != idERR_IGNORE_NoError );
-    }
-
-    IDE_TEST( sdl::setFailoverSuspend( aConnectInfo,
-                                       aSuspendOnType,
-                                       aNewErrorCode )
-              != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
 sdiShardPin sdi::makeShardPin()
 {
     return sdmShardPinMgr::getNewShardPin();
@@ -7463,6 +7431,8 @@ UInt sdi::getShardInternalConnAttrLoginTimeout()
 }
 
 void sdi::closeShardSessionByNodeId( qcSession * aSession,
+                                     ULong       aShardMetaNumber,
+                                     ULong       aReceiveShardMetaNumber,
                                      UInt        aNodeId,
                                      UChar       aDestination )
 {
@@ -7493,13 +7463,22 @@ void sdi::closeShardSessionByNodeId( qcSession * aSession,
 
     if ( sFound != ID_TRUE )
     {
-        /* impossible case. */
-        ideLog::log( IDE_SD_1, "[SHARD_META_ERROR] Not found shard fail-over align destination data node.: node-id %"ID_UINT32_FMT"\n",
-                               aNodeId );
+        if ( aShardMetaNumber != aReceiveShardMetaNumber )
+        {
+            /* possible case.
+             * Server 와 shardcli 가 알고 있는 SMN 이 다른 경우.
+             * nothing to do */
+        }
+        else
+        {
+            /* impossible case. */
+            ideLog::log( IDE_SD_1,
+                         "[SHARD_META_ERROR] Not found shard fail-over align destination data node.: node-id %"ID_UINT32_FMT"\n",
+                         aNodeId );
 
-        /* PROJ-2755 will fix
-         * IDE_DASSERT( 0 );
-         */
+            IDE_DASSERT( 0 );
+        }
+
     }
 }
 
@@ -10725,7 +10704,8 @@ IDE_RC sdi::validateOneReshardTable( qcStatement * aStatement,
                     IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
                                                 sRangeInfo->mRanges[i].mNodeId,
                                                 aTableObjInfo->mSMN,
-                                                &sNode )
+                                                &sNode,
+                                                ID_TRUE )
                               != IDE_SUCCESS );
                 }
             }
@@ -10736,7 +10716,8 @@ IDE_RC sdi::validateOneReshardTable( qcStatement * aStatement,
                     IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
                                                 sTableInfo->mDefaultNodeId,
                                                 aTableObjInfo->mSMN,
-                                                &sNode )
+                                                &sNode,
+                                                ID_TRUE )
                             != IDE_SUCCESS );
                 }
             }
@@ -10749,7 +10730,8 @@ IDE_RC sdi::validateOneReshardTable( qcStatement * aStatement,
             IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
                                         sRangeInfo->mRanges[0].mNodeId,
                                         aTableObjInfo->mSMN,
-                                        &sNode )
+                                        &sNode,
+                                        ID_TRUE )
                     != IDE_SUCCESS );
 
             break;
@@ -10770,7 +10752,8 @@ IDE_RC sdi::validateOneReshardTable( qcStatement * aStatement,
         IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
                                     sTableInfo->mDefaultNodeId,
                                     aTableObjInfo->mSMN,
-                                    &sNode )
+                                    &sNode,
+                                    ID_TRUE )
                   != IDE_SUCCESS );
         IDE_TEST_RAISE( sNode.mNodeId == SDI_NODE_NULL_ID, ERR_NOT_FOUND_NODE);
         idlOS::strncpy( aOutDefaultNodeName, sNode.mNodeName, SDI_NODE_NAME_MAX_SIZE );
@@ -10878,7 +10861,8 @@ IDE_RC sdi::validateOneReshardProc( qcStatement * aStatement,
                         IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
                                                     sRangeInfo->mRanges[i].mNodeId,
                                                     aProcObjInfo->mSMN,
-                                                    &sNode )
+                                                    &sNode,
+                                                    ID_TRUE )
                                   != IDE_SUCCESS );
                     }
                 }
@@ -10888,7 +10872,8 @@ IDE_RC sdi::validateOneReshardProc( qcStatement * aStatement,
                 IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
                                             sProcInfo->mDefaultNodeId,
                                             aProcObjInfo->mSMN,
-                                            &sNode )
+                                            &sNode,
+                                            ID_TRUE )
                         != IDE_SUCCESS );
                 sKeyValue = (SChar*)"DEFAULT";
             }
@@ -10898,7 +10883,8 @@ IDE_RC sdi::validateOneReshardProc( qcStatement * aStatement,
             IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
                                         sRangeInfo->mRanges[0].mNodeId,
                                         aProcObjInfo->mSMN,
-                                        &sNode )
+                                        &sNode,
+                                        ID_TRUE )
                     != IDE_SUCCESS );
             break;
         case SDI_SOLO_DIST_OBJECT:
@@ -10906,7 +10892,8 @@ IDE_RC sdi::validateOneReshardProc( qcStatement * aStatement,
             IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
                                         sRangeInfo->mRanges[0].mNodeId,
                                         aProcObjInfo->mSMN,
-                                        &sNode )
+                                        &sNode,
+                                        ID_TRUE )
                     != IDE_SUCCESS );
             break;
         case SDI_NON_SHARD_OBJECT:
@@ -10926,7 +10913,8 @@ IDE_RC sdi::validateOneReshardProc( qcStatement * aStatement,
         IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
                                     sProcInfo->mDefaultNodeId,
                                     aProcObjInfo->mSMN,
-                                    &sNode )
+                                    &sNode,
+                                    ID_TRUE )
                   != IDE_SUCCESS );
         IDE_TEST_RAISE( sNode.mNodeId == SDI_NODE_NULL_ID, ERR_NOT_FOUND_NODE);
         idlOS::strncpy( aOutDefaultNodeName, sNode.mNodeName, SDI_NODE_NAME_MAX_SIZE );
@@ -12365,11 +12353,10 @@ IDE_RC sdi::propagateShardMetaNumber( qcSession * aSession )
                                                         sConnectInfo )
                          == IDE_SUCCESS )
                     {
-                        if ( sdl::setConnAttr( sConnectInfo,
-                                               SDL_ALTIBASE_SHARD_META_NUMBER,
-                                               sTargetSMN,
-                                               NULL,
-                                               & sConnectInfo->mLinkFailure )
+                        if ( sdl::setConnectAttr4ShardMetaNumber( sConnectInfo,
+                                                                  SDL_ALTIBASE_SHARD_META_NUMBER,
+                                                                  sTargetSMN,
+                                                                  & sConnectInfo->mLinkFailure )
                              == IDE_SUCCESS )
                         {
                             sConnectInfo->mShardMetaNumber = sTargetSMN;
@@ -12466,11 +12453,10 @@ IDE_RC sdi::propagateRebuildShardMetaNumber( qcSession * aSession )
                                                         sConnectInfo )
                          == IDE_SUCCESS )
                     {
-                        if ( sdl::setConnAttr( sConnectInfo,
-                                               SDL_ALTIBASE_REBUILD_SHARD_META_NUMBER,
-                                               sTargetSMN,
-                                               NULL,
-                                               & sConnectInfo->mLinkFailure )
+                        if ( sdl::setConnectAttr4ShardMetaNumber( sConnectInfo,
+                                                                  SDL_ALTIBASE_REBUILD_SHARD_META_NUMBER,
+                                                                  sTargetSMN,
+                                                                  & sConnectInfo->mLinkFailure )
                              == IDE_SUCCESS )
                         {
                             sConnectInfo->mRebuildShardMetaNumber = sTargetSMN;
@@ -14236,6 +14222,168 @@ IDE_RC sdi::checkFailoverHistoryOverSMN( ULong         aSMN,
     ideLog::log( IDE_SD_1, "[SHARD_META_ERROR] Failure. errorcode 0x%05"ID_XINT32_FMT" %s\n",
                            E_ERROR_CODE(ideGetErrorCode()),
                            ideGetErrorMsg(ideGetErrorCode()));
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::validateCheckShardMetaUpdateCause( sdiCheckShardMetaUpdateCause aCause )
+{
+    IDE_TEST_RAISE( ( ( aCause <= SDI_CHECK_SHARD_META_UPDATE_CAUSED_INIT ) ||
+                      ( aCause >= SDI_CHECK_SHARD_META_UPDATE_CAUSED_MAX ) ),
+                    ErrorInvalid );
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ErrorInvalid );
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::validateCheckShardMetaUpdateCause",
+                                  "Parameter value is invalid" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+void sdi::shardNodeRemovalCheckerCallback( void       * aMmSession,
+                                           void       * aConnectInfo,
+                                           idBool     * aIsDroped )
+{
+    if ( aMmSession != NULL )
+    {
+        qci::mSessionCallback.mShardNodeRemovalChecker(
+            aMmSession,
+            aConnectInfo,
+            aIsDroped );
+    }
+    else
+    {
+        *aIsDroped = ID_FALSE;
+    }
+}
+
+IDE_RC sdi::shardNodeRemovalChecker( smiTrans       * aTrans,
+                                     ULong            aTargetSMN,
+                                     sdiConnectInfo * aTargetConnectInfo,
+                                     idBool         * aIsDroped )
+{
+    sdiNode sNode;
+
+    * aIsDroped = ID_FALSE;
+
+    IDE_TEST( getNodeByID( aTrans,
+                           aTargetConnectInfo->mNodeId,
+                           aTargetSMN,
+                           &sNode )
+              != IDE_SUCCESS );
+
+    if ( sNode.mNodeId == SDI_NODE_NULL_ID )
+    {
+        * aIsDroped = ID_TRUE;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdi::getNodeByID( smiTrans * aTrans,
+                         UInt       aTargetNodeID,
+                         ULong      aTargetSMN,
+                         sdiNode  * aNode )
+{
+    smiTrans       sTrans;
+    smiStatement   sSmiStmt;
+    smiStatement * sDummySmiStmt = NULL;
+    UShort         sTransStage = 0;
+    idBool         sIsStmtBegun = ID_FALSE;
+
+    idvSQL       * sStatistics = NULL;
+    smiStatement * sSmiStmtForMetaInfo = NULL;
+
+    IDE_DASSERT( aNode != NULL );
+
+    if ( aTrans == NULL )
+    {
+        IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
+        sTransStage = 1;
+
+        IDE_TEST( sTrans.begin( &sDummySmiStmt, NULL )
+                  != IDE_SUCCESS );
+        sTransStage = 2;
+
+        sStatistics = NULL;
+        sSmiStmtForMetaInfo = sDummySmiStmt;        
+    }
+    else
+    {
+        IDE_TEST_RAISE( aTrans->isBegin() == ID_FALSE, ERR_INVALID_TRANS );
+
+        sStatistics = aTrans->getStatistics();
+        sSmiStmtForMetaInfo = aTrans->getStatement();
+    }
+
+    IDE_TEST( sSmiStmt.begin( sStatistics,
+                              sSmiStmtForMetaInfo,
+                              (SMI_STATEMENT_UNTOUCHABLE |
+                               SMI_STATEMENT_MEMORY_CURSOR) )
+              != IDE_SUCCESS );
+    sIsStmtBegun = ID_TRUE;
+
+    IDE_TEST( sdm::getNodeByID( &sSmiStmt,
+                                aTargetNodeID,
+                                aTargetSMN,
+                                aNode,
+                                ID_FALSE )
+              != IDE_SUCCESS );
+
+    IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
+    sIsStmtBegun = ID_FALSE;
+
+    if ( aTrans == NULL )
+    {
+        IDE_TEST( sTrans.commit() != IDE_SUCCESS );
+        sTransStage = 1;
+
+        sTransStage = 0;
+        IDE_TEST( sTrans.destroy( NULL ) != IDE_SUCCESS );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_INVALID_TRANS )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdi::getInternalNodeInfo",
+                                  "Invalid transaction" ) );
+    }
+    IDE_EXCEPTION_END;    
+
+    if ( sIsStmtBegun == ID_TRUE )
+    {
+        (void)sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    switch ( sTransStage )
+    {
+        case 2:
+            ( void )sTrans.rollback();
+            /* fall through */
+        case 1:
+            ( void )sTrans.destroy( NULL );
+            /* fall through */
+        default:
+            break;
+    }
+
     return IDE_FAILURE;
 }
 

@@ -4631,3 +4631,137 @@ IDE_RC qciMisc::makeProcStatusInvalidAndSetShardSplitMethodByName( qcStatement *
 
     return IDE_FAILURE;
 }
+
+// BUG-48345 Lock procedure statement
+void qciMisc::freePSMLatchList ( qciSession * aQciSession, const SChar * aSavepoint )
+{
+    qcPSMLatchList * sLatchList;
+    qcPSMLatchList * sLatchListNext;
+
+    sLatchList  = aQciSession->mQPSpecific.mPSMLatchList;
+
+    while( sLatchList != NULL )
+    {
+        sLatchListNext = sLatchList->mNext;
+
+        // mType == 1 : PSM Latch
+        // mType == 2 : Savepoint
+        if ( sLatchList->mType == 1 )
+        {
+            // PSM Latch는 제거한다.
+            while ( sLatchList->mLatchCount > 0 )
+            {
+                (void)qsxProc::unlatch( sLatchList->mProcOID );
+                sLatchList->mLatchCount--;
+            }
+        }
+        else
+        {
+            if ( aSavepoint != NULL )
+            {
+                if ( idlOS::strMatch( sLatchList->mSvpStr,
+                                      sLatchList->mSvpStrLen,
+                                      aSavepoint,
+                                      idlOS::strlen(aSavepoint) ) == 0 )
+                {
+                    // Break the loop when the savepoint is found.
+                    break;
+                }
+            }
+        }
+
+        (void)iduMemMgr::free(sLatchList);
+        aQciSession->mQPSpecific.mPSMLatchList = sLatchListNext;
+        sLatchList = sLatchListNext;
+    }
+}
+
+IDE_RC qciMisc::addSavepointToPSMLatchList( qciSession * aQciSession, const SChar * aSavepoint )
+{
+    qcPSMLatchList * sLatchList;
+    qcPSMLatchList * sLatchListPrev = NULL;
+    UInt             sSavepointLen;
+    UInt             sState = 0;
+
+    sLatchList    = aQciSession->mQPSpecific.mPSMLatchList;
+    sSavepointLen = idlOS::strlen(aSavepoint);
+
+    // 1. Savepoint가 있는지 찾는다.
+    while ( sLatchList != NULL )
+    {
+        // mType == 2 : Savepoint
+        if ( sLatchList->mType == 2 )
+        {
+            if ( idlOS::strMatch( sLatchList->mSvpStr,
+                                  sLatchList->mSvpStrLen,
+                                  aSavepoint,
+                                  sSavepointLen ) == 0 )
+            {
+                // Break the loop when the savepoint is found.
+                break;
+            }
+
+        }
+
+        sLatchListPrev = sLatchList;
+        sLatchList = sLatchList->mNext;
+    }
+
+    // 2-1. Latch list에서 savepoint를 찾지 못한 경우
+    if ( sLatchList == NULL )
+    {
+        IDE_TEST( iduMemMgr::malloc( IDU_MEM_QMX,
+                                     ID_SIZEOF(qcPSMLatchList) + sSavepointLen + 1,
+                                     (void**)&sLatchList )
+                  != IDE_SUCCESS );
+        sState = 1;
+
+        sLatchList->mType      = 2;
+        sLatchList->mSvpStrLen = sSavepointLen;
+        sLatchList->mSvpStr    = ((SChar*)sLatchList + ID_SIZEOF(qcPSMLatchList));
+
+        idlOS::strncpy(sLatchList->mSvpStr, aSavepoint, sSavepointLen);
+        sLatchList->mSvpStr[sSavepointLen] = '\0';
+
+        sLatchList->mNext = aQciSession->mQPSpecific.mPSMLatchList;
+        aQciSession->mQPSpecific.mPSMLatchList = sLatchList;
+        sState = 2;
+    }
+    else
+    {
+        // 2-2. Latch list에서 savepoint를 찾았고, 처음이 아니면 list의 처음으로 이동한다.
+        if ( sLatchListPrev != NULL )
+        {
+            sLatchListPrev->mNext = sLatchList->mNext;
+            sLatchList->mNext     = aQciSession->mQPSpecific.mPSMLatchList;
+            aQciSession->mQPSpecific.mPSMLatchList = sLatchList;
+        }
+    }
+
+    sState = 0;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    switch ( sState )
+    {
+        case 2:
+            {
+                aQciSession->mQPSpecific.mPSMLatchList = aQciSession->mQPSpecific.mPSMLatchList->mNext;
+            }
+            /* fall through */
+        case 1:
+            {
+                iduMemMgr::free(sLatchList);
+            }
+            break;
+        default:
+            {
+                break;
+            }
+    }
+
+    return IDE_FAILURE;
+}
+

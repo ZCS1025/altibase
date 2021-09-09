@@ -301,6 +301,8 @@ IDE_RC sdfCalculate_SetShardTableClone( mtcNode*     aNode,
                   != IDE_SUCCESS );
 
         sdi::setShardMetaTouched( sStatement->session );
+
+        sdf::setProcedureJobType();
         
         IDE_TEST( sdiZookeeper::checkAllNodeAlive( &sIsAlive )
                   != IDE_SUCCESS );
@@ -451,13 +453,6 @@ IDE_RC sdfCalculate_SetShardTableClone( mtcNode*     aNode,
                   != IDE_SUCCESS );
     }
     
-    // revert job all remove
-    if ( sdiZookeeper::isExistRevertJob() == ID_TRUE )
-    {
-        (void) sdiZookeeper::removeRevertJob();
-        IDE_DASSERT( sdiZookeeper::isExistRevertJob() != ID_TRUE );
-    }
-    
     idlOS::snprintf( sSqlStr, SDF_QUERY_LEN,
                      "COMMIT " );
 
@@ -533,16 +528,7 @@ IDE_RC sdfCalculate_SetShardTableClone( mtcNode*     aNode,
     IDE_EXCEPTION_END;
 
     IDE_PUSH();
-
-    if ( sdiZookeeper::isExistRevertJob() == ID_TRUE )
-    {
-        (void) sdiZookeeper::executeRevertJob( ZK_REVERT_JOB_REPL_ITEM_DROP );
-        (void) sdiZookeeper::executeRevertJob( ZK_REVERT_JOB_REPL_DROP );
-        (void) sdiZookeeper::executeRevertJob( ZK_REVERT_JOB_TABLE_ALTER );
-        (void) sdiZookeeper::removeRevertJob();
-        IDE_DASSERT( sdiZookeeper::isExistRevertJob() != ID_TRUE );
-    }
-
+    
     (void) executeTruncateTableToNode( sStatement,
                                        sUserNameStr,
                                        sTableNameStr,

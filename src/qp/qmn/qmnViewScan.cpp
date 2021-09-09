@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmnViewScan.cpp 85333 2019-04-26 02:34:41Z et16 $
+ * $Id: qmnViewScan.cpp 91627 2021-09-08 01:47:35Z ahra.cho $
  *
  * Description :
  *     VSCN(View SCaN) Node
@@ -41,6 +41,7 @@
 #include <qcuProperty.h>
 #include <qmnViewMaterialize.h>
 #include <qmnViewScan.h>
+#include <qcg.h>
 
 IDE_RC
 qmnVSCN::init( qcTemplate * aTemplate,
@@ -247,6 +248,15 @@ qmnVSCN::printPlan( qcTemplate   * aTemplate,
 
     iduVarStringAppend( aString,
                         "VIEW-SCAN ( " );
+
+    // PROJ-2749
+    if ( ( QCG_GET_SESSION_TRCLOG_DETAIL_INFORMATION( aTemplate->stmt ) == 1 ) &&
+         ( ( sCodePlan->flag & QMNC_VSCN_COMPACT_WITH_MASK )
+           == QMNC_VSCN_COMPACT_WITH_TRUE ) )
+    {
+        iduVarStringAppend( aString,
+                            "* " );
+    }
 
     if ( ( sCodePlan->viewName.name != NULL ) &&
          ( sCodePlan->viewName.size != QC_POS_EMPTY_SIZE ) )

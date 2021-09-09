@@ -132,6 +132,8 @@ public:
 
     static IDE_RC runRemoteQuery( qcStatement * aStatement,
                                   SChar       * aSqlStr );
+
+    static void setProcedureJobType();
     
 };
 

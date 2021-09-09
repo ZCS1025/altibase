@@ -16,6 +16,7 @@
 
 #include <ulnPrivate.h>
 #include <ulsdDef.h>
+#include <ulsdnFailoverSuspend.h>
 
 ACI_RC ulnShardDbcContextInitialize(ulnFnContext *aFnContext, ulnDbc *aDbc)
 {
@@ -77,6 +78,9 @@ ACI_RC ulnShardDbcContextInitialize(ulnFnContext *aFnContext, ulnDbc *aDbc)
                                ACI_SIZEOF(ulsdFuncCallback)) != ACP_RC_SUCCESS,
                    LABEL_NOT_ENOUGH_MEM);
     aDbc->mShardDbcCxt.mFuncCallback->mInUse = ACP_FALSE;
+
+    /* BUG-47131 샤드 All meta 환경에서 Client failover 시 hang 발생 */
+    ulsdnDbcClearFailoverSuspendState( aDbc );
 
     return ACI_SUCCESS;
 

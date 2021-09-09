@@ -193,6 +193,7 @@ IDE_RC qmoOBYETransform::doTransform4FromTree( qcStatement * aStatement,
 {
     qmsParseTree * sParseTree    = NULL;
     qmsQuerySet  * sQuerySet     = NULL;
+    idBool         sIsTransform  = ID_FALSE;
 
     if ( aFrom->joinType == QMS_NO_JOIN )
     {
@@ -212,30 +213,51 @@ IDE_RC qmoOBYETransform::doTransform4FromTree( qcStatement * aStatement,
                                                aIsTransMode2 )
                           != IDE_SUCCESS );
 
-                // mode1
+                // PROJ-2749 compact with인 경우 OBYE Transformation하면 안됩니다.
                 if ( ( sParseTree->orderBy != NULL ) &&
-                     ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_OBYE_1_MASK )
-                       == QC_TMP_OBYE_1_TRUE ) ) 
+                     ( ( aFrom->tableRef->flag & QMS_TABLE_REF_COMPACT_WITH_MASK )
+                       == QMS_TABLE_REF_COMPACT_WITH_FALSE ) )
                 {
-                    if ( ( aQuerySet->target->targetColumn->node.module == &mtfCount ) &&
-                         ( aQuerySet->target->next == NULL ) &&
-                         ( sParseTree->limit == NULL ) &&
-                         ( sQuerySet->setOp == QMS_NONE ) )
+                    // mode1
+                    if ( ( QC_SHARED_TMPLATE(aStatement)->flag & QC_TMP_OBYE_1_MASK )
+                         == QC_TMP_OBYE_1_TRUE ) 
                     {
-                        sParseTree->orderBy = NULL;
+                        if ( ( aQuerySet->target->targetColumn->node.module == &mtfCount ) &&
+                             ( aQuerySet->target->next == NULL ) &&
+                             ( sParseTree->limit == NULL ) &&
+                             ( sQuerySet->setOp == QMS_NONE ) )
+                        {
+                            sParseTree->orderBy = NULL;
+                            sIsTransform        = ID_TRUE;
+                        }
                     }
-                }
 
-                if ( ( sParseTree->orderBy != NULL ) && 
-                     ( aIsTransMode2 == ID_TRUE ) )
-                {
-                    // mode2일 때 Inline view의 조건 확인
-                    // inlin view가 With view인 경우 제외
-                    if ( ( ( aFrom->tableRef->flag & QMS_TABLE_REF_WITH_VIEW_MASK )
-                           == QMS_TABLE_REF_WITH_VIEW_FALSE ) &&
-                         ( canTranMode2ForInlineView( sParseTree ) == ID_TRUE ) )
+                    // mode2
+                    if ( ( sParseTree->orderBy != NULL ) && 
+                         ( aIsTransMode2 == ID_TRUE ) )
                     {
-                        sParseTree->orderBy = NULL;
+                        if ( canTranMode2ForInlineView( sParseTree ) == ID_TRUE )
+                        {
+                            sParseTree->orderBy = NULL;
+                            sIsTransform        = ID_TRUE;
+                        }
+                    }
+
+                    // PROJ-2749 (bugbug) OBYE된 뷰에 대해서 sameViewRef가 잘못되어
+                    //           결과의 순서가 달라집니다.
+                    if ( sIsTransform == ID_TRUE )
+                    {
+                        if ( aFrom->tableRef->sameViewRef == NULL )
+                        {
+                            // qmoViewMerging::modifySameViewRef에서 OBYE된 sameviewRef처리할때 사용한다.
+                            aFrom->tableRef->flag &= ~QMS_TABLE_REF_OBYE_TRANSFORM_MASK;
+                            aFrom->tableRef->flag |= QMS_TABLE_REF_OBYE_TRANSFORM_TRUE;
+                        }
+                        else
+                        {
+                            // OBYE 변경되었다면 sameViewRef NULL
+                            aFrom->tableRef->sameViewRef = NULL;
+                        }
                     }
                 }
             }
@@ -324,7 +346,6 @@ IDE_RC qmoOBYETransform::doTransform4Predicate( qcStatement * aStatement,
 idBool qmoOBYETransform::canTranMode2ForInlineView( qmsParseTree * aParseTree )
 {
     qmsSFWGH       * sSFWGH;
-    qmsTarget      * sTarget;
 
     if ( aParseTree->querySet->setOp != QMS_NONE )
     {
@@ -345,17 +366,10 @@ idBool qmoOBYETransform::canTranMode2ForInlineView( qmsParseTree * aParseTree )
         IDE_CONT( INVALID_FORM );
     }
 
-    // SELECT절 검사
-    for ( sTarget = sSFWGH->target;
-          sTarget != NULL;
-          sTarget = sTarget->next )
+    // analyticFunc 
+    if ( aParseTree->querySet->analyticFuncList != NULL )
     {
-        if ( ( sTarget->targetColumn->lflag & QTC_NODE_ANAL_FUNC_MASK )
-             == QTC_NODE_ANAL_FUNC_EXIST )
-        {
-            // Window function을 사용한 경우
-            IDE_CONT( INVALID_FORM );
-        }
+        IDE_CONT( INVALID_FORM );
     }
 
     return ID_TRUE;

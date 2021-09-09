@@ -15,7 +15,7 @@
  */
 
 /***********************************************************************
- * $Id: qmvQuerySet.cpp 91515 2021-08-23 06:57:58Z jayce.park $
+ * $Id: qmvQuerySet.cpp 91627 2021-09-08 01:47:35Z ahra.cho $
  **********************************************************************/
 
 #include <idl.h>
@@ -5599,8 +5599,13 @@ IDE_RC qmvQuerySet::validateView(
                                          aTableRef->view )
                   != IDE_SUCCESS );
 
-        // inline view validation
-        IDE_TEST(qmv::validateSelect(aTableRef->view) != IDE_SUCCESS);
+        // PROJ-2749
+        if ( ( aTableRef->flag & QMS_TABLE_REF_COMPACT_WITH_MASK )
+             == QMS_TABLE_REF_COMPACT_WITH_FALSE )
+        {
+            // inline view validation
+            IDE_TEST(qmv::validateSelect(aTableRef->view) != IDE_SUCCESS);
+        }
 
         /* PROJ-2641 Hierarchy Query Index */
         if ( ( ( aTableRef->flag & QMS_TABLE_REF_HIER_VIEW_MASK )
@@ -6591,6 +6596,15 @@ IDE_RC qmvQuerySet::setSameViewRef(
                        ( ( sTableRef->flag & QMS_TABLE_REF_HIER_VIEW_MASK )
                          != QMS_TABLE_REF_HIER_VIEW_TRUE ) ) ) // hierarchy에 사용된 view가 아닌 경우
                 {
+                    if ( ( ( aTableRef->flag & QMS_TABLE_REF_COMPACT_WITH_MASK )
+                           == QMS_TABLE_REF_COMPACT_WITH_TRUE ) && 
+                         ( ( sTableRef->flag & QMS_TABLE_REF_COMPACT_WITH_MASK )
+                           == QMS_TABLE_REF_COMPACT_WITH_FALSE ) )
+                    {
+                        // PROJ-2749 compact with 뷰와 non-compact with 뷰는 같은 뷰가 아니다.
+                        continue;
+                    }
+
                     if ( sTableRef->sameViewRef == NULL )
                     {
                         aTableRef->sameViewRef = sTableRef;

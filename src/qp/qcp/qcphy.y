@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcphy.y 89925 2021-02-03 04:40:48Z ahra.cho $
+ * $Id: qcphy.y 91627 2021-09-08 01:47:35Z ahra.cho $
  **********************************************************************/
 
 %pure_parser
@@ -2128,6 +2128,15 @@ hint_no_parameter
             $<hints>$->parallelHint->table          = NULL;
             $<hints>$->parallelHint->next           = NULL;
             $<hints>$->parallelHint->parallelDegree = 1;
+        }
+        // PROJ-2749
+        else if ( ( idlOS::strMatch( "ALTI_COMPACT_MATERIALIZE", 24, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) ||
+                  ( idlOS::strMatch(      "COMPACT_MATERIALIZE", 19, QTEXT+$<position>1.offset, $<position>1.size ) == 0 ) )
+        {
+            QCP_STRUCT_ALLOC($<hints>$, qmsHints);
+            QCP_SET_INIT_HINTS($<hints>$);
+
+            $<hints>$->viewOptMtrType = QMO_VIEW_OPT_COMPACT_WITH;
         }
         else
         { // syntax error

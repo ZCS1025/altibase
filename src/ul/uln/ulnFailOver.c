@@ -17,6 +17,8 @@
 #include <ulnPrivate.h>
 #include <ulnConnectCore.h>
 #include <ulnFailOver.h>
+#include <ulsdnFailover.h>
+#include <ulsdnFailoverSuspend.h>
 #include <ulnFunctionContext.h>
 #include <ulnDataSource.h>
 #include <ulnTraceLog.h>
@@ -37,7 +39,20 @@ static const acp_char_t* gFailoverTypeName[] =
 
 acp_bool_t ulnFailoverIsOn(ulnDbc *aDbc)
 {
-    return (aDbc->mFailoverServersCnt == 0) ? ACP_FALSE : ACP_TRUE;
+    acp_bool_t sRet = ACP_FALSE;
+
+    if ( aDbc->mShardDbcCxt.mShardSessionType == ULSD_SESSION_TYPE_USER )
+    {
+        sRet = ((aDbc->mFailoverServersCnt > 0) ? ACP_TRUE : ACP_FALSE);
+    }
+    else
+    {
+        /* Coordinator or library connection 경우 무조건 Primary Server Info 를 구성한다.
+         * ulnFailoverBuildServerList() 참고 */
+        sRet = ((aDbc->mFailoverServersCnt > 1) ? ACP_TRUE : ACP_FALSE);
+    }
+
+    return sRet;
 }
 
 ACP_INLINE
@@ -96,7 +111,8 @@ acp_sint32_t ulnFailoverMakeSource( acp_char_t            *aBuf,
  */
 ACI_RC ulnFailoverConnect(ulnFnContext              *aFnContext, 
                           ulnFailoverType            aFailoverType, 
-                          ulnFailoverServerInfo     *aNewServerInfo)
+                          ulnFailoverServerInfo     *aNewServerInfo,
+                          ulsdFailoverResult        *aResult)
 {
     ulnDbc                *sDbc           = ulnFnContextGetDbc(aFnContext);
     ACI_RC                 sRC            = ACI_FAILURE;
@@ -168,6 +184,8 @@ ACI_RC ulnFailoverConnect(ulnFnContext              *aFnContext,
             if (ulnConnectCoreLogicalConn(&sTmpFnContext) == ACI_SUCCESS)
             {
                 ULN_FNCONTEXT_SET_RC(aFnContext, SQL_SUCCESS);
+
+                *aResult = ULSDN_FAILOVER_SUCCESS;
                 sRC = ACI_SUCCESS;
                 break;
             }
@@ -180,6 +198,27 @@ ACI_RC ulnFailoverConnect(ulnFnContext              *aFnContext,
         else
         {
             ulnErrHandleCmError(aFnContext, NULL);
+
+            if ( ulsdnDoFailoverAvailable( aFnContext, aResult )
+                 == ACI_SUCCESS )
+            {
+                if ( (*aResult) == ULSDN_FAILOVER_NODE_REMOVED )
+                {
+                    sRC = ACI_SUCCESS;
+                    break;
+                }
+                else
+                {
+                    /* Continue next retry */
+                    /* Nothing to do here */
+                }
+            }
+            else
+            {
+                sRC = ACI_FAILURE;
+                break;
+            }
+
             acpSleepSec(sRetryDelay);
         }
     }
@@ -187,7 +226,9 @@ ACI_RC ulnFailoverConnect(ulnFnContext              *aFnContext,
     return sRC;
 }
 
-static ACI_RC ulnFailoverCore(ulnFnContext *aFnContext, ulnFailoverType aFailoverType)
+static ACI_RC ulnFailoverCore( ulnFnContext        * aFnContext,
+                               ulnFailoverType       aFailoverType,
+                               ulsdFailoverResult  * aResult )
 {
     ulnDbc                *sDbc           = ulnFnContextGetDbc(aFnContext);
     ACI_RC                 sRC            = ACI_FAILURE;
@@ -196,12 +237,31 @@ static ACI_RC ulnFailoverCore(ulnFnContext *aFnContext, ulnFailoverType aFailove
     acp_uint32_t           sChosen;
     acp_uint32_t           i;
 
-    /* BUG-46453 SessionFailOver=on, AlternateServers를 지정하지 않은 경우 체크 */
     ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
-    ACI_TEST_RAISE(ulnFailoverIsOn(sDbc) != ACP_TRUE, NotSetAlternateServers);
 
-    sRC = ulnFailoverConnect(aFnContext, aFailoverType, sOldServerInfo);
-    ACP_TEST_RAISE(sRC == ACI_SUCCESS, CTF_END);
+    if ( sDbc->mShardDbcCxt.mShardSessionType == ULSD_SESSION_TYPE_USER )
+    {
+        /* BUG-46453 SessionFailOver=on, AlternateServers를 지정하지 않은 경우 체크 */
+        ACI_TEST_RAISE(ulnFailoverIsOn(sDbc) != ACP_TRUE, NotSetAlternateServers);
+    }
+
+    sRC = ulsdnDoFailoverAvailable( aFnContext, aResult );
+    if ( sRC == ACI_SUCCESS )
+    {
+        ACI_TEST_CONT( (*aResult) == ULSDN_FAILOVER_NODE_REMOVED,
+                       CTF_END );
+    }
+    else
+    {
+        /* continue to ulnFailoverConnect() */
+    }
+
+    sRC = ulnFailoverConnect(aFnContext, aFailoverType, sOldServerInfo, aResult);
+    ACI_TEST_CONT(sRC == ACI_SUCCESS, CTF_END);
+
+    ACI_TEST( ulsdnDbcGetFailoverSuspendState(sDbc) == ULSDN_FAILOVER_SUSPEND_ALLOW_RETRY );
+
+    ACI_TEST( ulnFailoverIsOn(sDbc) != ACP_TRUE );
 
     for (i = 0; i < sDbc->mFailoverServersCnt; i++)
     {
@@ -227,8 +287,8 @@ static ACI_RC ulnFailoverCore(ulnFnContext *aFnContext, ulnFailoverType aFailove
             continue;
         }
 
-        sRC = ulnFailoverConnect(aFnContext, aFailoverType, sNewServerInfo);
-        ACP_TEST_RAISE(sRC == ACI_SUCCESS, CTF_END);
+        sRC = ulnFailoverConnect(aFnContext, aFailoverType, sNewServerInfo, aResult);
+        ACI_TEST_CONT(sRC == ACI_SUCCESS, CTF_END);
     }
 
     ACI_EXCEPTION_CONT(CTF_END);
@@ -248,16 +308,23 @@ static ACI_RC ulnFailoverCore(ulnFnContext *aFnContext, ulnFailoverType aFailove
     return ACI_FAILURE;
 }
 
-ACP_INLINE acp_bool_t ulnIsCmError(acp_uint32_t aNativeErrorCode)
+ACP_INLINE acp_bool_t ulnFailoverIsNeeded(ulnFnContext *aFnContext)
 {
-    return ((aNativeErrorCode & ACI_E_ERROR_CODE(ACI_E_MODULE_CM)) == ACI_E_ERROR_CODE(ACI_E_MODULE_CM)) ? ACP_TRUE : ACP_FALSE;
-}
+    ulnDbc * sDbc = NULL;
 
-ACP_INLINE acp_bool_t ulnFailoverIsNeeded(ulnDbc *aDbc)
-{
-    ACI_TEST(ulnFailoverIsOn(aDbc) != ACP_TRUE);
+    ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
 
-    ACI_TEST(ulnDiagRecIsNeedFailover(&aDbc->mObj) != ACP_TRUE);
+    /* ULSD_SESSION_TYPE_COORD, ULSD_SESSION_TYPE_LIB 인 경우
+     * Connection retry 를 수행하기 위해
+     * alternate server 가 지정되어 있지 않아도
+     * failover 를 수행해야 한다.
+     */
+    if ( sDbc->mShardDbcCxt.mShardSessionType == ULSD_SESSION_TYPE_USER )
+    {
+        ACI_TEST(ulnFailoverIsOn(sDbc) != ACP_TRUE);
+    }
+
+    ACI_TEST(ulnDiagRecIsNeedFailover(aFnContext->mHandle.mObj) != ACP_TRUE);
 
     return ACP_TRUE;
 
@@ -269,9 +336,18 @@ ACP_INLINE acp_bool_t ulnFailoverIsNeeded(ulnDbc *aDbc)
 /* BUG-46092 */
 acp_bool_t ulnDiagRecIsNeedFailover(ulnObject *aObject)
 {
-    ulnDiagRec *sDiagRec = NULL;
+    ulnDiagHeader * sDiagHeader = NULL;
+    ulnDiagRec    * sDiagRec    = NULL;
+    acp_sint32_t    sDiagCount  = 0;
+    acp_sint32_t    i           = 0;
 
-    if (ulnGetDiagRecFromObject(aObject, &sDiagRec, 1) == ACI_SUCCESS)
+    sDiagHeader = ulnGetDiagHeaderFromObject( aObject );
+    ulnDiagGetNumber( sDiagHeader, &sDiagCount );
+
+    ACI_TEST_CONT( sDiagCount == 0,
+                   FAILOVER_NEED );
+
+    while ( ( ulnGetDiagRecFromObject( aObject, &sDiagRec, ++i ) == ACI_SUCCESS ) )
     {
         /* Failover 대상
            - CM 에러, 연결 실패 (ref. ulnErrorMgrSetCmError)
@@ -286,37 +362,87 @@ acp_bool_t ulnDiagRecIsNeedFailover(ulnObject *aObject)
             case ACI_E_ERROR_CODE(ulERR_ABORT_CM_GENERAL_ERROR):
             case ACI_E_ERROR_CODE(mmERR_ABORT_ADMIN_MODE_ERROR):
                 /* need failover */
+                ACI_CONT( FAILOVER_NEED );
                 break;
 
             default:
                 /* BUGBUG (2016-12-22) 안해도 될것 같은게, ul 에러로 바꾸기 때문.
                    그래도 일단 방어 차원에서 해둔다. 어떻게 바뀔지 모르고. */
-                ACI_TEST(ulnIsCmError(sDiagRec->mNativeErrorCode) != ACP_TRUE);
+                if (ulnIsCmError(sDiagRec->mNativeErrorCode) == ACP_TRUE)
+                {
+                    /* need failover */
+                    ACI_CONT( FAILOVER_NEED );
+                }
+                else
+                {
+                    /* no need failover */
+                }
                 break;
         }
     }
 
-    return ACP_TRUE;
-
-    ACI_EXCEPTION_END;
-
     return ACP_FALSE;
+
+    ACI_EXCEPTION_CONT( FAILOVER_NEED );
+
+    return ACP_TRUE;
+}
+
+static acp_bool_t ulnFailoverCanCTF(ulnFnContext *aFnContext)
+{
+    ulnDbc     * sDbc                = NULL;
+    acp_bool_t   sConnectionFailover = ACP_FALSE;
+
+    ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
+
+    if (ulnFailoverIsNeeded(aFnContext) == ACP_TRUE)
+    {
+        sConnectionFailover = ACP_TRUE;
+
+        /* BUG-47131 샤드 All meta 환경에서 Client failover 시 hang 발생 */
+        if (ulsdnDbcGetFailoverSuspendState(sDbc) == ULSDN_FAILOVER_SUSPEND_ALL )
+        {
+            sConnectionFailover = ACP_FALSE;
+        }
+        else
+        {
+            //nothing to do.
+        }
+    }
+    return sConnectionFailover;
 }
 
 ACI_RC ulnFailoverDoCTF(ulnFnContext *aFnContext)
 {
-    ulnDbc *sDbc = NULL;
+    ulnDbc             * sDbc    = NULL;
+    ulsdFailoverResult   sResult = ULSDN_FAILOVER_FAILURE;
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
     /* BUG-46052 codesonar Null Pointer Dereference */
     ACI_TEST_RAISE(sDbc == NULL, InvalidHandleException);
 
-    ACI_TEST(ulnFailoverIsNeeded(sDbc) != ACP_TRUE);
+    ACI_TEST(ulnFailoverCanCTF(aFnContext) != ACP_TRUE);
 
-    ACI_TEST(ulnFailoverCore(aFnContext, ULN_FAILOVER_TYPE_CTF) != ACI_SUCCESS);
+    ACI_TEST(ulnFailoverCore(aFnContext, ULN_FAILOVER_TYPE_CTF, &sResult) != ACI_SUCCESS);
+
+    if ( sResult == ULSDN_FAILOVER_SUCCESS )
+    {
+        /* Nothing to do */
+    }
+    else if ( sResult == ULSDN_FAILOVER_NODE_REMOVED )
+    {
+        ACE_DASSERT( ulnDbcIsConnected( sDbc ) == ACP_FALSE );
+
+        ulnDbcSetIsConnected( sDbc, ACP_FALSE );
+    }
+    else
+    {
+        /* Impossible case */
+        ACE_DASSERT(0);
+    }
 
 #ifdef COMPILE_SHARDCLI /* BUG-46092 */
-    ACI_TEST_RAISE( ulsdModuleNotifyFailOver( sDbc ) != ACI_SUCCESS,
+    ACI_TEST_RAISE( ulsdModuleNotifyFailOver( aFnContext ) != ACI_SUCCESS,
                     NotifyFailException );
 #endif /* COMPILE_SHARDCLI */
 
@@ -342,14 +468,19 @@ ACI_RC ulnFailoverDoCTF(ulnFnContext *aFnContext)
     return ACI_FAILURE;
 }
 
-static acp_bool_t ulnFailoverCanSTF(ulnDbc *aDbc)
+static acp_bool_t ulnFailoverCanSTF( ulnFnContext * aFnContext )
 {
-    acp_bool_t sSessionFailover = ulnDbcGetSessionFailover(aDbc);
+    ulnDbc     * sDbc             = NULL;
+    acp_bool_t   sSessionFailover = ACP_FALSE;
 
-    if ( (ulnFailoverIsNeeded(aDbc) == ACP_TRUE) &&
-         (sSessionFailover == ACP_TRUE) )
+    ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
+
+    if ( (ulnFailoverIsNeeded(aFnContext) == ACP_TRUE) &&
+         (ulnDbcGetSessionFailover(sDbc) == ACP_TRUE) )
     {
-        if (ulnDbcGetFailoverCallbackState(aDbc) == ULN_FAILOVER_CALLBACK_IN_STATE )
+        sSessionFailover = ACP_TRUE;
+
+        if (ulnDbcGetFailoverCallbackState(sDbc) == ULN_FAILOVER_CALLBACK_IN_STATE )
         {
             sSessionFailover = ACP_FALSE;
         }
@@ -359,7 +490,7 @@ static acp_bool_t ulnFailoverCanSTF(ulnDbc *aDbc)
         }
 
         /* BUG-47131 샤드 All meta 환경에서 Client failover 시 hang 발생 */
-        if (ulnDbcGetFailoverSuspendState(aDbc) == ULN_FAILOVER_SUSPEND_ON_STATE )
+        if (ulsdnDbcGetFailoverSuspendState(sDbc) == ULSDN_FAILOVER_SUSPEND_ALL )
         {
             sSessionFailover = ACP_FALSE;
         }
@@ -405,6 +536,7 @@ ACI_RC ulnFailoverDoSTF(ulnFnContext *aFnContext)
     SQLUINTEGER                  sFailoverIntention       = 0;
     SQLFailOverCallbackContext  *sFailoverCallbackContext = NULL;
     SQLFailOverCallbackContext   sDummyFailoverCallbackContext;
+    ulsdFailoverResult           sResult                  = ULSDN_FAILOVER_FAILURE;
 
     ULN_FNCONTEXT_GET_DBC(aFnContext, sDbc);
     /* BUG-46052 codesonar Null Pointer Dereference */
@@ -432,7 +564,7 @@ ACI_RC ulnFailoverDoSTF(ulnFnContext *aFnContext)
         }
     }
 
-    if (ulnFailoverCanSTF(sDbc) == ACP_TRUE)
+    if (ulnFailoverCanSTF(aFnContext) == ACP_TRUE)
     {
         ulnDbcSetFailoverCallbackState(sDbc, ULN_FAILOVER_CALLBACK_IN_STATE);
         sFailoverIntention = sFailoverCallbackContext->mFailOverCallbackFunc(sFailoverCallbackContext->mDBC,
@@ -441,48 +573,60 @@ ACI_RC ulnFailoverDoSTF(ulnFnContext *aFnContext)
         ulnDbcSetFailoverCallbackState(sDbc, ULN_FAILOVER_CALLBACK_OUT_STATE);
         if( sFailoverIntention != ALTIBASE_FO_QUIT)
         {
-            sRC = ulnFailoverCore(aFnContext, ULN_FAILOVER_TYPE_STF);
+            sRC = ulnFailoverCore(aFnContext, ULN_FAILOVER_TYPE_STF, &sResult);
 #ifdef COMPILE_SHARDCLI /* BUG-46092 */
             if ( sRC == ACI_SUCCESS )
             {
-                sRC = ulsdModuleNotifyFailOver( sDbc );
+                sRC = ulsdModuleNotifyFailOver( aFnContext );
             }
 #endif /* COMPILE_SHARDCLI */
             if ( sRC == ACI_SUCCESS )
             {
-                ulnDbcSetFailoverCallbackState(sDbc, ULN_FAILOVER_CALLBACK_IN_STATE);
-
-                // 사용자 FailOver Callback에서 FailOver Validation을 위하여
-                //  statement 를 allc할수 있다.
-                ULN_OBJECT_UNLOCK(&(sDbc->mObj), ULN_FID_NONE);
-
-                sFailoverIntention  = sFailoverCallbackContext->mFailOverCallbackFunc(sFailoverCallbackContext->mDBC,
-                                                                                      sFailoverCallbackContext->mAppContext,
-                                                                                      ALTIBASE_FO_END);
-
-                // 다시 잡아준다.
-                ULN_OBJECT_LOCK(&(sDbc->mObj), ULN_FID_NONE);
-
-                ulnDbcSetFailoverCallbackState(sDbc, ULN_FAILOVER_CALLBACK_OUT_STATE);
-                if(sFailoverIntention != ALTIBASE_FO_QUIT)
+                if ( sResult == ULSDN_FAILOVER_SUCCESS )
                 {
-                    ulnDbcCloseAllStatement(sDbc);
-                    //XA Connection.
-                    if (sDbc->mXaConnection != NULL)
-                    {
-                        ulnDbcSetFailoverCallbackState(sDbc, ULN_FAILOVER_CALLBACK_IN_STATE);
-                        sRC = ulnFailoverXaReOpen(sDbc);
-                        ulnDbcSetFailoverCallbackState(sDbc, ULN_FAILOVER_CALLBACK_OUT_STATE);
-                    }
-                    if (sRC == ACI_SUCCESS)
-                    {
-                        ACE_ASSERT(ulnClearDiagnosticInfoFromObject(aFnContext->mHandle.mObj) == ACI_SUCCESS);
-                    }
+                    ulnDbcSetFailoverCallbackState(sDbc, ULN_FAILOVER_CALLBACK_IN_STATE);
 
+                    // 사용자 FailOver Callback에서 FailOver Validation을 위하여
+                    //  statement 를 allc할수 있다.
+                    ULN_OBJECT_UNLOCK(&(sDbc->mObj), ULN_FID_NONE);
+
+                    sFailoverIntention  = sFailoverCallbackContext->mFailOverCallbackFunc(sFailoverCallbackContext->mDBC,
+                                                                                          sFailoverCallbackContext->mAppContext,
+                                                                                          ALTIBASE_FO_END);
+
+                    // 다시 잡아준다.
+                    ULN_OBJECT_LOCK(&(sDbc->mObj), ULN_FID_NONE);
+
+                    ulnDbcSetFailoverCallbackState(sDbc, ULN_FAILOVER_CALLBACK_OUT_STATE);
+                    if(sFailoverIntention != ALTIBASE_FO_QUIT)
+                    {
+                        ulnDbcCloseAllStatement(sDbc);
+                        //XA Connection.
+                        if (sDbc->mXaConnection != NULL)
+                        {
+                            ulnDbcSetFailoverCallbackState(sDbc, ULN_FAILOVER_CALLBACK_IN_STATE);
+                            sRC = ulnFailoverXaReOpen(sDbc);
+                            ulnDbcSetFailoverCallbackState(sDbc, ULN_FAILOVER_CALLBACK_OUT_STATE);
+                        }
+                        if (sRC == ACI_SUCCESS)
+                        {
+                            ACE_ASSERT(ulnClearDiagnosticInfoFromObject(aFnContext->mHandle.mObj) == ACI_SUCCESS);
+                        }
+
+                    }
+                    else
+                    {
+                        sRC = ACI_FAILURE;
+                    }
+                }
+                else if ( sResult == ULSDN_FAILOVER_NODE_REMOVED )
+                {
+                    ulnDbcSetIsConnected( sDbc, ACP_FALSE );
                 }
                 else
                 {
-                    sRC = ACI_FAILURE;
+                    /* Impossible case */
+                    ACE_DASSERT(0);
                 }
             }
             else
@@ -537,9 +681,6 @@ void ulnFailoverInitialize(ulnDbc *aDbc)
     ulnDbcSetCurrentServer(aDbc, NULL);
     ulnDbcSetFailoverCallbackContext(aDbc, NULL);
     ulnDbcSetFailoverCallbackState(aDbc, ULN_FAILOVER_CALLBACK_OUT_STATE);
-
-    /* BUG-47131 샤드 All meta 환경에서 Client failover 시 hang 발생 */
-    ulnDbcSetFailoverSuspendState(aDbc, ULN_FAILOVER_SUSPEND_OFF_STATE);
 }
 
 void ulnFailoverFinalize(ulnDbc *aDbc)
@@ -670,23 +811,35 @@ ACI_RC ulnFailoverBuildServerList(ulnFnContext *aFnContext)
     ulnFailoverClearServerList(sDbc);
 
     /* Failover는 TCP/SSL/IB에서만 허용. (미설정일 경우, TCP로 간주) */
-    ACI_TEST_RAISE( (ulnDbcGetConnType(sDbc) != ULN_CONNTYPE_INVALID) &&
-                    (ulnDbcGetConnType(sDbc) != ULN_CONNTYPE_TCP) &&
-                    (ulnDbcGetConnType(sDbc) != ULN_CONNTYPE_IB) && /* PROJ-2681 */
-                    (ulnDbcGetConnType(sDbc) != ULN_CONNTYPE_SSL),
-                    SKIP_BUILD_SERVER_LIST );
-    ACI_TEST_RAISE( sDbc->mAlternateServers == NULL,
-                    SKIP_BUILD_SERVER_LIST );
+    ACI_TEST_CONT( (ulnDbcGetConnType(sDbc) != ULN_CONNTYPE_INVALID) &&
+                   (ulnDbcGetConnType(sDbc) != ULN_CONNTYPE_TCP) &&
+                   (ulnDbcGetConnType(sDbc) != ULN_CONNTYPE_IB) && /* PROJ-2681 */
+                   (ulnDbcGetConnType(sDbc) != ULN_CONNTYPE_SSL),
+                   SKIP_BUILD_SERVER_LIST );
+
+    /* ULSD_SESSION_TYPE_COORD, ULSD_SESSION_TYPE_LIB 인 경우
+     * Connection retry 를 수행하기 위해
+     * alternate server 가 지정되어 있지 않아도
+     * Failvoer Server List 를 생성한다.
+     */
+    if ( sDbc->mShardDbcCxt.mShardSessionType == ULSD_SESSION_TYPE_USER )
+    {
+        ACI_TEST_CONT( sDbc->mAlternateServers == NULL,
+                       SKIP_BUILD_SERVER_LIST );
+    }
 
     ACI_TEST( ulnFailoverCreatePrimaryServerInfo(aFnContext, &sServerInfo) != ACI_SUCCESS );
     ulnFailoverAddServer(sDbc, sServerInfo);
 
-    ACI_TEST( ulnFailoverAddServerList(aFnContext, sDbc->mAlternateServers) != ACI_SUCCESS );
-
-    if (ulnDbcGetLoadBalance(sDbc) == ACP_TRUE)
+    if ( sDbc->mAlternateServers != NULL )
     {
-        sChosen = ulnFailoverChooseRandomServer(sDbc, 0);
-        sServerInfo = sDbc->mFailoverServers[sChosen];
+        ACI_TEST( ulnFailoverAddServerList(aFnContext, sDbc->mAlternateServers) != ACI_SUCCESS );
+
+        if (ulnDbcGetLoadBalance(sDbc) == ACP_TRUE)
+        {
+            sChosen = ulnFailoverChooseRandomServer(sDbc, 0);
+            sServerInfo = sDbc->mFailoverServers[sChosen];
+        }
     }
     ulnDbcSetCurrentServer(sDbc, sServerInfo);
 

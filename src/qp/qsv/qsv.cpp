@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsv.cpp 90971 2021-06-09 00:29:36Z khkwak $
+ * $Id: qsv.cpp 91584 2021-09-03 07:55:16Z khkwak $
  **********************************************************************/
 
 #include <idl.h>
@@ -2725,6 +2725,45 @@ IDE_RC qsv::checkUserAndProcedure(
 
 #undef IDE_FN
 }
+
+// BUG-48345 Lock procedure statement
+IDE_RC qsv::checkUserAndProcedure(
+    qcStatement     * aStatement,
+    qcNamePosition    aUserName,
+    qcNamePosition    aProcName,
+    UInt            * aUserID,
+    qsOID           * aProcOID,
+    UInt            * aObjType,
+    smSCN           * aProcSCN )
+{
+    // check user name
+    if (QC_IS_NULL_NAME(aUserName) == ID_TRUE)
+    {
+        *aUserID = QCG_GET_SESSION_USER_ID(aStatement);
+    }
+    else
+    {
+        IDE_TEST(qcmUser::getUserID(aStatement, aUserName, aUserID)
+                 != IDE_SUCCESS);
+    }
+
+    // check procedure name
+    IDE_TEST(qcmProc::getProcExistWithEmptyByName(
+                 aStatement,
+                 *aUserID,
+                 aProcName,
+                 aProcOID,
+                 aObjType,
+                 aProcSCN )
+             != IDE_SUCCESS);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
 
 // PROJ-1073 Package
 IDE_RC qsv::checkUserAndPkg( 

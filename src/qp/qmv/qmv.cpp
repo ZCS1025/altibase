@@ -15,7 +15,7 @@
  */
 
 /***********************************************************************
- * $Id: qmv.cpp 91512 2021-08-21 07:50:50Z emlee $
+ * $Id: qmv.cpp 91627 2021-09-08 01:47:35Z ahra.cho $
  **********************************************************************/
 
 #include <idl.h>
@@ -5492,6 +5492,7 @@ IDE_RC qmv::validateUpdate(qcStatement * aStatement)
     qdConstraintSpec  * sConstr;
     qmsFrom             sFrom;
     UInt                i;
+    UInt                sColOrder;
 
     IDU_FIT_POINT_FATAL( "qmv::validateUpdate::__FT__" );
 
@@ -5527,6 +5528,46 @@ IDE_RC qmv::validateUpdate(qcStatement * aStatement)
                                               QCM_PRIV_ID_OBJECT_UPDATE_NO,
                                               sUpdateTableInfo )
               != IDE_SUCCESS );
+
+    // BUG-47768
+    // DML for DDL은 검사하지 않는다.
+    if ( (SDU_SHARD_ENABLE == 1) &&
+         (aStatement->session->mMmSession != NULL) )
+    {
+        {
+            IDE_TEST( sdi::getTableInfo( aStatement,
+                                         sUpdateTableRef->tableInfo,
+                                         &(sUpdateTableRef->mShardObjInfo) )
+                      != IDE_SUCCESS );
+
+            if ( sUpdateTableRef->mShardObjInfo != NULL )
+            {
+                for ( sQcmColumn  = sParseTree->updateColumns;
+                      sQcmColumn != NULL;
+                      sQcmColumn  = sQcmColumn->next )
+                {
+                    sColOrder = sQcmColumn->basicInfo->column.id & SMI_COLUMN_ID_MASK;
+
+                    if ( ( sUpdateTableRef->mShardObjInfo->mKeyFlags[sColOrder] == 1 ) ||
+                         ( sUpdateTableRef->mShardObjInfo->mKeyFlags[sColOrder] == 2 ) )
+                    {
+                        if ( ( QC_IS_NULL_NAME( sQcmColumn->namePos ) == ID_FALSE )
+                             &&
+                             ( sQcmColumn->namePos.stmtText == sParseTree->common.stmtPos.stmtText ) )
+                        {
+                            sqlInfo.setSourceInfo( aStatement, &( sQcmColumn->namePos ) );
+                        }
+                        else
+                        {
+                            sqlInfo.setSourceInfo( aStatement, &( aStatement->myPlan->parseTree->stmtPos ) );
+                        }
+
+                        IDE_RAISE( ERR_SHARD_KEY_CAN_NOT_BE_UPDATED );
+                    }
+                }
+            }
+        }
+    }
 
     // PROJ-2219 Row-level before update trigger
     // Update column을 column ID순으로 정렬한다.
@@ -5983,10 +6024,69 @@ IDE_RC qmv::validateUpdate(qcStatement * aStatement)
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMV_INVALID_DEFAULT_VALUE ) );
     }
+    IDE_EXCEPTION( ERR_SHARD_KEY_CAN_NOT_BE_UPDATED )
+    {
+        (void)sqlInfo.init( aStatement->qmeMem );
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
+                                  "Update for the shard key column",
+                                  sqlInfo.getErrMessage() ) );
+        (void)sqlInfo.fini();
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
 
+}
+
+// BUG-48345 Lock procedure statement
+IDE_RC qmv::validateLockSP(qcStatement * aStatement)
+{
+    qmmLockSPParseTree * sParseTree;
+    qcuSqlSourceInfo     sqlInfo;
+    UInt                 sObjType;
+
+    sParseTree = (qmmLockSPParseTree*)(aStatement->myPlan->parseTree);
+
+    IDE_TEST_RAISE( QCG_GET_SESSION_USER_ID(aStatement) != QC_SYS_USER_ID,
+                    ERR_NO_GRANT );
+
+    IDE_TEST(qsv::checkUserAndProcedure(
+                     aStatement,
+                     sParseTree->userName,
+                     sParseTree->procName,
+                     &(sParseTree->userID),
+                     &(sParseTree->procOID),
+                     &(sObjType),
+                     &(sParseTree->procSCN) )
+             != IDE_SUCCESS);
+
+    IDE_TEST_RAISE( sParseTree->procOID == QS_EMPTY_OID, ERR_NOT_EXIST_OBJECT );
+
+    /* BUG-39059
+       찾은 객체의 type이 parsing 단계에서 parse tree에 셋팅된
+       타입과 동일하지 않을 경우, 에러메시지를 셋팅한다. */
+    IDE_TEST_RAISE( sObjType != sParseTree->objType, ERR_NOT_EXIST_OBJECT );
+
+    QC_SHARED_TMPLATE(aStatement)->smiStatementFlag |= SMI_STATEMENT_MEMORY_CURSOR;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NOT_EXIST_OBJECT )
+    {
+        sqlInfo.setSourceInfo( aStatement,
+                               &sParseTree->procName );
+        (void)sqlInfo.init(aStatement->qmeMem);
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QSV_NOT_EXIST_PROC_SQLTEXT,
+                                  sqlInfo.getErrMessage() ));
+        (void)sqlInfo.fini();
+    }
+    IDE_EXCEPTION( ERR_NO_GRANT )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QCV_NO_GRANT ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 IDE_RC qmv::validateLockTable(qcStatement * aStatement)
@@ -6496,7 +6596,21 @@ IDE_RC qmv::parseViewInQuerySet( qcStatement  * aStatement,
         // FROM clause
         for (sFrom = sSFWGH->from; sFrom != NULL; sFrom = sFrom->next)
         {
-            IDE_TEST(parseViewInFromClause(aStatement, sFrom, sSFWGH->hints) != IDE_SUCCESS);
+            if ( sSFWGH->hierarchy != NULL )
+            {
+                IDE_TEST( parseViewInFromClause( aStatement,
+                                                 sFrom,
+                                                 sSFWGH->hints,
+                                                 ID_TRUE ) /* aIsHierarchy */
+                          != IDE_SUCCESS);
+            }
+            else
+            {
+                IDE_TEST( parseViewInFromClause( aStatement,
+                                                 sFrom,
+                                                 sSFWGH->hints )
+                          != IDE_SUCCESS);
+            }
         }
 
         // SELECT target clause
@@ -6592,7 +6706,8 @@ IDE_RC qmv::parseViewInQuerySet( qcStatement  * aStatement,
 IDE_RC qmv::parseViewInFromClause(
     qcStatement     * aStatement,
     qmsFrom         * aFrom,
-    qmsHints        * aHints )
+    qmsHints        * aHints,
+    idBool            aIsHierarchy )
 {
     qmsTableRef       * sTableRef;
     volatile UInt       sSessionUserID;   // for fixing BUG-6096
@@ -6604,21 +6719,24 @@ IDE_RC qmv::parseViewInFromClause(
     qcmSynonymInfo      sSynonymInfo;
     UInt                sTableType;
     qmsPivotAggr      * sPivotNode = NULL;
+    volatile idBool     sCalledByPSMFlag;
+    volatile UInt       sStage;
 
     IDE_FT_BEGIN();
 
     IDU_FIT_POINT_FATAL( "qmv::parseViewInFromClause::__FT__" );
 
+    sStage = 0;
     // To Fix PR-11776
     sSessionUserID = QCG_GET_SESSION_USER_ID( aStatement );
     sIndirectRef   = ID_FALSE; /* BUG-45994 - 컴파일러 최적화 회피 */
 
     if (aFrom->joinType != QMS_NO_JOIN) // INNER, OUTER JOIN
     {
-        IDE_TEST( parseViewInFromClause(aStatement, aFrom->left, aHints )
+        IDE_TEST( parseViewInFromClause(aStatement, aFrom->left, aHints, aIsHierarchy )
                   != IDE_SUCCESS);
 
-        IDE_TEST( parseViewInFromClause(aStatement, aFrom->right, aHints )
+        IDE_TEST( parseViewInFromClause(aStatement, aFrom->right, aHints, aIsHierarchy )
                   != IDE_SUCCESS);
 
         // ON condition
@@ -6636,7 +6754,8 @@ IDE_RC qmv::parseViewInFromClause(
         if ( sTableRef->view == NULL )
         {
             IDE_TEST( qmvWith::parseViewInTableRef( aStatement,
-                                                    sTableRef )
+                                                    sTableRef,
+                                                    aIsHierarchy )
                       != IDE_SUCCESS );
         }
         else
@@ -6912,12 +7031,48 @@ IDE_RC qmv::parseViewInFromClause(
         else
         {
             IDE_DASSERT( sTableRef->recursiveView == NULL );
+            /* PROJ-2749 */    
+            if ( ( sTableRef->flag & QMS_TABLE_REF_COMPACT_WITH_MASK )
+                 == QMS_TABLE_REF_COMPACT_WITH_FALSE )
+            {
+                if ( ( QC_SHARED_TMPLATE( aStatement )->flag & QC_TMP_COMPACT_WITH_VIEW_MASK )
+                     != QC_TMP_COMPACT_WITH_VIEW_FALSE )
+                {
+                    // in case of "select *
+                    //             from ( with w1 as (select /*+ COMPACT_MATERIALIZE */ * from t1)
+                    //                    select * from w1 );
 
-            /* TASK-7219 Shard Transformer Refactoring
-             *  in case of "select * from (select * from v1)"
-             */
-            IDE_TEST( parseSelectInternal( sTableRef->view )
-                      != IDE_SUCCESS );
+                    // set member of qcStatement
+                    sTableRef->view->myPlan->planEnv = aStatement->myPlan->planEnv;
+                    sTableRef->view->spvEnv          = aStatement->spvEnv;
+                    sTableRef->view->mRandomPlanInfo = aStatement->mRandomPlanInfo;
+
+                    sTableRef->view->mFlag &= ~QC_STMT_VIEW_MASK;
+                    sTableRef->view->mFlag |= QC_STMT_VIEW_TRUE;
+
+                    /* PROJ-2197 PSM Renewal
+                     * view의 target에 있는 PSM 변수를 host 변수로 사용하는 경우
+                     * 강제로 casting 하기 위해서 flag를 변경한다.
+                     * (qmvQuerySet::addCastOper 에서 사용한다.) */
+                    sCalledByPSMFlag = sTableRef->view->calledByPSMFlag;
+                    sStage = 1;
+                    sTableRef->view->calledByPSMFlag = aStatement->calledByPSMFlag;
+                }
+
+                /* TASK-7219 Shard Transformer Refactoring
+                 *  in case of "select * from (select * from v1)"
+                 */
+                IDE_TEST( parseSelectInternal( sTableRef->view )
+                          != IDE_SUCCESS );
+
+                if ( ( QC_SHARED_TMPLATE( aStatement )->flag & QC_TMP_COMPACT_WITH_VIEW_MASK )
+                     != QC_TMP_COMPACT_WITH_VIEW_FALSE )
+                {
+                    // flag 원복
+                    sStage = 0;
+                    sTableRef->view->calledByPSMFlag = sCalledByPSMFlag;
+                }
+            }
 
             // BUG-45443
             // 다음과 같이 node를 명시적으로 사용한 경우는 shard object가 있는 것으로 한다.
@@ -6997,6 +7152,15 @@ IDE_RC qmv::parseViewInFromClause(
     // Parsing 단계에서 Error 발생 시
     // User ID를 바로 잡아야 함.
     QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
+
+    switch ( sStage )
+    {
+        case 1:
+            // PROJ-2749
+            aFrom->tableRef->view->calledByPSMFlag = sCalledByPSMFlag;
+        default:
+            break;
+    }
 
     qcgPlan::endIndirectRefFlag( aStatement, (idBool *) & sIndirectRef );
 

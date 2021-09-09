@@ -146,6 +146,13 @@ qmgShardInsert::init( qcStatement      * aStatement,
         sMyGraph->insertPos.size += 1;
     }
 
+    /* BUG-47766 */
+    sMyGraph->returnInto = aParseTree->returnInto;
+    if ( aParseTree->returnInto != NULL )
+    {
+        sMyGraph->returnInto->returnIntoValuePos.size = (aParseTree->common.stmtPos.size - aParseTree->returnInto->returnIntoValuePos.offset);
+    }
+
     // out 설정
     *aGraph = (qmgGraph *)sMyGraph;
 
@@ -256,6 +263,20 @@ qmgShardInsert::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     IDE_TEST_RAISE( sLen + 1 >= ID_SIZEOF(sMyGraph->shardQueryBuf),
                     ERR_QUERY_BUFFER_OVERFLOW );
     idlOS::strcat( sMyGraph->shardQueryBuf, ")" );
+
+    /* BUG-47766 */
+    if ( sMyGraph->returnInto != NULL )
+    {
+        IDE_TEST_RAISE( sLen + sMyGraph->returnInto->returnIntoValuePos.size >= ID_SIZEOF(sMyGraph->shardQueryBuf),
+                        ERR_QUERY_BUFFER_OVERFLOW );
+    
+        idlOS::snprintf( sMyGraph->shardQueryBuf + sLen,
+                         ID_SIZEOF(sMyGraph->shardQueryBuf),
+                         " %s",
+                         sMyGraph->returnInto->returnIntoValuePos.stmtText + sMyGraph->returnInto->returnIntoValuePos.offset,
+                         sMyGraph->returnInto->returnIntoValuePos.size );
+        sLen += sMyGraph->returnInto->returnIntoValuePos.size;
+    }
 
     // name position으로 기록한다.
     sMyGraph->shardQuery.stmtText = sMyGraph->shardQueryBuf;
@@ -410,6 +431,8 @@ qmgShardInsert::makePlan( qcStatement     * aStatement,
     sINSTInfo.canonizedTuple    = sMyGraph->canonizedTuple;
     sINSTInfo.queueMsgIDSeq     = sMyGraph->queueMsgIDSeq;
     sINSTInfo.nextValSeqs       = sMyGraph->nextValSeqs;
+    /* BUG-47766 */
+    sINSTInfo.returnInto        = sMyGraph->returnInto;
 
     IDE_TEST( qmoOneNonPlan::makeSDIN( aStatement ,
                                        &sINSTInfo ,

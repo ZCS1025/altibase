@@ -62,6 +62,17 @@ typedef struct ulnShardCoordFixCtrlContext
     ulnShardCoordFixCtrlCallback   mFunc;
 } ulnShardCoordFixCtrlContext;    /* = sdiShardCoordFixCtrlContext */
 
+typedef void (* ulnShardNodeRemovalCheckerCallback)( void       * aSession,
+                                                     void       * aConnectionInfo,
+                                                     acp_bool_t * aIsChanged );     /* = sdiShardNodeRemovalCheckerCallback */
+
+typedef struct ulnShardNodeRemovalCheckerContext
+{
+    void                               * mSession;
+    void                               * mConnectInfo;
+    ulnShardNodeRemovalCheckerCallback   mFunc;
+} ulnShardNodeRemovalCheckerContext;     /* = sdiShardNodeRemovalCheckerContext */
+
 /*
  * BUGBUG :
  * Note : 지금은 따로 떨어진 DataSource 구조체나 Connection Pooling 을 위한
@@ -237,7 +248,6 @@ struct ulnDbc
     ulnFailoverServerInfo      *mCurrentServer;
     SQLFailOverCallbackContext *mFailoverCallbackContext;
     ulnFailoverCallbackState    mFailoverCallbackState;
-    ulnFailoverSuspendState     mFailoverSuspendState;      /* BUG-47131 샤드 All meta 환경에서 Client failover 시 hang 발생 */
     acp_char_t                 *mFailoverSource;            /* BUG-31390 Failover info for v$session */
 
     acp_bool_t                  mAttrPreferIPv6;       /* ALTIBASE_PREFER_IPV6 */
@@ -361,6 +371,8 @@ struct ulnDbc
 
     /* TASK-7219 Non-shard DML */
     acp_uint32_t                mStmtExecSeqForShardTx;
+
+    ulnShardNodeRemovalCheckerContext * mShardNodeRemovalCheckerCtx;
 };
 
 /*
@@ -890,16 +902,6 @@ ACP_INLINE void ulnDbcSetFailoverCallbackState(ulnDbc *aDbc, ulnFailoverCallback
     aDbc->mFailoverCallbackState = aState;
 }
 
-ACP_INLINE ulnFailoverSuspendState ulnDbcGetFailoverSuspendState(ulnDbc *aDbc)
-{
-    return aDbc->mFailoverSuspendState;
-}
-
-ACP_INLINE void ulnDbcSetFailoverSuspendState(ulnDbc *aDbc, ulnFailoverSuspendState aState)
-{
-    aDbc->mFailoverSuspendState = aState;
-}
-
 /* BUG-31390 Failover info for v$session */
 ACP_INLINE ACI_RC ulnDbcSetFailoverSource(ulnDbc *aDbc, acp_char_t* aFailoverSource, acp_sint32_t aFailoverSourceLen)
 {
@@ -1095,4 +1097,32 @@ ACP_INLINE acp_uint32_t ulnDbcGetExecSeqForShardTx( ulnDbc *aDbc )
     return aDbc->mStmtExecSeqForShardTx;
 }
 
+ACP_INLINE void ulnDbcSetShardNodeRemovalCheckerContext(ulnDbc *aDbc, ulnShardNodeRemovalCheckerContext *aCtx)
+{
+    aDbc->mShardNodeRemovalCheckerCtx = aCtx;
+}
+
+ACP_INLINE ulnShardNodeRemovalCheckerContext * ulnDbcGetShardNodeRemovalCheckerContext(ulnDbc *aDbc)
+{
+    return aDbc->mShardNodeRemovalCheckerCtx;
+}
+
+ACP_INLINE ulnDbc * ulnDbcGetShardParentDbc( ulnDbc *aDbc )
+{
+    ulnDbc * sParentDbc = NULL;
+
+    if ( aDbc != NULL )
+    {
+        if ( aDbc->mShardDbcCxt.mParentDbc == NULL )
+        {
+            sParentDbc = aDbc;
+        }
+        else
+        {
+            sParentDbc = aDbc->mShardDbcCxt.mParentDbc;
+        }
+    }
+
+    return sParentDbc;
+}
 #endif /* _ULN_DBC_H_ */

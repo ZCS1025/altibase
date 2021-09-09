@@ -2535,6 +2535,7 @@ IDE_RC sdm::updateDefaultNodeAndPartititon( qcStatement         * aStatement,
     {
         case SDI_INTERNAL_OP_NOT:
         case SDI_INTERNAL_OP_NORMAL:
+        case SDI_INTERNAL_OP_SHARD_PKG:            
             if ( sNode.mNodeId != SDI_NODE_NULL_ID )
             {
                 /* DefaultNode 가 설정되면 해당 Node의 ReplicaSet 정보를 가져와야 한다. */
@@ -3114,6 +3115,7 @@ IDE_RC sdm::updateRange( qcStatement         * aStatement,
     {
         case SDI_INTERNAL_OP_NOT:
         case SDI_INTERNAL_OP_NORMAL:
+        case SDI_INTERNAL_OP_SHARD_PKG:            
             for ( sCnt = 0; sCnt < sReplicaSetInfo.mCount; sCnt++ )
             {
                 if ( idlOS::strncmp( sReplicaSetInfo.mReplicaSets[sCnt].mPrimaryNodeName,
@@ -3668,6 +3670,7 @@ IDE_RC sdm::insertClone( qcStatement * aStatement,
         case SDI_INTERNAL_OP_NOT:
         case SDI_INTERNAL_OP_NORMAL:
         case SDI_INTERNAL_OP_FAILOVER:
+        case SDI_INTERNAL_OP_SHARD_PKG:            
             IDE_TEST( sdm::getReplicaSetsByPName( QC_SMI_STMT( aStatement),
                                                   sNode.mNodeName,
                                                   sMetaNodeInfo.mShardMetaNumber,
@@ -4118,7 +4121,8 @@ IDE_RC sdm::getNodeByName( smiStatement * aSmiStmt,
 IDE_RC sdm::getNodeByID( smiStatement * aSmiStmt,
                          UInt           aNodeID,
                          ULong          aSMN,
-                         sdiNode      * aNode )
+                         sdiNode      * aNode,
+                         idBool         aErrorRaiseWhenNotExist )
 {
     idBool            sIsCursorOpen = ID_FALSE;
     const void      * sRow          = NULL;
@@ -4148,6 +4152,8 @@ IDE_RC sdm::getNodeByID( smiStatement * aSmiStmt,
 
     smiTableCursor       sCursor;
     smiCursorProperties  sCursorProperty;
+
+    SDI_INIT_NODE( aNode );
 
     IDE_TEST_RAISE( aNodeID == SDI_NODE_NULL_ID,
                     ERR_NOT_EXIST_NODE );
@@ -4261,7 +4267,14 @@ IDE_RC sdm::getNodeByID( smiStatement * aSmiStmt,
     IDE_TEST( sCursor.readRow( &sRow, &sRid, SMI_FIND_NEXT )
               != IDE_SUCCESS );
 
-    IDE_TEST_RAISE( sRow == NULL, ERR_NOT_EXIST_NODE );
+    if ( aErrorRaiseWhenNotExist == ID_TRUE )
+    {
+        IDE_TEST_RAISE( sRow == NULL, ERR_NOT_EXIST_NODE );
+    }
+    else
+    {
+        IDE_TEST_CONT( sRow == NULL, END_OF_FUNC );
+    }
 
     sID = *(mtdIntegerType*)((SChar *)sRow + sNodeIDColumn->column.offset );
     sName = (mtdCharType*)((SChar *)sRow + sNodeNameColumn->column.offset );
@@ -4322,6 +4335,8 @@ IDE_RC sdm::getNodeByID( smiStatement * aSmiStmt,
 
     /* Internal Connection Type */
     aNode->mConnectType = (UShort)sConnectType;
+
+    IDE_EXCEPTION_CONT( END_OF_FUNC );
 
     sIsCursorOpen = ID_FALSE;
     IDE_TEST( sCursor.close() != IDE_SUCCESS );
@@ -7016,7 +7031,7 @@ IDE_RC sdm::getSolo( qcStatement  * aStatement,
                      ULong          aSMN,
                      sdiTableInfo * aTableInfo,
                      sdiRangeInfo * aRangeInfo,
-                     idBool         aNeedMerge )
+                     idBool         /* aNeedMerge */)
 {
     idBool               sIsCursorOpen = ID_FALSE;
     const void         * sRow          = NULL;

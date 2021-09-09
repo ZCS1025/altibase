@@ -224,6 +224,13 @@ IDE_RC sdfCalculate_SetShardRange( mtcNode*     aNode,
                         ERR_INTERNAL_OPERATION );
     }
 
+    // shard package에서 subprogram으로 수행 되는 경우 procedure job type 설정
+    if ( (sdiInternalOperation)QCG_GET_SESSION_SHARD_INTERNAL_LOCAL_OPERATION( sStatement ) ==
+         SDI_INTERNAL_OP_SHARD_PKG )
+    {
+        sdf::setProcedureJobType();
+    }    
+    
     IDE_TEST( mtf::postfixCalculate( aNode,
                                      aStack,
                                      aRemain,
@@ -505,6 +512,22 @@ IDE_RC sdfCalculate_SetShardRange( mtcNode*     aNode,
                 /* 지정된 Node와 내 NodeName이 일치하면 내가 Sender 이다. */
                 if ( idlOS::strncmp( sLocalMetaInfo.mNodeName, sNodeNameStr, SDI_NODE_NAME_MAX_SIZE + 1 ) == 0 )
                 {
+                    if ( SDU_SHARD_LOCAL_FORCE != 1 )
+                    {
+                        /* TASK-7307 DML Data Consistency in Shard
+                         *   내 Node에서 사용하는 파티션이면 USABLE로 변경한다 */
+                        IDE_TEST( sdm::alterUsable( sStatement,
+                                                    sUserNameStr,
+                                                    sTableNameStr,
+                                                    sPartitionName,
+                                                    ID_TRUE, /* isUsable */
+                                                    ID_TRUE  /* isNewTrans */ )
+                                  != IDE_SUCCESS );
+                    }
+                    else
+                    {
+                        /* Nothing to do */
+                    }
 
                     /* 이미 생성되어 있는 Repl에 Table을 추가해 주어야 함 */
                     for ( i = 0 ; i < sLocalMetaInfo.mKSafety; i++ )
@@ -541,23 +564,6 @@ IDE_RC sdfCalculate_SetShardRange( mtcNode*     aNode,
 
                         sState = 0;
                         QC_SMI_STMT(sStatement) = sOldStmt;
-                    }
-
-                    if ( SDU_SHARD_LOCAL_FORCE != 1 )
-                    {
-                        /* TASK-7307 DML Data Consistency in Shard
-                         *   내 Node에서 사용하는 파티션이면 USABLE로 변경한다 */
-                        IDE_TEST( sdm::alterUsable( sStatement,
-                                                    sUserNameStr,
-                                                    sTableNameStr,
-                                                    sPartitionName,
-                                                    ID_TRUE, /* isUsable */
-                                                    ID_TRUE  /* isNewTrans */ )
-                                  != IDE_SUCCESS );
-                    }
-                    else
-                    {
-                        /* Nothing to do */
                     }
                 }
                 else

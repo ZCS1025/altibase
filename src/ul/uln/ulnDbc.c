@@ -687,6 +687,8 @@ ACI_RC ulnDbcInitialize(ulnFnContext *aFnContext, ulnDbc *aDbc)
 
     ulnDbcSetShardCoordFixCtrlContext( aDbc, NULL );
 
+    ulnDbcSetShardNodeRemovalCheckerContext( aDbc, NULL );
+
     /* ***********************************************************
      * Exception 처리가 필요한 attributes.  (see BUG-44588 )
      * *********************************************************** */

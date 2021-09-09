@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmoCnfMgr.cpp 89835 2021-01-22 10:10:02Z andrew.shin $
+ * $Id: qmoCnfMgr.cpp 91627 2021-09-08 01:47:35Z ahra.cho $
  *
  * Description :
  *     CNF Critical Path Manager
@@ -1890,6 +1890,13 @@ idBool qmoCnfMgr::checkPushPredHint( qmoCNF           * aCNF,
              sPushPredHint != NULL;
              sPushPredHint = sPushPredHint->next )
         {
+            // PROJ-2749 compact with인 경우 push_pred 힌트 무시
+            if ( ( sPushPredHint->table->table->tableRef->flag & QMS_TABLE_REF_COMPACT_WITH_MASK )
+                 == QMS_TABLE_REF_COMPACT_WITH_TRUE )
+            {
+                continue;
+            }
+
             if ( qtc::dependencyEqual( &(sPushPredHint->table->table->depInfo),
                                        &(aCNF->baseGraph[1]->depInfo) ) == ID_TRUE )
             {

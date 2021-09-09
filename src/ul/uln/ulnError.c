@@ -28,6 +28,7 @@
 #include <cmErrorCodeClient.h>
 #include <qcuErrorClient.h>
 #include <ulsdDistTxInfo.h>
+#include <sdErrorCodeClient.h>
 
 /*
  * Note: ODBC3 / ODBC2 매핑은 매번 일어나는 것이 아니라
@@ -164,6 +165,43 @@ SQLRETURN ulnErrorDecideSqlReturnCode(acp_char_t *aSqlState)
     return SQL_ERROR;
 }
 
+static void ulnErrorCodeReplace( ulnErrorMgr * aErrorMgr, acp_uint32_t aNewErrorCode )
+{
+    ulnErrorMgrSetErrorCode(aErrorMgr, aNewErrorCode);
+    ulnErrorMgrSetSQLSTATE(aErrorMgr,
+                           ulnErrorMgrGetSQLSTATE_Server(aNewErrorCode));
+}
+
+static void ulnRewriteServerShardError2ClientError( ulnErrorMgr * aErrorMgr )
+{
+    acp_uint32_t sNativeErrorCode = ulnErrorMgrGetErrorCode(aErrorMgr);
+    acp_uint32_t sErrorCode       = 0;
+
+    if ( sNativeErrorCode == ACI_E_ERROR_CODE( sdERR_ABORT_SHARD_LIBRARY_FAILOVER_SUCCESS ) )
+    {
+        sErrorCode = ulERR_ABORT_FAILOVER_SUCCESS;
+    }
+    else if ( sNativeErrorCode == ACI_E_ERROR_CODE( sdERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE ) )
+    {
+        sErrorCode = ulERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE;
+    }
+#if 0   /* JHLEE_TODO */
+    else if ( sNativeErrorCode == ACI_E_ERROR_CODE( sdERR_ABORT_REMOTE_COMMIT_FAILED ) )
+    {
+        sErrorCode = ulERR_ABORT_FAILED_TO_COMMIT;
+    }
+#endif
+    else
+    {
+        /* Nothing to do */
+    }
+
+    if ( sErrorCode != 0 )
+    {
+        ulnErrorCodeReplace( aErrorMgr, sErrorCode );
+    }
+}
+
 static void ulnErrorBuildDiagRec(ulnDiagRec   *aDiagRec,
                                  ulnErrorMgr  *aErrorMgr,
                                  acp_sint32_t  aRowNumber,
@@ -195,7 +233,8 @@ static void ulnErrorBuildDiagRec(ulnDiagRec   *aDiagRec,
 static ACI_RC ulnErrorAddDiagRec(ulnFnContext *aFnContext,
                                  ulnErrorMgr  *aErrorMgr,
                                  acp_sint32_t  aRowNumber,
-                                 acp_sint32_t  aColumnNumber)
+                                 acp_sint32_t  aColumnNumber,
+                                 acp_uint32_t  aNodeId)
 {
     ulnDiagRec    *sDiagRec    = NULL;
     ulnDiagHeader *sDiagHeader;
@@ -233,6 +272,8 @@ static ACI_RC ulnErrorAddDiagRec(ulnFnContext *aFnContext,
              */
             // ulnDiagSetReturnCode(sDiagHeader, ulnErrorDecideSqlReturnCode(sDiagRec->mSQLSTATE));
             ULN_FNCONTEXT_SET_RC(aFnContext, ulnErrorDecideSqlReturnCode(sDiagRec->mSQLSTATE));
+
+            ulnDiagRecSetNodeId(sDiagRec, aNodeId);
 
             /* BUG-46092 */
             if ( ulnErrorMgrGetErrorCode( aErrorMgr )
@@ -331,7 +372,8 @@ ACI_RC ulnError(ulnFnContext *aFnContext, acp_uint32_t aErrorCode, ...)
             ACI_TEST(ulnErrorAddDiagRec(aFnContext,
                                         &sErrorMgr,
                                         SQL_NO_ROW_NUMBER,
-                                        SQL_NO_COLUMN_NUMBER) != ACI_SUCCESS);
+                                        SQL_NO_COLUMN_NUMBER,
+                                        ULN_NULL_SHARD_NODE_ID) != ACI_SUCCESS);
         }
     }
 
@@ -383,7 +425,8 @@ ACI_RC ulnErrorExtended(ulnFnContext *aFnContext,
             ACI_TEST(ulnErrorAddDiagRec(aFnContext,
                                         &sErrorMgr,
                                         aRowNumber,
-                                        aColumnNumber) != ACI_SUCCESS);
+                                        aColumnNumber,
+                                        ULN_NULL_SHARD_NODE_ID) != ACI_SUCCESS);
         }
     }
 
@@ -535,6 +578,8 @@ ACI_RC ulnCallbackErrorResult(cmiProtocolContext *aPtContext,
         }
         else
         {
+            ulnRewriteServerShardError2ClientError( &sErrorMgr );
+
             /*
              * DiagRec 를 만들어서 object 에 붙이기
              * BUGBUG : 함수 이름, 개념, scope 등이 이상하다.
@@ -543,7 +588,8 @@ ACI_RC ulnCallbackErrorResult(cmiProtocolContext *aPtContext,
                                &sErrorMgr,
                                (sErrorIndex == 0) ? SQL_NO_ROW_NUMBER
                                                              : (acp_sint32_t)sErrorIndex,
-                               SQL_COLUMN_NUMBER_UNKNOWN);
+                               SQL_COLUMN_NUMBER_UNKNOWN,
+                               sNodeId);
 
             if (ULN_OBJ_GET_TYPE(sFnContext->mHandle.mObj) == ULN_OBJ_TYPE_STMT)
             {
@@ -560,9 +606,10 @@ ACI_RC ulnCallbackErrorResult(cmiProtocolContext *aPtContext,
             }
 
 #ifdef COMPILE_SHARDCLI /* BUG-46092 */
-            if ( ( sErrorCode & ACI_E_MODULE_MASK ) == ACI_E_MODULE_SD )
+            if ( ( ( sErrorCode & ACI_E_MODULE_MASK ) == ACI_E_MODULE_SD ) &&
+                 ( ULSD_IS_MULTIPLE_ERROR( sNodeId ) == ACP_FALSE ) )
             {
-                ulsdErrorHandleShardingError( sFnContext, sNodeId );
+                ulsdErrorHandleShardingError( sFnContext );
             }
 #endif /* COMPILE_SHARDCLI */
         }
@@ -766,7 +813,8 @@ ACI_RC ulnErrHandleCmError(ulnFnContext *aFnContext, ulnPtContext *aPtContext)
     ACI_TEST( ulnErrorAddDiagRec(aFnContext,
                                  &sErrorMgr,
                                  SQL_NO_ROW_NUMBER,
-                                 SQL_NO_COLUMN_NUMBER)
+                                 SQL_NO_COLUMN_NUMBER,
+                                 ULN_NULL_SHARD_NODE_ID)
               != ACI_SUCCESS );
 
     return ACI_SUCCESS;

@@ -305,9 +305,10 @@ __OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION = 1  # default 1: Eliminate common su
 __OPTIMIZER_CONSTANT_FILTER_SUBSUMPTION = 1     # default 1: Filter subsumption for constant predicate
                                                 # 0: disable, 1: enable
 
-# Constant filter subsumption
-__OPTIMIZER_ORDER_BY_ELIMINATION_ENABLE = 1     # default 1: ORDER BY elimination
-                                                # 0: disable, 1: enable
+# ORDER BY Elimination
+__OPTIMIZER_ORDER_BY_ELIMINATION_ENABLE = 3     # 0 : OBYE off
+                                                # 1 : OBYE of inline view (only exists count(*) on target)
+                                                # 2 : OBYE of subquery predicate on WHERE
 
 # Function Return Precision
 SYS_CONNECT_BY_PATH_PRECISION = 4000    # default : 4000

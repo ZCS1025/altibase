@@ -177,7 +177,6 @@ IDE_RC sdfCalculate_SetShardPartitionNode( mtcNode*     aNode,
     sdiTableInfo              sTableInfo;
     sdiLocalMetaInfo          sLocalMetaInfo;
     UInt                      i = 0;
-    idBool                    sIsUsable     = ID_FALSE;
 
     sdiReplicaSetInfo         sReplicaSetInfo;
     sdiReplicaSetInfo         sFoundReplicaSetInfo;
@@ -213,6 +212,13 @@ IDE_RC sdfCalculate_SetShardPartitionNode( mtcNode*     aNode,
                         ERR_INTERNAL_OPERATION );
     }
 
+    // shard package에서 subprogram으로 수행 되는 경우 procedure job type 설정
+    if ( (sdiInternalOperation)QCG_GET_SESSION_SHARD_INTERNAL_LOCAL_OPERATION( sStatement ) ==
+         SDI_INTERNAL_OP_SHARD_PKG )
+    {
+        sdf::setProcedureJobType();
+    }
+    
     IDE_TEST( mtf::postfixCalculate( aNode,
                                      aStack,
                                      aRemain,
@@ -375,7 +381,23 @@ IDE_RC sdfCalculate_SetShardPartitionNode( mtcNode*     aNode,
         /* 지정된 Node와 내 NodeName이 일치하면 내가 Sender 이다. */
         if ( idlOS::strncmp( sLocalMetaInfo.mNodeName, sNodeNameStr, SDI_NODE_NAME_MAX_SIZE + 1 ) == 0 )
         {
-            sIsUsable = ID_TRUE;
+            /* TASK-7307 DML Data Consistency in Shard 
+             *   지정된 Node와 내 NodeName이 일치하면 usable로 변경
+             *   그렇지 않으면 unusable로 변경 */
+            if ( SDU_SHARD_LOCAL_FORCE != 1 )
+            {
+                IDE_TEST( sdm::alterUsable( sStatement,
+                                            sUserNameStr,
+                                            sTableNameStr,
+                                            sPartitionNameStr,
+                                            ID_TRUE,  // isUsable,
+                                            ID_TRUE ) // isNewTrans
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                /* Nothing to do */
+            }
 
             /* 이미 생성되어 있는 Repl에 Table을 추가해 주어야 함 */
             for ( i = 0 ; i < sLocalMetaInfo.mKSafety; i++ )
@@ -416,8 +438,6 @@ IDE_RC sdfCalculate_SetShardPartitionNode( mtcNode*     aNode,
         }
         else
         {
-            sIsUsable = ID_FALSE;
-
             /* 내가 Recv Node 인지 확인하여야 한다. */
             for ( i = 0 ; i < sLocalMetaInfo.mKSafety; i++ )
             {
@@ -460,25 +480,11 @@ IDE_RC sdfCalculate_SetShardPartitionNode( mtcNode*     aNode,
             }
         }
 
+        IDU_FIT_POINT_RAISE( "sdfCalculate_SetShardPartitionNode::replicationItem",
+                             ERR_INTERNAL_OPERATION );
+        
         // flush 는 SET_SHARD_TABLE_SHARDKEY() 에서 수행.
 
-        /* TASK-7307 DML Data Consistency in Shard 
-         *   지정된 Node와 내 NodeName이 일치하면 usable로 변경
-         *   그렇지 않으면 unusable로 변경 */
-        if ( SDU_SHARD_LOCAL_FORCE != 1 )
-        {
-            IDE_TEST( sdm::alterUsable( sStatement,
-                                        sUserNameStr,
-                                        sTableNameStr,
-                                        sPartitionNameStr,
-                                        sIsUsable,
-                                        ID_TRUE ) // isNewTrans
-                      != IDE_SUCCESS );
-        }
-        else
-        {
-            /* Nothing to do */
-        }
     }
     
     *(mtdIntegerType*)aStack[0].value = 0;

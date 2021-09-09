@@ -504,7 +504,7 @@ SQLRETURN ulsdShardEndPendingTran(ulnDbc       *aDbc,
     ulnFnContext     sFnContext;
     ulnTransactionOp aOp;
 
-    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_ENDTRAN, aDbc, ULN_OBJ_TYPE_DBC);
+    ULN_INIT_ENDTRAN_FUNCTION_CONTEXT(sFnContext, ULN_FID_ENDTRAN, aCompletionType, aDbc, ULN_OBJ_TYPE_DBC);
     /*
      * Enter
      */

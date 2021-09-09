@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qciStmtType.h 90585 2021-04-13 07:35:51Z minku.kang $
+ * $Id: qciStmtType.h 91584 2021-09-03 07:55:16Z khkwak $
  **********************************************************************/
 
 #ifndef _O_QCI_STMT_TYPE_H_
@@ -75,6 +75,8 @@ enum qciStmtType
     QCI_STMT_MERGE,
     // BUG-42397 Ref Cursor Static SQL
     QCI_STMT_SELECT_FOR_CURSOR,
+    // BUG-48345 Lock procedure statement
+    QCI_STMT_LOCK_SP,
 
     //----------------------------------------------------
     //  DCL + SESSION + SYSTEM

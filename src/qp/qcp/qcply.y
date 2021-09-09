@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcply.y 91512 2021-08-21 07:50:50Z emlee $
+ * $Id: qcply.y 91584 2021-09-03 07:55:16Z khkwak $
  **********************************************************************/
 
 /*
@@ -345,6 +345,7 @@ extern mtfModule mtfVc2coll;
     qmmSetClause            setClause;  /* temporary struct */
     qmmValueNode *          valueNode;
     qmmLockParseTree *      lockParseTree;
+    qmmLockSPParseTree *    lockSPParseTree;  /* BUG-48345 Lock procedure statement */
     smiTableLockMode        tableLockMode;
     qmsParseTree *          selectParseTree;
     /* PROJ-1584 DML Returning Clause */
@@ -1567,6 +1568,13 @@ sql_stmt
           STATEMENT->myPlan->parseTree = (qcParseTree*)$<lockParseTree>1;
           STATEMENT->myPlan->parseTree->stmt = STATEMENT;
           STATEMENT->myPlan->parseTree->stmtKind = QCI_STMT_LOCK_TABLE;
+      }
+    /* BUG-48345 Lock procedure statement */
+    | lock_procedure_statement semicolon_option
+      {
+          STATEMENT->myPlan->parseTree = (qcParseTree*)$<lockSPParseTree>1;
+          STATEMENT->myPlan->parseTree->stmt = STATEMENT;
+          STATEMENT->myPlan->parseTree->stmtKind = QCI_STMT_LOCK_SP;
       }
     /* PROJ-1988 Implement MERGE statement */
     | merge_statement semicolon_option
@@ -28325,6 +28333,64 @@ opt_until_next_ddl_clause
           $<boolType>$ = ID_TRUE;
       }
     ;
+
+/*****************************************
+ * LOCK SP
+ ****************************************/
+lock_procedure_statement
+    : TA_LOCK TR_PROCEDURE user_object_name TR_IN SP_lock_mode TO_MODE
+      {
+          QCP_STRUCT_ALLOC($<lockSPParseTree>$, qmmLockSPParseTree);
+          QC_SET_INIT_PARSE_TREE($<lockSPParseTree>$, $<position>1);
+
+          SET_POSITION($<lockParseTree>$->userName,
+                       $<userNObjName>3->userName);
+          SET_POSITION($<lockParseTree>$->tableName,
+                       $<userNObjName>3->objectName);
+
+          $<lockSPParseTree>$->tableLockMode = $<tableLockMode>5;
+          $<lockSPParseTree>$->objType = QS_PROC;
+      
+          // function pointer
+          $<lockParseTree>$->common.parse    = qcc::parse;
+          $<lockParseTree>$->common.validate = qmv::validateLockSP;
+          $<lockParseTree>$->common.optimize = qcc::optimize;
+          $<lockParseTree>$->common.execute  = qmx::executeLockSP;
+}
+
+SP_lock_mode
+    : TI_NONQUOTED_IDENTIFIER
+      /* SHARE     */
+      /* EXCLUSIVE */
+      {
+          qcuSqlSourceInfo    sqlInfo;
+
+/* Support exclusive mode only.
+          if (idlOS::strMatch(
+                "SHARE", 5,
+                QTEXT+$<position>1.offset, $<position>1.size) == 0)
+          {
+              $<tableLockMode>$ = SMI_TABLE_LOCK_S;
+          }
+          else */
+          if (idlOS::strMatch(
+                "EXCLUSIVE", 9,
+                QTEXT+$<position>1.offset, $<position>1.size) == 0)
+          {
+              $<tableLockMode>$ = SMI_TABLE_LOCK_X;
+          }
+          else
+          { // syntax error
+              sqlInfo.setSourceInfo( STATEMENT, & $<position>1 );
+              sqlInfo.init( MEMORY );
+              IDE_SET( ideSetErrorCode( qpERR_ABORT_QCP_SYNTAX,
+                                        sqlInfo.getErrMessage() ) );
+              sqlInfo.fini();
+              YYABORT;
+          }
+      }
+    ;
+
 
 /*****************************************
  * EXPRESSION

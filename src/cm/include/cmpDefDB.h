@@ -193,7 +193,9 @@ enum
     CMP_OP_DB_PrepareV3                      = 128,
     CMP_OP_DB_PrepareByCIDV3                 = 129,
     CMP_OP_DB_PrepareV3Result                = 130,
-    CMP_OP_DB_MAX_A7                         = 131
+    CMP_OP_DB_CheckShardMetaUpdateV3         = 131,
+    CMP_OP_DB_CheckShardMetaUpdateV3Result   = 132,
+    CMP_OP_DB_MAX_A7                         = 133
     /*
      * WARNING!!! Important!!!
      * 1. 프로토콜이 추가되면 gCmpOpDBMap*[]에 프로토콜 이름을 추가해야 한다. (cmpArgDB.cpp, cmpArgDB.c)
@@ -474,8 +476,9 @@ static inline const SChar* cmpGetDbPropertyName( UShort aPropertyId )
  */
 enum
 {
-    CMP_DB_SHARD_NODE_CONNECTION_REPORT = 1,
-    CMP_DB_SHARD_NODE_TRANSACTION_BROKEN_REPORT = 2
+    CMP_DB_SHARD_NODE_CONNECTION_REPORT         = 1,
+    CMP_DB_SHARD_NODE_TRANSACTION_BROKEN_REPORT = 2,
+    CMP_DB_SHARD_NODE_STATUS                    = 3,
 };
 
 /*

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmoCheckViewColumnRef.h 89448 2020-12-07 04:24:14Z cory.chae $
+ * $Id: qmoCheckViewColumnRef.h 91627 2021-09-08 01:47:35Z ahra.cho $
  *
  * Description :
  *     PROJ-2469 Optimize View Materialization
@@ -53,7 +53,8 @@ private :
     static IDE_RC checkFromTree( qmsFrom          * aFrom,
                                  qmsColumnRefList * aParentColumnRef,
                                  qmsSortColumns   * aOrderBy,
-                                 idBool             aAllColumnUsed );
+                                 idBool             aAllColumnUsed,
+                                 idBool             aOptWithViewProperty );
 
     static IDE_RC checkUselessViewColumnRef( qmsTableRef      * aTableRef,
                                              qmsColumnRefList * aParentColumnRef,

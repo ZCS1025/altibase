@@ -26,12 +26,16 @@ void ulsdSetNextFailoverServer( ulnDbc *sNodeDbc );
 void ulsdAlignDataNodeConnection( ulnFnContext * aFnContext,
                                   ulnDbc       * aNodeDbc );
 
-void ulsdGetNodeConnectionReport( ulnDbc *aNodeDbc, ulsdNodeReport *aReport );
+acp_bool_t ulsdGetNodeConnectionReport( ulnDbc         * aNodeDbc,
+                                        ulsdNodeReport * aReport,
+                                        acp_bool_t       aOnRollback );
 
 ACI_RC ulsdSendNodeConnectionReport( ulnFnContext *aMetaFnContext, ulsdNodeReport *aReport );
 
-ACI_RC ulsdNotifyFailoverOnMeta( ulnDbc *aMetaDbc );
+ACI_RC ulsdNotifyFailoverOnMeta( ulnFnContext * aFnContext );
 
 acp_bool_t ulsdIsFailoverExecute( ulnFnContext  * aFnContext );
+
+ACI_RC ulsdFailoverUserConnection( ulnFnContext *aMetaFnContext );
 
 #endif // _O_ULSD_FAILOVER_H_

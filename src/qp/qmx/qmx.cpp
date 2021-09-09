@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qmx.cpp 90311 2021-03-24 09:46:45Z ahra.cho $
+ * $Id: qmx.cpp 91584 2021-09-03 07:55:16Z khkwak $
  **********************************************************************/
 
 #include <cm.h>
@@ -1671,6 +1671,97 @@ IDE_RC qmx::executeUpdate(qcStatement *aStatement)
     return IDE_FAILURE;
 
 #undef IDE_FN
+}
+
+// BUG-48345 Lock procedure statement
+IDE_RC qmx::executeLockSP(qcStatement *aStatement)
+{
+    qmmLockSPParseTree * sLockSPParseTree = (qmmLockSPParseTree*)(aStatement->myPlan->parseTree);
+    UInt                 sState = 0;
+    qcPSMLatchList     * sLatchList;
+    qsxProcInfo        * sProcInfo;
+
+    IDE_TEST( qsxProc::latchX( sLockSPParseTree->procOID,
+                               ID_TRUE )
+              != IDE_SUCCESS );
+    sState = 1;
+
+    IDE_TEST_RAISE( smiValidatePlanHandle( smiGetTable( sLockSPParseTree->procOID ),
+                                           sLockSPParseTree->procSCN ) 
+                    != IDE_SUCCESS,
+                    ERR_OBJECT_CHANGED );
+
+    IDE_TEST( qsxProc::getProcInfo( sLockSPParseTree->procOID,
+                                    &sProcInfo )
+              != IDE_SUCCESS );
+
+    sProcInfo->modifyCount++;
+
+    sLatchList = aStatement->session->mQPSpecific.mPSMLatchList;
+
+    while ( sLatchList != NULL )
+    {
+        if ( sLatchList->mType == 1 )
+        {
+            if ( sLatchList->mProcOID == sLockSPParseTree->procOID )
+            {
+                sLatchList->mLatchCount++;
+                break;
+            }
+        }
+        sLatchList = sLatchList->mNext;
+    }
+
+    if ( sLatchList == NULL )
+    {
+        IDE_TEST( iduMemMgr::malloc( IDU_MEM_QMX,
+                                     ID_SIZEOF( qcPSMLatchList),
+                                     (void**)&sLatchList )
+                  != IDE_SUCCESS );
+        sState = 2;
+
+        sLatchList->mType       = 1;
+        sLatchList->mProcOID    = sLockSPParseTree->procOID;
+        sLatchList->mLatchCount = 1;
+
+        sLatchList->mNext = aStatement->session->mQPSpecific.mPSMLatchList;
+        aStatement->session->mQPSpecific.mPSMLatchList = sLatchList;
+        sState = 3;
+    }
+    sState = 0;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_OBJECT_CHANGED );
+    {
+        IDE_SET(ideSetErrorCode( qpERR_ABORT_QSX_PLAN_CHANGED ));
+    }
+    IDE_EXCEPTION_END;
+
+    switch ( sState )
+    {
+        case 3:
+            {
+                aStatement->session->mQPSpecific.mPSMLatchList = aStatement->session->mQPSpecific.mPSMLatchList->mNext;
+            }
+            /* fall through */
+        case 2:
+            {
+                iduMemMgr::free(sLatchList);
+            }
+            /* fall through */
+        case 1:
+            {
+                (void)qsxProc::unlatch( sLockSPParseTree->procOID );
+            }
+            break;
+        default:
+            {
+                break;
+            }
+    }
+
+    return IDE_FAILURE;
 }
 
 IDE_RC qmx::executeLockTable(qcStatement *aStatement)

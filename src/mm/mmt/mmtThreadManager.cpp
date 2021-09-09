@@ -493,6 +493,9 @@ IDE_RC mmtThreadManager::setupProtocolCallback()
     IDE_TEST(cmiSetCallback(CMI_PROTOCOL(DB, PrepareByCIDV3),
                             mmtServiceThread::prepareByCIDProtocol) != IDE_SUCCESS);
 
+    IDE_TEST(cmiSetCallback(CMI_PROTOCOL(DB, CheckShardMetaUpdateV3),
+                            mmtServiceThread::checkShardMetaUpdateProtocol) != IDE_SUCCESS);
+
     /* bug-33841: ipc thread's state is wrongly displayed */
     (void) cmiSetCallbackSetExecute(mmtServiceThread::setExecuteCallback);
 

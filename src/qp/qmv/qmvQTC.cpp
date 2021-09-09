@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qmvQTC.cpp 90335 2021-03-25 07:57:12Z andrew.shin $
+ * $Id: qmvQTC.cpp 91627 2021-09-08 01:47:35Z ahra.cho $
  **********************************************************************/
 
 #include <idl.h>
@@ -2813,6 +2813,7 @@ IDE_RC qmvQTC::searchColumnInFromTree(
     qcDepInfo         sResDependencies;
     qmsSFWGH        * sSFWGH;
     qcuSqlSourceInfo  sqlInfo;
+    idBool            sIsOuterColumn = ID_FALSE;
 
     IDU_FIT_POINT_FATAL( "qmvQTC::searchColumnInFromTree::__FT__" );
 
@@ -2953,6 +2954,8 @@ IDE_RC qmvQTC::searchColumnInFromTree(
                                                           sSFWGH,
                                                           aQtcColumn )
                                           != IDE_SUCCESS);
+
+                                sIsOuterColumn = ID_TRUE;
                             }
                             else
                             {
@@ -2980,7 +2983,14 @@ IDE_RC qmvQTC::searchColumnInFromTree(
                     // PROJ-2687 Shard aggregation transform
                     // 별도 처리로 * at setColumnIDForShardTransView()
                     // 이미 view column reference가 설정되어있다.
-                    if ( aSFWGH->validatePhase == QMS_VALIDATE_TARGET )
+
+                    /* PROJ-2749 BUG-48090
+                     * target subquery 의 target절에 outer column을 사용한 경우
+                     * addViewColumnRefList 호출해야합니다.
+                     *    select ( select A.i1 from t1 B ) from t1 A;
+                     *                    ^  ^                                    */
+                    if ( ( aSFWGH->validatePhase == QMS_VALIDATE_TARGET ) &&
+                         ( sIsOuterColumn == ID_FALSE ) )
                     {
                         if ( ( ( aSFWGH->lflag & QMV_SFWGH_GBGS_TRANSFORM_MASK ) !=
                                QMV_SFWGH_GBGS_TRANSFORM_MIDDLE ) &&

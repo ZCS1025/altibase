@@ -34,12 +34,6 @@ typedef enum
     ULN_FAILOVER_CALLBACK_IN_STATE
 } ulnFailoverCallbackState;
 
-typedef enum
-{
-    ULN_FAILOVER_SUSPEND_OFF_STATE = 0,
-    ULN_FAILOVER_SUSPEND_ON_STATE
-} ulnFailoverSuspendState;                  /* BUG-47131 샤드 All meta 환경에서 Client failover 시 hang 발생 */
-
 typedef struct ulnFailoverServerInfo
 {
     acp_char_t       *mHost;
@@ -48,15 +42,26 @@ typedef struct ulnFailoverServerInfo
     acp_sint32_t      mDBNameLen;
 } ulnFailoverServerInfo;
 
+typedef enum {
+    ULSDN_FAILOVER_FAILURE          = 0,
+    ULSDN_FAILOVER_SUCCESS          = 1,
+    ULSDN_FAILOVER_NODE_REMOVED     = 2
+} ulsdFailoverResult;
+
 struct  ulnFnContext;
 
+ACP_INLINE acp_bool_t ulnIsCmError(acp_uint32_t aNativeErrorCode)
+{
+    return ( ( aNativeErrorCode & ACI_E_MODULE_MASK ) == ACI_E_MODULE_CM );
+}
 
 
 acp_bool_t ulnFailoverIsOn(ulnDbc *aDbc);
 
 ACI_RC ulnFailoverConnect( ulnFnContext          *aFnContext,
                            ulnFailoverType        aFailoverType,
-                           ulnFailoverServerInfo *aNewServerInfo );
+                           ulnFailoverServerInfo *aNewServerInfo,
+                           ulsdFailoverResult   *aResult );
 
 /* BUG-46092 */
 acp_bool_t ulnDiagRecIsNeedFailover(ulnObject *aObject);

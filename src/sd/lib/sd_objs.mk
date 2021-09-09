@@ -7,7 +7,8 @@ SDI_SRCS = $(SD_DIR)/sdi/sdi.cpp                     \
            $(SD_DIR)/sdi/sdiGlobalDDL.cpp            \
            $(SD_DIR)/sdi/sdiStatementManager.cpp     \
            $(SD_DIR)/sdi/sdiFailoverTypeStorage.cpp  \
-           $(SD_DIR)/sdi/sdiFOThread.cpp
+           $(SD_DIR)/sdi/sdiFOThread.cpp			 \
+           $(SD_DIR)/sdi/sdiFailoverSuspend.cpp
 
 ifeq ($(ALTI_CFG_OS),LINUX)
 SDI_SRCS += $(SD_DIR)/sdi/sdiZookeeper.cpp

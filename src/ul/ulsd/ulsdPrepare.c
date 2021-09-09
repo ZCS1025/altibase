@@ -27,6 +27,7 @@
 #include <ulsd.h>
 #include <ulsdnExecute.h>
 #include <ulsdRebuild.h>
+#include <ulsdFailover.h>
 
 static ACI_RC ulsdReadShardValue( cmiProtocolContext        * aProtocolContext,
                                   ulnDbc                    * aDbc,
@@ -875,7 +876,7 @@ SQLRETURN ulsdPrepare(ulnFnContext *aFnContext,
     return SQL_ERROR;
 }
 
-SQLRETURN ulsdAnalyzePreapre( ulnFnContext *aFnContext,
+SQLRETURN ulsdAnalyzePrepare( ulnFnContext *aFnContext,
                               ulnStmt      *aStmt,
                               acp_char_t   *aStatementText,
                               acp_sint32_t  aTextLength,
@@ -915,8 +916,7 @@ SQLRETURN ulsdAnalyzePreapre( ulnFnContext *aFnContext,
                            aTextLength);
         if (!SQL_SUCCEEDED(sRet))
         {
-            ACI_TEST( ulnDbcIsConnected( sDbc ) == ACP_FALSE );
-            ACI_TEST( aFnContext->mIsFailoverSuccess == ACP_TRUE );
+            ACI_TEST( ulsdIsFailoverExecute( aFnContext ) == ACP_TRUE );
 
             ulsdSetCoordQuery(aStmt);
 
@@ -959,10 +959,10 @@ SQLRETURN ulsdAnalyzePrepareAndRetry( ulnStmt      *aStmt,
                                       acp_char_t   *aAnalyzeText )
 {
     ulnFnContext sFnContext;
-    SQLRETURN    sPrepareRet = SQL_ERROR;
-    acp_sint32_t sRetryMax   = 0;
-    acp_sint32_t sLoopMax    = ULSD_SHARD_RETRY_LOOP_MAX; /* For prohibit infinity loop */
-    ulsdStmtShardRetryType   sRetryType;
+    SQLRETURN    sPrepareRet   = SQL_ERROR;
+    acp_sint32_t sRetryMax     = 0;
+    acp_sint32_t sLoopMax      = ULSD_SHARD_RETRY_LOOP_MAX; /* For prohibit infinity loop */
+    ulsdStmtShardRetryType     sRetryType;
 
     ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_PREPARE, aStmt, ULN_OBJ_TYPE_STMT);
 
@@ -971,7 +971,7 @@ SQLRETURN ulsdAnalyzePrepareAndRetry( ulnStmt      *aStmt,
 
     sRetryMax = ulnDbcGetShardStatementRetry( aStmt->mParentDbc );
 
-    sPrepareRet = ulsdAnalyzePreapre( &sFnContext,
+    sPrepareRet = ulsdAnalyzePrepare( &sFnContext,
                                       aStmt,
                                       aStatementText,
                                       aTextLength,
@@ -990,7 +990,7 @@ SQLRETURN ulsdAnalyzePrepareAndRetry( ulnStmt      *aStmt,
                                               &sRetryMax )
                   != ACI_SUCCESS );
 
-        sPrepareRet = ulsdAnalyzePreapre( &sFnContext,
+        sPrepareRet = ulsdAnalyzePrepare( &sFnContext,
                                           aStmt,
                                           aStatementText,
                                           aTextLength,

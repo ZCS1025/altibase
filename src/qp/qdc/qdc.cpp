@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdc.cpp 90785 2021-05-06 07:26:22Z hykim $
+ * $Id: qdc.cpp 91627 2021-09-08 01:47:35Z ahra.cho $
  **********************************************************************/
 
 #include <idl.h>
@@ -70,190 +70,254 @@
 //           value 를 하나만 갖는 property 기준으로 단순하게 구현함.
 //------------------------------------------------------------------------
 
-#define QDC_OPTIMIZER_FEATURE_CNT   (34)
+#define QDC_OPTIMIZER_FEATURE_CNT   (38)
 
 static qdcFeatureProperty gFeatureProperty[QDC_OPTIMIZER_FEATURE_CNT] =
 {
-    /* tag 를 따기 전 추가되는 경우는
-     * QDC_OPTIMIZER_FEATURE_VERSION_MAX 를 이용한다.
+    /* (1) tag 를 따기 전 추가되는 경우는
+     *     QDC_OPTIMIZER_FEATURE_VERSION_MAX 를 이용한다.
+     * (2) 두 번 이상 변경된 경우 바로 이전 버전을 적는다.
+     *     최초이면 QDC_OPTIMIZER_FEATURE_VERSION_NONE 이다.
      * Example)
      *   { (SChar *)"__OPTIMIZER_CONSTANT_FILTER_SUBSUMPTION",
      *     (SChar *)"0",
      *     (SChar *)"1",
-     *     QDC_OPTIMIZER_FEATURE_VERSION_MAX,  <--
+     *     QDC_OPTIMIZER_FEATURE_VERSION_NONE, <-- (2) old change version
+     *     QDC_OPTIMIZER_FEATURE_VERSION_MAX,  <-- (1)
      *     PLAN_PROPERTY_OPTIMIZER_CONSTANT_FILTER_SUBSUMPTION }
+     * cf) 동일한 property 는
+     *     - 동일 버전으로 반복 정의 불가하고
+     *     - 버전이 다를 경우 오름차순으로 채워져야 함
      */
     { (SChar *)"OPTIMIZER_ANSI_JOIN_ORDERING",                  // 1
       (SChar *)"0",
       (SChar *)"0",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_6_1_1_0_6,
       PLAN_PROPERTY_OPTIMIZER_ANSI_JOIN_ORDERING },
     { (SChar *)"OPTIMIZER_SUBQUERY_OPTIMIZE_METHOD",            // 2
       (SChar *)"0",
       (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_6_1_1_0_7,
       PLAN_PROPERTY_OPTIMIZER_SUBQUERY_OPTIMIZE_METHOD },
     { (SChar *)"__OPTIMIZER_DNF_DISABLE",                       // 3
       (SChar *)"0",
       (SChar *)"0",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_6_1_1_4_3,
       PLAN_PROPERTY_OPTIMIZER_DNF_DISABLE },
     { (SChar *)"QUERY_REWRITE_ENABLE",                          // 4
       (SChar *)"0",
       (SChar *)"0",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_6_3_1_0_1,
       PLAN_PROPERTY_QUERY_REWRITE_ENABLE },
     { (SChar *)"OPTIMIZER_PARTIAL_NORMALIZE",                   // 5
       (SChar *)"0",
       (SChar *)"0",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_6_3_1_0_1,
       PLAN_PROPERTY_OPTIMIZER_PARTIAL_NORMALIZE },
     { (SChar *)"OPTIMIZER_UNNEST_SUBQUERY",                     // 6
       (SChar *)"0",
       (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_6_3_1_0_1,
       PLAN_PROPERTY_OPTIMIZER_UNNEST_SUBQUERY },
     { (SChar *)"OPTIMIZER_UNNEST_COMPLEX_SUBQUERY",             // 7
       (SChar *)"0",
       (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_6_3_1_0_1,
       PLAN_PROPERTY_OPTIMIZER_UNNEST_COMPLEX_SUBQUERY },
     { (SChar *)"OPTIMIZER_UNNEST_AGGREGATION_SUBQUERY",         // 8
       (SChar *)"0",
       (SChar *)"0",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_6_3_1_0_1,
       PLAN_PROPERTY_OPTIMIZER_UNNEST_AGGREGATION_SUBQUERY },
     { (SChar *)"__OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION",    // 9
       (SChar *)"0",
       (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_6_3_1_0_1,
       PLAN_PROPERTY_OPTIMIZER_ELIMINATE_COMMON_SUBEXPRESSION },
     { (SChar *)"__OPTIMIZER_CONSTANT_FILTER_SUBSUMPTION",       // 10
       (SChar *)"0",
       (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_6_3_1_0_1,
       PLAN_PROPERTY_OPTIMIZER_CONSTANT_FILTER_SUBSUMPTION },
     { (SChar *)"__OPTIMIZER_FIXED_GROUP_MEMORY_TEMP",           // 11
       (SChar *)"0",
       (SChar *)"0",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_6_5_1_0_0,
       PLAN_PROPERTY_OPTIMIZER_FIXED_GROUP_MEMORY_TEMP },
     { (SChar *)"__OPTIMIZER_OUTERJOIN_ELIMINATION",             // 12
       (SChar *)"0",
       (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_6_5_1_0_0,
       PLAN_PROPERTY_OPTIMIZER_OUTERJOIN_ELIMINATION },
     { (SChar *)"__OPTIMIZER_ANSI_INNER_JOIN_CONVERT",           // 13
       (SChar *)"0",
       (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_6_5_1_0_0,
       PLAN_PROPERTY_OPTIMIZER_ANSI_INNER_JOIN_CONVERT },
     { (SChar *)"OPTIMIZER_COUNT_COLUMN_TO_COUNT_ASTAR",         // 14
       (SChar *)"0",
       (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_6_5_1_0_0,
       PLAN_PROPERTY_OPTIMIZER_COUNT_COLUMN_TO_COUNT_ASTAR },
-    { (SChar *)"OPTIMIZER_UNNEST_AGGREGATION_SUBQUERY",         // 15
+    { (SChar *)"OPTIMIZER_UNNEST_AGGREGATION_SUBQUERY",         // 15 from 8 (63101)
       (SChar *)"0",
       (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_6_3_1_0_1,
       QDC_OPTIMIZER_FEATURE_VERSION_6_5_1_0_0,
       PLAN_PROPERTY_OPTIMIZER_UNNEST_AGGREGATION_SUBQUERY },
     { (SChar *)"__OPTIMIZER_ORDER_BY_ELIMINATION_ENABLE",       // 16
       (SChar *)"0",
       (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_6_5_1_0_0,
       PLAN_PROPERTY_OPTIMIZER_ORDER_BY_ELIMINATION_ENABLE },
     { (SChar *)"__OPTIMIZER_DISTINCT_ELIMINATION_ENABLE",       // 17
       (SChar *)"0",
       (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_6_5_1_0_0,
       PLAN_PROPERTY_OPTIMIZER_DISTINCT_ELIMINATION_ENABLE },
     { (SChar *)"__OPTIMIZER_VIEW_TARGET_ENABLE",                // 18
       (SChar *)"0",
       (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
       PLAN_PROPERTY_OPTIMIZER_VIEW_TARGET_ENABLE },
     { (SChar *)"RESULT_CACHE_ENABLE",                           // 19
       (SChar *)"0",
       (SChar *)"0",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
       PLAN_PROPERTY_RESULT_CACHE_ENABLE },
     { (SChar *)"TOP_RESULT_CACHE_MODE",                         // 20
       (SChar *)"0",
       (SChar *)"0",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
       PLAN_PROPERTY_TOP_RESULT_CACHE_MODE },
     { (SChar *)"__OPTIMIZER_LIST_TRANSFORMATION",               // 21
       (SChar *)"0",
       (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
       PLAN_PROPERTY_OPTIMIZER_LIST_TRANSFORMATION },
     { (SChar *)"OPTIMIZER_AUTO_STATS",                          // 22
       (SChar *)"0",
       (SChar *)"0",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
       PLAN_PROPERTY_OPTIMIZER_AUTO_STATS },
     { (SChar *)"OPTIMIZER_PERFORMANCE_VIEW",                    // 23
       (SChar *)"0",
       (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
       PLAN_PROPERTY_OPTIMIZER_PERFORMANCE_VIEW },
     { (SChar *)"__OPTIMIZER_INNER_JOIN_PUSH_DOWN",              // 24
       (SChar *)"0",
       (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
       PLAN_PROPERTY_OPTIMIZER_INNER_JOIN_PUSH_DOWN },
     { (SChar *)"__OPTIMIZER_ORDER_PUSH_DOWN",                   // 25
       (SChar *)"0",
       (SChar *)"0",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
       PLAN_PROPERTY_OPTIMIZER_ORDER_PUSH_DOWN },
     { (SChar *)"__OPTIMIZER_TARGET_SUBQUERY_UNNEST_DISABLE",    // 26
       (SChar *)"0",
       (SChar *)"0",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
       PLAN_PROPERTY_OPTIMIZER_TARGET_SUBQUERY_UNNEST_DISABLE },
     { (SChar *)"__OPTIMIZER_TARGET_SUBQUERY_REMOVAL_DISABLE",   // 27
       (SChar *)"0",
       (SChar *)"0",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
       PLAN_PROPERTY_OPTIMIZER_TARGET_SUBQUERY_REMOVAL_DISABLE },
     { (SChar *)"HOST_OPTIMIZE_ENABLE",                          // 28
       (SChar *)"1",
       (SChar *)"0",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
       PLAN_PROPERTY_HOST_OPTIMIZE_ENABLE },
     { (SChar *)"__OPTIMIZER_LIKE_INDEX_SCAN_WITH_OUTER_COLUMN_DISABLE",  // 29 
       (SChar *)"1",
       (SChar *)"0",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
       PLAN_PROPERTY_OPTIMIZER_LIKE_INDEX_SCAN_WITH_OUTER_COLUMN_DISABLE },
-    { (SChar *)"__OPTIMIZER_HIERARCHY_TRANSFORMATION",  // 30
+    { (SChar *)"__OPTIMIZER_HIERARCHY_TRANSFORMATION",          // 30
       (SChar *)"1",
       (SChar *)"0",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
       PLAN_PROPERTY_OPTIMIZER_HIERARCHY_TRANSFORMATION },
-    { (SChar *)"__OPTIMIZER_UNNEST_COMPATIBILITY",  // 31
+    { (SChar *)"__OPTIMIZER_UNNEST_COMPATIBILITY",              // 31
       (SChar *)"3",
-      (SChar *)"2",
-      QDC_OPTIMIZER_FEATURE_VERSION_MAX,
+      (SChar *)"3",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
+      QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
       PLAN_PROPERTY_OPTIMIZER_UNNEST_COMPATIBILITY },
     { (SChar *)"__OPTIMIZER_INVERSE_JOIN_ENABLE",               // 32
       (SChar *)"0",
       (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_6_3_1_0_1,
       PLAN_PROPERTY_OPTIMIZER_INVERSE_JOIN_ENABLE },
-    { (SChar *)"__OPTIMIZER_INDEX_COST_MODE",               // 33
+    { (SChar *)"__LEFT_OUTER_SKIP_RIGHT_ENABLE",                // 33
+      (SChar *)"0",
+      (SChar *)"0",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
+      QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
+      PLAN_PROPERTY_LEFT_OUTER_SKIP_RIGHT_ENABLE },
+    { (SChar *)"__OPTIMIZER_INDEX_COST_MODE",                   // 34
       (SChar *)"0",
       (SChar *)"1",
-      QDC_OPTIMIZER_FEATURE_VERSION_MAX,
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
+      QDC_OPTIMIZER_FEATURE_VERSION_7_2_0_0_0,
       PLAN_PROPERTY_OPTIMIZER_INDEX_COST_MODE},
-    { (SChar *)"__LEFT_OUTER_SKIP_RIGHT_ENABLE",               // 34
+    { (SChar *)"__OPTIMIZER_ORDER_BY_ELIMINATION_ENABLE",       // 35 from 16 (651)
+      (SChar *)"1",
+      (SChar *)"3",
+      QDC_OPTIMIZER_FEATURE_VERSION_6_5_1_0_0,
+      QDC_OPTIMIZER_FEATURE_VERSION_7_2_0_0_0,
+      PLAN_PROPERTY_OPTIMIZER_ORDER_BY_ELIMINATION_ENABLE },
+    { (SChar *)"__LEFT_OUTER_SKIP_RIGHT_ENABLE",                // 36 from 33 (710)
       (SChar *)"0",
       (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
+      QDC_OPTIMIZER_FEATURE_VERSION_7_2_0_0_0,
+      PLAN_PROPERTY_LEFT_OUTER_SKIP_RIGHT_ENABLE },
+    { (SChar *)"__OPTIMIZER_UNNEST_COMPATIBILITY",              // 37 from 31 (710)
+      (SChar *)"3",
+      (SChar *)"0",
+      QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0,
+      QDC_OPTIMIZER_FEATURE_VERSION_7_2_0_0_0,
+      PLAN_PROPERTY_OPTIMIZER_UNNEST_COMPATIBILITY },
+    { (SChar *)"__OPTIMIZER_WITH_VIEW",                        // 38
+      (SChar *)"1",
+      (SChar *)"3",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_MAX,
-      PLAN_PROPERTY_LEFT_OUTER_SKIP_RIGHT_ENABLE }
-};
+      PLAN_PROPERTY_OPTIMIZER_WITH_VIEW }
+    };
 
 
 /***********************************************************************
@@ -3398,6 +3462,7 @@ IDE_RC qdc::changeFeatureProperty( qcStatement * aStatement,
     qdcFeatureVersion sNewVersion;
     UInt sLength;
     SInt i;
+    idBool sChange = ID_TRUE;   // BUG-48959
     
     sLength = idlOS::strlen( aNewValue );
 
@@ -3438,23 +3503,40 @@ IDE_RC qdc::changeFeatureProperty( qcStatement * aStatement,
         // 2. sNewVersion 초과는 old value로 변경.
         else
         {
-            IDE_TEST( idp::validate(
-                        gFeatureProperty[i].mName,
-                        gFeatureProperty[i].mOldValue,
-                        ID_TRUE )  // isSystem
-                      != IDE_SUCCESS );
+            // BUG-48959 property 값이 2번 이상 변경되는 경우
+            // __OPTIMIZER_ORDER_BY_ELIMINATION_ENABLE
+            // version                6.5.1   7.2.0   trunk
+            // prop_default_value   0   |   1   |   3   |   1
+            sChange = ID_TRUE;
 
-            IDE_TEST( idp::update(
-                        aStatement->mStatistics,
-                        gFeatureProperty[i].mName,
-                        gFeatureProperty[i].mOldValue,
-                        0,
-                        aArg )
-                      != IDE_SUCCESS );
+            if ( gFeatureProperty[i].mOldVersion != QDC_OPTIMIZER_FEATURE_VERSION_NONE )
+            {
+                if ( sNewVersion < gFeatureProperty[i].mOldVersion )
+                {
+                    sChange = ID_FALSE;
+                }
+            }
 
-            qcgPlan::registerPlanProperty(
-                         aStatement,
-                         gFeatureProperty[i].mPlanName );
+            if ( sChange == ID_TRUE )
+            {
+                IDE_TEST( idp::validate(
+                            gFeatureProperty[i].mName,
+                            gFeatureProperty[i].mOldValue,
+                            ID_TRUE )  // isSystem
+                          != IDE_SUCCESS );
+
+                IDE_TEST( idp::update(
+                            aStatement->mStatistics,
+                            gFeatureProperty[i].mName,
+                            gFeatureProperty[i].mOldValue,
+                            0,
+                            aArg )
+                          != IDE_SUCCESS );
+
+                qcgPlan::registerPlanProperty(
+                             aStatement,
+                             gFeatureProperty[i].mPlanName );
+            }
         }
     }
 
@@ -3515,6 +3597,13 @@ IDE_RC qdc::getFeatureVersionNo( SChar             * aVersionStr,
     {
         *aVersionNo = QDC_OPTIMIZER_FEATURE_VERSION_7_1_0_0_0;
     }
+    else if( idlOS::strMatch( (SChar *)"7.2.0.0.0",
+                              idlOS::strlen( (SChar *)"7.2.0.0.0" ),
+                              aVersionStr,
+                              idlOS::strlen( aVersionStr ) ) == 0 )
+    {
+        *aVersionNo = QDC_OPTIMIZER_FEATURE_VERSION_7_2_0_0_0;
+    }
     else if( idlOS::strMatch(
                 (SChar *)IDU_ALTIBASE_VERSION_STRING,
                 idlOS::strlen( (SChar *)IDU_ALTIBASE_VERSION_STRING ),
@@ -3560,6 +3649,7 @@ IDE_RC qdc::changeFeatureProperty4Startup( SChar * aNewValue )
     qdcFeatureVersion sNewVersion;
     UInt sLength;
     SInt i;
+    idBool sChange = ID_TRUE;   // BUG-48959
 
     sLength = idlOS::strlen( aNewValue );
 
@@ -3596,19 +3686,36 @@ IDE_RC qdc::changeFeatureProperty4Startup( SChar * aNewValue )
         // 2. sNewVersion 초과는 old value로 변경.
         else
         {
-            IDE_TEST( idp::validate(
-                        gFeatureProperty[i].mName,
-                        gFeatureProperty[i].mOldValue,
-                        ID_TRUE )  // isSystem
-                      != IDE_SUCCESS );
+            // BUG-48959 property 값이 2번 이상 변경되는 경우
+            // __OPTIMIZER_ORDER_BY_ELIMINATION_ENABLE
+            // version                6.5.1   7.2.0
+            // prop_default_value   0   |   1   |  3
+            sChange = ID_TRUE;
 
-            IDE_TEST( idp::update4Startup(
-                        NULL,
-                        gFeatureProperty[i].mName,
-                        gFeatureProperty[i].mOldValue,
-                        0,
-                        NULL )
-                      != IDE_SUCCESS );
+            if ( gFeatureProperty[i].mOldVersion != QDC_OPTIMIZER_FEATURE_VERSION_NONE )
+            {
+                if ( sNewVersion < gFeatureProperty[i].mOldVersion )
+                {
+                    sChange = ID_FALSE;
+                }
+            }
+
+            if ( sChange == ID_TRUE )
+            {
+                IDE_TEST( idp::validate(
+                            gFeatureProperty[i].mName,
+                            gFeatureProperty[i].mOldValue,
+                            ID_TRUE )  // isSystem
+                          != IDE_SUCCESS );
+
+                IDE_TEST( idp::update4Startup(
+                            NULL,
+                            gFeatureProperty[i].mName,
+                            gFeatureProperty[i].mOldValue,
+                            0,
+                            NULL )
+                          != IDE_SUCCESS );
+            }
         }
     }
 

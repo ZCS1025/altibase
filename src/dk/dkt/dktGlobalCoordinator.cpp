@@ -3151,15 +3151,36 @@ IDE_RC dktGlobalCoordinator::writeXaEndLog()
 
 IDE_RC dktGlobalCoordinator::executeSimpleTransactionCommitPrepareForShard()
 {
-    iduListNode     *sIterator = NULL;
-    dktRemoteTx     *sRemoteTx = NULL;
+    iduListNode     * sIterator  = NULL;
+    dktRemoteTx     * sRemoteTx  = NULL;
+    sdiConnectInfo  * sNode      = NULL;
+    idBool            sSuccess   = ID_TRUE;
+    sdiClientInfo  * sClientInfo = NULL;
+
+    sdiFailoverSuspend sFailoverSuspend;
+
+    sClientInfo = getShardClientInfo();
+
+    /* MTX COMMIT-PREPARE */
+    sFailoverSuspend.set( sClientInfo,
+                          SDI_FAILOVER_SUSPEND_ALLOW_RETRY,
+                          sdERR_ABORT_REMOTE_COMMIT_FAILED );
 
     IDU_LIST_ITERATE( &mRTxList, sIterator )
     {
         sRemoteTx = (dktRemoteTx *)sIterator->mObj;
 
-        IDE_TEST( sdi::checkNode( sRemoteTx->getDataNode() ) != IDE_SUCCESS );
+        sNode = sRemoteTx->getDataNode();
+
+        if ( sdi::checkNode( sNode ) != IDE_SUCCESS )
+        {
+            sSuccess = ID_FALSE;
+        }
     }
+
+    sFailoverSuspend.unset( sClientInfo );
+
+    IDE_TEST( sSuccess == ID_FALSE );
 
     setAllRemoteTxStatus( DKT_RTX_STATUS_PREPARED );
     mGTxStatus = DKT_GTX_STATUS_PREPARED;
@@ -3167,6 +3188,8 @@ IDE_RC dktGlobalCoordinator::executeSimpleTransactionCommitPrepareForShard()
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    sFailoverSuspend.unset( sClientInfo );
 
     return IDE_FAILURE;
 }
@@ -3184,6 +3207,8 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepareForShard()
     sdiClientInfo   * sClientInfo = NULL;
     idBool            sGCTxSupport = ID_FALSE;
 
+    sdiFailoverSuspend sFailoverSuspend;
+
     sClientInfo = getShardClientInfo();
     sGCTxSupport = ( ( isGCTx() == ID_TRUE ) && ( sClientInfo != NULL ) )
                    ? ID_TRUE
@@ -3191,6 +3216,11 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepareForShard()
 
     SM_INIT_SCN( &sSCN );
     SM_INIT_SCN( &sMaxSCN );
+
+    /* GTX COMMIT-PREPARE */
+    sFailoverSuspend.set( sClientInfo,
+                          SDI_FAILOVER_SUSPEND_ALLOW_RETRY,
+                          sdERR_ABORT_REMOTE_COMMIT_FAILED );
 
     IDE_TEST( writeXaPrepareReqLog() != IDE_SUCCESS );
 
@@ -3205,11 +3235,6 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepareForShard()
         if ( ( sNode->mFlag & SDI_CONNECT_COMMIT_PREPARE_MASK )
              == SDI_CONNECT_COMMIT_PREPARE_FALSE )
         {
-            IDE_TEST( sdi::setFailoverSuspend( sNode,
-                                               SDI_FAILOVER_SUSPEND_ALLOW_RETRY,
-                                               sdERR_ABORT_REMOTE_COMMIT_FAILED )
-                      != IDE_SUCCESS );
-
             IDE_TEST( sdi::addPrepareTranCallback( &sCallback, sNode )
                       != IDE_SUCCESS );
         }
@@ -3262,8 +3287,6 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepareForShard()
             sSuccess = ID_FALSE;
         }
 
-        (void)sdi::setFailoverSuspend( sNode, SDI_FAILOVER_SUSPEND_NONE );
-
         /* PROJ-2733-DistTxInfo */
         if ( sGCTxSupport == ID_TRUE )
         {
@@ -3292,6 +3315,8 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepareForShard()
             }
         }
     }
+
+    sFailoverSuspend.unset( sClientInfo );
 
     IDE_TEST( sSuccess == ID_FALSE );
 
@@ -3338,16 +3363,28 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitPrepareForShard()
         #endif
     }
 
+    sFailoverSuspend.unset( sClientInfo );
+
     return IDE_FAILURE;
 }
 
 IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitCommitForShard()
 {
-    iduListNode     *sIterator = NULL;
-    iduListNode     *sNext     = NULL;
-    dktRemoteTx     *sRemoteTx = NULL;
-    sdiConnectInfo  *sNode     = NULL;
-    idBool           sSuccess  = ID_TRUE;
+    iduListNode     *sIterator   = NULL;
+    iduListNode     *sNext       = NULL;
+    dktRemoteTx     *sRemoteTx   = NULL;
+    sdiConnectInfo  *sNode       = NULL;
+    idBool           sSuccess    = ID_TRUE;
+    sdiClientInfo  * sClientInfo = NULL;
+
+    sdiFailoverSuspend sFailoverSuspend;
+
+    sClientInfo = getShardClientInfo();
+
+    /* MTX COMMIT */
+    sFailoverSuspend.set( sClientInfo,
+                          SDI_FAILOVER_SUSPEND_ALL,
+                          sdERR_ABORT_REMOTE_COMMIT_FAILED );
 
     setAllRemoteTxStatus( DKT_RTX_STATUS_COMMIT_WAIT );
     mGTxStatus = DKT_GTX_STATUS_COMMIT_WAIT;
@@ -3382,27 +3419,33 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitCommitForShard()
     setAllRemoteTxStatus( DKT_RTX_STATUS_COMMITTED );
     mGTxStatus = DKT_GTX_STATUS_COMMITTED;
 
+    sFailoverSuspend.unset( sClientInfo );
+
     IDE_TEST( sSuccess == ID_FALSE );
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
+    sFailoverSuspend.unset( sClientInfo );
+
     return IDE_FAILURE;
 }
 
 IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommitForShard()
 {
-    iduListNode    * sIterator = NULL;
-    iduListNode    * sNext     = NULL;
-    dktRemoteTx    * sRemoteTx = NULL;
-    sdiConnectInfo * sNode     = NULL;
-    void           * sCallback = NULL;
-    idBool           sSuccess = ID_TRUE;
+    iduListNode    * sIterator   = NULL;
+    iduListNode    * sNext       = NULL;
+    dktRemoteTx    * sRemoteTx   = NULL;
+    sdiConnectInfo * sNode       = NULL;
+    void           * sCallback   = NULL;
+    idBool           sSuccess    = ID_TRUE;
     sdiClientInfo  * sClientInfo = NULL;
     smSCN            sSCN;
     smSCN            sMaxSCN;
     idBool           sGCTxSupport = ID_FALSE;
+
+    sdiFailoverSuspend sFailoverSuspend;
 
     sClientInfo = getShardClientInfo();
     sGCTxSupport = ( ( isGCTx() == ID_TRUE ) && ( sClientInfo != NULL ) )
@@ -3410,6 +3453,11 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommitForShard()
                    : ID_FALSE;
 
     SM_INIT_SCN( &sMaxSCN );
+
+    /* GTX COMMIT */
+    sFailoverSuspend.set( sClientInfo,
+                          SDI_FAILOVER_SUSPEND_ALL,
+                          sdERR_ABORT_REMOTE_COMMIT_FAILED );
 
     /* PROJ-2733-DistTxInfo */
     if ( sGCTxSupport == ID_TRUE )
@@ -3438,11 +3486,6 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommitForShard()
 
         IDE_DASSERT( ( sNode->mFlag & SDI_CONNECT_COMMIT_PREPARE_MASK )
                      == SDI_CONNECT_COMMIT_PREPARE_TRUE );
-
-        IDE_TEST( sdi::setFailoverSuspend( sNode,
-                                           SDI_FAILOVER_SUSPEND_ALL,
-                                           sdERR_ABORT_REMOTE_COMMIT_FAILED )
-                  != IDE_SUCCESS );
 
         /* PROJ-2733-DistTxInfo */
         if ( sGCTxSupport == ID_TRUE )
@@ -3487,8 +3530,6 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommitForShard()
             sSuccess = ID_FALSE;
         }
 
-        (void)sdi::setFailoverSuspend( sNode, SDI_FAILOVER_SUSPEND_NONE );
-
         destroyRemoteTx( sRemoteTx );
 
         sNode->mRemoteTx = NULL;
@@ -3526,6 +3567,8 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommitForShard()
             }
         }
     }
+
+    sFailoverSuspend.unset( sClientInfo );
 
     IDU_FIT_POINT_RAISE( "dktGlobalCoordinator::executeTwoPhaseCommitCommitForShard::BeforeWriteXaEndLog",
                           ERR_END_TRANS );
@@ -3586,16 +3629,23 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommitForShard()
         #endif
     }
 
+    sFailoverSuspend.unset( sClientInfo );
+
     return IDE_FAILURE;
 }
 
 IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollbackForShard( SChar *aSavepointName )
 {
-    iduListNode     *sIterator = NULL;
-    iduListNode     *sNext     = NULL;
-    dktRemoteTx     *sRemoteTx = NULL;
-    sdiConnectInfo  *sNode     = NULL;
-    idBool           sSuccess = ID_TRUE;
+    iduListNode     *sIterator   = NULL;
+    iduListNode     *sNext       = NULL;
+    dktRemoteTx     *sRemoteTx   = NULL;
+    sdiConnectInfo  *sNode       = NULL;
+    idBool           sSuccess    = ID_TRUE;
+    sdiClientInfo  * sClientInfo = NULL;
+
+    sdiFailoverSuspend sFailoverSuspend;
+
+    sClientInfo = getShardClientInfo();
 
     setAllRemoteTxStatus( DKT_RTX_STATUS_ROLLBACK_WAIT );
     mGTxStatus = DKT_GTX_STATUS_ROLLBACK_WAIT;
@@ -3606,6 +3656,10 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollbackForShard( SC
     }
     else
     {
+        /* MTX ROLLBACK */
+        sFailoverSuspend.set( sClientInfo,
+                              SDI_FAILOVER_SUSPEND_ALL );
+
         IDU_LIST_ITERATE_SAFE( &mRTxList, sIterator, sNext )
         {
             sRemoteTx = (dktRemoteTx *)sIterator->mObj;
@@ -3638,6 +3692,8 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollbackForShard( SC
             sNode->mFlag &= ~SDI_CONNECT_PSM_SVP_SET_MASK;
             sNode->mFlag |= SDI_CONNECT_PSM_SVP_SET_FALSE;
         }
+
+        sFailoverSuspend.unset( sClientInfo );
     }
 
     if ( mRTxCnt == 0 )
@@ -3657,18 +3713,29 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollbackForShard( SC
 
     IDE_EXCEPTION_END;
 
+    sFailoverSuspend.unset( sClientInfo );
+
     return IDE_FAILURE;
 }
 
 IDE_RC  dktGlobalCoordinator::executeSavepointRollbackForShard( SChar *aSavepointName )
 {
-    iduListNode     *sIterator = NULL;
-    iduListNode     *sNext     = NULL;
-    dktRemoteTx     *sRemoteTx = NULL;
-    sdiConnectInfo  *sNode     = NULL;
-    idBool           sSuccess = ID_TRUE;
+    iduListNode     *sIterator   = NULL;
+    iduListNode     *sNext       = NULL;
+    dktRemoteTx     *sRemoteTx   = NULL;
+    sdiConnectInfo  *sNode       = NULL;
+    idBool           sSuccess    = ID_TRUE;
+    sdiClientInfo  * sClientInfo = NULL;
+
+    sdiFailoverSuspend sFailoverSuspend;
 
     IDE_DASSERT( aSavepointName != NULL );
+
+    sClientInfo = getShardClientInfo();
+
+    /* COMMON ROLLBACK-TO-SAVEPOINT */
+    sFailoverSuspend.set( sClientInfo,
+                          SDI_FAILOVER_SUSPEND_ALLOW_RETRY );
 
     IDU_LIST_ITERATE_SAFE( &mRTxList, sIterator, sNext )
     {
@@ -3686,21 +3753,34 @@ IDE_RC  dktGlobalCoordinator::executeSavepointRollbackForShard( SChar *aSavepoin
         }
     }
 
+    sFailoverSuspend.unset( sClientInfo );
+
     IDE_TEST( sSuccess == ID_FALSE );
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
 
+    sFailoverSuspend.unset( sClientInfo );
+
     return IDE_FAILURE;
 }
 
 IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollbackForceForShard()
 {
-    iduListNode     *sIterator = NULL;
-    iduListNode     *sNext     = NULL;
-    dktRemoteTx     *sRemoteTx = NULL;
-    sdiConnectInfo  *sNode     = NULL;
+    iduListNode    * sIterator   = NULL;
+    iduListNode    * sNext       = NULL;
+    dktRemoteTx    * sRemoteTx   = NULL;
+    sdiConnectInfo * sNode       = NULL;
+    sdiClientInfo  * sClientInfo = NULL;
+
+    sdiFailoverSuspend sFailoverSuspend;
+
+    sClientInfo = getShardClientInfo();
+
+    /* MTX ROLLBACK-FORCE */
+    sFailoverSuspend.set( sClientInfo,
+                          SDI_FAILOVER_SUSPEND_ALL );
 
     setAllRemoteTxStatus( DKT_RTX_STATUS_ROLLBACK_WAIT );
     mGTxStatus = DKT_GTX_STATUS_ROLLBACK_WAIT;
@@ -3734,6 +3814,8 @@ IDE_RC  dktGlobalCoordinator::executeSimpleTransactionCommitRollbackForceForShar
     setAllRemoteTxStatus( DKT_RTX_STATUS_ROLLBACKED );
     mGTxStatus = DKT_GTX_STATUS_ROLLBACKED;
 
+    sFailoverSuspend.unset( sClientInfo );
+
     return IDE_SUCCESS;
 
     /* failure 를 리턴하면 안된다. */
@@ -3753,6 +3835,8 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollbackForShard(SChar * aSav
     idBool           sGCTxSupport = ID_FALSE;
 
     idBool           sIsPrepared = ID_FALSE;
+
+    sdiFailoverSuspend sFailoverSuspend;
 
     sClientInfo = getShardClientInfo();
     sGCTxSupport = ( ( isGCTx() == ID_TRUE ) && ( sClientInfo != NULL ) )
@@ -3779,6 +3863,10 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollbackForShard(SChar * aSav
     }
     else
     {
+        /* GTX ROLLBACK */
+        sFailoverSuspend.set( sClientInfo,
+                              SDI_FAILOVER_SUSPEND_ALL );
+
         mDtxInfo->mResult = SMI_DTX_ROLLBACK;
         setAllRemoteTxStatus( DKT_RTX_STATUS_ROLLBACK_WAIT );
         mGTxStatus = DKT_GTX_STATUS_ROLLBACK_WAIT;
@@ -3790,11 +3878,6 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollbackForShard(SChar * aSav
 
             if ( sNode->mDbc != NULL )
             {
-                IDE_TEST( sdi::setFailoverSuspend( sNode,
-                                                   SDI_FAILOVER_SUSPEND_ALL,
-                                                   sdERR_ABORT_REMOTE_COMMIT_FAILED )
-                          != IDE_SUCCESS );
-
                 if ( ( sNode->mFlag & SDI_CONNECT_COMMIT_PREPARE_MASK )
                      == SDI_CONNECT_COMMIT_PREPARE_FALSE )
                 {
@@ -3842,8 +3925,6 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollbackForShard(SChar * aSav
                     /* 수행이 실패한 경우 */
                     sSuccess = ID_FALSE;
                 }
-
-                (void)sdi::setFailoverSuspend( sNode, SDI_FAILOVER_SUSPEND_NONE );
             }
             else
             {
@@ -3891,6 +3972,8 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollbackForShard(SChar * aSav
                 }
             }
         }
+
+        sFailoverSuspend.unset( sClientInfo );
 
         IDE_TEST_RAISE( sSuccess == ID_FALSE, ERR_END_TRANS );
 
@@ -3949,6 +4032,8 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollbackForShard(SChar * aSav
                      ideGetErrorMsg( ideGetErrorCode() ) );
         #endif
     }
+
+    sFailoverSuspend.unset( sClientInfo );
 
     return IDE_FAILURE;
 }

@@ -14,7 +14,7 @@
  */
 
 /***********************************************************************
- * $Id: sdo.cpp 90252 2021-03-18 06:46:29Z andrew.shin $
+ * $Id: sdo.cpp 91579 2021-09-02 09:21:23Z andrew.shin $
  **********************************************************************/
 
 #include <sda.h>
@@ -22,6 +22,7 @@
 #include <sdo.h>
 #include <qcg.h>
 #include <qmo.h>
+#include <qmv.h>
 #include <qsvEnv.h>
 
 IDE_RC sdo::allocAndInitQuerySetList( qcStatement * aStatement )
@@ -453,6 +454,9 @@ IDE_RC sdo::isTransformNeeded( qcStatement * aStatement,
             case QC_STMT_SHARD_META :
                 sda::setNonShardQueryReason( &( aStatement->mShardPrintInfo ),
                                              SDI_SHARD_KEYWORD_EXISTS );
+
+                /* BUG-48847 Non-deterministic for shard */
+                IDE_TEST( analyzeStatementForKeyword( aStatement ) != IDE_SUCCESS );
 
                 sIsTransformNeeded = ID_FALSE;
 
@@ -2896,6 +2900,260 @@ IDE_RC sdo::setShardStmtType( qcStatement * aStatement,
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
                                   "sdo::setShardStmtType",
                                   "view statement is NULL" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+/* BUG-48847 Non-deterministic for shard */
+IDE_RC sdo::analyzeStatementForKeyword( qcStatement * aStatement )
+{
+    ULong             sSMN          = ID_ULONG(0);
+    qciStmtType       sStmtKind     = QCI_STMT_MASK_MAX;
+    qmmInsParseTree * sInsParseTree = NULL;
+    qmmDelParseTree * sDelParseTree = NULL;
+    qmmUptParseTree * sUptParseTree = NULL;
+    qmsFrom         * sFrom         = NULL;
+    qmsParseTree    * sParseTree    = NULL;
+
+    IDE_TEST_RAISE( aStatement == NULL, ERR_NULL_STATEMENT );
+
+    sSMN       = QCG_GET_SESSION_SHARD_META_NUMBER( aStatement );
+    sStmtKind  = aStatement->myPlan->parseTree->stmtKind;
+
+    switch ( sStmtKind )
+    {
+        case QCI_STMT_INSERT:
+            sInsParseTree = (qmmInsParseTree *)( aStatement->myPlan->parseTree );
+
+            for ( ;
+                  sInsParseTree != NULL;
+                  sInsParseTree  = sInsParseTree->next )
+            {
+                IDE_TEST_RAISE( sInsParseTree->tableRef == NULL, ERR_UNEXPACTED );
+
+                if ( sInsParseTree->tableRef->view == NULL )
+                {
+                    IDE_TEST( raiseUnsupportedShardQueryError( sInsParseTree->tableRef->mShardObjInfo,
+                                                               sSMN )
+                              != IDE_SUCCESS );
+                }
+                else
+                {
+                    sParseTree = (qmsParseTree*)sInsParseTree->tableRef->view->myPlan->parseTree;
+
+                    IDE_TEST_RAISE( sParseTree == NULL, ERR_NULL_PARSETREE );
+
+                    IDE_TEST( analyzeQuerySetForKeyword( aStatement,
+                                                         sSMN,
+                                                         sParseTree->querySet )
+                              != IDE_SUCCESS );
+                }
+            }
+            break;
+
+        case QCI_STMT_UPDATE:
+            sUptParseTree = (qmmUptParseTree *)( aStatement->myPlan->parseTree );
+
+            for ( sFrom  = sUptParseTree->querySet->SFWGH->from;
+                  sFrom != NULL;
+                  sFrom  = sFrom->next )
+            {
+                IDE_TEST( analyzeFromForKeyword( aStatement,
+                                                 sSMN,
+                                                 sFrom )
+                          != IDE_SUCCESS );
+            }
+            break;
+
+        case QCI_STMT_DELETE:
+            sDelParseTree = (qmmDelParseTree *)( aStatement->myPlan->parseTree );
+
+            for ( sFrom  = sDelParseTree->querySet->SFWGH->from;
+                  sFrom != NULL;
+                  sFrom  = sFrom->next )
+            {
+                IDE_TEST( analyzeFromForKeyword( aStatement,
+                                                 sSMN,
+                                                 sFrom )
+                          != IDE_SUCCESS );
+            }
+            break;
+
+        default:
+            break;
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_STATEMENT )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdo::analyzeStatementForKeyword",
+                                  "statement is NULL" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_PARSETREE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdo::analyzeStatementForKeyword",
+                                  "parse tree is NULL" ) );
+    }
+    IDE_EXCEPTION( ERR_UNEXPACTED )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdo::analyzeStatementForKeyword",
+                                  "list is invalid" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdo::analyzeQuerySetForKeyword( qcStatement * aStatement,
+                                       ULong         aSMN,
+                                       qmsQuerySet * aQuerySet )
+{
+    qmsFrom * sFrom = NULL;
+
+    IDE_TEST_RAISE( aQuerySet == NULL, ERR_NULL_QUERTYSET );
+
+    if ( aQuerySet->setOp != QMS_NONE )
+    {
+        IDE_TEST( analyzeQuerySetForKeyword( aStatement,
+                                             aSMN,
+                                             aQuerySet->left )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( analyzeQuerySetForKeyword( aStatement,
+                                             aSMN,
+                                             aQuerySet->right )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        IDE_TEST_RAISE( aQuerySet->SFWGH == NULL, ERR_NULL_SFWGH );
+
+        for ( sFrom  = aQuerySet->SFWGH->from;
+              sFrom != NULL;
+              sFrom  = sFrom->next )
+        {
+            IDE_TEST( analyzeFromForKeyword( aStatement,
+                                             aSMN,
+                                             sFrom )
+                      != IDE_SUCCESS );
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_QUERTYSET )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdo::analyzeQuerySetForKeyword",
+                                  "query set is NULL" ) );
+    }
+    IDE_EXCEPTION( ERR_NULL_SFWGH )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdo::analyzeQuerySetForKeyword",
+                                  "SFWGH is NULL" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdo::analyzeFromForKeyword( qcStatement * aStatement,
+                                   ULong         aSMN,
+                                   qmsFrom     * aFrom )
+{
+    qmsParseTree * sParseTree = NULL;
+
+    if ( aFrom != NULL )
+    {
+        if ( aFrom->joinType == QMS_NO_JOIN )
+        {
+            if ( aFrom->tableRef->view != NULL )
+            {
+                sParseTree = (qmsParseTree*)aFrom->tableRef->view->myPlan->parseTree;
+
+                IDE_TEST_RAISE( sParseTree == NULL, ERR_NULL_PARSETREE );
+
+                IDE_TEST( analyzeQuerySetForKeyword( aStatement,
+                                                     aSMN,
+                                                     sParseTree->querySet )
+                          != IDE_SUCCESS );
+            }
+            else
+            {
+                IDE_TEST( raiseUnsupportedShardQueryError( aFrom->tableRef->mShardObjInfo,
+                                                           aSMN )
+                          != IDE_SUCCESS );
+            }
+        }
+        else
+        {
+            IDE_TEST( analyzeFromForKeyword( aStatement,
+                                             aSMN,
+                                             aFrom->left )
+                      != IDE_SUCCESS );
+
+            IDE_TEST( analyzeFromForKeyword( aStatement,
+                                             aSMN,
+                                             aFrom->right )
+                      != IDE_SUCCESS );
+        }
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_NULL_PARSETREE )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDC_UNEXPECTED_ERROR,
+                                  "sdo::analyzeFromForKeyword",
+                                  "parse tree is NULL" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC sdo::raiseUnsupportedShardQueryError( sdiObjectInfo * aShardObjectInfo,
+                                             ULong           aSMN )
+{
+    sdiObjectInfo * sShardObjectInfo = NULL;
+
+    if ( aShardObjectInfo != NULL )
+    {
+        sdi::getShardObjInfoForSMN( aSMN,
+                                    aShardObjectInfo,
+                                    &( sShardObjectInfo ) );
+
+        if ( sShardObjectInfo != NULL )
+        {
+            IDE_TEST_RAISE( sShardObjectInfo->mTableInfo.mSplitMethod == SDI_SPLIT_CLONE,
+                            ERR_UNSUPPORTED );
+        }
+        else
+        {
+            /* Nothing to do */
+        }
+    }
+    else
+    {
+        /* Nothing to do */
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_UNSUPPORTED )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_UNSUPPORTED_SHARD_DATA_IN_DML ) );
     }
     IDE_EXCEPTION_END;
 

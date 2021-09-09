@@ -15,7 +15,7 @@
  */
 
 /***********************************************************************
- * $Id: qmv.h 90434 2021-04-02 06:56:50Z khkwak $
+ * $Id: qmv.h 91627 2021-09-08 01:47:35Z ahra.cho $
  **********************************************************************/
 
 #ifndef _Q_QMV_H_
@@ -319,6 +319,9 @@ public:
     static IDE_RC parseMultiDelete( qcStatement * aStatement );
     static IDE_RC validateMultiDelete( qcStatement * aStatement );
 
+    // BUG-48345 Lock procedure statement
+    static IDE_RC validateLockSP( qcStatement * aStatement );
+
 private:
     static IDE_RC insertCommon(
         qcStatement       * aStatement,
@@ -364,7 +367,8 @@ private:
     static IDE_RC parseViewInFromClause(
         qcStatement * aStatement,
         qmsFrom     * aTableRef,
-        qmsHints    * aHints );
+        qmsHints    * aHints,
+        idBool        aIsHierarchy = ID_FALSE );    // PROJ-2749
     
     // BUG-13725
     static IDE_RC checkInsertOperatable(

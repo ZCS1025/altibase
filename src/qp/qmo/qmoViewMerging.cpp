@@ -975,6 +975,8 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
  *     (4) target list 검사
  *     (5) disk table 검사
  *
+ * Caution : 
+ *     canMergedWithStmt()에서 호출할 때만 aTableRef이 NULL이다.
  ***********************************************************************/
 
     qmsTarget         * sViewTarget = NULL;
@@ -995,7 +997,6 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
     
     IDE_DASSERT( aStatement != NULL );
     IDE_DASSERT( aSFWGH != NULL );
-    IDE_DASSERT( aTableRef != NULL );
     IDE_DASSERT( aCanMerge != NULL );
 
     //------------------------------------------
@@ -1004,20 +1005,33 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
 
     while ( 1 )
     {
-        //------------------------------------------
-        // hint 검사
-        //------------------------------------------
-        
-        // currentSFWGH에서 현재 view에 대하여 no_merge,
-        // push_selection_view, push_pred를 명시한 경우
-        if ( aTableRef->noMergeHint == ID_TRUE )
+        if ( aTableRef != NULL )
         {
-            sCanMerge = ID_FALSE;
-            break;
-        }
-        else
-        {
-            // Nothing to do.
+            //------------------------------------------
+            // PROJ-2749 compact with인 경우 VM Transformation하면 안됩니다.
+            //------------------------------------------
+            if ( ( aTableRef->flag & QMS_TABLE_REF_COMPACT_WITH_MASK )
+                 == QMS_TABLE_REF_COMPACT_WITH_TRUE )
+            {
+                sCanMerge = ID_FALSE;
+                break;
+            }
+
+            //------------------------------------------
+            // hint 검사
+            //------------------------------------------
+
+            // currentSFWGH에서 현재 view에 대하여 no_merge,
+            // push_selection_view, push_pred를 명시한 경우
+            if ( aTableRef->noMergeHint == ID_TRUE )
+            {
+                sCanMerge = ID_FALSE;
+                break;
+            }
+            else
+            {
+                // Nothing to do.
+            }
         }
         
         // underSFWGH에서 push_selection_view를 사용한 경우
@@ -1119,31 +1133,35 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
         // performance view 검사
         //------------------------------------------
         
-        // performance view는 merge할 수 없다.
-        if ( aTableRef->tableInfo->tableType == QCM_PERFORMANCE_VIEW )
-        {
-            sCanMerge = ID_FALSE;
-            break;
-        }
-        else
-        {
-            // Nothing to do.
-        }
 
-        /* TASK-7219 Shard Transformer Refactoring */
-        if ( ( SDI_CHECK_QUERYSET_LIST_STATE( aStatement->mShardQuerySetList,
-                                              SDI_QUERYSET_LIST_STATE_DUMMY_ANALYZE )
-               == ID_TRUE )
-             &&
-             ( aTableRef->withStmt != NULL ) )
+        if ( aTableRef != NULL )
         {
-            sCanMerge = ID_FALSE;
+            // performance view는 merge할 수 없다.
+            if ( aTableRef->tableInfo->tableType == QCM_PERFORMANCE_VIEW )
+            {
+                sCanMerge = ID_FALSE;
+                break;
+            }
+            else
+            {
+                // Nothing to do.
+            }
 
-            break;
-        }
-        else
-        {
-            /* Nothing to do */
+            /* TASK-7219 Shard Transformer Refactoring */
+            if ( ( SDI_CHECK_QUERYSET_LIST_STATE( aStatement->mShardQuerySetList,
+                                                  SDI_QUERYSET_LIST_STATE_DUMMY_ANALYZE )
+                   == ID_TRUE )
+                 &&
+                 ( aTableRef->withStmt != NULL ) )
+            {
+                sCanMerge = ID_FALSE;
+
+                break;
+            }
+            else
+            {
+                /* Nothing to do */
+            }
         }
 
 
@@ -1193,41 +1211,115 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
         // 상위 query block에서 참조하는 target column  검사
         //------------------------------------------
 
-        // BUGBUG 동일한 view 컬럼을 중복검사할 수 있다.
-        for ( sColumnRef = aTableRef->viewColumnRefList;
-              sColumnRef != NULL;
-              sColumnRef = sColumnRef->next )
+        if ( aTableRef != NULL )
         {
-            if ( sColumnRef->column->node.module == & qtc::passModule )
+            // BUGBUG 동일한 view 컬럼을 중복검사할 수 있다.
+            for ( sColumnRef = aTableRef->viewColumnRefList;
+                  sColumnRef != NULL;
+                  sColumnRef = sColumnRef->next )
             {
-                // view 참조 컬럼이었다가 passNode로 바뀐경우
-                
-                // Nothing to do.
-            }
-            else
-            {
-                IDE_DASSERT( sColumnRef->column->node.module == & qtc::columnModule );
-                
-                sViewColumn = QTC_STMT_COLUMN( aStatement, sColumnRef->column );
-                sViewColumnOrder = sViewColumn->column.id & SMI_COLUMN_ID_MASK;
-                
-                sTargetOrder = 0;
-                for ( sViewTarget = aSFWGH->target;
-                      sViewTarget != NULL;
-                      sViewTarget = sViewTarget->next )
+                if ( sColumnRef->column->node.module == & qtc::passModule )
                 {
-                    if ( sTargetOrder == sViewColumnOrder )
+                    // view 참조 컬럼이었다가 passNode로 바뀐경우
+
+                    // Nothing to do.
+                }
+                else
+                {
+                    IDE_DASSERT( sColumnRef->column->node.module == & qtc::columnModule );
+
+                    sViewColumn = QTC_STMT_COLUMN( aStatement, sColumnRef->column );
+                    sViewColumnOrder = sViewColumn->column.id & SMI_COLUMN_ID_MASK;
+
+                    sTargetOrder = 0;
+                    for ( sViewTarget = aSFWGH->target;
+                          sViewTarget != NULL;
+                          sViewTarget = sViewTarget->next )
                     {
+                        if ( sTargetOrder == sViewColumnOrder )
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            sTargetOrder++;
+                        }
+                    }
+
+                    IDE_TEST_RAISE( sViewTarget == NULL, ERR_COLUMN_NOT_FOUND );
+
+                    // (1) subquery 포함하지 않는다.
+                    if ((sViewTarget->targetColumn->lflag & QTC_NODE_SUBQUERY_MASK)
+                        == QTC_NODE_SUBQUERY_EXIST)
+                    {
+                        sCanMerge = ID_FALSE;
+                        break;
+                    }
+
+                    // (2) user-defined function을 포함하지 않는다.
+                    if ( ( sViewTarget->targetColumn->lflag & QTC_NODE_PROC_FUNCTION_MASK )
+                         == QTC_NODE_PROC_FUNCTION_TRUE )
+                    {
+                        sCanMerge = ID_FALSE;
                         break;
                     }
                     else
                     {
-                        sTargetOrder++;
+                        // Nothing to do.
+                    }
+
+                    // (3) variable build-in function을 포함하지 않는다.
+                    if ( ( sViewTarget->targetColumn->lflag & QTC_NODE_VAR_FUNCTION_MASK )
+                         == QTC_NODE_VAR_FUNCTION_EXIST )
+                    {
+                        sCanMerge = ID_FALSE;
+                        break;
+                    }
+                    else
+                    {
+                        // Nothing to do.
+                    }
+
+                    /* (4) _prowid 를 포함하지 않는다. (BUG-41218) */
+                    if ( ( sViewTarget->targetColumn->lflag & QTC_NODE_COLUMN_RID_MASK )
+                         == QTC_NODE_COLUMN_RID_EXIST)
+                    {
+                        sCanMerge = ID_FALSE;
+                        break;
+                    }
+                    else
+                    {
+                        /* nothing to do */
+                    }
+
+                    /* TASK-7219 Shard Transformer Refactoring
+                     *  - (5) Bind
+                     */
+                    if ( ( SDI_CHECK_QUERYSET_LIST_STATE( aStatement->mShardQuerySetList,
+                                                          SDI_QUERYSET_LIST_STATE_DUMMY_ANALYZE )
+                           == ID_TRUE )
+                         &&
+                         ( MTC_NODE_IS_DEFINED_TYPE( &( sViewTarget->targetColumn->node ) )
+                           == ID_FALSE ) )
+                    {
+                        sCanMerge = ID_FALSE;
+
+                        break;
+                    }
+                    else
+                    {
+                        /* nothing to do */
                     }
                 }
-            
-                IDE_TEST_RAISE( sViewTarget == NULL, ERR_COLUMN_NOT_FOUND );
-
+            }
+        }
+        else
+        {
+            // PROJ-2749
+            for ( sViewTarget = aSFWGH->target;
+                  sViewTarget != NULL;
+                  sViewTarget = sViewTarget->next )
+            {
                 // (1) subquery 포함하지 않는다.
                 if ((sViewTarget->targetColumn->lflag & QTC_NODE_SUBQUERY_MASK)
                     == QTC_NODE_SUBQUERY_EXIST)
@@ -1247,7 +1339,7 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
                 {
                     // Nothing to do.
                 }
-            
+
                 // (3) variable build-in function을 포함하지 않는다.
                 if ( ( sViewTarget->targetColumn->lflag & QTC_NODE_VAR_FUNCTION_MASK )
                      == QTC_NODE_VAR_FUNCTION_EXIST )
@@ -1265,25 +1357,6 @@ qmoViewMerging::checkUnderSFWGH( qcStatement  * aStatement,
                      == QTC_NODE_COLUMN_RID_EXIST)
                 {
                     sCanMerge = ID_FALSE;
-                    break;
-                }
-                else
-                {
-                    /* nothing to do */
-                }
-
-                /* TASK-7219 Shard Transformer Refactoring
-                 *  - (5) Bind
-                 */
-                if ( ( SDI_CHECK_QUERYSET_LIST_STATE( aStatement->mShardQuerySetList,
-                                                      SDI_QUERYSET_LIST_STATE_DUMMY_ANALYZE )
-                       == ID_TRUE )
-                     &&
-                     ( MTC_NODE_IS_DEFINED_TYPE( &( sViewTarget->targetColumn->node ) )
-                       == ID_FALSE ) )
-                {
-                    sCanMerge = ID_FALSE;
-
                     break;
                 }
                 else
@@ -4028,8 +4101,11 @@ qmoViewMerging::modifySameViewRef( qcStatement  * aStatement )
             {
                 sTableRef = sFrom->tableRef->sameViewRef;
 
-                if ( sTableRef->isMerged == ID_TRUE )
+                if ( ( sTableRef->isMerged == ID_TRUE ) ||
+                     ( ( sTableRef->flag & QMS_TABLE_REF_OBYE_TRANSFORM_MASK )
+                       == QMS_TABLE_REF_OBYE_TRANSFORM_TRUE ) )
                 {
+                    // PROJ-2749 sameViewRef가 OBYE되었다면 NULL로 바꾼다.
                     // sameViewRef가 merge되었다면 NULL로 바꾼다.
                     sFrom->tableRef->sameViewRef = NULL;
                 }
@@ -4166,6 +4242,45 @@ IDE_RC qmoViewMerging::doTransformForMultiDML( qcStatement  * aStatement,
     // environment의 기록
     qcgPlan::registerPlanProperty( aStatement,
                                    PLAN_PROPERTY_OPTIMIZER_SIMPLE_VIEW_MERGE_DISABLE );
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmoViewMerging::canMergedWithStmt( qcStatement   * aStatement, 
+                                          qmsParseTree  * aParseTree,
+                                          idBool        * aIsMerge)
+{
+/***********************************************************************
+ *
+ * Description : PROJ-2749
+ *    COMPACT WITH 조건 확인 ( View merge가 안되는 뷰인 경우 )
+ * Implementation :
+ *    1. simple한 뷰인지 확인
+ *    2. view에 대한 조건 확인
+ *
+ ***********************************************************************/
+    idBool sCanMergeView = ID_FALSE;
+
+    IDE_TEST( isSimpleQuery( aParseTree,
+                             &sCanMergeView )
+              != IDE_SUCCESS );
+
+    if ( sCanMergeView == ID_TRUE )
+    {
+        sCanMergeView = ID_FALSE;
+
+        IDE_TEST( checkUnderSFWGH( aStatement,
+                                   aParseTree->querySet->SFWGH,
+                                   NULL,
+                                   &sCanMergeView )
+                  != IDE_SUCCESS );
+    }
+
+    *aIsMerge = sCanMergeView;
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;

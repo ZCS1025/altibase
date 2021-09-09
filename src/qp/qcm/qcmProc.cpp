@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcmProc.cpp 90009 2021-02-17 06:54:43Z khkwak $
+ * $Id: qcmProc.cpp 91584 2021-09-03 07:55:16Z khkwak $
  **********************************************************************/
 
 #include <idl.h>
@@ -533,6 +533,48 @@ IDE_RC qcmSetProcOIDOfQcmProcedures(
     return IDE_FAILURE;
 }
 
+// BUG-48345 Lock procedure statement
+IDE_RC qcmSetProcTypeOfQcmProcedures(
+    idvSQL              * /* aStatistics */,
+    const void          * aRow,
+    qcmProcType         * aProcType )
+{
+    UInt        sProcType;
+    SLong       sSLongID;
+    mtcColumn * sProcIDMtcColumn;
+    mtcColumn * sProcTypeMtcColumn;
+
+    IDE_TEST( smiGetTableColumns( gQcmProcedures,
+                                  QCM_PROCEDURES_PROCOID_COL_ORDER,
+                                  (const smiColumn**)&sProcIDMtcColumn )
+              != IDE_SUCCESS );
+
+    IDE_TEST( smiGetTableColumns( gQcmProcedures,
+                                  QCM_PROCEDURES_OBJECTTYP_COL_ORDER,
+                                  (const smiColumn**)&sProcTypeMtcColumn )
+              != IDE_SUCCESS );
+
+    qcm::getBigintFieldValue (
+        aRow,
+        sProcIDMtcColumn,
+        & sSLongID );
+
+    qcm::getIntegerFieldValue (
+        aRow,
+        sProcTypeMtcColumn,
+        & sProcType);
+
+    // BUGBUG 32bit machine에서 동작 시 SLong(64bit)변수를 uVLong(32bit)변수로
+    // 변환하므로 데이터 손실 가능성 있음
+    aProcType->procOID = (qsOID)sSLongID;
+    aProcType->objType = sProcType;
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
 
 IDE_RC qcmProc::getProcExistWithEmptyByName(
     qcStatement     * aStatement,
@@ -629,6 +671,140 @@ IDE_RC qcmProc::getProcExistWithEmptyByNamePtr(
     if (sRowCount == 1)
     {
         ( *aProcOID ) = sSelectedProcOID;
+    }
+    else
+    {
+        if (sRowCount == 0)
+        {
+            ( *aProcOID ) = QS_EMPTY_OID;
+        }
+        else
+        {
+            IDE_TEST_RAISE( sRowCount != 1, err_selected_count_is_not_1 );
+        }
+    }
+
+    IDE_EXCEPTION_CONT( NORMAL_EXIT );
+    
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( err_selected_count_is_not_1 );
+    {
+        IDE_SET(ideSetErrorCode(qpERR_ABORT_QCM_INTERNAL_ARG,
+                                "[qcmProc::getProcExistWithEmptyByName]"
+                                "err_selected_count_is_not_1" ));
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+// BUG-48345 Lock procedure statement
+IDE_RC qcmProc::getProcExistWithEmptyByName(
+    qcStatement     * aStatement,
+    UInt              aUserID,
+    qcNamePosition    aProcName,
+    qsOID           * aProcOID,
+    UInt            * aObjType,
+    smSCN           * aProcSCN )
+{
+    IDE_TEST(
+        getProcExistWithEmptyByNamePtr(
+            aStatement,
+            aUserID,
+            (SChar*) (aProcName.stmtText +
+                      aProcName.offset),
+            aProcName.size,
+            aProcOID,
+            aObjType,
+            aProcSCN )
+        != IDE_SUCCESS);
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+// BUG-48345 Lock procedure statement
+IDE_RC qcmProc::getProcExistWithEmptyByNamePtr(
+    qcStatement     * aStatement,
+    UInt              aUserID,
+    SChar           * aProcName,
+    SInt              aProcNameSize,
+    qsOID           * aProcOID,
+    UInt            * aObjType,
+    smSCN           * aProcSCN )
+{
+    smiRange              sRange;
+    qtcMetaRangeColumn    sFirstMetaRange;
+    qtcMetaRangeColumn    sSecondMetaRange;
+
+    mtdIntegerType        sIntData;
+    vSLong                sRowCount;
+
+    qcNameCharBuffer      sProcNameBuffer;
+    mtdCharType         * sProcName = ( mtdCharType * ) & sProcNameBuffer;
+    mtcColumn           * sFstMtcColumn;
+    mtcColumn           * sSndMtcColumn;
+
+    qcmProcType           sProcType;
+
+    if ( aProcNameSize > QC_MAX_OBJECT_NAME_LEN )
+    {
+        *aProcOID = QS_EMPTY_OID;
+        IDE_CONT( NORMAL_EXIT );
+    }
+    else
+    {
+        // Nothing to do.
+    }
+
+    qtc::setVarcharValue( sProcName,
+                          NULL,
+                          aProcName,
+                          aProcNameSize );
+
+    sIntData = (mtdIntegerType) aUserID;
+
+    IDE_TEST( smiGetTableColumns( gQcmProcedures,
+                                  QCM_PROCEDURES_PROCNAME_COL_ORDER,
+                                  (const smiColumn**)&sFstMtcColumn )
+              != IDE_SUCCESS );
+
+    IDE_TEST( smiGetTableColumns( gQcmProcedures,
+                                  QCM_PROCEDURES_USERID_COL_ORDER,
+                                  (const smiColumn**)&sSndMtcColumn )
+              != IDE_SUCCESS );
+
+    qcm::makeMetaRangeDoubleColumn( & sFirstMetaRange,
+                                    & sSecondMetaRange,
+                                    sFstMtcColumn,
+                                    (const void*) sProcName,
+                                    sSndMtcColumn,
+                                    & sIntData,
+                                    & sRange );
+
+    IDE_TEST( qcm::selectRow(
+                  QC_SMI_STMT( aStatement ),
+                  gQcmProcedures,
+                  smiGetDefaultFilter(),
+                  & sRange,
+                  gQcmProceduresIndex
+                  [ QCM_PROCEDURES_PROCNAME_USERID_IDX_ORDER ],
+                  (qcmSetStructMemberFunc ) qcmSetProcTypeOfQcmProcedures,
+                  & sProcType,
+                  0,
+                  1,
+                  & sRowCount )
+              != IDE_SUCCESS );
+
+    if (sRowCount == 1)
+    {
+        ( *aProcOID ) = sProcType.procOID;
+        ( *aObjType ) = sProcType.objType;
+        ( *aProcSCN ) = smiGetRowSCN( smiGetTable(sProcType.procOID) );
     }
     else
     {

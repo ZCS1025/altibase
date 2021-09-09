@@ -234,9 +234,8 @@ SQLRETURN ulnDriverConnect(ulnDbc       *aDbc,
     /* BUG-45707 */
     ulsdDbcSetShardCli( aDbc, ULSD_SHARD_CLIENT_TRUE );
 
-    aDbc->mShardDbcCxt.mTargetShardMetaNumber = 0UL;
-
-    ulnDbcSetShardMetaNumber( aDbc, 0 );
+    ulnDbcSetTargetShardMetaNumber( aDbc, 0UL );
+    ulnDbcSetShardMetaNumber( aDbc, 0UL );
 
     /* BUG-47272 */
     if ( aDbc->mShardDbcCxt.mShardSessionType == ULSD_SESSION_TYPE_LIB )

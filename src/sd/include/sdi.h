@@ -30,6 +30,7 @@
 #include <sde.h>
 #include <qci.h>
 #include <smi.h>
+#include <sdiFailoverSuspend.h>
 
 /* BUG-47459 */
 #define SAVEPOINT_FOR_SHARD_STMT_PARTIAL_ROLLBACK        ("$$SHARD_PARTIAL_ROLLBACK")
@@ -685,18 +686,16 @@ typedef enum
     SDI_COORDINATOR_RESHARD = 1,
 } sdiCoordinatorType;
 
-typedef enum
+typedef void (* sdiShardNodeRemovalCheckerCallback)( void       * aSession,
+                                                     void       * aConnectionInfo,
+                                                     idBool     * aIsChanged );
+             /* = ulnShardNodeRemovalCheckerCallback */
+typedef struct sdiShardNodeRemovalCheckerContext
 {
-    SDI_FAILOVER_SUSPEND_NONE        = 0,
-    SDI_FAILOVER_SUSPEND_ALLOW_RETRY = 1,
-    SDI_FAILOVER_SUSPEND_ALL         = 2,
-} sdiFailoverSuspendType;
-
-typedef struct sdiFailoverSuspend
-{
-    sdiFailoverSuspendType  mSuspendType;
-    UInt                    mNewErrorCode;
-} sdiFailoverSuspend;
+    void                               * mSession;
+    void                               * mConnectInfo;
+    sdiShardNodeRemovalCheckerCallback   mFunc;
+} sdiShardNodeRemovalCheckerContext;     /* = ulnShardNodeRemovalCheckerContext */
 
 typedef enum
 {
@@ -709,7 +708,8 @@ typedef struct sdiLinkerParam
     UChar mUsed;
     struct
     {
-        sdiMessageCallbackStruct mMessageCallback;
+        sdiMessageCallbackStruct          mMessageCallback;
+        sdiShardNodeRemovalCheckerContext mShardNodeRemovalCheckerCallback;
     } param;
 } sdiLinkerParam;
 
@@ -753,7 +753,6 @@ typedef struct sdiConnectInfo
     sdiFailOverTarget     mFailoverTarget;
     idBool                mIsConnectSuccess[SDI_FAILOVER_MAX];
     vSLong                mAffectedRowCount;
-    sdiFailoverSuspend    mFailoverSuspend;
     
     // BUG-47765
     // shard coordinator에 전파를 위한 property변경 여부 설정
@@ -793,13 +792,14 @@ typedef struct sdiShardCoordFixCtrlContext
 typedef struct sdiClientInfo
 {
     sdiShardCoordFixCtrlContext
-                       mShardCoordFixCtrlCtx;
-    UInt               mTransactionLevel;
-    ULong              mTargetShardMetaNumber;
-    sdiGCTxInfo        mGCTxInfo;
-    UShort             mCount;          // client count
-    sdiConnectInfo     mConnectInfo[SDI_NODE_MAX_COUNT];    // client connection info
-    sdiLinkerParam     mLinkerParamBuffer[SDI_NODE_MAX_COUNT];
+                            mShardCoordFixCtrlCtx;
+    UInt                    mTransactionLevel;
+    ULong                   mTargetShardMetaNumber;
+    sdiGCTxInfo             mGCTxInfo;
+    UShort                  mCount;          // client count
+    sdiConnectInfo          mConnectInfo[SDI_NODE_MAX_COUNT];    // client connection info
+    sdiLinkerParam          mLinkerParamBuffer[SDI_NODE_MAX_COUNT];
+    sdiFailoverSuspendCmd   mFailoverSuspendCmd;
 } sdiClientInfo;
 
 typedef enum
@@ -959,6 +959,14 @@ typedef struct sdiMyRanges
 
 } sdiMyRanges;
 
+typedef enum
+{
+    SDI_CHECK_SHARD_META_UPDATE_CAUSED_INIT          = 0, 
+    SDI_CHECK_SHARD_META_UPDATE_CAUSED_BY_RESHARDING = 1, 
+    SDI_CHECK_SHARD_META_UPDATE_CAUSED_BY_FAILOVER   = 2, 
+    SDI_CHECK_SHARD_META_UPDATE_CAUSED_MAX           = 3
+} sdiCheckShardMetaUpdateCause; /* = ulsdCheckShardMetaUpdateCause */
+
 class sdi
 {
 private:
@@ -975,7 +983,7 @@ private:
 
     static void freeLinkerParam( sdiConnectInfo * aConnectInfo );
 
-    static void setLinkerParam( sdiConnectInfo * aConnectInfo );
+    static void setLinkerParam( void * aSession, sdiConnectInfo * aConnectInfo );
 public:
 
     /*************************************************************************
@@ -1208,14 +1216,6 @@ public:
                                   idBool           aReCall );
 
     static void removeCallback( void * aCallback );
-
-    static IDE_RC setFailoverSuspend( qcSession              * aSession,
-                                      sdiFailoverSuspendType   aSuspendOnType,
-                                      UInt                     aNewErrorCode = idERR_IGNORE_NoError );
-
-    static IDE_RC setFailoverSuspend( sdiConnectInfo         * aConnectInfo,
-                                      sdiFailoverSuspendType   aSuspendOnType,
-                                      UInt                     aNewErrorCode = idERR_IGNORE_NoError );
 
     static void shardStmtPartialRollbackUsingSavepoint( qcStatement    * aStatement,
                                                         sdiClientInfo  * aClientInfo,
@@ -1532,6 +1532,8 @@ public:
      * shard client fail-over align
      *************************************************************************/
     static void closeShardSessionByNodeId( qcSession * aSession,
+                                           ULong       aShardMetaNumber,
+                                           ULong       aReceiveShardMetaNumber,
                                            UInt        aNodeId,
                                            UChar       aDestination );
 
@@ -1830,6 +1832,21 @@ public:
     static IDE_RC checkFailoverHistoryOverSMN( ULong         aSMN,
                                                idBool      * aIsExist );
 
+
+    /* PROJ-2755 */
+    static IDE_RC validateCheckShardMetaUpdateCause( sdiCheckShardMetaUpdateCause aCause );
+
+    static void shardNodeRemovalCheckerCallback( void       * aMmSession,
+                                                 void       * aConnectInfo,
+                                                 idBool     * aIsDroped );
+    static IDE_RC shardNodeRemovalChecker( smiTrans       * aTrans,
+                                           ULong            aTargetSMN,
+                                           sdiConnectInfo * aTargetConnectInfo,
+                                           idBool         * aIsDroped );
+    static IDE_RC getNodeByID( smiTrans * aTrans,
+                               UInt       aTargetNodeID,
+                               ULong      aTargetSMN,
+                               sdiNode  * aNode );
 };
 
 /**
@@ -2170,5 +2187,4 @@ SChar* sdi::getMultiErrorMsg()
         return ideGetErrorMsg(sErrorCode);
     }
 }
-
 #endif /* _O_SDI_H_ */

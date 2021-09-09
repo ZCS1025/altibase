@@ -25,7 +25,11 @@
 
 ACI_RC ulsdModuleHandshake(ulnFnContext *aFnContext)
 {
-    return aFnContext->mHandle.mDbc->mShardModule->ulsdModuleHandshake(aFnContext);
+    ulnDbc * sDbc = NULL;
+
+    ULN_FNCONTEXT_GET_DBC( aFnContext, sDbc );
+
+    return sDbc->mShardModule->ulsdModuleHandshake(aFnContext);
 }
 
 SQLRETURN ulsdModuleNodeDriverConnect(ulnDbc       *aDbc,
@@ -120,18 +124,16 @@ void ulsdModuleOnCmError(ulnFnContext     *aFnContext,
                          ulnDbc           *aDbc,
                          ulnErrorMgr      *aErrorMgr)
 {
-    aDbc->mShardModule->ulsdModuleOnCmError(aFnContext, aDbc, aErrorMgr);
+    aDbc->mShardModule->ulsdModuleOnCmError(aFnContext, aErrorMgr);
 }
 
-ACI_RC ulsdModuleUpdateNodeList(ulnFnContext  *aFnContext,
-                                ulnDbc        *aDbc)
+ACI_RC ulsdModuleNotifyFailOver( ulnFnContext * aFnContext )
 {
-    return aDbc->mShardModule->ulsdModuleUpdateNodeList(aFnContext, aDbc);
-}
+    ulnDbc * sDbc = NULL;
 
-ACI_RC ulsdModuleNotifyFailOver( ulnDbc *aDbc )
-{
-    return aDbc->mShardModule->ulsdModuleNotifyFailOver( aDbc );
+    ULN_FNCONTEXT_GET_DBC( aFnContext, sDbc );
+
+    return sDbc->mShardModule->ulsdModuleNotifyFailOver( aFnContext );
 }
 
 void ulsdModuleAlignDataNodeConnection( ulnFnContext * aFnContext,

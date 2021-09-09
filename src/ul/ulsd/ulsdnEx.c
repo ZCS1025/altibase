@@ -26,6 +26,7 @@
 
 #include <ulsd.h>
 #include <ulsdFailover.h>
+#include <ulsdnFailoverSuspend.h>
 #include <ulsdCommunication.h>
 #include <ulsdnExecute.h>
 #include <ulsdDistTxInfo.h>
@@ -185,9 +186,22 @@ void ulsdProcessExecuteError( ulnFnContext       * aFnContext,
                               ulsdFuncCallback   * aCallback )
 {
     ulsdNodeReport   sReport;
+    ulnDbc         * sDbc         = NULL;
+    ulnDbc         * sMetaDbc     = NULL;
     ulsdDbc        * sShard       = NULL;
     SQLRETURN        sBackupSqlRC = SQL_SUCCESS;
     acp_rc_t         sRet         = ACI_SUCCESS;
+
+    ULN_FNCONTEXT_GET_DBC( aFnContext, sDbc );
+
+    sMetaDbc = ulnDbcGetShardParentDbc( sDbc );
+
+    ulsdnFailoverSuspendBackup sBackup;
+    ulsdnClearFailoverSuspendBackup( &sBackup );
+
+    ulsdnDbcSetFailoverSuspendState( sMetaDbc,
+                                     ULSDN_FAILOVER_SUSPEND_ALLOW_RETRY,
+                                     &sBackup);
 
     if ( ulsdGetShardPartialRollbackIsNeedCursorClose( aStmt ) == ACP_TRUE )
     {
@@ -223,37 +237,27 @@ ACI_EXCEPTION_CONT( NODE_REPORT );
 
     if ( SQL_SUCCEEDED( sRet ) == 0 )
     {
-        if ( ulsdIsFailoverExecute( aFnContext ) == ACP_TRUE )
-        {
-            /* do nothing */
-        }
-        else
-        {
-            sReport.mType = ULSD_REPORT_TYPE_TRANSACTION_BROKEN;
+/* JHLEE_DEBUG revert */
+        sReport.mType = ULSD_REPORT_TYPE_TRANSACTION_BROKEN;
 
-            /* Node Report 를 정상적으로 수행하기 위하여 SQL Return 을
-             * backup 했다가 Node Report 수행 이후에 복구 한다.
-             */
-            sBackupSqlRC = ULN_FNCONTEXT_GET_RC( aFnContext );
-            ULN_FNCONTEXT_SET_RC( aFnContext, SQL_SUCCESS );
-            sShard->mTouched = ACP_TRUE;
-            if ( ulsdShardNodeReport( aFnContext, &sReport ) != ACI_SUCCESS )
-            {
-                if ( ulsdIsFailoverExecute( aFnContext ) == ACP_TRUE )
-                {
-                    /* do nothing */
-                }
-                else
-                {
-                    ulnError( aFnContext,
-                              ulERR_ABORT_SHARD_INTERNAL_ERROR,
-                              "ShardNodeReport(Transaction Broken) fails" );
-                }
-            }
-
-            ULN_FNCONTEXT_SET_RC( aFnContext, sBackupSqlRC );
+        /* Node Report 를 정상적으로 수행하기 위하여 SQL Return 을
+         * backup 했다가 Node Report 수행 이후에 복구 한다.
+         */
+        sBackupSqlRC = ULN_FNCONTEXT_GET_RC( aFnContext );
+        ULN_FNCONTEXT_SET_RC( aFnContext, SQL_SUCCESS );
+        sShard->mTouched = ACP_TRUE;
+        if ( ulsdShardNodeReport( aFnContext, &sReport ) != ACI_SUCCESS )
+        {
+            ulnError( aFnContext,
+                      ulERR_ABORT_SHARD_INTERNAL_ERROR,
+                      "ShardNodeReport(Transaction Broken) fails" );
         }
+
+        ULN_FNCONTEXT_SET_RC( aFnContext, sBackupSqlRC );
     }
+
+    ulsdnDbcUnsetFailoverSuspendState( sMetaDbc,
+                                       &sBackup);
 }
 
 SQLRETURN ulsdFetch( ulnStmt *aStmt )
@@ -610,7 +614,7 @@ SQLRETURN ulsdExecuteNodes(ulnFnContext *aFnContext,
         {
             sNoDataCount++;
         }
-        else
+        else if ( sNodeResult == SQL_ERROR )
         {
             /* BUGBUG 여러개의 데이터 노드에 대해서 retry가 가능한가? */
             if ( ulsdNodeFailConnectionLost( SQL_HANDLE_STMT,
@@ -631,6 +635,13 @@ SQLRETURN ulsdExecuteNodes(ulnFnContext *aFnContext,
                                       (ulnObject *)sNodeStmt,
                                       sShard->mNodeInfo[sNodeDbcIndex],
                                       (acp_char_t *)"Execute");
+
+            sErrorResult = sNodeResult;
+            sSuccess = ACP_FALSE;
+        }
+        else
+        {
+            ACE_DASSERT( ((ulnObject *)sNodeStmt)->mDiagHeader.mNumber == 0 );
 
             sErrorResult = sNodeResult;
             sSuccess = ACP_FALSE;
@@ -674,6 +685,8 @@ SQLRETURN ulsdExecuteNodes(ulnFnContext *aFnContext,
 
     ulsdRemoveCallback( sCallback );
 
+    ULN_FNCONTEXT_SET_RC( aFnContext, sSuccessResult );
+
     return sSuccessResult;
 
     ACI_EXCEPTION( ERR_EXECUTE_FAIL )
@@ -696,17 +709,19 @@ SQLRETURN ulsdExecuteNodes(ulnFnContext *aFnContext,
 
     ulsdRemoveCallback( sCallback );
 
+    ULN_FNCONTEXT_SET_RC( aFnContext, sErrorResult );
+
     return sErrorResult;
 }
 
 SQLRETURN ulsdExecuteAndRetry( ulnFnContext * aFnContext,
                                ulnStmt      * aStmt )
 {
-    SQLRETURN    sExecuteRet = SQL_ERROR;
-    SQLRETURN    sPrepareRet = SQL_ERROR;
-    acp_sint32_t sRetryMax   = ulnDbcGetShardStatementRetry( aStmt->mParentDbc );
-    acp_sint32_t sLoopMax    = ULSD_SHARD_RETRY_LOOP_MAX; /* For prohibit infinity loop */
-    ulsdStmtShardRetryType   sRetryType;
+    SQLRETURN    sExecuteRet   = SQL_ERROR;
+    SQLRETURN    sPrepareRet   = SQL_ERROR;
+    acp_sint32_t sRetryMax     = ulnDbcGetShardStatementRetry( aStmt->mParentDbc );
+    acp_sint32_t sLoopMax      = ULSD_SHARD_RETRY_LOOP_MAX; /* For prohibit infinity loop */
+    ulsdStmtShardRetryType     sRetryType;
 
     sExecuteRet = ulsdExecute( aFnContext, aStmt );
 

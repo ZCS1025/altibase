@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmmParseTree.h 89835 2021-01-22 10:10:02Z andrew.shin $
+ * $Id: qmmParseTree.h 91584 2021-09-03 07:55:16Z khkwak $
  **********************************************************************/
 
 #ifndef _O_QMM_PARSE_TREE_H_
@@ -334,6 +334,23 @@ typedef struct qmmLockParseTree
     void               * partitionHandle;
     smSCN                partitionSCN;
 } qmmLockParseTree;
+
+// BUG-48345 Lock procedure statement
+typedef struct qmmLockSPParseTree
+{
+    qcParseTree          common;
+
+    qcNamePosition       userName;
+    qcNamePosition       procName;
+
+    qsOID                procOID;
+    UInt                 userID;
+
+    smSCN                procSCN;
+
+    smiTableLockMode     tableLockMode;
+    UInt                 objType;
+} qmmLockSPParseTree;
 
 /* PROJ-1988 Implement MERGE statement */
 typedef struct qmmMergeParseTree

@@ -1810,6 +1810,12 @@ IDE_RC mmcTrans::commitForceDatabaseLink( mmcTransObj *aTrans,
 
     aSession->rebuildShardSessionAfterEndTran();
 
+    /* PROJ-2733-DistTxInfo 분산정보 정리 */
+    if ( aSession->getShardClientInfo() != NULL )  /* BUG-48109 */
+    {
+        sdi::endTranDistTx( aSession->getShardClientInfo(), aSession->isGCTx() );
+    }
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -1940,6 +1946,12 @@ IDE_RC mmcTrans::rollbackForceDatabaseLink( mmcTransObj *aTrans,
     aSession->executeZookeeperPendingJob();
 
     aSession->rebuildShardSessionAfterEndTran();
+
+    /* PROJ-2733-DistTxInfo 분산정보 정리 */
+    if ( aSession->getShardClientInfo() != NULL )  /* BUG-48109 */
+    {
+        sdi::endTranDistTx( aSession->getShardClientInfo(), aSession->isGCTx() );
+    }
 
     return IDE_SUCCESS;
 

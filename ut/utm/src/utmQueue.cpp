@@ -235,6 +235,10 @@ SQLRETURN getQueueQuery( SChar *a_user,
 #endif
     idlOS::fprintf( a_crt_fp, "%s\n", gMeta->getDdlStr() );
 
+    /* TABLE EXPORT 될 때 해당 TABLE과 연관된 OBJECT PRIVILEGE 함께 EXPORT */
+    IDE_TEST( getObjPrivQuery( a_crt_fp, UTM_QUEUE, a_user, a_table )
+                               != SQL_SUCCESS );
+    
     idlOS::fflush(a_crt_fp);
 
     return SQL_SUCCESS;

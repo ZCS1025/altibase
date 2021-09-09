@@ -152,76 +152,35 @@ ulnStmt* ulsdModuleGetPreparedStmt_NODE(ulnStmt *aStmt)
 }
 
 void ulsdModuleOnCmError_NODE(ulnFnContext     *aFnContext,
-                              ulnDbc           *aDbc,
                               ulnErrorMgr      *aErrorMgr)
 {
-    ACI_RC    sRet     = ACI_FAILURE;
-    ulnDbc  * sMetaDbc = aDbc->mShardDbcCxt.mParentDbc;
-    ulsdDbc * sShard   = sMetaDbc->mShardDbcCxt.mShardDbc;
-
-    if ( ulnFailoverIsOn( aDbc ) == ACP_TRUE )
-    {
-        sRet = ulsdFODoSTF(aFnContext, aDbc, aErrorMgr);
-    }
-    else if ( ulnDbcGetSessionFailover( aDbc ) == ACP_TRUE )
-    {
-        sRet = ulsdFODoReconnect( aFnContext, aDbc, aErrorMgr );
-    }
-    else
-    {
-        /* sRet == ACI_FAILURE */
-        if ( ulnDbcIsConnected( aDbc ) == ACP_TRUE )
-        {
-            ulnDbcSetIsConnected( aDbc, ACP_FALSE );
-            ulnClosePhysicalConn( aDbc );
-        }
-    }
-
-    if ( sMetaDbc->mAttrAutoCommit == SQL_AUTOCOMMIT_OFF )
-    {
-        /* BUG-47143 샤드 All meta 환경에서 Failover 를 검증합니다. */
-        sShard->mTouched = ACP_TRUE;
-    }
-
-    if ( sRet != ACI_SUCCESS )
-    {
-        ulsdnRaiseShardNodeFailoverIsNotAvailableError( aFnContext );
-    }
+    (void) ulsdFODoSTF4LibConn( aFnContext, aErrorMgr );
 }
 
-ACI_RC ulsdModuleUpdateNodeList_NODE(ulnFnContext  *aFnContext,
-                                     ulnDbc        *aDbc)
+ACI_RC ulsdModuleNotifyFailOver_NODE( ulnFnContext * aFnContext )
 {
-    ACP_UNUSED(aFnContext);
-    ACP_UNUSED(aDbc);
-
-    return ACI_SUCCESS;
-}
-
-ACI_RC ulsdModuleNotifyFailOver_NODE( ulnDbc *aDbc )
-{
-    ulnDbc                   * sMetaDbc = aDbc->mShardDbcCxt.mParentDbc;
+    ulnDbc                   * sMetaDbc = NULL;
+    ulnDbc                   * sNodeDbc = NULL;
     ulsdNodeReport             sReport;
     ulnFnContext               sMetaFnContext;
 
+    ULN_FNCONTEXT_GET_DBC( aFnContext, sNodeDbc );
+
+    sMetaDbc = sNodeDbc->mShardDbcCxt.mParentDbc;
+
     ULN_INIT_FUNCTION_CONTEXT( sMetaFnContext, ULN_FID_NONE, sMetaDbc, ULN_OBJ_TYPE_DBC );
 
-    ulsdGetNodeConnectionReport( aDbc, &sReport );
-
-    /* BUG-47131 Stop shard META DBC failover. */
-    ulnDbcSetFailoverSuspendState( sMetaDbc, ULN_FAILOVER_SUSPEND_ON_STATE );
-
-    ACI_TEST( ulsdSendNodeConnectionReport( &sMetaFnContext, &sReport ) != ACI_SUCCESS );
-
-    /* BUG-47131 Restore shard META DBC failover suspend status. */
-    ulnDbcSetFailoverSuspendState( sMetaDbc, ULN_FAILOVER_SUSPEND_OFF_STATE );
+    if ( ulsdGetNodeConnectionReport( sNodeDbc,
+                                      &sReport,
+                                      ULN_FNCONTEXT_IS_ROLLBACK( aFnContext ) )
+         == ACP_TRUE )
+    {
+        ACI_TEST( ulsdSendNodeConnectionReport( &sMetaFnContext, &sReport ) != ACI_SUCCESS );
+    }
 
     return ACI_SUCCESS;
 
     ACI_EXCEPTION_END;
-
-    /* BUG-47131 Restore shard META DBC failover suspend status. */
-    ulnDbcSetFailoverSuspendState( sMetaDbc, ULN_FAILOVER_SUSPEND_OFF_STATE );
 
     return ACI_FAILURE;
 }
@@ -353,7 +312,6 @@ ulsdModule gShardModuleNODE =
     ulsdModuleMoreResults_NODE,
     ulsdModuleGetPreparedStmt_NODE,
     ulsdModuleOnCmError_NODE,
-    ulsdModuleUpdateNodeList_NODE,
     ulsdModuleNotifyFailOver_NODE,
     ulsdModuleAlignDataNodeConnection_NODE,
     ulsdModuleErrorCheckAndAlignDataNode_NODE,

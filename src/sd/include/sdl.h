@@ -208,10 +208,6 @@ public:
 
     static void removeCallback( void * aCallback );
 
-    static IDE_RC setFailoverSuspend( sdiConnectInfo         * aConnectInfo,
-                                     sdiFailoverSuspendType   aSuspendOnType,
-                                     UInt                     aNewErrorCode );
-
     static IDE_RC fetch( sdiConnectInfo * aConnectInfo,
                          sdlRemoteStmt  * aRemoteStmt,
                          SShort         * aResult,
@@ -242,6 +238,11 @@ public:
                                void           * aValuePtr,
                                SInt             aBuffLength = 0,
                                SInt           * aStringLength = NULL );
+
+    static IDE_RC setConnectAttr4ShardMetaNumber( sdiConnectInfo * aConnectInfo,
+                                                  UShort           aAttrType,
+                                                  ULong            aValue,
+                                                  idBool         * aIsLinkFailure = NULL );
 
     static IDE_RC endPendingTran( sdiConnectInfo * aConnectInfo,
                                   ID_XID         * aXID,
@@ -282,7 +283,8 @@ public:
 
     static idBool retryConnect( sdiConnectInfo * aConnectInfo,
                                 SShort           aHandleType,
-                                void           * aHandle );
+                                void           * aHandle,
+                                const UChar    * aCause );
 
     static void clearInternalConnectResult( sdiConnectInfo * aConnectInfo );
 
@@ -388,6 +390,9 @@ public:
 
     /* TASK-7219 Non-shard DML */
     static IDE_RC setStmtExecSeq( sdiConnectInfo * aConnectInfo, UInt aStmtExecSequence );
+
+    static void   setFailoverSuspendToDbc( sdiFailoverSuspendType   aSuspendType,
+                                           void                   * aDbc );
 
 private:
     static IDE_RC getConnectedLinkFullAddress( sdiConnectInfo * aConnectInfo );

@@ -302,11 +302,12 @@ public:
      */
     static IDE_RC updateReplItemsTableOID(smiStatement * aSmiStmt,
                                           smOID          aBeforeTableOID,
-                                          smOID          aAfterTableOID);
-    static IDE_RC updateReplItemsTableOIDArray( void         * aQcStatement,
-                                                smOID        * aBeforeTableOIDArray,
-                                                smOID        * aAfterTableOIDArray,
-                                                UInt           aTableOIDCount );
+                                          smOID          aAfterTableOID,
+                                          vSLong       * aRowCnt);
+    static IDE_RC updateReplMetaTableOIDArray( void         * aQcStatement,
+                                               smOID        * aBeforeTableOIDArray,
+                                               smOID        * aAfterTableOIDArray,
+                                               UInt           aTableOIDCount );
     static IDE_RC isExistInReplItemsHistory( smiStatement * aSmiStmt,
                                              SChar  * aRepName,
                                              smOID    aOID,
@@ -528,7 +529,33 @@ public:
    
     static IDE_RC setTableOIDReferToItemReplaceHistory( smiStatement  * aSmiStmt,
                                                         rpdReplItems  * aReplItems );
-
+    
+    static IDE_RC selectReplItemsWhereTableOID( smiStatement   * aSmiStmt,
+                                                ULong            aTableOID,
+                                                rpdReplItems   * aReplItems,
+                                                SInt             aItemCount );  
+    static IDE_RC updateReplMetaTableOID( smiStatement * aSmiStmt,
+                                          smOID          aBeforeTableOID,
+                                          smOID          aAfterTableOID );
+    static IDE_RC getReplTableOIDInUseCount( smiStatement * aSmiStmt,
+                                             SChar        * aReplName,
+                                             ULong          aOldTableOID, 
+                                             UInt         * aReplTableOIDInUseCount );
+    static IDE_RC insertReplTableOIDInUse( smiStatement    * aSmiStmt,
+                                           SChar           * aRepName,
+                                           ULong             aOldTableOID,
+                                           ULong             aTableOID );
+    static IDE_RC updateReplTableOIDInUse( smiStatement * aSmiStmt,
+                                           ULong          aBeforeTableOID,
+                                           ULong          aAfterTableOID );
+    static IDE_RC deleteReplTableOIDInUseRepName( smiStatement*  aSmiStmt,
+                                                  SChar*         aRepName ); 
+    static IDE_RC deleteReplTableOIDInUseOldOID( smiStatement*  aSmiStmt,
+                                                 SChar*         aRepName,
+                                                 ULong          aOldTableOID );  
+    static IDE_RC deleteReplTableOIDInUseNewOID( smiStatement*  aSmiStmt,
+                                                 SChar*         aRepName,
+                                                 ULong          aOldTableOID );  
 private:
     static IDE_RC setReplMember( rpdReplications * aRepl, 
                                  const void      * aRow );

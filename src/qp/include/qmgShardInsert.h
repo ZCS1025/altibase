@@ -75,6 +75,8 @@ typedef struct qmgShardINST
     SChar                shardQueryBuf[1024];
     sdiAnalyzeInfo       shardAnalysis;
 
+    qmmReturnInto      * returnInto;    /* BUG-47766 */
+
 } qmgShardINST;
 
 //---------------------------------------------------

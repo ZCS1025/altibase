@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmo.cpp 90787 2021-05-07 00:50:48Z ahra.cho $
+ * $Id: qmo.cpp 91627 2021-09-08 01:47:35Z ahra.cho $
  *
  * Description :
  *     Query Optimizer
@@ -100,6 +100,8 @@ qmo::optimizeSelect( qcStatement * aStatement )
     // PROJ-1413
     // Query Transformation 수행
     //------------------------------------------
+    //PROJ-2749
+    IDE_TEST ( setCompactWithFlag( aStatement ) != IDE_SUCCESS );
 
     IDE_TEST( qmo::doTransform( aStatement ) != IDE_SUCCESS );
 
@@ -200,6 +202,8 @@ qmo::optimizeInsert( qcStatement * aStatement )
     //------------------------------------------
     // Graph 생성
     //------------------------------------------
+    //PROJ-2749
+    IDE_TEST ( setCompactWithFlag( aStatement ) != IDE_SUCCESS );
 
     IDE_TEST( qmo::makeInsertGraph( aStatement ) != IDE_SUCCESS );
 
@@ -542,6 +546,9 @@ qmo::optimizeCreateSelect( qcStatement * aStatement )
     // PROJ-1413
     // Query Transformation 수행
     //------------------------------------------
+    //PROJ-2749
+    IDE_TEST ( setCompactWithFlag( aStatement ) != IDE_SUCCESS );
+
     aStatement->mFlag &= ~QC_STMT_NO_PART_COLUMN_REDUCE_MASK;
     aStatement->mFlag |= QC_STMT_NO_PART_COLUMN_REDUCE_TRUE;
 
@@ -1100,9 +1107,6 @@ IDE_RC qmo::makeShardInsertGraph( qcStatement * aStatement )
 
     sInsParseTree = (qmmInsParseTree *) aStatement->myPlan->parseTree;
 
-    IDE_TEST_RAISE( sInsParseTree->returnInto != NULL,
-                    ERR_UNSUPPORTED_FUNCTION );
-
     //-------------------------
     // INSERT ... SELECT 구문의 Subquery 최적화
     //-------------------------
@@ -1138,10 +1142,6 @@ IDE_RC qmo::makeShardInsertGraph( qcStatement * aStatement )
 
     return IDE_SUCCESS;
 
-    IDE_EXCEPTION( ERR_UNSUPPORTED_FUNCTION )
-    {
-        IDE_SET( ideSetErrorCode( qpERR_ABORT_QCV_UNSUPPORTED, "RETURNING INTO clause" ) );
-    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -1584,6 +1584,9 @@ qmo::doTransformSubqueries( qcStatement * aStatement,
     idBool sChanged = ID_FALSE;
 
     IDU_FIT_POINT_FATAL( "qmo::doTransformSubqueries::__FT__" );
+
+    //PROJ-2749
+    IDE_TEST ( setCompactWithFlag( aStatement ) != IDE_SUCCESS );
 
     //------------------------------------------
     // Simple View Merging 수행
@@ -2737,4 +2740,77 @@ IDE_RC qmo::removeOutRefPredPushedForce( qmoPredicate ** aPredicate )
     *aPredicate = sRemainPredicate;
 
     return IDE_SUCCESS;
+}
+
+IDE_RC qmo::setCompactWithFlag( qcStatement    * aStatement )
+{
+/***********************************************************************
+ *
+ * Description : PROJ-2749
+ *    COMPACT WITH 사용 횟수에 따라 플래그 세팅
+ *
+ * Implementation :
+ *    COMPACT WITH가 1번 사용된 경우     : COMPACT WITH 제거
+ *    COMPACT WITH가 2번이상 사용된 경우 : tableRef의 VIEW OPT hint 제거
+ *
+ ***********************************************************************/
+    qcTableMap      * sTableMap;
+    qmsTableRef     * sTableRef;
+    UShort            i;
+
+    // __optimizer_with_view = 2 또는 4가 켜져있는 경우에만 수행
+    if ( ( QC_SHARED_TMPLATE( aStatement )->flag & QC_TMP_COMPACT_WITH_VIEW_MASK )
+         != QC_TMP_COMPACT_WITH_VIEW_FALSE )
+    {
+        sTableMap = QC_SHARED_TMPLATE(aStatement)->tableMap;
+
+        for ( i = 0; i < QC_SHARED_TMPLATE(aStatement)->tmplate.rowCount; i++ )
+        {
+            if ( sTableMap[i].from != NULL )
+            {
+                sTableRef = sTableMap[i].from->tableRef;
+
+                if ( sTableRef != NULL )
+                {
+                    // compact with인 경우
+                    if ( ( sTableRef->withStmt != NULL ) &&
+                         ( ( sTableRef->flag & QMS_TABLE_REF_COMPACT_WITH_MASK )
+                           == QMS_TABLE_REF_COMPACT_WITH_TRUE ) )
+                    {
+                        if ( ( sTableRef->withStmt->mFlag & QC_WITH_STMT_USED_COUNT_MASK )
+                             != QC_WITH_STMT_USED_COUNT_OVER2 )
+                        {
+                            // 1번만 사용한 경우 이후 optimize를 위해서 플래그 제거
+                            sTableRef->flag &= ~QMS_TABLE_REF_COMPACT_WITH_MASK;
+                            sTableRef->flag |= QMS_TABLE_REF_COMPACT_WITH_FALSE;
+                        }
+                        else
+                        {
+                            // 2번 이상 사용한 경우 view 최적화 힌트 제거(무시)
+                            IDE_TEST_RAISE( sTableRef->viewOptType == QMO_VIEW_OPT_TYPE_CMTR,
+                                            ERR_UNEXPECTED );
+
+                            if ( ( sTableRef->viewOptType == QMO_VIEW_OPT_TYPE_PUSH ) ||
+                                 ( sTableRef->viewOptType == QMO_VIEW_OPT_TYPE_VMTR ) )
+                            {
+                                sTableRef->viewOptType = QMO_VIEW_OPT_TYPE_NOT_DEFINED;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( ERR_UNEXPECTED )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "setCompactWithFlag",
+                                  "view opt type of Compact With must not CMTR" ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }

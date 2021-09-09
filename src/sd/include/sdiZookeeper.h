@@ -113,6 +113,7 @@ typedef enum
 
     /* PROJ-2728 Advanced Global DDL */
     ZK_JOB_GLOBAL_DDL,
+    ZK_JOB_PROCEDURE,    // dbms_shard package 
 
     ZK_JOB_ERROR
 } ZKJOB;
@@ -260,7 +261,8 @@ class sdiZookeeper
 
         /* PROJ-2728 Advanced Global DDL */
         static void   globalDDLJob();
-
+        static void   procedureJob();
+    
         /* 노드 리스트 관련 */
         static IDE_RC getAllNodeInfoList( iduList   ** aList,
                                           UInt       * aNodeCnt );

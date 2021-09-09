@@ -208,6 +208,13 @@ IDE_RC sdfCalculate_SetShardClone( mtcNode*     aNode,
                         ERR_INTERNAL_OPERATION );
     }
 
+    // shard package에서 subprogram으로 수행 되는 경우 procedure job type 설정
+    if ( (sdiInternalOperation)QCG_GET_SESSION_SHARD_INTERNAL_LOCAL_OPERATION( sStatement ) ==
+         SDI_INTERNAL_OP_SHARD_PKG )
+    {
+        sdf::setProcedureJobType();
+    }    
+    
     IDE_TEST( mtf::postfixCalculate( aNode,
                                      aStack,
                                      aRemain,

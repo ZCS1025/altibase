@@ -809,5 +809,10 @@ private:
     static IDE_RC setAnalysisFlag4PsmLob( qcStatement     * aStatement,
                                           qtcNode         * aNode,
                                           sdiAnalysisFlag * aAnalysisFlag );
+
+    /* BUG-48847 Non-deterministic for shard */
+    static IDE_RC setAnalysisFlag4NonDeterministic( qcStatement     * aStatement,
+                                                    qtcNode         * aNode,
+                                                    sdiAnalysisFlag * aAnalysisFlag );
 };
 #endif /* _O_SDA_H_ */

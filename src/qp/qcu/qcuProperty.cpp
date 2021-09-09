@@ -20,7 +20,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: qcuProperty.cpp 90785 2021-05-06 07:26:22Z hykim $
+ * $Id: qcuProperty.cpp 91627 2021-09-08 01:47:35Z ahra.cho $
  *
  * QP 및 MM에서 사용할 System Property에 대한 정의
  * A4에서 제공하는 Property 관리자를 이용하여 관리한다.
@@ -876,6 +876,10 @@ IDE_RC qcuProperty::load()
     IDE_ASSERT( idp::read( "__LEFT_OUTER_SKIP_RIGHT_ENABLE",
                            &QCU_PROPERTY(mLeftOuterSkipRightEnable) ) == IDE_SUCCESS );
 
+    /* PROJ-2749 */
+    IDE_ASSERT( idp::read( "__OPTIMIZER_WITH_VIEW",
+                           &QCU_PROPERTY(mOptimizerWithView) ) == IDE_SUCCESS );
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(err_fatal_invalid_ttl_size);
@@ -1550,6 +1554,10 @@ IDE_RC qcuProperty::setupUpdateCallback()
                                               qcuProperty::changeSERIAL_EXECUTE_MODE )
               != IDE_SUCCESS);
 
+    IDE_TEST( idp::setupAfterUpdateCallback( "TRCLOG_DETAIL_INFORMATION",
+                                              qcuProperty::changeTRCLOG_DETAIL_INFORMATION )
+              != IDE_SUCCESS);
+
     /* BUG-46932 */ 
     IDE_TEST( idp::setupAfterUpdateCallback( "__OPTIMIZER_INVERSE_JOIN_ENABLE",
                                              qcuProperty::changeOPTIMIZER_INVERSE_JOIN_ENABLE )
@@ -1587,6 +1595,11 @@ IDE_RC qcuProperty::setupUpdateCallback()
     /* PROJ-2750 */
     IDE_TEST( idp::setupAfterUpdateCallback( "__LEFT_OUTER_SKIP_RIGHT_ENABLE",
                                              qcuProperty::changeLEFT_OUTER_SKIP_RIGHT_ENABLE )
+              != IDE_SUCCESS );
+
+    /* PROJ-2749 */
+    IDE_TEST( idp::setupAfterUpdateCallback( "__OPTIMIZER_WITH_VIEW",
+                                             qcuProperty::changeOPTIMIZER_WITH_VIEW )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -3802,6 +3815,20 @@ IDE_RC qcuProperty::changeLEFT_OUTER_SKIP_RIGHT_ENABLE( idvSQL* /* aStatistics *
                                                         void  * /* aArg */ )
 {
     idlOS::memcpy( &QCU_PROPERTY(mLeftOuterSkipRightEnable),
+                   aNewValue,
+                   ID_SIZEOF(UInt) );
+
+    return IDE_SUCCESS;
+}
+
+/* PROJ-2749 */
+IDE_RC qcuProperty::changeOPTIMIZER_WITH_VIEW( idvSQL* /* aStatistics */,
+                                               SChar * /* aName */,
+                                               void  * /* aOldValue */,
+                                               void  * aNewValue,
+                                               void  * /* aArg */ )
+{
+    idlOS::memcpy( &QCU_PROPERTY(mOptimizerWithView),
                    aNewValue,
                    ID_SIZEOF(UInt) );
 

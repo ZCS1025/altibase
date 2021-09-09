@@ -351,13 +351,15 @@ IDE_RC sdfCalculate_SetShardProcedureShardKey( mtcNode*     aNode,
                   != IDE_SUCCESS );
 
         sdi::setShardMetaTouched( sStatement->session );
+        
+        sdf::setProcedureJobType();
                 
         IDE_TEST( sdiZookeeper::checkAllNodeAlive( &sIsAlive ) != IDE_SUCCESS );
 
         IDE_TEST_RAISE( sIsAlive != ID_TRUE, ERR_CLUSTER_STATE );
 
         IDE_TEST( sdi::checkShardLinker( sStatement ) != IDE_SUCCESS );
-        
+
         //---------------------------------
         // make value and node name list
         //---------------------------------
@@ -444,6 +446,16 @@ IDE_RC sdfCalculate_SetShardProcedureShardKey( mtcNode*     aNode,
                                      sSplitMethodType )
                   != IDE_SUCCESS );
         
+        // BUG-48345 Lock procedure statement
+        idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                         "LOCK PROCEDURE "QCM_SQL_STRING_SKIP_FMT"."QCM_SQL_STRING_SKIP_FMT" IN EXCLUSIVE MODE",
+                         sUserNameStr,
+                         sProcNameStr );
+
+        IDE_TEST( sdf::runRemoteQuery( sStatement,
+                                       sSqlStr )
+                  != IDE_SUCCESS );
+
         //---------------------------------
         // SET_SHARD_TABLE
         //---------------------------------

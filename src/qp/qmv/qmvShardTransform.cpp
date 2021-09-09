@@ -8233,7 +8233,9 @@ IDE_RC qmvShardTransform::makeShardForInsert( qcStatement      * aStatement,
          ( sAnalysis->mAnalysisFlag.mNonShardFlag[SDI_NON_SHARD_OBJECT_EXISTS] == ID_TRUE ) ||
          ( sAnalysis->mAnalysisFlag.mNonShardFlag[SDI_SHARD_KEYWORD_EXISTS] == ID_TRUE ) ||
          ( sAnalysis->mAnalysisFlag.mNonShardFlag[SDI_UNKNOWN_REASON] == ID_TRUE ) ||
-         ( sAnalysis->mAnalysisFlag.mTopQueryFlag[SDI_TQ_SUB_KEY_EXISTS] == ID_TRUE ) )
+         ( sAnalysis->mAnalysisFlag.mTopQueryFlag[SDI_TQ_SUB_KEY_EXISTS] == ID_TRUE ) ||
+         /* BUG-48847 Non-deterministic for shard */
+         ( sAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NON_DETERMINISTIC_EXISTS ] == ID_TRUE ) )
     {
         sCanPartialCoordExec = ID_FALSE;
     }
@@ -8289,7 +8291,7 @@ IDE_RC qmvShardTransform::makeShardForInsert( qcStatement      * aStatement,
 IDE_RC qmvShardTransform::makeShardForUptDel( qcStatement      * aStatement,
                                               qcParseTree      * aParseTree )
 {
-    sdiShardAnalysis * sAnalysis              = NULL;
+    sdiShardAnalysis * sAnalysis = NULL;
 
     switch ( aParseTree->stmtKind )
     {
@@ -8314,13 +8316,19 @@ IDE_RC qmvShardTransform::makeShardForUptDel( qcStatement      * aStatement,
             break;
     }
 
+    IDE_TEST( sdi::getParseTreeAnalysis( aParseTree,
+                                         &( sAnalysis ) )
+              != IDE_SUCCESS );
+
+    /* BUG-48847 Non-deterministic for shard */
+    IDE_TEST_RAISE( ( sAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NON_DETERMINISTIC_EXISTS ] == ID_TRUE )
+                    ||
+                    ( sAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NON_SHARD_OBJECT_EXISTS ] == ID_TRUE ),
+                    ERR_SHARD_NOT_SUPPORTED );
+
     /* Convert the statement to the shard view statement */
     IDE_TEST( makeShardForConvert( aStatement,
                                    aParseTree )
-              != IDE_SUCCESS );
-
-    IDE_TEST( sdi::getParseTreeAnalysis( aParseTree,
-                                         &( sAnalysis ) )
               != IDE_SUCCESS );
 
     aStatement->myPlan->parseTree->optimize = qmo::optimizeShardDML;
@@ -8328,9 +8336,15 @@ IDE_RC qmvShardTransform::makeShardForUptDel( qcStatement      * aStatement,
 
     sAnalysis->mAnalysisFlag.mTopQueryFlag[SDI_TQ_PARTIAL_COORD_EXEC_NEEDED] = ID_TRUE;
     aStatement->myPlan->mShardAnalysis->mTopQueryFlag[SDI_TQ_PARTIAL_COORD_EXEC_NEEDED] = ID_TRUE;
-    
+
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_SHARD_NOT_SUPPORTED )
+    {
+        IDE_SET( ideSetErrorCode( sdERR_ABORT_SDA_NOT_SUPPORTED_SQLTEXT_FOR_SHARD,
+                                  sdi::getNonShardQueryReasonArr( SDI_NON_DETERMINISTIC_EXISTS ),
+                                  "" ) );
+    }
     IDE_EXCEPTION( ERR_INVALID_NON_SHARD_TRANSFORM_TYPE )
     {
         IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,

@@ -472,6 +472,11 @@ public:
     static IDE_RC shardNodeReport( cmiProtocolContext *, cmiProtocol *, void *, void * );
 
     static IDE_RC sendShardRebuildNoti( cmiProtocolContext *aProtocolContext );
+
+    static IDE_RC checkShardMetaUpdateProtocol( cmiProtocolContext *,
+                                                cmiProtocol        *,
+                                                void               *,
+                                                void               * );
 };
 
 

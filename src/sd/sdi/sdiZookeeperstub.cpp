@@ -757,3 +757,13 @@ IDE_RC sdiZookeeper::checkNodeAlive( SChar * ,idBool * )
                               "Zookeeper C client only support Linux." ) );
     return IDE_FAILURE;
 }
+
+void sdiZookeeper::globalDDLJob()
+{
+    return;
+}
+
+void sdiZookeeper::procedureJob()
+{
+    return;
+}

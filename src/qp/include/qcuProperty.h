@@ -16,7 +16,7 @@
  
 
 /*****************************************************************************
- * $Id: qcuProperty.h 90787 2021-05-07 00:50:48Z ahra.cho $
+ * $Id: qcuProperty.h 91627 2021-09-08 01:47:35Z ahra.cho $
  *
  * QP에서 사용하는 System Property에 대한 정의
  * A4에서 제공하는 Property 관리자를 이용하여 처리한다.
@@ -53,6 +53,12 @@
 /* BUG-48941 __OPTIMIZER_ORDER_BY_ELIMINATION_ENABLE */
 #define QCU_OBYE_MASK_MODE1 (1)
 #define QCU_OBYE_MASK_MODE2 (2)
+
+/* PROJ-2749 */
+#define QCU_OPT_WITH_VIEW_MODE1        (1)
+#define QCU_OPT_WITH_VIEW_MODE2_4_MASK (6)
+#define QCU_OPT_WITH_VIEW_MODE2        (2)
+#define QCU_OPT_WITH_VIEW_MODE4        (4)
 
 #define QCU_TRCLOG_DML_SENTENCE        ( QCU_PROPERTY(mTraceLog_DML_Sentence) )
 #define QCU_TRCLOG_DETAIL_PREDICATE    ( QCU_PROPERTY(mTraceLog_Detail_Predicate) )
@@ -461,6 +467,9 @@
 
 /* PROJ-2750 */
 #define QCU_LEFT_OUTER_SKIP_RIGHT_ENABLE ( QCU_PROPERTY(mLeftOuterSkipRightEnable) )
+
+/* PROJ-2749 */
+#define QCU_OPTIMIZER_WITH_VIEW          ( QCU_PROPERTY(mOptimizerWithView) )
 
 // 참조 : mmuPropertyArgument
 typedef struct qcuPropertyArgument
@@ -928,6 +937,9 @@ typedef struct qcuProperties
 
     /* PROJ-2750 */
     UInt  mLeftOuterSkipRightEnable;
+
+    /* PROJ-2749 */
+    UInt  mOptimizerWithView;
 } qcuProperties;
 
 class qcuProperty
@@ -1868,6 +1880,13 @@ public:
                                                       void  * aOldValue,
                                                       void  * aNewValue,
                                                       void  * aArg );    
+
+    /* PROJ-2749 */
+    static IDE_RC changeOPTIMIZER_WITH_VIEW( idvSQL* /* aStatistics */,
+                                             SChar * aName,
+                                             void  * aOldValue,
+                                             void  * aNewValue,
+                                             void  * aArg );
 };
 
 #endif /* _O_QCU_PROPERTY_H_ */

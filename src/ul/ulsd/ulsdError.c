@@ -403,8 +403,6 @@ static acp_bool_t ulsdIsFailoverErrorCode( acp_uint32_t aNativeErrorCode )
     switch ( aNativeErrorCode )
     {
         case ACI_E_ERROR_CODE( sdERR_ABORT_SHARD_LIBRARY_LINK_FAILURE_ERROR ) :
-        case ACI_E_ERROR_CODE( sdERR_ABORT_SHARD_LIBRARY_FAILOVER_SUCCESS )   :
-        case ACI_E_ERROR_CODE( sdERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE ) :
             sIsFailoverErrorCode = ACP_TRUE;
             break;
 
@@ -418,8 +416,7 @@ static acp_bool_t ulsdIsFailoverErrorCode( acp_uint32_t aNativeErrorCode )
 
 static acp_bool_t ulsdProcessShardingError( ulnFnContext * aFnContext,
                                             ulnDiagRec   * aDiagRec,
-                                            acp_uint32_t   aNativeErrorCode,
-                                            acp_uint32_t   aNodeId )
+                                            acp_uint32_t   aNativeErrorCode )
 {
     ulnDbc                * sMetaDbc           = NULL;
     ulnDbc                * sNodeDbc           = NULL;
@@ -437,7 +434,7 @@ static acp_bool_t ulsdProcessShardingError( ulnFnContext * aFnContext,
     {
         for ( sIdx = 0; sIdx < sShard->mNodeCount; ++sIdx )
         {
-            if ( sShard->mNodeInfo[sIdx]->mNodeId == aNodeId )
+            if ( sShard->mNodeInfo[sIdx]->mNodeId == aDiagRec->mNodeId )
             {
                 sNodeDbc = sShard->mNodeInfo[sIdx]->mNodeDbc;
                 break;
@@ -464,19 +461,6 @@ static acp_bool_t ulsdProcessShardingError( ulnFnContext * aFnContext,
 
         /* rest of data node align is will proceed at ulsdModuleErrorCheckAndAlignDataNode() */
     }
-    else if ( aNativeErrorCode == ACI_E_ERROR_CODE( sdERR_ABORT_SHARD_LIBRARY_FAILOVER_SUCCESS ) )
-    {
-        /* server reconnect to data node by sdl::retryConnect */
-        (void)ulnError( aFnContext,
-                        ulERR_ABORT_FAILOVER_SUCCESS,
-                        aNativeErrorCode,
-                        aDiagRec->mSQLSTATE,
-                        aDiagRec->mMessageText );
-    }
-    else if ( aNativeErrorCode == ACI_E_ERROR_CODE( sdERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE ) )
-    {
-        (void)ulnError( aFnContext, ulERR_ABORT_SHARD_NODE_FAILOVER_IS_NOT_AVAILABLE );
-    }
     else
     {
         ACI_RAISE( NOT_SURPPORT );
@@ -498,7 +482,7 @@ static acp_bool_t ulsdProcessShardingError( ulnFnContext * aFnContext,
         ULN_TRACE_LOG( aFnContext, ULN_TRACELOG_LOW, NULL, 0,
                        "%-18s| Data node ID %"ACI_INT32_FMT" not found.",
                        "ulsdProcessShardingError",
-                       aNodeId );
+                       aDiagRec->mNodeId );
     }
     ACI_EXCEPTION( NOT_SURPPORT );
     {
@@ -516,8 +500,7 @@ static acp_bool_t ulsdProcessShardingError( ulnFnContext * aFnContext,
     return ACP_FALSE;
 }
 
-void ulsdErrorHandleShardingError( ulnFnContext * aFnContext,
-                                   acp_uint32_t   aNodeId )
+void ulsdErrorHandleShardingError( ulnFnContext * aFnContext )
 {
     ulnDbc              * sMetaDbc       = NULL;
     ulnDiagRec          * sDiagRec         = NULL;
@@ -537,18 +520,13 @@ void ulsdErrorHandleShardingError( ulnFnContext * aFnContext,
                                        aFnContext->mHandle.mObj->mDiagHeader.mNumber )
               != ACI_SUCCESS );
 
-    ulnDiagRecSetNodeId(sDiagRec, aNodeId);
-
-    ACI_TEST( ULSD_IS_MULTIPLE_ERROR(aNodeId) == ACP_TRUE );
-
     sNativeErrorCode = ulnDiagRecGetNativeErrorCode(sDiagRec);
 
     if ( ulsdIsFailoverErrorCode( sNativeErrorCode ) == ACP_TRUE )
     {
         (void)ulsdProcessShardingError( aFnContext,
                                         sDiagRec,
-                                        sNativeErrorCode,
-                                        aNodeId );
+                                        sNativeErrorCode );
     }
 
     return;

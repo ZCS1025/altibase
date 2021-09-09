@@ -314,6 +314,7 @@ IDE_RC sdfCalculate_ResetReplicaSets( mtcNode*     aNode,
                 break;
             case SDI_INTERNAL_OP_NORMAL:
             case SDI_INTERNAL_OP_NOT:
+            case SDI_INTERNAL_OP_SHARD_PKG:
                 /* Failover/Failback 에서 만 호출한다. */
             default:
                 IDE_DASSERT( 0 );

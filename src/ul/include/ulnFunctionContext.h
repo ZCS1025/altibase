@@ -73,6 +73,9 @@ struct ulnFnContext
     /* BUG-46092 */
     acp_bool_t          mIsFailoverSuccess;
 
+    /* if mFuncID == ULN_FID_ENDTRAN then set mEndTranCompletionType (SQL_COMMIT OR SQL_ROLLBACK) */
+    acp_sint16_t        mEndTranCompletionType;
+
     ulnShardCoordFixCtrlContext * mShardCoordFixCtrlCtx;
 };
 
@@ -111,7 +114,14 @@ struct ulnFnContext
         /* PROJ-2177: User Interface - Cancel */                     \
         aContext.mNeedUnlock  = ACP_FALSE;                           \
         aContext.mIsFailoverSuccess = ACP_FALSE;                     \
+        aContext.mEndTranCompletionType = ACP_SINT16_MAX;            \
         aContext.mShardCoordFixCtrlCtx = NULL;                       \
+    } while(0)
+
+#define ULN_INIT_ENDTRAN_FUNCTION_CONTEXT(aContext, aFuncId, aCompletionType, aObj, aObjType) \
+    do {                                                             \
+        ULN_INIT_FUNCTION_CONTEXT(aContext, aFuncId, aObj, aObjType);\
+        aContext.mEndTranCompletionType = aCompletionType;           \
     } while(0)
 
 #define ULN_FNCONTEXT_GET_DBC(aFnContext, aDbc)                                \
@@ -145,6 +155,11 @@ struct ulnFnContext
                 break;                                                         \
         }                                                                      \
     } while(0)
+
+#define ULN_FNCONTEXT_IS_ROLLBACK( aFnContext ) \
+    ( ( ( aFnContext->mFuncID == ULN_FID_ENDTRAN ) && \
+        ( aFnContext->mEndTranCompletionType == SQL_ROLLBACK ) ) ? \
+      ACP_TRUE : ACP_FALSE )
 
 ACP_INLINE ulnDbc* ulnFnContextGetDbc(ulnFnContext *aFnContext)
 {

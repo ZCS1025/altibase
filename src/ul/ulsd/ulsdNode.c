@@ -25,6 +25,7 @@
 #include <ulsd.h>
 
 void ulsdSetNodeInfo( ulsdNodeInfo * aShardNodeInfo,
+                      acp_uint64_t   aSMN,
                       acp_uint32_t   aNodeId,
                       acp_char_t   * aNodeName,
                       acp_char_t   * aServerIP,
@@ -32,7 +33,7 @@ void ulsdSetNodeInfo( ulsdNodeInfo * aShardNodeInfo,
                       acp_char_t   * aAlternateServerIP,
                       acp_uint16_t   aAlternatePortNo )
 {
-    aShardNodeInfo->mSMN    = 0;
+    aShardNodeInfo->mSMN    = aSMN;
     aShardNodeInfo->mNodeId = aNodeId;
 
     acpMemSet( aShardNodeInfo->mNodeName,

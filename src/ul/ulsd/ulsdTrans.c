@@ -26,6 +26,8 @@
 #include <ulsd.h>
 #include <ulsdnExecute.h>
 #include <ulsdnFailover.h>
+#include <ulsdnFailoverSuspend.h>
+#include <ulsdFailover.h>
 #include <ulsdDistTxInfo.h>
 #include <ulsdnTrans.h>
 #include <ulsdRebuild.h>
@@ -76,10 +78,29 @@ SQLRETURN ulsdEndTranDbc(acp_sint16_t  aHandleType,
 
     ACP_UNUSED(aHandleType);
 
-    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_ENDTRAN, aMetaDbc, ULN_OBJ_TYPE_DBC);
+    ulsdnFailoverSuspendBackup sBackup;
+    ulsdnClearFailoverSuspendBackup( &sBackup );
+
+    ULN_INIT_ENDTRAN_FUNCTION_CONTEXT(sFnContext, ULN_FID_ENDTRAN, aCompletionType, aMetaDbc, ULN_OBJ_TYPE_DBC);
 
     /* BUG-47553 */
     ACI_TEST_RAISE( ulsdEnter( &sFnContext ) != ACI_SUCCESS, LABEL_ENTER_ERROR );
+
+    if ( aCompletionType == SQL_COMMIT )
+    {
+        ulsdnDbcSetFailoverSuspendState( aMetaDbc,
+                                         ULSDN_FAILOVER_SUSPEND_ALL,
+                                         &sBackup);
+        ulsdnDbcSetFailoverSuspendErrorCode( aMetaDbc,
+                                             ulERR_ABORT_FAILED_TO_COMMIT );
+    }
+    else
+    {
+        ulsdnDbcSetFailoverSuspendState( aMetaDbc,
+                                         ULSDN_FAILOVER_SUSPEND_ALL,
+                                         &sBackup);
+        ulnDbcSetFailoverSuspendSkipError( aMetaDbc );
+    }
 
     switch ( aMetaDbc->mAttrGlobalTransactionLevel )
     {
@@ -133,6 +154,14 @@ SQLRETURN ulsdEndTranDbc(acp_sint16_t  aHandleType,
     /* BUGBUG retrun result not matched with FNCONTEXT result */
     ULN_FNCONTEXT_SET_RC( &sFnContext, sRet );
 
+    ulsdnDbcUnsetFailoverSuspendState( aMetaDbc,
+                                       &sBackup);
+
+    if ( aCompletionType == ULN_TRANSACT_ROLLBACK )
+    {
+        ACI_TEST( ulsdFailoverUserConnection( &sFnContext ) != ACI_SUCCESS );
+    }
+
     ulsdCleanupShardSession( aMetaDbc,
                              &sFnContext );
 
@@ -156,6 +185,9 @@ SQLRETURN ulsdEndTranDbc(acp_sint16_t  aHandleType,
                   "No set Global Transaction level" );
     }
     ACI_EXCEPTION_END;
+
+    ulsdnDbcUnsetFailoverSuspendState( aMetaDbc,
+                                       &sBackup);
 
     return ULN_FNCONTEXT_GET_RC( &sFnContext );
 }
@@ -486,7 +518,7 @@ SQLRETURN ulsdnSimpleShardEndTranDbc( ulnDbc *aDbc, ulnTransactionOp aCompletion
     ULN_FLAG(sNeedExit);
     ulnFnContext sFnContext;
 
-    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_ENDTRAN, aDbc, ULN_OBJ_TYPE_DBC);
+    ULN_INIT_ENDTRAN_FUNCTION_CONTEXT(sFnContext, ULN_FID_ENDTRAN, aCompletionType, aDbc, ULN_OBJ_TYPE_DBC);
     /*
      * Enter
      */
@@ -564,6 +596,7 @@ SQLRETURN ulsdTouchNodeEndTranDbc(ulnFnContext      *aFnContext,
                                   ulsdDbc           *aShard,
                                   acp_sint16_t       aCompletionType)
 {
+    ulnObject        * sObject = NULL;
     SQLRETURN          sNodeResult = SQL_ERROR;
     SQLRETURN          sSuccessResult = SQL_SUCCESS;
     SQLRETURN          sErrorResult = SQL_ERROR;
@@ -640,8 +673,7 @@ SQLRETURN ulsdTouchNodeEndTranDbc(ulnFnContext      *aFnContext,
         {
             sNodeResult = ulsdGetResultCallback( i,
                                                  sCallback,
-                                                 (aCompletionType == SQL_ROLLBACK) ?
-                                                 (acp_uint8_t)1: (acp_uint8_t)0 );
+                                                 1 );
 
             SHARD_LOG( "(EndTranDbcTouchNode) NodeIndex[%d], NodeId=%d, Server=%s:%d\n",
                        i,
@@ -661,12 +693,14 @@ SQLRETURN ulsdTouchNodeEndTranDbc(ulnFnContext      *aFnContext,
             }
             else if ( sNodeResult == SQL_SUCCESS_WITH_INFO )
             {
+                sObject = &aShard->mNodeInfo[i]->mNodeDbc->mObj;
+
                 aShard->mNodeInfo[i]->mTouched = ACP_FALSE;
 
                 /* 에러 전달 */
                 ulsdNativeErrorToUlnError( aFnContext,
                                            SQL_HANDLE_DBC,
-                                           (ulnObject *)aShard->mNodeInfo[i]->mNodeDbc,
+                                           sObject,
                                            aShard->mNodeInfo[i],
                                            ( aCompletionType == SQL_COMMIT ) ?
                                                (acp_char_t *)"Commit" :
@@ -676,10 +710,12 @@ SQLRETURN ulsdTouchNodeEndTranDbc(ulnFnContext      *aFnContext,
             }
             else
             {
+                sObject = &aShard->mNodeInfo[i]->mNodeDbc->mObj;
+
                 /* 에러 전달 */
                 ulsdNativeErrorToUlnError(aFnContext,
                                           SQL_HANDLE_DBC,
-                                          (ulnObject *)aShard->mNodeInfo[i]->mNodeDbc,
+                                          sObject,
                                           aShard->mNodeInfo[i],
                                           (aCompletionType == SQL_COMMIT) ?
                                           (acp_char_t *)"Commit" :
@@ -712,6 +748,7 @@ SQLRETURN ulsdTouchNodeShardEndTranDbc(ulnFnContext      *aFnContext,
                                        ulsdDbc           *aShard,
                                        acp_sint16_t       aCompletionType)
 {
+    ulnObject        * sObject = NULL;
     SQLRETURN          sNodeResult = SQL_ERROR;
     SQLRETURN          sSuccessResult = SQL_SUCCESS;
     SQLRETURN          sErrorResult = SQL_ERROR;
@@ -787,8 +824,7 @@ SQLRETURN ulsdTouchNodeShardEndTranDbc(ulnFnContext      *aFnContext,
         {
             sNodeResult = ulsdGetResultCallback( i,
                                                  sCallback,
-                                                 (aCompletionType == SQL_ROLLBACK) ?
-                                                 (acp_uint8_t)1: (acp_uint8_t)0 );
+                                                 1 );
 
             SHARD_LOG( "(TouchNodeShardEndTranDbc) NodeIndex[%d], NodeId=%d, Server=%s:%d\n",
                        i,
@@ -808,12 +844,14 @@ SQLRETURN ulsdTouchNodeShardEndTranDbc(ulnFnContext      *aFnContext,
             }
             else if ( sNodeResult == SQL_SUCCESS_WITH_INFO )
             {
+                sObject = &aShard->mNodeInfo[i]->mNodeDbc->mObj;
+
                 aShard->mNodeInfo[i]->mTouched = ACP_FALSE;
 
                 /* 에러 전달 */
                 ulsdNativeErrorToUlnError( aFnContext,
                                            SQL_HANDLE_DBC,
-                                           (ulnObject *)aShard->mNodeInfo[i]->mNodeDbc,
+                                           sObject,
                                            aShard->mNodeInfo[i],
                                            ( aCompletionType == SQL_COMMIT ) ?
                                                (acp_char_t *)"Commit" :
@@ -823,10 +861,12 @@ SQLRETURN ulsdTouchNodeShardEndTranDbc(ulnFnContext      *aFnContext,
             }
             else
             {
+                sObject = &aShard->mNodeInfo[i]->mNodeDbc->mObj;
+
                 /* 에러 전달 */
                 ulsdNativeErrorToUlnError(aFnContext,
                                           SQL_HANDLE_DBC,
-                                          (ulnObject *)aShard->mNodeInfo[i]->mNodeDbc,
+                                          sObject,
                                           aShard->mNodeInfo[i],
                                           (aCompletionType == SQL_COMMIT) ?
                                           (acp_char_t *)"Commit" :

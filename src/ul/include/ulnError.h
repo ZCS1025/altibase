@@ -23,6 +23,8 @@
 
 #include <aciErrorMgr.h>
 
+#define ULN_NULL_SHARD_NODE_ID   (0)
+
 #define ACI_UL_ERROR_SECTION  5
 
 typedef aci_client_error_mgr_t ulnErrorMgr;

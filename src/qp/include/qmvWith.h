@@ -31,7 +31,8 @@ public:
     static IDE_RC validate( qcStatement * aStatement );
 
     static IDE_RC parseViewInTableRef( qcStatement * aStatement,
-                                       qmsTableRef * aTableRef );
+                                       qmsTableRef * aTableRef,
+                                       idBool        aIsHierarchy ); // PROJ-2749
 
 private:
     static IDE_RC makeWithStmtFromWithClause( qcStatement        * aStatement,
@@ -45,6 +46,12 @@ private:
 
     // PROJ-2582 recursive with
     static IDE_RC validateColumnAlias( qmsWithClause  * aWithClause );
+
+    // PROJ-2749
+    static IDE_RC checkCompactWith( qcStatement    * aStatement,
+                                    qcWithStmt     * aWithStmt, 
+                                    idBool           aIsHierarchy,
+                                    idBool         * aIsCompactWith );
 };
 
 #endif /* QMVWITH_H_ */

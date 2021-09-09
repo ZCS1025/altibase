@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmgSelection.cpp 90192 2021-03-12 02:01:03Z jayce.park $
+ * $Id: qmgSelection.cpp 91627 2021-09-08 01:47:35Z ahra.cho $
  *
  * Description :
  *     Selection Graph를 위한 수행 함수
@@ -1773,6 +1773,11 @@ qmgSelection::makeViewScan( qcStatement * aStatement,
                                            aMyGraph->graph.myPlan ,
                                            &sVIEW ) != IDE_SUCCESS );
         aMyGraph->graph.myPlan = sVIEW;
+
+        // PROJ-2749
+        // 플랜이 이미 만들어진 경우가 있으면 안됩니다.
+        IDE_TEST_RAISE( aMyGraph->graph.left->myPlan != NULL,
+                        ERR_INVALID_PLAN );
     }
 
     //-----------------------------------------------------
@@ -1870,6 +1875,12 @@ qmgSelection::makeViewScan( qcStatement * aStatement,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_INVALID_PLAN )
+    {
+        IDE_SET ( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                   "qmgSelection::makeViewScan",
+                                   "Invalid plan" ) );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -2600,6 +2611,13 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
                 break;
             case QMO_VIEW_OPT_TYPE_PUSH :
 
+                // PROJ-2749
+                IDE_TEST_RAISE( ( ( sTableRef->flag & QMS_TABLE_REF_COMPACT_WITH_MASK )
+                                  == QMS_TABLE_REF_COMPACT_WITH_TRUE ),
+                                UNEXPECTED_ERROR );
+                IDE_TEST_RAISE( ( sTableRef->view->myPlan->graph != NULL ),
+                                UNEXPECTED_ERROR );
+
                 //---------------------------------------------------
                 // Push Selection Hint가 있는 경우
                 //    - Push Selection 성공 여부에 상관없이 ViewOptType을
@@ -2659,6 +2677,11 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
 
                 break;
             case QMO_VIEW_OPT_TYPE_CMTR :
+                // PROJ-2749
+                IDE_TEST_RAISE( ( ( sTableRef->flag & QMS_TABLE_REF_COMPACT_WITH_MASK )
+                                  == QMS_TABLE_REF_COMPACT_WITH_TRUE ),
+                                UNEXPECTED_ERROR );
+
                 // To Fix BUG-8400
                 if ( sTableRef->view->myPlan->graph == NULL )
                 {
@@ -2801,6 +2824,10 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
                                                & sIsPushed )
                           != IDE_SUCCESS );
 
+                // PROJ-2749
+                IDE_TEST_RAISE( ( sTableRef->view->myPlan->graph != NULL ),
+                                UNEXPECTED_ERROR );
+
                 // View Graph 생성
                 IDE_TEST( qmo::makeGraph( sTableRef->view ) != IDE_SUCCESS );
 
@@ -2812,6 +2839,11 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
                 aGraph->left->flag |= QMG_PROJ_VIEW_OPT_TIP_VMTR_FALSE;
                 break;
             case QMO_VIEW_OPT_TYPE_CMTR :
+                // PROJ-2749
+                IDE_TEST_RAISE( ( ( sTableRef->flag & QMS_TABLE_REF_COMPACT_WITH_MASK )
+                                  == QMS_TABLE_REF_COMPACT_WITH_TRUE ),
+                                UNEXPECTED_ERROR );
+
                 // BUG-37237 hierarchy query는 same view를 처리하지 않는다.
                 if ( sTableRef->view->myPlan->graph == NULL )
                 {
@@ -2839,6 +2871,12 @@ qmgSelection::makeViewGraph( qcStatement * aStatement,
 
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( UNEXPECTED_ERROR )
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QMC_UNEXPECTED_ERROR,
+                                  "qmgSelection::makeViewGraph",
+                                  "Invalid graph" ));
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -3549,117 +3587,37 @@ qmgSelection::doViewPushSelection( qcStatement  * aStatement,
         /* TASK-7219 Non-shard DML */
         sIsPushedForce         = ID_FALSE;
 
-        if ( (sPredicate->flag & QMO_PRED_PUSH_PRED_HINT_MASK)
-             == QMO_PRED_PUSH_PRED_HINT_TRUE )
+        // PROJ-2749 compact with 일때 push selection하면 안됩니다.
+        if ( ( aTableRef->flag & QMS_TABLE_REF_COMPACT_WITH_MASK )
+             == QMS_TABLE_REF_COMPACT_WITH_FALSE )
         {
-            //---------------------------------------------------
-            // PUSH_PRED 힌트에 의해 내려온 join predicate인 경우
-            //---------------------------------------------------
-
-            if ( ( sPredicate->node->lflag & QTC_NODE_SUBQUERY_MASK )
-                 != QTC_NODE_SUBQUERY_EXIST )
+            if ( (sPredicate->flag & QMO_PRED_PUSH_PRED_HINT_MASK)
+                 == QMO_PRED_PUSH_PRED_HINT_TRUE )
             {
                 //---------------------------------------------------
-                // 각 Predicate이 Subquery가 아닌 경우
+                // PUSH_PRED 힌트에 의해 내려온 join predicate인 경우
                 //---------------------------------------------------
 
-                IDE_TEST( qmoPred::isIndexable( aStatement,
-                                                sPredicate,
-                                                & aGraph->myFrom->depInfo,
-                                                & qtc::zeroDependencies,
-                                                & sIsIndexable )
-                          != IDE_SUCCESS );
-
-                if ( sIsIndexable == ID_TRUE )
+                if ( ( sPredicate->node->lflag & QTC_NODE_SUBQUERY_MASK )
+                     != QTC_NODE_SUBQUERY_EXIST )
                 {
                     //---------------------------------------------------
-                    // Indexable 한 경우
+                    // 각 Predicate이 Subquery가 아닌 경우
                     //---------------------------------------------------
 
-                    IDE_TEST( qmoPred::getColumnID( aStatement,
-                                                    sPredicate->node,
-                                                    ID_TRUE,
-                                                    & sColumnID )
+                    IDE_TEST( qmoPred::isIndexable( aStatement,
+                                                    sPredicate,
+                                                    & aGraph->myFrom->depInfo,
+                                                    & qtc::zeroDependencies,
+                                                    & sIsIndexable )
                               != IDE_SUCCESS );
 
-                    if ( sColumnID != QMO_COLUMNID_LIST )
+                    if ( sIsIndexable == ID_TRUE )
                     {
                         //---------------------------------------------------
-                        // Indexable Predicate이 List가 아닌 경우
+                        // Indexable 한 경우
                         //---------------------------------------------------
 
-                        IDE_TEST( qmoPushPred::doPushDownViewPredicate(
-                                      aStatement,
-                                      sViewParseTree,
-                                      sViewParseTree->querySet,
-                                      sViewTupleId,
-                                      aGraph->myQuerySet->SFWGH,
-                                      aGraph->myFrom,
-                                      sPredicate,
-                                      & sIsPushed,
-                                      & sIsPushedAll,
-                                      & sRemainPushedPredicate )
-                                  != IDE_SUCCESS );
-                    }
-                    else
-                    {
-                        // List인 경우, Push Selection 하지 않음 : 추후 확장
-                    }
-                }
-                else
-                {
-                    // indexable predicate이 아닌 경우
-                    // nothing to do
-                }
-            }
-            else
-            {
-                // Subquery인 경우
-                // nothing to do
-            }
-        }
-        else
-        {
-            //---------------------------------------------------
-            // view의 one table predicate인 경우
-            //---------------------------------------------------
-
-            if ( ( sPredicate->node->lflag & QTC_NODE_SUBQUERY_MASK )
-                 != QTC_NODE_SUBQUERY_EXIST )
-            {
-                //---------------------------------------------------
-                // 각 Predicate이 Subquery가 아닌 경우
-                //---------------------------------------------------
-
-                if ( qtc::getPosNextBitSet( & sPredicate->node->depInfo,
-                                            qtc::getPosFirstBitSet(
-                                                & sPredicate->node->depInfo ) )
-                     == QTC_DEPENDENCIES_END )
-                {
-                    //---------------------------------------------------
-                    // 각 Predicate이 외부참조 컬럼이 없는 경우
-                    //---------------------------------------------------
-
-                    IDE_TEST( qmoPushPred::doPushDownViewPredicate(
-                                  aStatement,
-                                  sViewParseTree,
-                                  sViewParseTree->querySet,
-                                  sViewTupleId,
-                                  aGraph->myQuerySet->SFWGH,
-                                  aGraph->myFrom,
-                                  sPredicate,
-                                  & sIsPushed,
-                                  & sIsPushedAll,
-                                  & sRemainPushedPredicate )
-                              != IDE_SUCCESS );
-                }
-                else
-                {
-                    /* TASK-7219 Non-shard DML */
-                    // 외부참조 컬럼을 가지는 경우, property 에 따라 동작
-                    if ( ( SDU_SHARD_TRANSFORM_MODE & SDU_SHARD_TRANSFORM_PUSH_OUT_REF_PRED_MASK  )
-                         == SDU_SHARD_TRANSFORM_PUSH_OUT_REF_PRED_ENABLE )
-                    {
                         IDE_TEST( qmoPred::getColumnID( aStatement,
                                                         sPredicate->node,
                                                         ID_TRUE,
@@ -3668,30 +3626,115 @@ qmgSelection::doViewPushSelection( qcStatement  * aStatement,
 
                         if ( sColumnID != QMO_COLUMNID_LIST )
                         {
+                            //---------------------------------------------------
+                            // Indexable Predicate이 List가 아닌 경우
+                            //---------------------------------------------------
+
                             IDE_TEST( qmoPushPred::doPushDownViewPredicate(
-                                          aStatement,
-                                          sViewParseTree,
-                                          sViewParseTree->querySet,
-                                          sViewTupleId,
-                                          aGraph->myQuerySet->SFWGH,
-                                          aGraph->myFrom,
-                                          sPredicate,
-                                          & sIsPushed,
-                                          & sIsPushedAll,
-                                          & sRemainPushedPredicate )
-                                      != IDE_SUCCESS );
+                                    aStatement,
+                                    sViewParseTree,
+                                    sViewParseTree->querySet,
+                                    sViewTupleId,
+                                    aGraph->myQuerySet->SFWGH,
+                                    aGraph->myFrom,
+                                    sPredicate,
+                                    & sIsPushed,
+                                    & sIsPushedAll,
+                                    & sRemainPushedPredicate )
+                                != IDE_SUCCESS );
+                        }
+                        else
+                        {
+                            // List인 경우, Push Selection 하지 않음 : 추후 확장
                         }
                     }
                     else
                     {
-                        // Nothing to do.
+                        // indexable predicate이 아닌 경우
+                        // nothing to do
                     }
+                }
+                else
+                {
+                    // Subquery인 경우
+                    // nothing to do
                 }
             }
             else
             {
-                // Subquery인 경우
-                // nothing to do
+                //---------------------------------------------------
+                // view의 one table predicate인 경우
+                //---------------------------------------------------
+
+                if ( ( sPredicate->node->lflag & QTC_NODE_SUBQUERY_MASK )
+                     != QTC_NODE_SUBQUERY_EXIST )
+                {
+                    //---------------------------------------------------
+                    // 각 Predicate이 Subquery가 아닌 경우
+                    //---------------------------------------------------
+
+                    if ( qtc::getPosNextBitSet( & sPredicate->node->depInfo,
+                                                qtc::getPosFirstBitSet(
+                                                    & sPredicate->node->depInfo ) )
+                         == QTC_DEPENDENCIES_END )
+                    {
+                        //---------------------------------------------------
+                        // 각 Predicate이 외부참조 컬럼이 없는 경우
+                        //---------------------------------------------------
+
+                        IDE_TEST( qmoPushPred::doPushDownViewPredicate(
+                                aStatement,
+                                sViewParseTree,
+                                sViewParseTree->querySet,
+                                sViewTupleId,
+                                aGraph->myQuerySet->SFWGH,
+                                aGraph->myFrom,
+                                sPredicate,
+                                & sIsPushed,
+                                & sIsPushedAll,
+                                & sRemainPushedPredicate )
+                            != IDE_SUCCESS );
+                    }
+                    else
+                    {
+                        /* TASK-7219 Non-shard DML */
+                        // 외부참조 컬럼을 가지는 경우, property 에 따라 동작
+                        if ( ( SDU_SHARD_TRANSFORM_MODE & SDU_SHARD_TRANSFORM_PUSH_OUT_REF_PRED_MASK  )
+                             == SDU_SHARD_TRANSFORM_PUSH_OUT_REF_PRED_ENABLE )
+                        {
+                            IDE_TEST( qmoPred::getColumnID( aStatement,
+                                                            sPredicate->node,
+                                                            ID_TRUE,
+                                                            & sColumnID )
+                                      != IDE_SUCCESS );
+
+                            if ( sColumnID != QMO_COLUMNID_LIST )
+                            {
+                                IDE_TEST( qmoPushPred::doPushDownViewPredicate(
+                                        aStatement,
+                                        sViewParseTree,
+                                        sViewParseTree->querySet,
+                                        sViewTupleId,
+                                        aGraph->myQuerySet->SFWGH,
+                                        aGraph->myFrom,
+                                        sPredicate,
+                                        & sIsPushed,
+                                        & sIsPushedAll,
+                                        & sRemainPushedPredicate )
+                                    != IDE_SUCCESS );
+                            }
+                        }
+                        else
+                        {
+                            // Nothing to do.
+                        }
+                    }
+                }
+                else
+                {
+                    // Subquery인 경우
+                    // nothing to do
+                }
             }
         }
 

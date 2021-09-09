@@ -765,6 +765,8 @@ public:
 
     IDE_RC shardNodeConnectionReport( UInt              aNodeId, 
                                       UChar             aDestination );
+    IDE_RC shardNodeConnectionStatusReport( UInt              aNodeId, 
+                                            UChar             aDestination );
     IDE_RC shardNodeTransactionBrokenReport( void );
 
     //PROJ-1677 DEQUEUE
@@ -1056,7 +1058,8 @@ public:
 
     /* PROJ-2638 shard native linker */
     IDE_RC reloadShardMetaNumber( idBool aIsLocalOnly );
-    IDE_RC touchShardNode(UInt aNodeId);
+    IDE_RC touchShardNode( UInt                    aNodeId,
+                           sdiFailoverSuspendCmd * aFailoverSuspendCmd );
 
     /* PROJ-2660 */
     sdiShardPin getShardPIN();
@@ -1728,6 +1731,14 @@ public:
 
     /* BUG-48770 */
     static UInt checkSessionCountCallback();
+
+
+    static void shardNodeRemovalCheckerCallback( void   * aMmSession,
+                                                 void   * aConnectionInfo,
+                                                 idBool * aIsDroped );
+    void shardNodeRemovalChecker( void   * aConnectionInfo,
+                                  idBool * aIsDroped );
+
 private:
     IDE_RC makeShardSession( ULong                   aTargetSMN,
                              ULong                   aLastSessionSMN,
@@ -1739,6 +1750,12 @@ private:
                                            ULong      aLastSessionSMN,
                                            smiTrans * aSmiTrans,
                                            idBool     aIsShardMetaChanged );
+
+    mmcTransObj * getTransForNonExecutionWithFix( idBool      * aIsLocked,
+                                                  mmcTransObj * aTrans );
+
+    void unfixTransForNonExecution( idBool      * aIsLocked,
+                                    mmcTransObj * aTrans );
 };
 
 

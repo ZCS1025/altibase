@@ -180,7 +180,7 @@ static SQLRETURN ulnEndTranDbc(ulnDbc *aDbc, ulnTransactionOp aCompletionType)
     ULN_FLAG(sNeedExit);
     ulnFnContext sFnContext;
 
-    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_ENDTRAN, aDbc, ULN_OBJ_TYPE_DBC);
+    ULN_INIT_ENDTRAN_FUNCTION_CONTEXT(sFnContext, ULN_FID_ENDTRAN, aCompletionType, aDbc, ULN_OBJ_TYPE_DBC);
     /*
      * Enter
      */
@@ -229,7 +229,7 @@ static SQLRETURN ulnEndTranEnv(ulnEnv *aEnv, ulnTransactionOp aCompletionType)
     acp_list_node_t *sIterator;
     acp_bool_t       sIsFailOccurred;
 
-    ULN_INIT_FUNCTION_CONTEXT(sFnContext, ULN_FID_ENDTRAN, aEnv, ULN_OBJ_TYPE_ENV);
+    ULN_INIT_ENDTRAN_FUNCTION_CONTEXT(sFnContext, ULN_FID_ENDTRAN, aCompletionType, aEnv, ULN_OBJ_TYPE_ENV);
 
     /*
      * Enter

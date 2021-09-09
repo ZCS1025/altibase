@@ -139,8 +139,8 @@ static ulnCmProtocolEntry gUlnCmProtocolTable[CMP_OP_DB_MAX + 1] =
              /* PROJ-2598 altibase sharding */
     /* 87 */ { 1, "CMP_OP_DB_ShardAnalyze" },
     /* 88 */ { 0, "CMP_OP_DB_ShardAnalyzeResult" },
-    /* 89 */ { 1, "CMP_OP_DB_ShardNodeUpdateList" },
-    /* 90 */ { 0, "CMP_OP_DB_ShardNodeUpdateListResult" },
+    /* 89 */ {-1, "CMP_OP_DB_ShardNodeUpdateList" },
+    /* 90 */ {-1, "CMP_OP_DB_ShardNodeUpdateListResult" },
     /* 91 */ { 1, "CMP_OP_DB_ShardNodeGetList" },
     /* 92 */ { 0, "CMP_OP_DB_ShardNodeGetListResult" },
     /* 93 */ { 1, "CMP_OP_DB_ShardHandshake" },
@@ -185,7 +185,9 @@ static ulnCmProtocolEntry gUlnCmProtocolTable[CMP_OP_DB_MAX + 1] =
     /*128*/  { 1, "CMP_OP_DB_PrepareV3" },
     /*129*/  { 1, "CMP_OP_DB_PrepareByCIDV3" },
     /*130*/  { 0, "CMP_OP_DB_PrepareV3Result" },
-    /*131*/  {-1, "CMP_OP_DB_MAX" }
+    /*131 */ { 1, "CMP_OP_DB_CheckShardMetaUpdateV3" },
+    /*132 */ { 0, "CMP_OP_DB_CheckShardMetaUpdateV3Result" },
+    /*133*/  {-1, "CMP_OP_DB_MAX" }
 };
 
 ACI_RC ulnWriteProtocol(ulnFnContext *aFnContext, ulnPtContext *aPtContext, cmiProtocol *aPacket)
@@ -661,11 +663,11 @@ ACI_RC ulnFlushProtocol(ulnFnContext *aFnContext, ulnPtContext *aPtContext)
 
     ACI_EXCEPTION(LABEL_CM_ERR)
     {
+        ulnErrorMgrSetCmError( sDbc, &sErrorMgr, aciGetErrorCode() );
+
 #ifdef COMPILE_SHARDCLI
         ulsdModuleOnCmError(aFnContext, sDbc, &sErrorMgr);
 #else
-        ulnErrorMgrSetCmError( sDbc, &sErrorMgr, aciGetErrorCode() );
-
         //PROJ-1645 UL FailOver.
         if (ulnFailoverDoSTF(aFnContext) == ACI_FAILURE)
         {

@@ -161,6 +161,8 @@ cmpOpMap gCmpOpDBMap[] =
     {"CMP_OP_DB_PrepareV3"                  },
     {"CMP_OP_DB_PrepareByCIDV3"             },
     {"CMP_OP_DB_PrepareV3Result"            },
+    {"CMP_OP_DB_CheckShardMetaUpdateV3"     },
+    {"CMP_OP_DB_CheckShardMetaUpdateV3Result"},
     {"CMP_OP_DB_MAX"                        }
 };
 

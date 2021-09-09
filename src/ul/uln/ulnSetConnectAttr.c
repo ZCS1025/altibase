@@ -1521,6 +1521,12 @@ static ACI_RC ulnSetConnAttr(ulnFnContext  *aFnContext,
             ulnDbcSetSentRebuildShardMetaNumber( sDbc, (acp_uint64_t)sValue );
             break;
 
+        case ULN_CONN_ATTR_SHARD_NODE_REMOVAL_CHECKER_CALLBACK:
+            ACI_TEST_RAISE( sDbc->mShardDbcCxt.mShardSessionType != ULSD_SESSION_TYPE_COORD,
+                            LABEL_CANNOT_BE_SET_NOW );
+            ulnDbcSetShardNodeRemovalCheckerContext( sDbc, (ulnShardNodeRemovalCheckerContext*) aValuePtr );
+            break;
+
             
         /*
          * Warning : 제품 릴리즈 이후 추가되는 서버-클라이언트 프로퍼티는 반드시

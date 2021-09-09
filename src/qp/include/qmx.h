@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmx.h 90270 2021-03-21 23:20:18Z bethy $
+ * $Id: qmx.h 91584 2021-09-03 07:55:16Z khkwak $
  **********************************************************************/
 
 #ifndef _Q_QMX_H_
@@ -343,6 +343,9 @@ public:
     /* PROJ-2714 Multiple Update Delete support */
     static IDE_RC executeMultiUpdate( qcStatement * aStatement );
     static IDE_RC executeMultiDelete( qcStatement * aStatement );
+
+    // BUG-48345 Lock procedure statement
+    static IDE_RC executeLockSP(qcStatement *aStatement);
 private:
 
     // delete on cascade 옵션에 의해 삭제되는 child table에 대한

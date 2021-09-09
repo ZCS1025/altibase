@@ -121,6 +121,7 @@ typedef enum ulnFuncId
     ULN_FID_TRIMLOB,
 
     ULN_FID_FOR_SD,
+    ULN_FID_RESHARD,
 
     ULN_FID_NONE
 } ulnFunctionId;

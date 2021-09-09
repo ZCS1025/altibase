@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcm.h 90861 2021-05-18 07:41:58Z jake.jang $
+ * $Id: qcm.h 91576 2021-09-02 06:39:41Z donghyun1 $
  **********************************************************************/
 
 #ifndef _O_QCM_H_
@@ -156,6 +156,7 @@ extern SChar      * gDBSequenceName[];
 #define QCM_REPL_RECOVERY_INFOS       "SYS_REPL_RECOVERY_INFOS_"
 #define QCM_REPL_OFFLINE_DIR          "SYS_REPL_OFFLINE_DIR_" //PROJ-1915
 #define QCM_REPL_ITEM_REPLACE_HISTORY         "SYS_REPL_ITEM_REPLACE_HISTORY_" 
+#define QCM_REPL_TABLE_OID_IN_USE     "SYS_REPL_TABLE_OID_IN_USE_"
 #define QCM_PROCEDURES                "SYS_PROCEDURES_"
 #define QCM_PROC_PARAS                "SYS_PROC_PARAS_"
 #define QCM_PROC_PARSE                "SYS_PROC_PARSE_"
@@ -330,6 +331,9 @@ extern SChar      * gDBSequenceName[];
 
 // Index Order for SYS_REPL_OLD_CHECK_COLUMNS_ 
 #define QCM_REPLOLDCHECKCOLUMNS_INDEX_NAME_OID_CID       (0)
+
+// Index Order for SYS_REPL_TABLE_OID_IN_USE_ 
+#define QCM_REPLTABLEOIDINUSE_INDEX_NAME_N_OLD_OID       (0)
 
 // Index Order for SYS_PROCEDURES_
 #define QCM_PROCEDURES_PROCNAME_USERID_IDX_ORDER         (0)
@@ -1017,6 +1021,11 @@ extern SChar      * gDBSequenceName[];
 #define QCM_REPLRECOVERY_REPLICATED_BEGIN_SN    (3)
 #define QCM_REPLRECOVERY_REPLICATED_COMMIT_SN   (4)
 
+// SYS_REPL_TABLE_OID_IN_USE_
+#define QCM_REPLTABLEOIDINUSE_REPLICATION_NAME  (0)
+#define QCM_REPLTABLEOIDINUSE_OLD_TABLE_OID     (1)
+#define QCM_REPLTABLEOIDINUSE_TABLE_OID         (2)
+
 /* PROJ-2240 */
 #define RP_COND_STATEMENT_MAX_LEN (16 + (QC_MAX_OBJECT_NAME_LEN * 2) + QC_CONDITION_LEN)
 
@@ -1379,6 +1388,9 @@ extern const void * gQcmReplRecoveryInfos;
 extern const void * gQcmReplOfflineDirs;
 
 extern const void * gQcmReplItemReplaceHistory;
+
+/* BUG-48603 TableOID in use */
+extern const void * gQcmReplTableOIDInUse;
 #endif
 
 extern const void * gQcmPrivileges;
@@ -1472,6 +1484,9 @@ extern const void * gQcmReplOldCheckColumnsIndex   [QCM_MAX_META_INDICES];
 extern const void * gQcmReplOfflineDirsIndex       [QCM_MAX_META_INDICES];
 
 extern const void * gQcmReplItemReplaceHistoryIndex       [QCM_MAX_META_INDICES];
+
+/* BUG-48603 TableOID in use */
+extern const void * gQcmReplTableOIDInUseIndex     [QCM_MAX_META_INDICES];
 #endif
 
 extern const void * gQcmProceduresIndex            [QCM_MAX_META_INDICES];

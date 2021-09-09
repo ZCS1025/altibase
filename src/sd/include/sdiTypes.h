@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdiTypes.h 91517 2021-08-24 01:25:47Z bethy $
+ * $Id: sdiTypes.h 91579 2021-09-02 09:21:23Z andrew.shin $
  *
  * Description : SD 및 타 모듈에서도 사용하는 자료구조 정의
  *
@@ -150,8 +150,9 @@ typedef enum
     SDI_NON_SHARD_GROUPING_SET_EXISTS          = 22, // Grouping Set 사용  됨
     SDI_NON_SHARD_PSM_BIND_EXISTS              = 23, // PSM 변수을 사용  됨
     SDI_NON_SHARD_PSM_LOB_EXISTS               = 24, // PSM LOB 변수을 사용  됨
-    SDI_UNKNOWN_REASON                         = 25,
-    SDI_NON_SHARD_QUERY_REASON_MAX             = 26
+    SDI_NON_DETERMINISTIC_EXISTS               = 25, /* BUG-48847 Non-deterministic for shard */
+    SDI_UNKNOWN_REASON                         = 26,
+    SDI_NON_SHARD_QUERY_REASON_MAX             = 27
 } sdiNonShardQueryReason;
 
 #define SDI_NON_SHARD_QUERY_REASONS            \
@@ -180,6 +181,7 @@ typedef enum
     (SChar*)"Non-shard grouping set exists.",\
     (SChar*)"Non-shard psm bind exists.",\
     (SChar*)"Non-shard psm lob bind exists.",\
+    (SChar*)"Non-deterministic DML",\
     (SChar*)"Unsupported statement type",\
     (SChar*)"Unexpected reason : reason max"\
 // 주의 : 마지막 reason 에는 ',' 를 생략할 것!
@@ -211,6 +213,7 @@ typedef enum
     _dst_[SDI_NON_SHARD_GROUPING_SET_EXISTS]          = ID_FALSE;  \
     _dst_[SDI_NON_SHARD_PSM_BIND_EXISTS]              = ID_FALSE;  \
     _dst_[SDI_NON_SHARD_PSM_LOB_EXISTS]               = ID_FALSE;  \
+    _dst_[SDI_NON_DETERMINISTIC_EXISTS]               = ID_FALSE;  \
     _dst_[SDI_UNKNOWN_REASON]                         = ID_FALSE;  \
 }
 
@@ -293,7 +296,8 @@ typedef enum
     SDI_INTERNAL_OP_FAILOVER  = 2,
     SDI_INTERNAL_OP_FAILBACK  = 3,
     SDI_INTERNAL_OP_DROPFORCE = 4,
-    SDI_INTERNAL_OP_MAX       = 5,
+    SDI_INTERNAL_OP_SHARD_PKG = 5,
+    SDI_INTERNAL_OP_MAX       = 6,
 } sdiInternalOperation;
 
 /* call function after transaction end */
@@ -335,7 +339,10 @@ typedef enum
     SDI_TQ_SUB_KEY_EXISTS            = 0, /* Sub-shard key를 가진 table이 참조 됨                     */
     SDI_TQ_PARTIAL_COORD_EXEC_NEEDED = 1, /* TASK-7219 Non-shard DML */
     SDI_TQ_FOR_UPDATE_EXISTS         = 2, /* BUG-49088 */
-    SDI_ANALYSIS_TOP_QUERY_FLAG_MAX  = 3, /* TOP QUERY SET 까지 전달이 필요한 경우, 이 위로 추가한다. */
+    SDI_TQ_NODE_META_KEYWORD_EXISTS  = 3, /* BUG-48847 Non-deterministic for shard */
+    SDI_TQ_LOCAL_OBJECT_EXISTS       = 4, /* BUG-48847 Non-deterministic for shard */
+    SDI_TQ_CLONE_NON_DETERMINISTIC   = 5, /* BUG-48847 Non-deterministic for shard */
+    SDI_ANALYSIS_TOP_QUERY_FLAG_MAX  = 6, /* TOP QUERY SET 까지 전달이 필요한 경우, 이 위로 추가한다. */
 } sdiTopQueryFlag;
 
 #define SDI_INIT_ANALYSIS_CUR_QUERY_FLAG( _dst_ )  \
@@ -352,11 +359,14 @@ typedef enum
     _dst_[ SDI_SQ_UNSUPPORTED ]        = ID_FALSE; \
 }
 
-#define SDI_INIT_ANALYSIS_TOP_QUERY_FLAG( _dst_ )          \
-{                                                          \
-    _dst_[ SDI_TQ_SUB_KEY_EXISTS ]             = ID_FALSE; \
-    _dst_[ SDI_TQ_PARTIAL_COORD_EXEC_NEEDED ]  = ID_FALSE; \
-    _dst_[ SDI_TQ_FOR_UPDATE_EXISTS ]          = ID_FALSE; \
+#define SDI_INIT_ANALYSIS_TOP_QUERY_FLAG( _dst_ )         \
+{                                                         \
+    _dst_[ SDI_TQ_SUB_KEY_EXISTS ]            = ID_FALSE; \
+    _dst_[ SDI_TQ_PARTIAL_COORD_EXEC_NEEDED ] = ID_FALSE; \
+    _dst_[ SDI_TQ_FOR_UPDATE_EXISTS ]         = ID_FALSE; \
+    _dst_[ SDI_TQ_NODE_META_KEYWORD_EXISTS ]  = ID_FALSE; \
+    _dst_[ SDI_TQ_LOCAL_OBJECT_EXISTS ]       = ID_FALSE; \
+    _dst_[ SDI_TQ_CLONE_NON_DETERMINISTIC ]   = ID_FALSE; \
 }
 
 #define SDI_INIT_ANALYSIS_FLAG( _dst_ )                          \
