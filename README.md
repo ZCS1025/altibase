@@ -8,7 +8,6 @@
 ![image](https://user-images.githubusercontent.com/85087821/132642200-91412403-9e06-47d4-b88c-fcbe18eeeb09.png)
 https://altibase.com/en/learn/download.php
 
-
 ### Features and Functions
 
 ![image](https://user-images.githubusercontent.com/85087821/132639866-159bf8b0-3433-4f68-96ea-c972e5a03395.png)
