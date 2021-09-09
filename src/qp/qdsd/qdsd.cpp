@@ -333,6 +333,12 @@ IDE_RC qdsd::executeShardAdd( qcStatement * aStatement )
               != IDE_SUCCESS );
 
     /***********************************************************************
+     * TASK-7307 DML Data Consistency in Shard
+     *   SYSTEM_.SYS_TABLES_.SHARD_FLAG 업데이트
+     ***********************************************************************/
+    IDE_TEST( executeAlterShardFlag( aStatement ) != IDE_SUCCESS );
+    
+    /***********************************************************************
      * backup table no item create replication
      ***********************************************************************/
     IDE_TEST( executeReplicationFunction( aStatement,
@@ -365,12 +371,6 @@ IDE_RC qdsd::executeShardAdd( qcStatement * aStatement )
                                           QDSD_REPL_QUERY_TYPE_FLUSH )
               != IDE_SUCCESS );
 
-    /***********************************************************************
-     * TASK-7307 DML Data Consistency in Shard
-     *   SYSTEM_.SYS_TABLES_.SHARD_FLAG 업데이트
-     ***********************************************************************/
-    IDE_TEST( executeAlterShardFlag( aStatement ) != IDE_SUCCESS );
-    
     /***********************************************************************
      * execute add clone
      ***********************************************************************/
@@ -10933,7 +10933,8 @@ IDE_RC qdsd::failbackResetShardMeta( qcStatement        * aStatement,
                         IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
                                                     sTableInfo->mDefaultNodeId,
                                                     aSMN,
-                                                    &sNode )
+                                                    &sNode,
+                                                    ID_TRUE )
                                   != IDE_SUCCESS );
 
                         /* Send resetShardPartitioinNode to All Alive Node */
@@ -11015,7 +11016,8 @@ IDE_RC qdsd::failbackResetShardMeta( qcStatement        * aStatement,
                             IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
                                                         sRangeInfos.mRanges[j].mNodeId,
                                                         aSMN,
-                                                        &sNode )
+                                                        &sNode,
+                                                        ID_TRUE )
                                       != IDE_SUCCESS );
 
                             switch ( sShardTableType )
@@ -13552,26 +13554,20 @@ IDE_RC qdsd::executeAlterShardFlag( qcStatement        * aStatement )
             switch ( sShardTableType )
             {
                 case SDI_SINGLE_SHARD_KEY_DIST_OBJECT:
-                    IDE_TEST( executeLocalSQL( aStatement, 
-                                               QCI_STMT_MASK_DDL,
-                                               sSqlStr,
-                                               QD_MAX_SQL_LENGTH,
-                                               "alter table "QCM_SQL_STRING_SKIP_FMT"."QCM_SQL_STRING_SKIP_FMT" shard split",
-                                               sTableInfo->mUserName,
-                                               sTableInfo->mObjectName )
-                              != IDE_SUCCESS );
+                    idlOS::snprintf( sSqlStr,
+                                     QD_MAX_SQL_LENGTH,
+                                     "alter table "QCM_SQL_STRING_SKIP_FMT"."QCM_SQL_STRING_SKIP_FMT" shard split",
+                                     sTableInfo->mUserName,
+                                     sTableInfo->mObjectName );
                     break;
                 case SDI_COMPOSITE_SHARD_KEY_DIST_OBJECT:
                     continue;
                 case SDI_SOLO_DIST_OBJECT:
-                    IDE_TEST( executeLocalSQL( aStatement, 
-                                               QCI_STMT_MASK_DDL,
-                                               sSqlStr,
-                                               QD_MAX_SQL_LENGTH,
-                                               "alter table "QCM_SQL_STRING_SKIP_FMT"."QCM_SQL_STRING_SKIP_FMT" shard solo",
-                                               sTableInfo->mUserName,
-                                               sTableInfo->mObjectName )
-                              != IDE_SUCCESS );
+                    idlOS::snprintf( sSqlStr,
+                                     QD_MAX_SQL_LENGTH,
+                                     "alter table "QCM_SQL_STRING_SKIP_FMT"."QCM_SQL_STRING_SKIP_FMT" shard solo",
+                                     sTableInfo->mUserName,
+                                     sTableInfo->mObjectName );
                     break;
                 case SDI_CLONE_DIST_OBJECT:
                     idlOS::snprintf( sSqlStr,
@@ -13580,20 +13576,6 @@ IDE_RC qdsd::executeAlterShardFlag( qcStatement        * aStatement )
                                      sTableInfo->mUserName,
                                      sTableInfo->mObjectName );
 
-                    IDE_TEST( sdi::shardExecTempDMLOrDCLWithNewTrans( aStatement,
-                                                                      sSqlStr )
-                              != IDE_SUCCESS );
-
-                    // 실패 시 revert 처리
-                    idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
-                                     "alter table "QCM_SQL_STRING_SKIP_FMT"."QCM_SQL_STRING_SKIP_FMT" shard none",
-                                     sTableInfo->mUserName,
-                                     sTableInfo->mObjectName );
-
-                    (void)sdiZookeeper::addPendingJob( sSqlStr,
-                                                       sLocalMetaInfo.mNodeName,
-                                                       ZK_PENDING_JOB_AFTER_ROLLBACK,
-                                                       QCI_STMT_MASK_DDL );
                     break;
                 case SDI_NON_SHARD_OBJECT:
                 default:
@@ -13602,19 +13584,34 @@ IDE_RC qdsd::executeAlterShardFlag( qcStatement        * aStatement )
                     break;
             }
 
+            IDE_TEST( sdi::shardExecTempDMLOrDCLWithNewTrans( aStatement,
+                                                              sSqlStr )
+                      != IDE_SUCCESS );
+
+            // 실패 시 revert 처리
+            idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                             "alter table "QCM_SQL_STRING_SKIP_FMT"."QCM_SQL_STRING_SKIP_FMT" shard none",
+                             sTableInfo->mUserName,
+                             sTableInfo->mObjectName );
+
+            (void)sdiZookeeper::addPendingJob( sSqlStr,
+                                               sLocalMetaInfo.mNodeName,
+                                               ZK_PENDING_JOB_AFTER_ROLLBACK,
+                                               QCI_STMT_MASK_DDL );
+
             /* Default Partition check */
             if ( ( sTableInfo->mDefaultNodeId == sLocalMetaInfo.mShardNodeId ) &&
                  ( sShardTableType == SDI_SINGLE_SHARD_KEY_DIST_OBJECT ) )
             {
-                IDE_TEST( executeLocalSQL( aStatement, 
-                                           QCI_STMT_MASK_DDL,
-                                           sSqlStr,
-                                           QD_MAX_SQL_LENGTH,
-                                           "alter table "QCM_SQL_STRING_SKIP_FMT"."QCM_SQL_STRING_SKIP_FMT" access partition "QCM_SQL_STRING_SKIP_FMT" usable",
-                                           sTableInfo->mUserName,
-                                           sTableInfo->mObjectName,
-                                           sTableInfo->mDefaultPartitionName )
-                      != IDE_SUCCESS );
+                idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                                 "alter table "QCM_SQL_STRING_SKIP_FMT"."QCM_SQL_STRING_SKIP_FMT" access partition "QCM_SQL_STRING_SKIP_FMT" usable",
+                                 sTableInfo->mUserName,
+                                 sTableInfo->mObjectName,
+                                 sTableInfo->mDefaultPartitionName );
+
+                IDE_TEST( sdi::shardExecTempDMLOrDCLWithNewTrans( aStatement,
+                                                                  sSqlStr )
+                          != IDE_SUCCESS );
             }
             else
             {
@@ -14277,7 +14274,8 @@ IDE_RC qdsd::syncFailbackData( qcStatement        * aStatement,
                                 IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
                                                             sTableInfo->mDefaultNodeId,
                                                             aSMN,
-                                                            &sNode )
+                                                            &sNode,
+                                                            ID_TRUE )
                                           != IDE_SUCCESS );
 
                                 if ( idlOS::strncmp( aFromNodeName,
@@ -14331,7 +14329,8 @@ IDE_RC qdsd::syncFailbackData( qcStatement        * aStatement,
                                     IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
                                                                 sRangeInfos.mRanges[j].mNodeId,
                                                                 aSMN,
-                                                                &sNode )
+                                                                &sNode,
+                                                                ID_TRUE )
                                               != IDE_SUCCESS );
 
                                     if ( idlOS::strncmp( aFromNodeName,
@@ -14491,7 +14490,8 @@ IDE_RC qdsd::syncFailbackData( qcStatement        * aStatement,
                                 IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
                                                             sTableInfo->mDefaultNodeId,
                                                             aSMN,
-                                                            &sNode )
+                                                            &sNode,
+                                                            ID_TRUE )
                                           != IDE_SUCCESS );
 
                                 if ( idlOS::strncmp( aFromNodeName,
@@ -14582,7 +14582,8 @@ IDE_RC qdsd::syncFailbackData( qcStatement        * aStatement,
                                     IDE_TEST( sdm::getNodeByID( QC_SMI_STMT( aStatement ),
                                                                 sRangeInfos.mRanges[j].mNodeId,
                                                                 aSMN,
-                                                                &sNode )
+                                                                &sNode,
+                                                                ID_TRUE )
                                               != IDE_SUCCESS );
 
                                     if ( idlOS::strncmp( aFromNodeName,
