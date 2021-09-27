@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmgDef.h 90785 2021-05-06 07:26:22Z hykim $
+ * $Id: qmgDef.h 91651 2021-09-09 07:00:27Z donovan.seo $
  *
  * Description :
  *     Graph 공통 정보에 대한 자료 구조 정의
@@ -159,10 +159,6 @@
 #define QMG_JOIN_RIGHT_MASK                  (0x00040000)
 #define QMG_JOIN_RIGHT_TRUE                  (0x00040000)
 #define QMG_JOIN_RIGHT_FALSE                 (0x00000000)
-
-#define QMG_VIEW_PUSH_MASK                   (0x00080000)
-#define QMG_VIEW_PUSH_TRUE                   (0x00080000)
-#define QMG_VIEW_PUSH_FALSE                  (0x00000000)
 
 // PROJ-2750
 #define QMG_LOJN_SKIP_RIGHT_COND_MASK        (0x00100000)

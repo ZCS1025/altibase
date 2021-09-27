@@ -9729,3 +9729,76 @@ IDE_RC qci::setShardPartialExecType( qciStatement            * aStatement,
     
     return IDE_SUCCESS;
 }
+
+/* BUG-48605 */
+idBool qci::isUtlCopySwapPkg( qciStatement * aStatement )
+{
+    qcStatement * sStatement = &aStatement->statement;
+    idBool        sResult = ID_FALSE;
+    
+    if (( sStatement->mFlag & QC_STMT_UTL_COPYSWAP_PKG_MASK )
+        == QC_STMT_UTL_COPYSWAP_PKG_TRUE )
+    {
+        sResult = ID_TRUE;
+    }
+    else
+    {
+        sResult = ID_FALSE;
+    }
+
+    return sResult;
+}
+
+IDE_RC qci::setPropertyForSwapTable( qciStatement *aStatement )
+{
+    qcStatement * sStatement = &aStatement->statement;
+    SChar         sSqlStr[QD_MAX_SQL_LENGTH + 1];
+
+    if ( QCG_GET_SESSION_TRANSACTIONAL_DDL( sStatement) == ID_TRUE )
+    {
+        sStatement->session->mBakSessionProperty.mTransactionalDDL = 1;
+    }
+    else
+    {
+        sStatement->session->mBakSessionProperty.mTransactionalDDL = 0;
+    }
+    
+    if ( QCG_GET_SESSION_TRANSACTIONAL_DDL( sStatement) != ID_TRUE )
+    {   
+        idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                         "ALTER SESSION SET TRANSACTIONAL_DDL = 1 " );
+
+        IDE_TEST( qciMisc::runDCLforInternal( sStatement,
+                                              sSqlStr,
+                                              sStatement->session->mMmSession )
+                  != IDE_SUCCESS );
+    }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+    
+    return IDE_FAILURE;
+}
+
+IDE_RC qci::revertPropertyForSwapTable( qciStatement *aStatement )
+{
+    qcStatement * sStatement = &aStatement->statement;
+    SChar         sSqlStr[QD_MAX_SQL_LENGTH + 1];
+
+    idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
+                     "ALTER SESSION SET TRANSACTIONAL_DDL = %"ID_INT32_FMT" ",
+                     sStatement->session->mBakSessionProperty.mTransactionalDDL );
+
+    IDE_TEST( qciMisc::runDCLforInternal( sStatement,
+                                          sSqlStr,
+                                          sStatement->session->mMmSession )
+              != IDE_SUCCESS );
+
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+

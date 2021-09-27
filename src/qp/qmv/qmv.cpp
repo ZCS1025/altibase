@@ -15,7 +15,7 @@
  */
 
 /***********************************************************************
- * $Id: qmv.cpp 91627 2021-09-08 01:47:35Z ahra.cho $
+ * $Id: qmv.cpp 91655 2021-09-09 23:52:25Z bethy $
  **********************************************************************/
 
 #include <idl.h>
@@ -6103,6 +6103,10 @@ IDE_RC qmv::validateLockTable(qcStatement * aStatement)
 
     sParseTree = (qmmLockParseTree*) aStatement->myPlan->parseTree;
 
+    /* BUG-48605 */
+    IDE_TEST_RAISE( ( sParseTree->untilNextDDL == ID_TRUE ) &&
+                    ( SDU_SHARD_ENABLE == 1 ), ERR_SHARD_ENABLE );
+
     IDE_TEST(
         qcmSynonym::resolveTableViewQueue(
             aStatement,
@@ -6212,6 +6216,11 @@ IDE_RC qmv::validateLockTable(qcStatement * aStatement)
     
     return IDE_SUCCESS;
 
+    IDE_EXCEPTION( ERR_SHARD_ENABLE );
+    {
+        IDE_SET( ideSetErrorCode( qpERR_ABORT_QDSD_INSUFFICIENT_ATTRIBUTE,
+                                "SHARD_ENABLE = 1" ) );
+    }
     IDE_EXCEPTION(ERR_NOT_EXIST_TABLE);
     {
         (void)sqlInfo.init(aStatement->qmeMem);

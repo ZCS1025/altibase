@@ -15,7 +15,7 @@
  */
 
 /***********************************************************************
- * $Id: qmvQuerySet.cpp 91627 2021-09-08 01:47:35Z ahra.cho $
+ * $Id: qmvQuerySet.cpp 91656 2021-09-10 01:38:30Z jayce.park $
  **********************************************************************/
 
 #include <idl.h>
@@ -5398,6 +5398,22 @@ IDE_RC qmvQuerySet::validateView(
             // inline view validation
             IDE_TEST(qmv::validateSelect(aTableRef->view) != IDE_SUCCESS);
 
+            /* BUG-48957 Target convertion for created view definition */
+            if ( ( SDU_SHARD_ENABLE == 1 ) &&
+                 ( ( aTableRef->flag & QMS_TABLE_REF_CREATED_VIEW_MASK )
+                   == QMS_TABLE_REF_CREATED_VIEW_TRUE ) )
+            {
+                /* Created view는 view table에 column type이 정의되어 있기 때문에
+                 * View의 수행 결과가 해당 view table 의 column type으로 생성 되도록
+                 * Cast node를 붙여준다.
+                 */
+                IDE_TEST( makeConvertedTargetForCreatedView ( aStatement,
+                                                              aTableRef->tableInfo->columns,
+                                                              ((qmsParseTree*)aTableRef->view->myPlan->parseTree)->querySet )
+                          != IDE_SUCCESS );
+
+            }
+
             // for fixing BUG-6096
             // re-set current session userID
             QCG_SET_SESSION_USER_ID( aStatement, sSessionUserID );
@@ -9561,6 +9577,48 @@ IDE_RC qmvQuerySet::convertAnsiInnerJoin( qcStatement * aStatement,
 
     /* TASK-7219 */
     IDE_EXCEPTION_CONT( NORMAL_EXIT );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
+
+IDE_RC qmvQuerySet::makeConvertedTargetForCreatedView( qcStatement * aStatement,
+                                                       qcmColumn   * aColumns,
+                                                       qmsQuerySet * aQuerySet )
+{
+    qcmColumn * sColumnInfo = NULL;
+    qmsTarget * sTarget     = NULL;
+
+    if ( aQuerySet->setOp == QMS_NONE )
+    {
+        for ( sColumnInfo = aColumns,
+                  sTarget = aQuerySet->target;
+              ( sColumnInfo != NULL ) && ( sTarget != NULL );
+              sColumnInfo = sColumnInfo->next,
+                  sTarget = sTarget->next )
+        {
+            IDE_TEST( qtc::makeConversionNode( sTarget->targetColumn,
+                                               aStatement,
+                                               QC_SHARED_TMPLATE(aStatement),
+                                               sColumnInfo->basicInfo->module )
+                      != IDE_SUCCESS );
+        }
+    }
+    else
+    {
+        IDE_TEST( makeConvertedTargetForCreatedView( aStatement,
+                                                     aColumns,
+                                                     aQuerySet->left )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( makeConvertedTargetForCreatedView( aStatement,
+                                                     aColumns,
+                                                     aQuerySet->right )
+                  != IDE_SUCCESS );
+    }
 
     return IDE_SUCCESS;
 

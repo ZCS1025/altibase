@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qc.h 91627 2021-09-08 01:47:35Z ahra.cho $
+ * $Id: qc.h 91655 2021-09-09 23:52:25Z bethy $
  **********************************************************************/
 
 #ifndef _O_QC_H_
@@ -342,6 +342,12 @@ typedef struct qcCondValueCharBuffer {
 #define QC_STMT_VIEW_MASK                    (0x00001000)
 #define QC_STMT_VIEW_FALSE                   (0x00000000)
 #define QC_STMT_VIEW_TRUE                    (0x00001000)
+
+/* BUG-48605 */
+// qcStatement.mFlag
+#define QC_STMT_UTL_COPYSWAP_PKG_MASK        (0x00002000)
+#define QC_STMT_UTL_COPYSWAP_PKG_FALSE       (0x00000000)
+#define QC_STMT_UTL_COPYSWAP_PKG_TRUE        (0x00002000)
 
 // for qcSession.flag
 #define QC_SESSION_ALTER_META_MASK           (0x00000001)
