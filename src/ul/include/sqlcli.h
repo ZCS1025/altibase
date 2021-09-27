@@ -297,7 +297,7 @@ extern "C" {
 /* Shard meta information is changed */
 #define ALITBASE_SHARD_META_INFO_CHANGED     0x5121f
 
-#define ALTIBASE_DISTRIBUTED_DEADLOCK_DETECTED 0x111b6
+#define ALTIBASE_DISTRIBUTED_DEADLOCK_DETECTED 0x111b7
 
 /* Options for SQL_CURSOR_HOLD */
 #define SQL_CURSOR_HOLD_ON        1
