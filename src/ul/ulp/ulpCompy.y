@@ -477,6 +477,8 @@ extern int COMPlineno;
 %token TA_LINKER                    /* BUG-37100 */
 %token TA_REMOTE_TABLE              /* BUG-37100 */
 %token TA_SHARD                     /* PROJ-2638 */
+%token TA_NODE_META                 /* BUG-49055 */
+%token TA_NODE_DATA                 /* BUG-49055 */
 %token TA_DISJOIN                   /* PROJ-1810 Partition Exchange */   
 %token TA_CONJOIN                   /* BUG-42468 JOIN TO CONJOIN */
 /* BUG-45502 */
@@ -4388,8 +4390,10 @@ sql_stmt
 direct_sql_stmt
     /* session parameter */
     : alter_session_set_statement
+    | shard_stmt_spec alter_session_set_statement
     /* system */
     | alter_system_statement
+    | shard_stmt_spec alter_system_statement
     /* set */
     | set_statement
     /* transaction */
@@ -4502,6 +4506,26 @@ indirect_sql_stmt
                                                 $<strval>1)
                                );
     }
+    /* DELETE FOR SHARD with pre clause */
+    | pre_clause shard_stmt_spec delete_statement
+    {
+        gUlpStmttype = S_DirectDML;
+
+        gUlpCodeGen.ulpGenEmSQL( GEN_QUERYSTR,
+                                 idlOS::strstr( gUlpCodeGen.ulpGetQueryBuf(),
+                                                $<strval>2)
+                               );
+    }
+    /* DELETE FOR SHARD */
+    | shard_stmt_spec delete_statement
+    {
+        gUlpStmttype = S_DirectDML;
+
+        gUlpCodeGen.ulpGenEmSQL( GEN_QUERYSTR,
+                                 idlOS::strstr( gUlpCodeGen.ulpGetQueryBuf(),
+                                                $<strval>1)
+                               );
+    }
     /* INSERT */
     | pre_clause insert_statement
     {
@@ -4524,6 +4548,28 @@ indirect_sql_stmt
                                );
 
     }
+    /* INSERT FOR SHARD with pre clause */
+    | pre_clause shard_stmt_spec insert_statement
+    {
+        gUlpStmttype = S_DirectDML;
+
+        gUlpCodeGen.ulpGenEmSQL( GEN_QUERYSTR,
+                                 idlOS::strstr( gUlpCodeGen.ulpGetQueryBuf(),
+                                                $<strval>2)
+                               );
+
+    }
+    /* INSERT FOR SHARD */
+    | shard_stmt_spec insert_statement
+    {
+        gUlpStmttype = S_DirectDML;
+
+        gUlpCodeGen.ulpGenEmSQL( GEN_QUERYSTR,
+                                 idlOS::strstr( gUlpCodeGen.ulpGetQueryBuf(),
+                                                $<strval>1)
+                               );
+
+    }
     /* UPDATE */
     | pre_clause update_statement
     {
@@ -4537,6 +4583,28 @@ indirect_sql_stmt
     }
     /* UPDATE */
     | update_statement
+    {
+        gUlpStmttype = S_DirectDML;
+
+        gUlpCodeGen.ulpGenEmSQL( GEN_QUERYSTR,
+                                 idlOS::strstr( gUlpCodeGen.ulpGetQueryBuf(),
+                                                $<strval>1)
+                               );
+
+    }
+    /* UPDATE FOR SHARD with pre clause */
+    | pre_clause shard_stmt_spec update_statement
+    {
+        gUlpStmttype = S_DirectDML;
+
+        gUlpCodeGen.ulpGenEmSQL( GEN_QUERYSTR,
+                                 idlOS::strstr( gUlpCodeGen.ulpGetQueryBuf(),
+                                                $<strval>2)
+                               );
+
+    }
+    /* UPDATE FOR SHARD */
+    | shard_stmt_spec update_statement
     {
         gUlpStmttype = S_DirectDML;
 
@@ -4570,6 +4638,17 @@ indirect_sql_stmt
     }
     /* SELECT */
     | select_or_with_select_statement_4emsql opt_for_update_clause opt_with_read_only
+    {
+        gUlpStmttype = S_DirectSEL;
+
+        gUlpCodeGen.ulpGenEmSQL( GEN_QUERYSTR,
+                                 idlOS::strstr( gUlpCodeGen.ulpGetQueryBuf(),
+                                                $<strval>1)
+                               );
+
+    }
+    /* SELECT FOR SHARD */
+    | shard_stmt_spec select_or_with_select_statement_4emsql opt_for_update_clause opt_with_read_only
     {
         gUlpStmttype = S_DirectSEL;
 
@@ -7055,12 +7134,17 @@ delete_statement
 insert_statement 
   : TR_INSERT opt_hints TR_INTO dml_table_reference opt_as_name TR_DEFAULT TR_VALUES
   | TR_INSERT opt_hints TR_INTO dml_table_reference opt_as_name
-    opt_table_column_commalist TR_VALUES multi_rows_list
+      opt_table_column_commalist TR_VALUES multi_rows_list
   | TR_INSERT opt_hints TR_INTO dml_table_reference opt_as_name
-  select_or_with_select_statement
+      select_or_with_select_statement
+  | TR_INSERT opt_hints TR_INTO dml_table_reference opt_as_name
+      shard_stmt_spec select_or_with_select_statement
   | TR_INSERT opt_hints TR_INTO dml_table_reference opt_as_name
       TS_OPENING_PARENTHESIS table_column_commalist TS_CLOSING_PARENTHESIS
       select_or_with_select_statement
+  | TR_INSERT opt_hints TR_INTO dml_table_reference opt_as_name
+      TS_OPENING_PARENTHESIS table_column_commalist TS_CLOSING_PARENTHESIS
+      shard_stmt_spec select_or_with_select_statement
   | TR_INSERT opt_hints TR_ALL multi_insert_value_list
       select_or_with_select_statement
   ;
@@ -7482,12 +7566,33 @@ sel_from_table_reference
   | object_name opt_partition_name opt_pivot_or_unpivot_clause opt_as_name
   | TS_OPENING_PARENTHESIS select_or_with_select_statement TS_CLOSING_PARENTHESIS opt_pivot_or_unpivot_clause opt_as_name
   | TA_REMOTE_TABLE TS_OPENING_PARENTHESIS object_name TS_COMMA SES_V_LITERAL TS_CLOSING_PARENTHESIS opt_as_name                              /* BUG-37100 */
-  | TA_SHARD TS_OPENING_PARENTHESIS select_or_with_select_statement TS_CLOSING_PARENTHESIS opt_as_name  /* PROJ-2638 */
+  | shard_stmt_spec TS_OPENING_PARENTHESIS select_or_with_select_statement TS_CLOSING_PARENTHESIS opt_as_name  /* PROJ-2638 */
   | object_name TS_AT_SIGN object_name opt_as_name     /* BUG-37100 */
   | joined_table
   | TR_TABLE TS_OPENING_PARENTHESIS table_func_argument TS_CLOSING_PARENTHESIS opt_as_name
   | dump_object_table
   ;
+
+shard_stmt_spec
+    : TA_SHARD
+    | TA_NODE_META
+    | TA_NODE_DATA node_data_spec 
+    ;
+
+node_data_spec
+    : TS_CLOSING_BRACKET
+    | TS_OPENING_PARENTHESIS TS_CLOSING_PARENTHESIS TS_CLOSING_BRACKET
+    | TS_OPENING_PARENTHESIS shard_node_commalist TS_CLOSING_PARENTHESIS TS_CLOSING_BRACKET
+    ;
+
+shard_node_commalist
+    : shard_node_commalist TS_COMMA shard_node_element
+    | shard_node_element
+    ;
+
+shard_node_element
+    : SES_V_LITERAL
+    ;
 
 table_func_argument
   : unified_invocation
@@ -8916,9 +9021,13 @@ SP_label_statement
 
 SP_sql_statement
     : SP_select_or_with_select_statement opt_for_update_clause TS_SEMICOLON
+    | shard_stmt_spec SP_select_or_with_select_statement opt_for_update_clause TS_SEMICOLON
     | insert_statement TS_SEMICOLON
+    | shard_stmt_spec insert_statement TS_SEMICOLON
     | update_statement TS_SEMICOLON
+    | shard_stmt_spec update_statement TS_SEMICOLON
     | delete_statement TS_SEMICOLON
+    | shard_stmt_spec delete_statement TS_SEMICOLON
     | merge_statement TS_SEMICOLON
     | move_statement TS_SEMICOLON
     | enqueue_statement TS_SEMICOLON
