@@ -3423,6 +3423,14 @@ post_install.sh
 install
 post_install.sh
 
+#NSTALL SCRIPT - set the link to ncurses
+#0755 ./tool/make_link.sh                         .,/install/make_link.sh
+[^*-WINDOWS-*-*][*][*][*][*][0755][*]
+tool/install
+make_link.sh
+install
+make_link.sh
+
 # ERROR Relative
 #0755 ./tool/altierr/altierr                            ./bin/altierr
 [*][*][*][*][*][0755][*]

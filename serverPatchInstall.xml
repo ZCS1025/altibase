@@ -955,6 +955,12 @@ ${kernel_guide_val}
                 </platformTest>
             </ruleList>
         </actionGroup>
+
+        <runProgram>
+            <program>${installdir}/install/make_link.sh</program>
+            <programArguments></programArguments>
+        </runProgram>
+
     </postInstallationActionList>
     <preUninstallationActionList>
         <actionGroup>
