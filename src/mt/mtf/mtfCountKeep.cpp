@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfCountKeep.cpp 90192 2021-03-12 02:01:03Z jayce.park $
+ * $Id: mtfCountKeep.cpp 91741 2021-09-27 00:50:01Z donovan.seo $
  **********************************************************************/
 
 #include <mte.h>
@@ -205,65 +205,7 @@ IDE_RC mtfCountKeepEstimate( mtcNode     * aNode,
         }
         else
         {
-            // BUG-38416 CountKeep(column) to CountKeep(*)
-            if ( MTU_COUNT_COLUMN_TO_COUNT_ASTAR == 1 )
-            {
-                if ( (aNode->lflag & MTC_NODE_DISTINCT_MASK)
-                    == MTC_NODE_DISTINCT_TRUE )
-                {
-                    sTransForm = ID_FALSE;
-                }
-                else
-                {
-                    // Nothing to do.
-                }
-
-                if ( ( ( aTemplate->rows[aNode->arguments->table].lflag & MTC_TUPLE_VIEW_MASK )
-                       == MTC_TUPLE_VIEW_TRUE ) ||
-                     ( idlOS::strncmp((SChar*)aNode->arguments->module->names->string,
-                       (const SChar*)"COLUMN", 6 ) != 0 ) )
-                {
-                    sTransForm = ID_FALSE;
-                }
-                else
-                {
-                    // Nothing to do.
-                }
-
-                if ( (aStack[1].column->flag & MTC_COLUMN_NOTNULL_MASK) ==
-                    MTC_COLUMN_NOTNULL_FALSE )
-                {
-                    sTransForm = ID_FALSE;
-                }
-                else
-                {
-                    // Nothing to do.
-                }
-            }
-            else
-            {
-                sTransForm = ID_FALSE;
-            }
-
-            if ( sTransForm == ID_TRUE )
-            {
-                aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecuteAsterisk;
-
-                aNode->arguments = NULL;
-                aNode->lflag    &= ~MTC_NODE_ARGUMENT_COUNT_MASK;
-
-                // BUG-39537 CountKeep(*) 와 동일한 flag로 설정한다.
-                aNode->lflag &= ~MTC_NODE_QUANTIFIER_MASK;
-                aNode->lflag |= MTC_NODE_QUANTIFIER_TRUE;
-
-                // BUG-38935 인자가 최적화에 의해 제거되었음
-                aNode->lflag &= ~MTC_NODE_REMOVE_ARGUMENTS_MASK;
-                aNode->lflag |= MTC_NODE_REMOVE_ARGUMENTS_TRUE;
-            }
-            else
-            {
-                aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
-            }
+            aTemplate->rows[aNode->table].execute[aNode->column] = mtfExecute;
         }
     }
 
