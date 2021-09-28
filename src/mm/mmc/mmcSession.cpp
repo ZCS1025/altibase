@@ -34,7 +34,6 @@
 #include <mmcPlanCache.h>
 #include <mtz.h>
 #include <mmuAccessList.h>
-
 #include <dki.h>
 
 typedef IDE_RC (*mmcSessionSetFunc)(mmcSession *aSession, SChar *aValue);
