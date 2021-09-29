@@ -1921,8 +1921,6 @@ IDE_RC sdptbSpaceDDL::alterOnlineCommitPending(
                                           sctTableSpaceNode * aSpaceNode,
                                           sctPendingOp      * aPendingOp )
 {
-    sdpActOnlineArgs  sActionArgs;
-
     // 여기 들어오는 Tablespace는 항상 Disk Tablespace여야 한다.
     IDE_ASSERT( sctTableSpaceMgr::isDiskTableSpace( aSpaceNode->mID )
                 == ID_TRUE );
@@ -1947,10 +1945,8 @@ IDE_RC sdptbSpaceDDL::alterOnlineCommitPending(
         //        TBS 상태를 ONLINE으로 변경한 후에 Index Header Rebuilding을
         //        수행하여야 데이타파일에 Read를 수행할 수 있다.
 
-        sActionArgs.mTrans = NULL;
-
         IDE_TEST( smLayerCallback::alterTBSOnline4Tables( aStatistics,
-                                                          (void*)&sActionArgs,
+                                                          NULL,
                                                           aSpaceNode->mID )
                   != IDE_SUCCESS );
 
