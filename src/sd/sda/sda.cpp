@@ -1958,7 +1958,7 @@ IDE_RC sda::analyzeSFWGHCore( qcStatement      * aStatement,
     sdaCNFList * sCNFList          = NULL;
     qmsFrom    * sFrom             = NULL;
     idBool       sIsOneNodeSQL     = ID_TRUE;
-    UInt         sDistKeyCount     = 0;
+    UInt         sInabilityJoinCount = 0; /* BUG-49276 */
     qmsTarget  * sTarget           = NULL;
 
     /* BUG-48847 Non-deterministic for shard */
@@ -2011,8 +2011,18 @@ IDE_RC sda::analyzeSFWGHCore( qcStatement      * aStatement,
         IDE_TEST( isOneNodeSQL( sShardFromInfo,
                                 NULL,
                                 &sIsOneNodeSQL,
-                                &sDistKeyCount )
+                                &sInabilityJoinCount )
                   != IDE_SUCCESS );
+
+        /* BUG-49276 */
+        if ( sInabilityJoinCount != 0 )
+        {
+            aQuerySetAnalysis->mAnalysisFlag.mNonShardFlag[ SDI_NODE_TO_NODE_JOIN_EXISTS ] = ID_TRUE;
+        }
+        else
+        {
+            /* Nothing to do. */
+        }
 
         if ( sIsOneNodeSQL == ID_FALSE )
         {
@@ -11034,6 +11044,10 @@ IDE_RC sda::isOneNodeSQL( sdaFrom      * aShardFrom,
     sdiKeyInfo * sCurrKeyInfo   = NULL;
     UInt         sExecNodeCntPrediction = 0;
 
+    /* BUG-49276 */
+    UShort       sKeepTupleId = ID_USHORT_MAX;
+    idBool       sShardFromWithNoKeyExists = ID_FALSE;
+
     *aDistKeyCount = 0;
     *aIsOneNodeSQL = ID_TRUE;
 
@@ -11058,6 +11072,33 @@ IDE_RC sda::isOneNodeSQL( sdaFrom      * aShardFrom,
                  * SDI_SPLIT_NODES
                  */
                 *aIsOneNodeSQL = ID_FALSE;
+
+                /* BUG-49276 */
+                if ( sCurrShardFrom->mKeyCount == 0 )
+                {
+                    sShardFromWithNoKeyExists = ID_TRUE;
+                }
+                else
+                {
+                    /* Nothing to do. */
+                }
+
+                if ( sKeepTupleId == ID_USHORT_MAX )
+                {
+                    sKeepTupleId = sCurrShardFrom->mTupleId;
+                }
+                else
+                {
+                    if ( ( sKeepTupleId != sCurrShardFrom->mTupleId ) &&
+                         ( sShardFromWithNoKeyExists == ID_TRUE ) )
+                    {
+                        (*aDistKeyCount)++;
+                    }
+                    else
+                    {
+                        /* Nothing to do. */
+                    }
+                }
             }
             else
             {
