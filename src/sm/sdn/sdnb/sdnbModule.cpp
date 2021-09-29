@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdnbModule.cpp 91592 2021-09-06 01:26:48Z emlee $
+ * $Id: sdnbModule.cpp 91766 2021-09-29 08:07:37Z justin.kwon $
  **********************************************************************/
 
 /*********************************************************************
@@ -22553,7 +22553,7 @@ IDE_RC sdnbBTree::lockAllRows4RR( sdnbIterator* aIterator )
     UChar         * sLeafPage;
     sdnbLKey      * sLeafKey;
     UChar           sCTSlotIdx;
-    sdrMtxStartInfo sStartInfo;
+    sdrMtxStartInfo sStartInfo   = { NULL, SDR_MTX_NOLOGGING };
     sdpPhyPageHdr * sPageHdr;
     idBool          sIsPageLatchReleased = ID_TRUE;
     sdrSavePoint    sSP;

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdnnModule.cpp 89963 2021-02-09 05:22:10Z justin.kwon $
+ * $Id: sdnnModule.cpp 91766 2021-09-29 08:07:37Z justin.kwon $
  **********************************************************************/
 
 /**************************************************************
@@ -1203,7 +1203,7 @@ static IDE_RC sdnnLockAllRowsAtPage4RR( sdrMtx       * aMtx,
     idBool                 sSkipLockRec;
     sdSID                  sSlotSID;
     sdrMtx                 sLogMtx;
-    sdrMtxStartInfo        sStartInfo;
+    sdrMtxStartInfo        sStartInfo = { NULL, SDR_MTX_NOLOGGING };
     UInt                   sState = 0;
     idBool                 sIsPageLatchReleased = ID_FALSE;
     UChar                 *sPage;

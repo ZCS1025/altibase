@@ -16,7 +16,7 @@
  
 
 /*******************************************************************************
- * $Id: sdnpModule.cpp 89495 2020-12-14 05:19:22Z emlee $
+ * $Id: sdnpModule.cpp 91766 2021-09-29 08:07:37Z justin.kwon $
  ******************************************************************************/
 
 #include <ide.h>
@@ -1100,7 +1100,7 @@ static IDE_RC sdnpLockRow4RR( sdnpIterator  * aIterator,
                               UChar         * aRowPtr, 
                               UChar         * aPagePtr )
 {
-    sdrMtxStartInfo     sStartInfo;
+    sdrMtxStartInfo     sStartInfo = { NULL, SDR_MTX_NOLOGGING };
     idBool              sIsRowDeleted;
     idBool              sIsPageLatchReleased = ID_FALSE;
     UChar             * sPagePtr;

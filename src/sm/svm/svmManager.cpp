@@ -1452,25 +1452,22 @@ IDE_RC svmManager::allocPageMemory( svmTBSNode * aTBSNode, scPageID aPID )
     // Page Memory가 할당되어 있지 않아야 한다.
     IDE_ASSERT( sPCHSlot->mPagePtr == NULL );
 
-    if ( sPCHSlot->mPagePtr == NULL )
+    // BUG-47487: DATA / FLI 페이지 경우 나누기 alloc ( Volatile )
+    if ( ( svmExpandChunk::isFLIPageID ( aTBSNode, aPID ) == ID_TRUE ) )
     {
-        // BUG-47487: DATA / FLI 페이지 경우 나누기 alloc ( Volatile )
-        if ( ( svmExpandChunk::isFLIPageID ( aTBSNode, aPID ) == ID_TRUE ) )
-        {
-            //FLI
-            IDE_TEST( allocPage( aTBSNode, 
-                                 (svmTempPage **) & sPCHSlot->mPagePtr,
-                                 ID_FALSE )
-                      != IDE_SUCCESS );
-        }
-        else
-        {
-            //DATA
-            IDE_TEST( allocPage( aTBSNode, 
-                                 (svmTempPage **) & sPCHSlot->mPagePtr )
-                      != IDE_SUCCESS );
-        }   
+        //FLI
+        IDE_TEST( allocPage( aTBSNode, 
+                             (svmTempPage **) & sPCHSlot->mPagePtr,
+                             ID_FALSE )
+                  != IDE_SUCCESS );
     }
+    else
+    {
+        //DATA
+        IDE_TEST( allocPage( aTBSNode, 
+                             (svmTempPage **) & sPCHSlot->mPagePtr )
+                  != IDE_SUCCESS );
+    }   
 
 #ifdef DEBUG_SVM_FILL_GARBAGE_PAGE
     idlOS::memset( sPCH->m_page, 0x43, SM_PAGE_SIZE );

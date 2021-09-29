@@ -16,7 +16,7 @@
  
 
 /*******************************************************************************
- * $Id: sdpDef.h 90259 2021-03-19 01:22:22Z emlee $
+ * $Id: sdpDef.h 91766 2021-09-29 08:07:37Z justin.kwon $
  *
  * Description :
  *      본 파일은 page layer의 자료구조를 정의한 헤더파일이다.
@@ -438,16 +438,6 @@ typedef UShort    sdpSlotEntry;
 # define SDP_DUMP_DIR_PAGE     (0x00000001)
 # define SDP_DUMP_EXT          (0x00000002)
 # define SDP_DUMP_SEG          (0x00000004)
-
-/*
- * 테이블스페이스 Online 수행시 관련 Table에 대한
- * Online Action시 넘겨주는 인자
- */
-typedef struct sdpActOnlineArgs
-{
-    void  * mTrans; // 트랜잭션
-    ULong   mSmoNo; // DRDB Index Smo No
-} sdpActOnlineArgs;
 
 struct sdpExtMgmtOp;
 

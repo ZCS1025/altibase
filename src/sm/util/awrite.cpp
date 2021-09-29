@@ -30,7 +30,7 @@ int main()
     SChar *src   = (char*)calloc(sFileSize,1);
     SChar *addr  = NULL;
     SChar *mBase = NULL;
-    SInt   fd;   
+    SInt   fd    = -1;   
     ULong  sLoop      = 0;
     ULong  sBlockSize = 512;
     UInt   i;
@@ -47,6 +47,7 @@ int main()
         IDE_TEST_RAISE( fallocate( fd, sMode, sOffset, sFileSize ) != 0, fallocate_error );
         fsync( fd );
         close(fd);
+        fd = -1;
 
         IDE_TEST_RAISE( (fd = open( "1Gf.out", O_RDWR )) < 0, open_error) ;
         IDE_TEST_RAISE( (addr = (char *) mmap( (void*)0, sFileSize, PROT_WRITE | PROT_READ, MAP_SHARED, fd, 0)) 
@@ -66,6 +67,7 @@ int main()
         
         msync( mBase, sFileSize, MS_SYNC );
         close( fd );
+        fd = -1;
         unlink("1Gf.out");
     }
 #else
@@ -79,6 +81,7 @@ int main()
         write( fd, src, sFileSize );
         fsync( fd );
         close( fd );
+        fd = -1;
 
         IDE_TEST_RAISE( (fd = open( "1Gw.out", O_RDWR )) < 0, open_error) ;
         IDE_TEST_RAISE( (addr = (char *) mmap( (void*)0, sFileSize, PROT_WRITE | PROT_READ, MAP_SHARED, fd, 0)) 
@@ -98,6 +101,7 @@ int main()
 
         msync( mBase, sFileSize, MS_SYNC );
         close( fd );
+        fd = -1;
         unlink("1Gw.out");
     }
 
@@ -117,7 +121,10 @@ int main()
     }
     IDE_EXCEPTION_END;
 
-    close(fd);
+    if ( fd != -1 )
+    {
+        close(fd);
+    }
     unlink("1Gf.out");
     unlink("1Gw.out");
 
