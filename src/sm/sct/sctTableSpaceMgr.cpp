@@ -915,6 +915,9 @@ IDE_RC sctTableSpaceMgr::findSpaceNodeBySpaceID( idvSQL   * aStatistics,
     IDE_TEST_RAISE( SMI_TBS_IS_DROP_PENDING( sSpaceNode->mState ),
                     error_not_found_tablespace_node );
 
+    IDU_FIT_POINT_RAISE( "BUG-49101@sctTableSpaceMgr::findSpaceNodeBySpaceID",
+                         error_not_found_tablespace_node );
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( error_not_found_tablespace_node );

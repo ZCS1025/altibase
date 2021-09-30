@@ -2991,6 +2991,16 @@ IDE_RC sdbBufferPool::copyToFrame(
 
     IDE_EXCEPTION_END;
 
+    /* BUG-49101 예외처리시 page의 latch/mutex를 풀어줘야 한다. */
+    /* 예외 발생시 대상 readUnit 중 아직 lock이 풀리지 않은 page의 lock을 해제해야 한다. */
+    for(; i < aReadUnit->mReadBCBCount; i++ )
+    {
+        sBCB = aReadUnit->mReadBCB[i].mBCB;
+
+        sBCB->mReadIOMutex.unlock();
+        sBCB->unlockPageLatch();
+    }
+
     return IDE_FAILURE;
 }
 
@@ -3009,13 +3019,15 @@ IDE_RC sdbBufferPool::fetchMultiPagesNormal(
                                     idvSQL                 * aStatistics,
                                     sdbMPRKey              * aKey )
 {
-    SInt i;
+    SInt i = 0;
     sdbReadUnit *sReadUnit;
     idvTime      sBeginTime;
     idvTime      sEndTime;
     ULong        sReadTime         = 0;
     ULong        sCalcChecksumTime = 0;
     UInt         sReadPageCount    = 0;
+    UInt         j = 0;
+    sdbBCB      *sBCB = NULL;
 
     for (i = 0; i < aKey->mReadUnitCount; i++)
     {
@@ -3076,6 +3088,31 @@ IDE_RC sdbBufferPool::fetchMultiPagesNormal(
 
     IDE_EXCEPTION_END;
 
+    /* BUG-49101 예외처리시 page의 latch/mutex를 풀어줘야 한다. */
+    /* copyToFrame에서 처리 하지 않은 나머지 readUnit에 대해 접근한다. */
+    if( ideGetErrorCode() == smERR_ABORT_PageCorrupted )
+    {
+        /* 해당 readUnit까지는 unlock이 끝났으므로 다음 readUnit부터 해제해야 한다. */
+        i++;
+    }
+    else
+    {
+        /* 해당 readUnit도 unlock이 되지 않았으므로 해당 readInit부터 해재해야 한다.*/
+    }
+
+    for(; i < aKey->mReadUnitCount; i++ )
+    {
+        sReadUnit = &(aKey->mReadUnit[i]);
+
+        /* 각readUnit에 달려있는 BCB에 접근해 lock을 푼다. */
+        for( j = 0; j < sReadUnit->mReadBCBCount; j++ )
+        {
+            sBCB = sReadUnit->mReadBCB[j].mBCB;
+            sBCB->mReadIOMutex.unlock();
+            sBCB->unlockPageLatch();
+        }
+    }
+
     return IDE_FAILURE;
 }
 
@@ -3100,13 +3137,16 @@ IDE_RC sdbBufferPool::fetchMultiPagesAtOnce(
                                 sdbMPRKey              *aKey )
 {
     UInt         sIndex;
-    SInt         i;
+    SInt         i = 0;
     sdbReadUnit *sReadUnit;
     idvTime      sBeginTime;
     idvTime      sEndTime;
     ULong        sReadTime;
     ULong        sCalcChecksumTime;
-    
+    /* 예외처리용 */
+    UInt         j = 0;
+    sdbBCB      *sBCB = NULL;
+ 
     IDV_TIME_GET(&sBeginTime);
 
     if( aKey->mReadUnit[0].mReadBCBCount == 1 )
@@ -3118,6 +3158,7 @@ IDE_RC sdbBufferPool::fetchMultiPagesAtOnce(
         mStatistics.applyBeforeMultiReadPages( aStatistics );
     }
 
+    IDU_FIT_POINT( "BUG-49101@sdbBufferPool::fetchMultiPagesAtOnce" );
     IDE_TEST( sddDiskMgr::read( aStatistics,
                                 aKey->mSpaceID,
                                 aStartPID,
@@ -3165,6 +3206,31 @@ IDE_RC sdbBufferPool::fetchMultiPagesAtOnce(
 
     IDE_EXCEPTION_END;
 
+    /* BUG-49101 예외처리시 page의 latch/mutex를 풀어줘야 한다. */
+    /* copyToFrame에서 처리 하지 않은 나머지 readUnit에 대해 접근한다. */
+    if( ideGetErrorCode() == smERR_ABORT_PageCorrupted )
+    {
+        /* 해당 readUnit까지는 unlock이 끝났으므로 다음 readUnit부터 해제해야 한다. */
+        i++;
+    }
+    else
+    {
+        /* 해당 readUnit도 unlock이 되지 않았으므로 해당 readInit부터 해재해야 한다.*/
+    }
+
+    for(; i < aKey->mReadUnitCount; i++ )
+    {
+        sReadUnit = &(aKey->mReadUnit[i]);
+
+        /* 각readUnit에 달려있는 BCB에 접근해 lock을 푼다. */
+        for( j = 0; j < sReadUnit->mReadBCBCount; j++ )
+        {
+            sBCB = sReadUnit->mReadBCB[j].mBCB;
+            sBCB->mReadIOMutex.unlock();
+            sBCB->unlockPageLatch();
+        }
+    }
+
     return IDE_FAILURE;
 }
 
@@ -3180,6 +3246,7 @@ IDE_RC sdbBufferPool::fetchSinglePage(
     ULong     sReadTime;
     ULong     sCalcChecksumTime;
     UInt      sCorruptPageReadCnt = 0;
+    idBool    sIsPageLatchReleased = ID_FALSE;
 
     sBCB = aKey->mReadUnit[0].mReadBCB[0].mBCB;
 
@@ -3188,6 +3255,7 @@ IDE_RC sdbBufferPool::fetchSinglePage(
     mStatistics.applyBeforeSingleReadPage( aStatistics );
     sState = 1;
 
+    IDU_FIT_POINT( "BUG-49101@sdbBufferPool::fetchSinglePage" );
     IDE_TEST( sddDiskMgr::read( aStatistics,
                                 aKey->mSpaceID,
                                 aPageID,
@@ -3231,6 +3299,7 @@ IDE_RC sdbBufferPool::fetchSinglePage(
     sBCB->mReadyToRead = ID_TRUE;
     sBCB->mReadIOMutex.unlock();
     sBCB->unlockPageLatch();
+    sIsPageLatchReleased = ID_TRUE;
 
     IDV_TIME_GET(&sEndTime);
     sCalcChecksumTime = IDV_TIME_DIFF_MICRO(&sBeginTime, &sEndTime);
@@ -3275,6 +3344,13 @@ IDE_RC sdbBufferPool::fetchSinglePage(
     if( sState != 0 )
     {
         mStatistics.applyAfterSingleReadPage( aStatistics );
+    }
+
+    /* BUG-49101 예외처리시 page의 latch/mutex를 풀어줘야 한다. */
+    if( sIsPageLatchReleased == ID_FALSE )
+    {
+        sBCB->mReadIOMutex.unlock();
+        sBCB->unlockPageLatch();
     }
 
     return IDE_FAILURE;
