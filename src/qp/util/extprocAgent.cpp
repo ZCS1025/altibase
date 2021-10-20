@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: extprocAgent.cpp 86373 2019-11-19 23:12:16Z khkwak $
+ * $Id: extprocAgent.cpp 91777 2021-10-01 04:39:29Z donovan.seo $
  **********************************************************************/
 
 #include <idx.h>
@@ -515,9 +515,30 @@ main( int aArgc, char **aArgv )
         /**********************************************************************
          * 6. Validation
          **********************************************************************/
-        for( i = 0; i < sReturnMsg->mParamCount; i++ )
+        for ( i = 0; i < sReturnMsg->mParamCount; i++ )
         {
-            if( sReturnMsg->mParamInfos[i].mPropType != IDX_TYPE_PROP_NONE )
+            /* BUG-49334 */
+            EXTPROC_AGENT_SEND_ERR_MSG( sReturnMsg->mParamInfos[i].mColumn
+                                        != sOriginalParams[i].mColumn,
+                                        idERR_ABORT_IDX_INVALID_PROPERTY_MANIPULATION );
+
+            EXTPROC_AGENT_SEND_ERR_MSG( sReturnMsg->mParamInfos[i].mTable
+                                        != sOriginalParams[i].mTable,
+                                        idERR_ABORT_IDX_INVALID_PROPERTY_MANIPULATION );
+
+            EXTPROC_AGENT_SEND_ERR_MSG( sReturnMsg->mParamInfos[i].mMode
+                                        != sOriginalParams[i].mMode,
+                                        idERR_ABORT_IDX_INVALID_PROPERTY_MANIPULATION );
+
+            EXTPROC_AGENT_SEND_ERR_MSG( sReturnMsg->mParamInfos[i].mType
+                                        != sOriginalParams[i].mType,
+                                        idERR_ABORT_IDX_INVALID_PROPERTY_MANIPULATION );
+            
+            EXTPROC_AGENT_SEND_ERR_MSG( sReturnMsg->mParamInfos[i].mPropType
+                                        != sOriginalParams[i].mPropType,
+                                        idERR_ABORT_IDX_INVALID_PROPERTY_MANIPULATION );
+
+            if ( sReturnMsg->mParamInfos[i].mPropType != IDX_TYPE_PROP_NONE )
             {
                 /* MAXLEN change */
                 EXTPROC_AGENT_SEND_ERR_MSG( sReturnMsg->mParamInfos[i].mMaxLength

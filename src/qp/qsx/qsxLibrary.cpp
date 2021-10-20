@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsxLibrary.cpp 86373 2019-11-19 23:12:16Z khkwak $
+ * $Id: qsxLibrary.cpp 91777 2021-10-01 04:39:29Z donovan.seo $
  **********************************************************************/
 
 #include <idl.h>
@@ -516,9 +516,22 @@ qsxLibrary::callintProc( iduMemory      * aExeMem,
     /**********************************************************************
      * 6. Validation
      **********************************************************************/
-    for( i = 0; i < aMsg->mParamCount; i++ )
+    for ( i = 0; i < aMsg->mParamCount; i++ )
     {
-        if( aMsg->mParamInfos[i].mPropType != IDX_TYPE_PROP_NONE )
+        /* BUG-49334 */
+        IDE_TEST_RAISE( aMsg->mParamInfos[i].mColumn != sOriginalParams[i].mColumn,
+                        ERR_INVALID_PROPERTY_MANIPULATION );
+
+        IDE_TEST_RAISE( aMsg->mParamInfos[i].mTable != sOriginalParams[i].mTable,
+                        ERR_INVALID_PROPERTY_MANIPULATION );
+
+        IDE_TEST_RAISE( aMsg->mParamInfos[i].mMode != sOriginalParams[i].mMode,
+                        ERR_INVALID_PROPERTY_MANIPULATION );
+
+        IDE_TEST_RAISE( aMsg->mParamInfos[i].mType != sOriginalParams[i].mType,
+                        ERR_INVALID_PROPERTY_MANIPULATION );
+
+        if ( aMsg->mParamInfos[i].mPropType != IDX_TYPE_PROP_NONE )
         {
             /* MAXLEN change */
             IDE_TEST_RAISE( aMsg->mParamInfos[i].mMaxLength
@@ -584,7 +597,6 @@ qsxLibrary::callintProc( iduMemory      * aExeMem,
             // Nothing to do.
         }
     }
-
 
     if( aMsg->mReturnInfo.mSize > 0
         && aMsg->mReturnInfo.mType == IDX_TYPE_CHAR )

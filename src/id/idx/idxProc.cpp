@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idxProc.cpp 86373 2019-11-19 23:12:16Z khkwak $
+ * $Id: idxProc.cpp 91777 2021-10-01 04:39:29Z donovan.seo $
  **********************************************************************/
 
 /***********************************************************************
@@ -423,10 +423,17 @@ IDE_RC idxProc::getAgentProcess( UInt            aSessionID,
     return IDE_FAILURE;
 }
 
-void
-idxProc::copyParamInfo( idxParamInfo * aSrcParam,
-                        idxParamInfo * aDestParam )
+IDE_RC idxProc::copyParamInfo( idxParamInfo * aSrcParam,
+                               idxParamInfo * aDestParam )
 {
+    /* BUG-49334 */
+    IDE_TEST_RAISE( ( ( aSrcParam->mColumn != aDestParam->mColumn ) ||
+                      ( aSrcParam->mTable != aDestParam->mTable ) ||
+                      ( aSrcParam->mType != aDestParam->mType ) ||
+                      ( aSrcParam->mType != aDestParam->mType ) ||
+                      ( aSrcParam->mPropType != aDestParam->mPropType ) ||
+                      ( aSrcParam->mMaxLength > aDestParam->mMaxLength ) ), INVALID_PARAMINFO );
+
     /* Property */
     aDestParam->mIndicator = aSrcParam->mIndicator;
     aDestParam->mLength    = aSrcParam->mLength;
@@ -436,10 +443,10 @@ idxProc::copyParamInfo( idxParamInfo * aSrcParam,
     // BUG-39814
     // If you want to add LOB type as OUT mode or return type,
     // You should add some conditions below
-    if( aDestParam->mMode != IDX_MODE_IN 
-        && aDestParam->mPropType == IDX_TYPE_PROP_NONE )
+    if ( ( aDestParam->mMode != IDX_MODE_IN )
+         && ( aDestParam->mPropType == IDX_TYPE_PROP_NONE ) )
     {
-        if( aDestParam->mType == IDX_TYPE_CHAR )
+        if ( aDestParam->mType == IDX_TYPE_CHAR )
         {
             idlOS::memcpy( aDestParam->mD.mPointer,
                            aSrcParam->mD.mPointer,
@@ -454,6 +461,16 @@ idxProc::copyParamInfo( idxParamInfo * aSrcParam,
     {
         /* Nothing to do. */
     }
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( INVALID_PARAMINFO )
+    {
+        IDE_SET( ideSetErrorCode( idERR_ABORT_IDX_INVALID_PROPERTY_MANIPULATION ) );
+    }
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
 }
 
 IDE_RC
@@ -853,12 +870,14 @@ IDE_EXCEPTION_CONT( RETRY_GET_AGENT );
      *********************************************************************************/
 
     /* Copy parameters & return information */
-    for( i = 0; i < aMsg->mParamCount; i++ )
+    for ( i = 0; i < aMsg->mParamCount; i++ )
     {
-        copyParamInfo( &sRecvMsg->mParamInfos[i], &aMsg->mParamInfos[i] );
+        IDE_TEST( copyParamInfo( &sRecvMsg->mParamInfos[i], &aMsg->mParamInfos[i] )
+                  != IDE_SUCCESS );
     }
 
-    copyParamInfo( &sRecvMsg->mReturnInfo, &aMsg->mReturnInfo );
+    IDE_TEST( copyParamInfo( &sRecvMsg->mReturnInfo, &aMsg->mReturnInfo )
+              != IDE_SUCCESS );
 
     /* 상태를 STOPPED로 변경 */
     sAgentProc->mState = IDX_PROC_STOPPED;
@@ -925,3 +944,4 @@ IDE_EXCEPTION_CONT( RETRY_GET_AGENT );
 
     return IDE_FAILURE;
 }
+
