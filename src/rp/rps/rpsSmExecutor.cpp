@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpsSmExecutor.cpp 88285 2020-08-05 05:49:37Z bethy $
+ * $Id: rpsSmExecutor.cpp 91782 2021-10-01 10:07:20Z lswhh $
  **********************************************************************/
 
 #include <idl.h>
@@ -1202,6 +1202,7 @@ retryUpdate:
                              aTrans->getStatement(),
                              SMI_STATEMENT_NORMAL | SMI_STATEMENT_ALL_CURSOR )
              != IDE_SUCCESS);
+    sStep = 1;
 
     IDE_TEST( convertValueToOID( aXLog,
                                  sConvertCols,
@@ -1213,7 +1214,6 @@ retryUpdate:
 
     sACols = sFinalColsValues;
 
-    sStep = 1;
 
     sCursor.initialize();
 
@@ -3501,6 +3501,9 @@ IDE_RC rpsSmExecutor::convertValueToOID( rpdXLog        * aXLog,
             sSmiColumn = rpdCatalog::rpdGetTableColumns(aTable, sCID);
             sTableHandle = (void *)smiGetTable( sSmiColumn->mDictionaryTableOID );
             sIndexHeader = (void *)smiGetTableIndexes( sTableHandle, 0 );
+
+            IDU_FIT_POINT_RAISE( "rpsSmExecutor::convertValueToOID::makeDictValueForCompress::internal",
+                                 ERR_NOT_FOUND_COLUMN );
 
             IDE_TEST( qciMisc::makeDictValueForCompress( aStmt,
                                                          sTableHandle,
