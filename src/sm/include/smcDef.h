@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smcDef.h 91512 2021-08-21 07:50:50Z emlee $
+ * $Id: smcDef.h 91828 2021-10-13 03:57:29Z justin.kwon $
  **********************************************************************/
 
 #ifndef _O_SMC_DEF_H_
@@ -358,8 +358,7 @@ typedef struct  smcTableInfoPerfV
     idBool      mIsConsistent; /* PROJ-2162 */
     
      /* BUG-49063 */
-    UInt        mIsQueue;         
-    UInt        mDeleteON;
+    UInt        mDeleteON;     /* 큐의 DELETE 가능여부를 나타냄. (일반테이블인 경우 항상 1 이어야 함) */ 
     ULong       mFixedRecordCnt;
 
 }smcTableInfoPerfV;

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smiDef.h 91512 2021-08-21 07:50:50Z emlee $
+ * $Id: smiDef.h 91828 2021-10-13 03:57:29Z justin.kwon $
  **********************************************************************/
 
 #ifndef _O_SMI_DEF_H_
@@ -1317,14 +1317,6 @@ typedef enum smiDMLType
 # define SMI_TABLE_DICTIONARY_MASK         (0x00800000)
 # define SMI_TABLE_DICTIONARY_FALSE        (0x00000000)
 # define SMI_TABLE_DICTIONARY_TRUE         (0x00800000)
-
-// BUG-49063 
-// Queue table 여부를 판단하는데 필요한 flag 정보
-# define SMI_TABLE_QUEUE_MASK              (0x01000000)
-# define SMI_TABLE_QUEUE_FALSE             (0x00000000)
-# define SMI_TABLE_QUEUE_TRUE              (0x01000000)
-
-
 
 /* aFlag VON smiTable::createIndex                   */
 # define SMI_INDEX_UNIQUE_MASK             (0x00000001)

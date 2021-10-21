@@ -597,18 +597,15 @@ IDE_RC smcFT::buildEachRecordForTableInfo(
     sTableInfo.mTableOID         = aTargetTblHeader->mSelfOID;
     sTableInfo.mSpaceID          = aTargetTblHeader->mSpaceID;
     sTableInfo.mIsConsistent     = aTargetTblHeader->mIsConsistent;
-    
-    /* BUG-49063 */
-    if ( (aTargetTblHeader->mFlag & SMI_TABLE_QUEUE_MASK ) 
-         == SMI_TABLE_QUEUE_FALSE )
-    {
-       sTableInfo.mIsQueue = 0; 
-    }
-    else
-    {
-       sTableInfo.mIsQueue = 1; 
-    }
-
+   
+    /* 큐의 DEQEUE 성능향상을 위해 DELETE 를 막음.
+       아래와 같이 쿼리를 수행해서 ON/OFF 를 변경할 수 있음.
+       (ON 시 DELETE 사용가능하나 DEQUEUE 성능제한됨)
+       ALTER QUEUE [NAME] DELETE ON;
+       ALTER QUEUE [NAME] DELETE OFF;
+       
+       일반테이블과 큐를 구분할수 없어 X$TABLE_INFO에 DELETE ON/OFF정보를 출력하도록 하였고
+       일반테이블인 경우 항상 1 로 표시됨. */
     if ( (aTargetTblHeader->mFlag & SMI_TABLE_QUEUE_ALLOW_DELETE_MASK ) 
          == SMI_TABLE_QUEUE_ALLOW_DELETE_TRUE )
     {
@@ -784,7 +781,8 @@ IDE_RC smcFT::buildEachRecordForTableInfo(
         sTableInfo.mUniqueViolationCount =  0;
         sTableInfo.mUpdateRetryCount =      0;
         sTableInfo.mDeleteRetryCount =      0;
-        smcTable::getRecordCount( aTargetTblHeader, &sFixedRecordCnt );
+        IDE_TEST( smcTable::getRecordCount( aTargetTblHeader, &sFixedRecordCnt )
+                  != IDE_SUCCESS );
         /* V$QUEUE 에서 record 수 구하는 용도
            DISK QUEUE 는 없음  그냥 레코드를 기록함 */ 
         sTableInfo.mFixedRecordCnt += sFixedRecordCnt;
@@ -1756,14 +1754,6 @@ static iduFixedTableColDesc  gTableInfoColDesc[]=
         (SChar*)"IS_CONSISTENT",
         offsetof(smcTableInfoPerfV,mIsConsistent),
         IDU_FT_SIZEOF(smcTableInfoPerfV,mIsConsistent),
-        IDU_FT_TYPE_UINTEGER,
-        NULL,
-        0, 0,NULL // for internal use
-    },
-    {
-        (SChar*)"IS_QUEUE",
-        offsetof(smcTableInfoPerfV,mIsQueue ),
-        IDU_FT_SIZEOF(smcTableInfoPerfV,mIsQueue),
         IDU_FT_TYPE_UINTEGER,
         NULL,
         0, 0,NULL // for internal use

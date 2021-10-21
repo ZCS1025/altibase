@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdbCreate.cpp 91517 2021-08-24 01:25:47Z bethy $
+ * $Id: qdbCreate.cpp 91828 2021-10-13 03:57:29Z justin.kwon $
  **********************************************************************/
 
 #include <idl.h>
@@ -2974,13 +2974,6 @@ IDE_RC qdbCreate::calculateTableAttrFlag( qcStatement      * aStatement,
     else
     {
         /* Nothing to do */
-    }
-    
-    /* BUG-49063 */ 
-    if ( (aCreateTable->flag & QDQ_QUEUE_MASK) == QDQ_QUEUE_TRUE )
-    {
-        aCreateTable->tableAttrValue &= ~SMI_TABLE_QUEUE_MASK;
-        aCreateTable->tableAttrValue |=  SMI_TABLE_QUEUE_TRUE;
     }
 
     return IDE_SUCCESS;
