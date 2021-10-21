@@ -21,6 +21,8 @@ public class CmPrepareResult extends CmStatementIdResult
     // BUG-42424 AltibasePreparedStatement사용하기때문에 scope변경 
     public static final byte MY_OP = CmOperation.DB_OP_PREPARE_V3_RESULT;
     
+    public static final int STATEMENT_TYPE_NONE              = 16;
+    public static final int STATEMENT_TYPE_MASK              = 0x000F0000;
     public static final int STATEMENT_TYPE_DDL               = 0x00000000;
     public static final int STATEMENT_TYPE_DML               = 0x00010000;
     public static final int STATEMENT_TYPE_DCL               = 0x00020000;
@@ -42,6 +44,11 @@ public class CmPrepareResult extends CmStatementIdResult
 
     public static final int STATEMENT_TYPE_FUNCTION          = STATEMENT_TYPE_SP + 0;
     public static final int STATEMENT_TYPE_PROCEDURE         = STATEMENT_TYPE_SP + 1;
+
+    public static final int STATEMENT_TYPE_COMMIT            = STATEMENT_TYPE_DCL + 0;
+    public static final int STATEMENT_TYPE_ROLLBACK          = STATEMENT_TYPE_DCL + 1;
+    public static final int STATEMENT_TYPE_SAVEPOINT         = STATEMENT_TYPE_DCL + 2;
+    public static final int STATEMENT_TYPE_ROLLBACK_TO_SAVEPOINT = STATEMENT_TYPE_DCL + 59;
 
     private int     mStatementType;
     private int     mParameterCount;

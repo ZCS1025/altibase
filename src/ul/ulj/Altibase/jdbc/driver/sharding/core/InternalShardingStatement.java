@@ -61,4 +61,5 @@ public interface InternalShardingStatement
     void makeQstrForGeneratedKeys(String aSql, int[] aColumnIndexes,
                                   String[] aColumnNames) throws SQLException;
     void clearForGeneratedKeys() throws SQLException;
+    int getStmtType();
 }

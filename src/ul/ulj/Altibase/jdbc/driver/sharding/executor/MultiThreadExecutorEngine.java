@@ -405,6 +405,12 @@ public class MultiThreadExecutorEngine implements ExecutorEngine
         doParallelProcess(aStatements, aParallelProcessCallback);
     }
 
+    public <T> void doPartialRollbackToSavepoint(Collection<T> aStatements,
+                                                 final ParallelProcessCallback<T> aParallelProcessCallback) throws SQLException
+    {
+        doParallelProcess(aStatements, aParallelProcessCallback);
+    }
+
     public <T> void doTransaction(Collection<T> aConnections,
                                   final ParallelProcessCallback<T> aParallelProcessCallback) throws SQLException
     {

@@ -875,7 +875,7 @@ IDE_RC sdtWAExtentMgr::allocFreeNExtent( idvSQL            * aStatistics,
     }
 
     // TC/FIT/Server/sm/Bugs/BUG-45263/BUG-45263.tc
-    IDU_FIT_POINT( "BUG-45857@sdtWAExtentMgr::allocFreeNExtent::ERROR_NOT_ENOUGH_NEXTENTSIZE" );
+    IDU_FIT_POINT_RAISE( "BUG-45857@sdtWAExtentMgr::allocFreeNExtent::ERROR_NOT_ENOUGH_NEXTENTSIZE", ERR_ART );
 
     IDE_TEST( sdptbExtent::allocTmpExt( aStatistics,
                                         aSpaceID,
@@ -891,6 +891,12 @@ IDE_RC sdtWAExtentMgr::allocFreeNExtent( idvSQL            * aStatistics,
 
     return IDE_SUCCESS;
 
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION( ERR_ART );
+    {
+        IDE_SET(ideSetErrorCode(smERR_ABORT_ART));
+    }
+#endif
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;

@@ -238,7 +238,7 @@ public:
 
     inline void setFlag( UInt aMask, UInt aValue );
     inline UInt getFlag( UInt aMask );
-    inline void setXID( ID_XID * aXID );
+    inline void setParentXIDnRelayed( ID_XID * aXID );
     inline void setShardClientInfo( sdiClientInfo * aClientInfo );
     inline sdiClientInfo * getShardClientInfo();
     inline idBool isGTx();
@@ -314,11 +314,23 @@ inline UInt dktGlobalCoordinator::getFlag( UInt aMask )
     return ( mFlag & aMask );
 }
 
-inline void dktGlobalCoordinator::setXID( ID_XID * aXID )
+/* TASK-7361 */
+inline void dktGlobalCoordinator::setParentXIDnRelayed( ID_XID * aXID )
 {
-    if ( ( mDtxInfo != NULL ) && ( aXID != NULL ) )
+    if ( mDtxInfo != NULL )
     {
-        dktXid::copyXID( &mDtxInfo->mXID, aXID );
+        if ( aXID != NULL )
+        {
+            /* TASK-7361 : ParentXID를 설정한다는 것은 Relayed 2PC 라는 의미이다. */
+            dktXid::copyXID( &mDtxInfo->mParentXID, aXID );
+            mDtxInfo->mIsRelayed = ID_TRUE;
+        }
+        else
+        {
+            /* TASK-7361 : ROOT 2PC. */
+            mDtxInfo->mIsPassivePending = ID_FALSE;
+            mDtxInfo->mIsRelayed = ID_FALSE;
+        }
     }
 }
 

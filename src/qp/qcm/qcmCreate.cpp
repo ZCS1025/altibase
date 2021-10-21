@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcmCreate.cpp 91576 2021-09-02 06:39:41Z donghyun1 $
+ * $Id: qcmCreate.cpp 91801 2021-10-06 07:39:37Z ahra.cho $
  **********************************************************************/
 
 #include <idl.h>
@@ -45,6 +45,7 @@ IDE_RC qcmCreate::createDB( idvSQL * aStatistics,
     smiStatement  * sDummySmiStmt;
     UInt            sSmiStmtFlag  = 0;
     iduMemory       sIduMem;
+    UInt            sStage        = 0;
 
     // initialize smiStatement flag
     sSmiStmtFlag &= ~SMI_STATEMENT_MASK;
@@ -56,6 +57,7 @@ IDE_RC qcmCreate::createDB( idvSQL * aStatistics,
     // make smiTrans
     sIduMem.init(IDU_MEM_QCM);
     IDE_TEST(sTrans.initialize() != IDE_SUCCESS);
+    sStage = 1;
 
     IDE_TEST(sTrans.begin(&sDummySmiStmt,
                           aStatistics,
@@ -64,9 +66,12 @@ IDE_RC qcmCreate::createDB( idvSQL * aStatistics,
                            SMI_TRANSACTION_REPL_DEFAULT |
                            SMI_COMMIT_WRITE_NOWAIT))
              != IDE_SUCCESS);
+    sStage = 2;
 
     IDE_TEST(sSmiStmt.begin( aStatistics, sDummySmiStmt, sSmiStmtFlag)
              != IDE_SUCCESS);
+    sStage = 3;
+    
     IDE_TEST_RAISE( qcm::check(&sSmiStmt) == IDE_SUCCESS,
                     ERR_META_ALEADY_EXIST );
 
@@ -78,8 +83,10 @@ IDE_RC qcmCreate::createDB( idvSQL * aStatistics,
     IDE_TEST(createTableIDSequence(&sSmiStmt, sTblColumn)
              != IDE_SUCCESS);
 
+    sStage = 2;
     IDE_TEST(sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
 
+    sStage = 1;
     IDE_TEST(sTrans.commit() != IDE_SUCCESS);
 
     // create sequence, create other meta, create index.
@@ -94,9 +101,11 @@ IDE_RC qcmCreate::createDB( idvSQL * aStatistics,
                            SMI_TRANSACTION_REPL_DEFAULT |
                            SMI_COMMIT_WRITE_NOWAIT))
              != IDE_SUCCESS);
+    sStage = 2;
 
     IDE_TEST(sSmiStmt.begin( aStatistics, sDummySmiStmt, sSmiStmtFlag )
              != IDE_SUCCESS);
+    sStage = 3;
 
     IDE_TEST(makeSignature(&sSmiStmt) != IDE_SUCCESS);
 
@@ -107,10 +116,13 @@ IDE_RC qcmCreate::createDB( idvSQL * aStatistics,
 
     IDE_TEST(qcm::finiMetaCaches(&sSmiStmt) != IDE_SUCCESS);
 
+    sStage = 2;
     IDE_TEST(sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
 
+    sStage = 1;
     IDE_TEST(sTrans.commit() != IDE_SUCCESS);
 
+    sStage = 0;
     IDE_TEST(sTrans.destroy( aStatistics ) != IDE_SUCCESS);
 
     sIduMem.destroy();
@@ -122,6 +134,18 @@ IDE_RC qcmCreate::createDB( idvSQL * aStatistics,
         IDE_SET(ideSetErrorCode(qpERR_ABORT_QCM_META_ALEADY_EXIST));
     }
     IDE_EXCEPTION_END;
+
+    switch ( sStage )
+    {
+        case 3:
+            ( void )sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+        case 2:
+            ( void )sTrans.rollback();
+        case 1:
+            ( void )sTrans.destroy( aStatistics );
+        default:
+            break;
+    }
 
     sIduMem.destroy();
     return IDE_FAILURE;

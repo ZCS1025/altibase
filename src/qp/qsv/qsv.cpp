@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qsv.cpp 91584 2021-09-03 07:55:16Z khkwak $
+ * $Id: qsv.cpp 91655 2021-09-09 23:52:25Z bethy $
  **********************************************************************/
 
 #include <idl.h>
@@ -1080,6 +1080,10 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
                                               "SET_SHARD_PROCEDURE_SOLO",
                                               "SET_SHARD_PROCEDURE_CLONE",
                                               NULL };
+    const SChar         * sCopySwapProcNameArry[] = {
+                                              "SWAP_TABLE",
+                                              "SWAP_TABLE_PARTITION",
+                                              NULL };
 
     qcNamePosition        sUserNamePosition;
     qcNamePosition        sProcNamePosition;
@@ -1184,6 +1188,26 @@ IDE_RC qsv::parseExeProc(qcStatement * aStatement)
                             {
                                 aStatement->mFlag &= ~QC_STMT_SHARD_DBMS_PKG_MASK;
                                 aStatement->mFlag |= QC_STMT_SHARD_DBMS_PKG_TRUE;
+                                break;
+                            }
+                        }
+                    }
+                    /* BUG-48605 */
+                    else if ( idlOS::strMatch( sPkgNameStr,
+                                               idlOS::strlen( sPkgNameStr ),
+                                               "UTL_COPYSWAP",
+                                               12 ) == 0 )
+                    {
+                        for( sProcNameIdx = 0; sCopySwapProcNameArry[sProcNameIdx] != NULL; sProcNameIdx++ )
+                        {           
+                            if ( idlOS::strMatch( sProcNameStr,
+                                                  idlOS::strlen( sProcNameStr ),
+                                                  sCopySwapProcNameArry[sProcNameIdx],
+                                                  idlOS::strlen( sCopySwapProcNameArry[sProcNameIdx] )) == 0 )
+                            {
+                                aStatement->mFlag &= ~QC_STMT_UTL_COPYSWAP_PKG_MASK;
+                                aStatement->mFlag |= QC_STMT_UTL_COPYSWAP_PKG_TRUE;
+                                break;
                             }
                         }
                     }

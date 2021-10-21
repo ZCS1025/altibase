@@ -69,6 +69,7 @@ public class AltibaseShardingConnection extends AbstractConnection
     private short                           mShardStatementRetry;
     private int                             mIndoubtFetchTimeout;
     private short                           mIndoubtFetchMethod;
+    private int                             mTransactionalDDL;        // BUG-49296 : BUG-48592
 
 
     public AltibaseShardingConnection(AltibaseProperties aProp) throws SQLException
@@ -470,8 +471,7 @@ public class AltibaseShardingConnection extends AbstractConnection
 
     public void rollback(Savepoint aSavepoint) throws SQLException
     {
-        Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE,
-                                "rollback(savepoint) is not supported in sharding");
+        mMetaConnection.rollbackForShard(aSavepoint);
     }
 
     public void close() throws SQLException
@@ -785,19 +785,17 @@ public class AltibaseShardingConnection extends AbstractConnection
 
     public Savepoint setSavepoint() throws SQLException
     {
-        Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE, "setSavepoint is not supported in sharding");
-        return null;
+        return mMetaConnection.setSavepointForShard();
     }
 
     public Savepoint setSavepoint(String aName) throws SQLException
     {
-        Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE, "setSavepoint is not supported in sharding");
-        return null;
+        return mMetaConnection.setSavepointForShard(aName);
     }
 
     public void releaseSavepoint(Savepoint aSavepoint) throws SQLException
     {
-        Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE, "releaseSavepoint is not supported in sharding");
+        mMetaConnection.releaseSavepoint(aSavepoint);
     }
 
     public void setChannel(CmChannel aChannel)
@@ -1190,6 +1188,16 @@ public class AltibaseShardingConnection extends AbstractConnection
         {   
             Error.throwSQLException(ErrorDef.SHARD_NEED_ROLLBACK);
         }  
+    }
+
+    public int getTransactionalDDL()
+    {
+        return mTransactionalDDL;
+    }
+
+    public void setTransactionalDDL(int aTransactionalDDL)
+    {
+        mTransactionalDDL = aTransactionalDDL;
     }
 
     @Override

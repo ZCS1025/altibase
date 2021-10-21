@@ -58,9 +58,9 @@ SQLRETURN getQueueInfo( SChar *a_user,
     SInt      sNeedQuote4File  = 0;
 
     SChar     sTBSName[UTM_NAME_LEN+1];
-    SQLLEN    sTBSName_ind;
+    SQLLEN    sTBSNameInd;  //BUG-49358
     SInt      sTbsType  = 0;
-    SQLLEN    sTbsType_ind;
+    SQLLEN    sTbsTypeInd; //BUG-49358
 
     s_puser_name[0] = '\0';
     idlOS::fprintf(stdout, "\n##### QUEUE #####\n");
@@ -108,27 +108,27 @@ SQLRETURN getQueueInfo( SChar *a_user,
 
     IDE_TEST_RAISE(
         SQLBindCol(s_tblStmt, 7, SQL_C_CHAR, (SQLPOINTER)sTBSName,
-                   (SQLLEN)ID_SIZEOF(sTBSName), &sTBSName_ind)
+                   (SQLLEN)ID_SIZEOF(sTBSName), &sTBSNameInd)
         != SQL_SUCCESS, tbl_error);
     
     IDE_TEST_RAISE(
         SQLBindCol(s_tblStmt, 8, SQL_C_SLONG, (SQLPOINTER)&sTbsType, 0,
-                   &sTbsType_ind)
+                   &sTbsTypeInd)
         != SQL_SUCCESS, tbl_error);
 
     while ((sRet = SQLFetch(s_tblStmt)) != SQL_NO_DATA)
     {
         IDE_TEST_RAISE( sRet != SQL_SUCCESS, tbl_error );
 
-        if ( idlOS::strncmp(s_user_name, "SYSTEM_", 7) == 0 ||
-             idlOS::strcmp(s_table_type, "QUEUE") != 0 )
+        if (( idlOS::strncmp(s_user_name, "SYSTEM_", 7) == 0 ) ||
+            ( idlOS::strcmp(s_table_type, "QUEUE") != 0 ))
         {
             continue;
         }
 
         idlOS::fprintf(stdout, "** \"%s\".\"%s\"\n", s_user_name, s_table_name);
 
-        if (i == 0 || idlOS::strcmp(s_user_name, s_puser_name) != 0)
+        if (( i == 0 ) || ( idlOS::strcmp(s_user_name, s_puser_name) != 0 ))
         {
 
             IDE_TEST(getPasswd(s_user_name, s_passwd) != SQL_SUCCESS);
@@ -142,8 +142,8 @@ SQLRETURN getQueueInfo( SChar *a_user,
         sNeedQuote4User = utString::needQuotationMarksForObject(s_user_name);
         sNeedQuote4Pwd  = utString::needQuotationMarksForFile(s_passwd);
         sNeedQuote4Tbl  = utString::needQuotationMarksForObject(s_table_name, ID_TRUE);
-        sNeedQuote4File = utString::needQuotationMarksForFile(s_user_name) ||
-                                  utString::needQuotationMarksForFile(s_table_name);
+        sNeedQuote4File = (( utString::needQuotationMarksForFile(s_user_name) ) ||
+                           ( utString::needQuotationMarksForFile(s_table_name) ));
 
         /* formout in run_il_out.sh */
         printFormOutScript(aIlOutFp,

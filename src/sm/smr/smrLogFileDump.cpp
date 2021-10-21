@@ -791,6 +791,7 @@ IDE_RC smrLogFileDump::dumpPrepareReqBranchTx( SChar * aBranchTxStr, UInt aSize 
     UInt           i;
     UInt           sShardBranchCounter = 0;
     UChar          sXidString[SMR_XID_DATA_MAX_LEN];
+    UChar          sIsRelayed = 0;
 
     sBuffer = aBranchTxStr;
 
@@ -851,7 +852,11 @@ IDE_RC smrLogFileDump::dumpPrepareReqBranchTx( SChar * aBranchTxStr, UInt aSize 
                 sBuffer += sXidLen;
 
                 (void)idaXaConvertXIDToString(NULL, &sXID, sXidString, SMR_XID_DATA_MAX_LEN);
-                idlOS::printf( "FromXID: %s, ", sXidString );
+                idlOS::printf( "ParentXID: %s, ", sXidString );
+
+                ID_1_BYTE_ASSIGN( &sIsRelayed, sBuffer );
+                sBuffer += 1;
+                idlOS::printf( "Relayed: %u, ", sIsRelayed );
             }
             ++sShardBranchCounter;
 

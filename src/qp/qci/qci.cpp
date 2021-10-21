@@ -8515,11 +8515,11 @@ IDE_RC qci::updatePasswPolicy( idvSQL * aStatistics,  qciUserInfo  * aUserInfo )
         switch (sStage)
         {
             case 3:
-                IDE_ASSERT(sSmiStmt.end(SMI_STATEMENT_RESULT_FAILURE) == IDE_SUCCESS);
+                (void)sSmiStmt.end(SMI_STATEMENT_RESULT_FAILURE);
             case 2:
-                IDE_ASSERT(sTrans.commit() == IDE_SUCCESS);
+                (void)sTrans.rollback();
             case 1:
-                IDE_ASSERT(sTrans.destroy( aStatistics ) == IDE_SUCCESS);
+                (void)sTrans.destroy( aStatistics );
             default:
                 break;
         }

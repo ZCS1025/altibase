@@ -216,7 +216,6 @@ IDE_RC mmcTrans::commitShareableTrans( mmcTransObj *aTrans,
                                          aSession,
                                          NULL,
                                          ID_TRUE,   /* Commit */
-                                         ID_TRUE,   /* Self */
                                          aCommitSCN )
                       != IDE_SUCCESS );
 
@@ -836,6 +835,8 @@ IDE_RC mmcTrans::prepareForShard( mmcTransObj * aTrans,
 
     IDE_DASSERT( isShareableTrans(aTrans) == ID_TRUE );
 
+    setGlobalTxID4Trans( NULL, aSession );
+
     IDE_TEST( dkiCommitPrepare( aSession->getDatabaseLinkSession(), aXID )
               != IDE_SUCCESS );
 
@@ -1172,32 +1173,21 @@ IDE_RC mmcTrans::endPendingBySlotN( mmcTransObj * aTrans,
                                     mmcSession  * aSession,
                                     ID_XID      * aXID,
                                     idBool        aIsCommit,
-                                    idBool        aMySelf,
-                                    smSCN       * aCommitSCN )
+                                    smSCN       * aCommitSCN,
+                                    idBool      * aIsNotMatchedXID )
 {
     smiTrans      * sTransPtr           = NULL;
-    smiTrans        sSmiTrans;
     smxTrans      * sSmxTrans           = NULL;
     UInt            sTransReleasePolicy = SMI_DO_NOT_RELEASE_TRANSACTION;
     SInt            sSlotN              = MMC_TRANS_NULL_SLOT_NO;
     ID_XID          sSmxXID;
     UChar           sXidString[XID_DATA_MAX_LEN];
     idBool          sAttached           = ID_FALSE;
+    idBool          sIsNotMatchedXID    = ID_FALSE;
 
     sSlotN = aSession->mTrans->mShareInfo->mTxInfo.mPrepareSlot;
 
-    if ( aMySelf == ID_TRUE )
-    {
-        sTransPtr = &aTrans->mSmiTrans;
-    }
-    else
-    {
-        IDE_ASSERT( sSmiTrans.initialize() == IDE_SUCCESS );
-
-        sTransReleasePolicy = SMI_RELEASE_TRANSACTION;
-
-        sTransPtr = &sSmiTrans;
-    }
+    sTransPtr = &aTrans->mSmiTrans;
 
     IDE_ASSERT( sTransPtr->attach( sSlotN ) == IDE_SUCCESS );
     sAttached = ID_TRUE;
@@ -1209,13 +1199,36 @@ IDE_RC mmcTrans::endPendingBySlotN( mmcTransObj * aTrans,
     IDE_TEST_RAISE( sSmxTrans->isPrepared() == ID_FALSE,
                     ERR_NOT_PREPARED );
 
+    /* TASK-7361
+       여러 세션의 PREAPRE가 동시에 들어오는 경우,
+       최초의 세션이 PREPARED(상태변경 및 로그 남김)를 수행하고
+       그 세션의 XID를 smxTrans::mXaTransID 에 저장한다.
+
+       이후
+       위의 세션들의 COMMIT이 동시에 들어오는 경우,
+       smxTrans::mXaTransID를 기록한 세션만 COMMITED(상태변경 및 로그 남김)을 수행한다.
+       나머지 세션의 경우는 COMMITED를 수행하지 않고 무시하도록 한다.
+
+       ( 변경전에는 무시되지 않고 실패처리되어 NOTIFY에 등록되는 오작동이 있었다.)
+     */
     if ( aXID != NULL )
     {
         IDE_TEST_RAISE( sSmxTrans->getXID( &sSmxXID ) != IDE_SUCCESS,
                         ERR_GET_XID );
 
-        IDE_TEST_RAISE( mmdXid::compFunc( aXID, &sSmxXID ) != 0,
-                        ERR_XID_IS_INVALID );
+        if ( mmdXid::compFunc( aXID, &sSmxXID ) != 0 )
+        {
+            /* PREPARE 시 sm에 등록한 XID와 다른 XID로 COMMIT 들어온경우 정상리턴한다.
+               이후 PREPARED XID가 들어올때 COMMIT 처리될것이다. */
+            IDE_CONT ( NOT_MATCHED_XID );
+        }
+        else
+        {
+            /* nothing to do */
+
+            IDU_FIT_POINT_RAISE( "mmcTrans::endPendingBySlotN::compFunc::notMatchedXID",
+                                 NOT_MATCHED_XID );
+        }
     }
 
     MMC_END_PENDING_TRANS_TRACE( aSession,
@@ -1249,13 +1262,34 @@ IDE_RC mmcTrans::endPendingBySlotN( mmcTransObj * aTrans,
                         ERR_ROLLBACK_FAIL );
     }
 
-    if ( aMySelf == ID_TRUE )
+    IDE_CONT ( SKIP_NOT_MATCHED_XID );
+
+    /**************************************/
+    /* XID 매칭되지 않을때 처리구간 시작 */
+    IDE_EXCEPTION_CONT( NOT_MATCHED_XID );
+
+    MMC_END_PENDING_TRANS_TRACE( aSession,
+                                 sTransPtr,
+                                 aXID,
+                                 aIsCommit,
+                                 "endPendingBySlotN: Find prepare transaction. But not matched XID. skip" );
+
+    sIsNotMatchedXID = ID_TRUE;
+
+    if ( sAttached == ID_TRUE )
     {
-        /* Nothing to do */
+        sTransPtr->setStatistics( NULL );
+        sAttached = ID_FALSE;
+        IDE_ASSERT( sTransPtr->dettach() == IDE_SUCCESS );
     }
-    else
+    /* XID 매칭되지 않을때 처리구간 끝    */
+    /**************************************/
+
+    IDE_EXCEPTION_CONT( SKIP_NOT_MATCHED_XID );
+
+    if ( aIsNotMatchedXID != NULL )
     {
-        IDE_ASSERT( sTransPtr->destroy( NULL ) == IDE_SUCCESS );
+        *aIsNotMatchedXID = sIsNotMatchedXID;
     }
 
     return IDE_SUCCESS;
@@ -1269,23 +1303,6 @@ IDE_RC mmcTrans::endPendingBySlotN( mmcTransObj * aTrans,
     {
         IDE_SET( ideSetErrorCode( mmERR_ABORT_INTERNAL_SERVER_ERROR_ARG,
                                   "Getting transaction XID is failed." )  );
-    }
-    IDE_EXCEPTION( ERR_XID_IS_INVALID )
-    {
-        IDE_SET( ideSetErrorCode( mmERR_ABORT_INTERNAL_SERVER_ERROR_ARG,
-                                  "Transaction XID is invalid." )  );
-
-        if ( aXID != NULL )
-        {
-            (void)idaXaConvertXIDToString( NULL, aXID, sXidString, XID_DATA_MAX_LEN );
-        }
-        else
-        {
-            idlOS::snprintf( (SChar*)sXidString, ID_SIZEOF( sXidString ), "(NULL)" );
-        }
-
-        ideLog::log( IDE_SD_0, "[END PENDING N : MISS MATCH XIDs] (XID:%s)\n",
-                               sXidString );
     }
     IDE_EXCEPTION( ERR_COMMIT_FAIL )
     {
@@ -1327,6 +1344,11 @@ IDE_RC mmcTrans::endPendingBySlotN( mmcTransObj * aTrans,
         IDE_ASSERT( sTransPtr->dettach() == IDE_SUCCESS );
     }
 
+    if ( aIsNotMatchedXID != NULL )
+    {
+        *aIsNotMatchedXID = sIsNotMatchedXID;
+    }
+
     return IDE_FAILURE;
 }
 
@@ -1335,10 +1357,11 @@ IDE_RC mmcTrans::endPendingSharedTx( mmcSession * aSession,
                                      idBool       aIsCommit,
                                      smSCN      * aGlobalCommitSCN )
 {
-    mmcTransObj * sTrans    = aSession->mTrans;
-    idBool        sIsLock   = ID_FALSE;
-    idBool        sSetBlock = ID_FALSE;
+    mmcTransObj * sTrans           = aSession->mTrans;
+    idBool        sIsLock          = ID_FALSE;
+    idBool        sSetBlock        = ID_FALSE;
     smSCN         sCommitSCN;
+    idBool        sIsNotMatchedXID = ID_FALSE;
 
     IDU_FIT_POINT( "mmcTrans::endPendingSharedTx::beforeEndPending" );
 
@@ -1399,13 +1422,20 @@ IDE_RC mmcTrans::endPendingSharedTx( mmcSession * aSession,
                              sCommitSCN );
                 #endif
 
+                sIsNotMatchedXID = ID_FALSE;
                 IDE_TEST( endPendingBySlotN( sTrans,
                                              aSession,
                                              aXID,
                                              aIsCommit,
-                                             ID_TRUE,   /* Self */
-                                             &sCommitSCN )
+                                             &sCommitSCN,
+                                             &sIsNotMatchedXID )
                           != IDE_SUCCESS );
+
+                if ( sIsNotMatchedXID == ID_TRUE )
+                {
+                    /* TASK-7351 : : Prepare XID와 동일하지 않아 SKIP 된 경우이다. */
+                    break;
+                }
 
                 setTransactionPrepareSlot( sTrans, MMC_TRANS_NULL_SLOT_NO );
                 setLocalTransactionBroken( sTrans,
@@ -2202,7 +2232,6 @@ IDE_RC mmcTrans::rollbackLocal( mmcTransObj *aTrans,
                                                      aSession,
                                                      NULL,
                                                      ID_FALSE,  /* Rollback */
-                                                     ID_TRUE,   /* Self */
                                                      NULL )
                                   != IDE_SUCCESS );
 

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdd.cpp 91576 2021-09-02 06:39:41Z donghyun1 $
+ * $Id: qdd.cpp 91677 2021-09-13 04:48:52Z ahra.cho $
  **********************************************************************/
 
 #include <idl.h>
@@ -604,8 +604,21 @@ IDE_RC qdd::validateDropIndex(qcStatement * aStatement )
         }
     }
 
-    IDE_TEST_RAISE(sInfo->tableOwnerID == QC_SYSTEM_USER_ID,
-                   ERR_NOT_ALTER_META);
+    // BUG-49272 메타 다운그레이드에서 인덱스가 삭제되도록 해야합니다.
+    if ( QCG_GET_SESSION_USER_ID(aStatement) != QC_SYSTEM_USER_ID )
+    {
+        // sParseTree->userID is a owner of table
+        IDE_TEST_RAISE(sInfo->tableOwnerID == QC_SYSTEM_USER_ID,
+                       ERR_NOT_ALTER_META);
+    }
+    else
+    {
+        if ( ( aStatement->session->mQPSpecific.mFlag & QC_SESSION_ALTER_META_MASK )
+             == QC_SESSION_ALTER_META_DISABLE )
+        {
+            IDE_RAISE(ERR_NOT_ALTER_META);
+        }
+    }
 
     // PROJ-1502 PARTITIONED DISK TABLE
     if( sInfo->tablePartitionType == QCM_PARTITIONED_TABLE )

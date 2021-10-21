@@ -438,9 +438,14 @@ IDE_RC sdfCalculate_SetShardTableShardKey( mtcNode*     aNode,
         else
         {
             idlOS::snprintf( sSqlStr, QD_MAX_SQL_LENGTH,
-                             "SELECT COUNT(*) FROM SYSTEM_.SYS_INDICES_ WHERE TABLE_ID = "
-                             " ( SELECT TABLE_ID FROM SYSTEM_.SYS_TABLES_ WHERE TABLE_NAME = '%s' ) ",
-                             sTableNameStr );
+                             "SELECT COUNT(*) FROM SYSTEM_.SYS_INDICES_ "
+                               "WHERE TABLE_ID = ( SELECT TBL.TABLE_ID FROM SYSTEM_.SYS_TABLES_ TBL, "
+                                                                           "SYSTEM_.SYS_USERS_ USR "
+                                                    "WHERE TBL.TABLE_NAME = '%s' "
+                                                      "AND USR.USER_NAME = '%s' "
+                                                      "AND TBL.USER_ID = USR.USER_ID )",
+                             sTableNameStr,
+                             sUserNameStr );
 
             IDE_TEST( sdf::checkShardObjectSchema( sStatement,
                                                    sSqlStr )

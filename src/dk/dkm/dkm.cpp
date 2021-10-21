@@ -573,7 +573,8 @@ IDE_RC dkmPrepare( dkmSession * aSession, ID_XID * aSourceXID )
             }
             else
             {
-                sGlobalCoordinator->setXID( aSourceXID );
+                /* TASK-7361 : 2PC 릴레이 여부와 ParentXID를 기록한다. */
+                sGlobalCoordinator->setParentXIDnRelayed( aSourceXID );
 
                 IDE_TEST_RAISE( sGlobalCoordinator->executePrepare() != IDE_SUCCESS,
                                 ERR_GTX_PREPARE_PHASE_FAILED );
@@ -4592,8 +4593,6 @@ IDE_RC dkmValidateDropDatabaseLink( void    *aQcStatement,
 
     sStatistics = qciMisc::getStatisticsFromQcStatement( aQcStatement );
 
-    IDE_TEST( dkmCheckDblinkEnabled() != IDE_SUCCESS );
-
     /* 1. Validate dblink object */
     IDE_TEST( dkoLinkObjMgr::findLinkObject( sStatistics,
                                              aDblinkName,
@@ -4657,8 +4656,6 @@ IDE_RC dkmExecuteDropDatabaseLink( void     *aQcStatement,
     idvSQL     *sStatistics = NULL;
 
     sStatistics = qciMisc::getStatisticsFromQcStatement( aQcStatement );
-
-    IDE_TEST( dkmCheckDblinkEnabled() != IDE_SUCCESS );
 
     /* 1. Get link object */
     IDE_TEST( dkoLinkObjMgr::findLinkObject( sStatistics,
@@ -6698,14 +6695,15 @@ IDE_RC dkmAddDtxBranchTx( void   * aDtxInfo,
 
     IDE_DASSERT( aDtxInfo != NULL );
 
-    IDE_TEST( sDtxInfo->addDtxBranchTx( &(sDtxInfo->mXID),
+    IDE_TEST( sDtxInfo->addDtxBranchTx( &(sDtxInfo->mParentXID),
                                         (sdiCoordinatorType)aCoordinatorType,
                                         aNodeName,
                                         aUserName,
                                         aUserPassword,
                                         aDataServerIP,
                                         aDataPortNo,
-                                        aConnectType )
+                                        aConnectType,
+                                        ID_FALSE )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;

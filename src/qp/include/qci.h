@@ -1918,6 +1918,14 @@ public:
     /* TASK-7219 Non-shard DML */
     static IDE_RC setShardPartialExecType( qciStatement            * aStatement,
                                            sdiShardPartialExecType   aShardPartialExecType );
+
+    /* BUG-48605 */
+    static IDE_RC setPropertyForSwapTable( qciStatement *aStatement );
+
+    static IDE_RC revertPropertyForSwapTable( qciStatement *aStatement );
+
+    static idBool isUtlCopySwapPkg( qciStatement * aStatement );
+
 };
 
 /*****************************************************************************

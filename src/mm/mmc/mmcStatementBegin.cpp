@@ -525,6 +525,7 @@ IDE_RC mmcStatement::beginSP(mmcStatement *aStmt)
     smiDistTxInfo   sDistTxInfo;
     idBool          sIsDummyBegin = ID_FALSE;
     idBool          sIsSetProperty = ID_FALSE;
+    idBool          sIsSetPropertyForSwapTable = ID_FALSE;
     
 #ifdef DEBUG
     qciStmtType  sStmtType = aStmt->getStmtType();
@@ -540,6 +541,13 @@ IDE_RC mmcStatement::beginSP(mmcStatement *aStmt)
             IDE_TEST( qci::setPropertyForShardMeta( aStmt->getQciStmt() )
                       != IDE_SUCCESS );
             sIsSetProperty = ID_TRUE;
+        }
+        /* BUG-48605 */
+        else if ( qci::isUtlCopySwapPkg( aStmt->getQciStmt() ) == ID_TRUE )
+        {
+            IDE_TEST( qci::setPropertyForSwapTable( aStmt->getQciStmt() )
+                      != IDE_SUCCESS );
+            sIsSetPropertyForSwapTable = ID_TRUE;
         }
          
         sSession->setActivated(ID_TRUE);
@@ -664,6 +672,11 @@ IDE_RC mmcStatement::beginSP(mmcStatement *aStmt)
     if ( sIsSetProperty == ID_TRUE )
     {
         (void) qci::revertPropertyForShardMeta( aStmt->getQciStmt() );
+    }
+    /* BUG-48605 */
+    else if ( sIsSetPropertyForSwapTable == ID_TRUE )
+    {
+        (void) qci::revertPropertyForSwapTable( aStmt->getQciStmt() );
     }
 
     return IDE_FAILURE;
@@ -1146,6 +1159,51 @@ IDE_RC mmcStatement::endSP(mmcStatement *aStmt, idBool aSuccess)
             IDE_TEST( qci::revertPropertyForShardMeta( aStmt->getQciStmt() )
                       != IDE_SUCCESS );
         }
+        else if ( qci::isUtlCopySwapPkg( aStmt->getQciStmt() ) == ID_TRUE )
+        {
+            /*
+             * BUG-48605
+             *
+             * qci::isUtlCopySwapPkg == ID_TRUE로 판단되는 SWAP_TABLE과 SWAP_TABLE_PARITION
+             * 프로시저는 프로시저 내외부에서 아래의 절차로 수행된다.
+             *
+             * 변경전:
+             *   1. lock table .. until next ddl;
+             *      => transaction이 active 상태이면 실행 불가
+             *   2. DDL
+             *   3. mmcStatement::endDDL
+             *      1. mmcTrans::commit/rollback
+             *      2. mmcSession::setActivated(ID_FALSE)
+             *
+             * 변경후:
+             *   1. mmcStatement::beginSP
+             *      alter session set transactional_ddl=1;
+             *      => transaction이 active 상태이면 실행 불가
+             *   2. lock table;
+             *   3. DDL - mmcStatement::endDDL
+             *   4. mmcStatement::endSP
+             *      1. commit/rollback
+             *      2. sSession->setActivated(ID_FALSE)
+             */
+            if (aSuccess == ID_TRUE)
+            {
+                /* BUG-37674 */
+                IDE_TEST_RAISE( mmcTrans::commit( sTrans, sSession ) 
+                                != IDE_SUCCESS, CommitError );
+            }
+            else
+            {
+                /* PROJ-1832 New database link */
+                IDE_TEST( mmcTrans::rollbackForceDatabaseLink(
+                              sTrans, sSession )
+                         != IDE_SUCCESS );
+            }
+
+            sSession->setActivated(ID_FALSE);
+
+            IDE_TEST( qci::revertPropertyForSwapTable( aStmt->getQciStmt() )
+                      != IDE_SUCCESS );
+        }
     }
     
     return IDE_SUCCESS;
@@ -1164,6 +1222,11 @@ IDE_RC mmcStatement::endSP(mmcStatement *aStmt, idBool aSuccess)
     if ( qci::isShardDbmsPkg( aStmt->getQciStmt() ) == ID_TRUE )
     {
         (void)qci::revertPropertyForShardMeta( aStmt->getQciStmt() );
+    }
+    /* BUG-48605 */
+    else if ( qci::isUtlCopySwapPkg( aStmt->getQciStmt() ) == ID_TRUE )
+    {
+        (void) qci::revertPropertyForSwapTable( aStmt->getQciStmt() );
     }
     
     return IDE_FAILURE;

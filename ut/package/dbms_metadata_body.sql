@@ -2039,17 +2039,19 @@ deleteOn       VARCHAR(1);
 ddlStr         varchar(65534);
 begin
     SELECT /*+ USE_HASH( A, B ) */
-            A.TABLE_ID,
-            DECODE(A.MAXROW, 0, '', 'MAXROWS '||A.MAXROW),
-            B.TYPE, B.NAME, Q.DELETE_ON
+        A.TABLE_ID,
+        DECODE(A.MAXROW, 0, '', 'MAXROWS '||A.MAXROW),
+        B.TYPE, B.NAME, NVL2( Q.TABLE_OID, 'F', 'T')
         INTO tableId, maxRow, tbsType, tbsName, deleteOn
-    FROM SYSTEM_.SYS_TABLES_ A, V$TABLESPACES B, V$QUEUE Q
+    FROM SYSTEM_.SYS_TABLES_ A 
+        LEFT OUTER JOIN V$QUEUE_DELETE_OFF Q
+        ON A.TABLE_OID = Q.TABLE_OID, 
+        V$TABLESPACES B
     WHERE A.USER_ID = userId
         AND A.TBS_ID = B.ID
         AND A.TABLE_TYPE ='Q'
         AND A.TEMPORARY = 'N'
         AND A.HIDDEN = 'N'
-        AND A.TABLE_OID = Q.TABLE_OID
         AND A.TABLE_NAME = object_name;
 
     ddlStr := 'CREATE QUEUE ' || get_object_clause(object_name, userName) || ' (';

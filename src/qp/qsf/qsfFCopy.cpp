@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsfFCopy.cpp 84991 2019-03-11 09:21:00Z andrew.shin $
+ * $Id: qsfFCopy.cpp 91801 2021-10-06 07:39:37Z ahra.cho $
  *
  * Description :
  *     PROJ-1371 PSM File Handling
@@ -189,7 +189,7 @@ IDE_RC qsfCalculate_FCopy( mtcNode*     aNode,
     IDE_RC           sRC;
     UInt             sErrorCode;
         
-    smiStatement   * sDummyStmt;
+    smiStatement   * sDummyStmt      = NULL;
     smiStatement     sStmt;
     
     UInt             sSmiStmtFlag = 0;
@@ -227,22 +227,20 @@ IDE_RC qsfCalculate_FCopy( mtcNode*     aNode,
         sSrcPathValue = (mtdCharType*)aStack[1].value;
         sDestPathValue = (mtdCharType*)aStack[3].value;
         
-        // 메타에서 실제 path를 얻어옴
-        sDummyStmt = QC_SMI_STMT(sStatement);
-
         sSmiStmtFlag &= ~SMI_STATEMENT_MASK;
         sSmiStmtFlag |= SMI_STATEMENT_UNTOUCHABLE;
         
         sSmiStmtFlag &= ~SMI_STATEMENT_CURSOR_MASK;
         sSmiStmtFlag |= SMI_STATEMENT_MEMORY_CURSOR;
 
+        IDE_TEST( sStmt.begin( mtc::getStatistics( aTemplate ), QC_SMI_STMT(sStatement), sSmiStmtFlag )
+              != IDE_SUCCESS);
+
+        // 메타에서 실제 path를 얻어옴
+        sDummyStmt = QC_SMI_STMT(sStatement);
         QC_SMI_STMT(sStatement) = &sStmt;
         sStage = 1;
-        
-        IDE_TEST( sStmt.begin( mtc::getStatistics( aTemplate ), sDummyStmt, sSmiStmtFlag )
-              != IDE_SUCCESS);
-        sStage = 2;
-        
+
         IDE_TEST( qcmDirectory::getDirectory( sStatement,
                                               (SChar*)sSrcPathValue->value,
                                               sSrcPathValue->length,
@@ -276,12 +274,11 @@ IDE_RC qsfCalculate_FCopy( mtcNode*     aNode,
                             sDestDirInfo.userID )
                         != IDE_SUCCESS, ERR_ACCESS_DENIED );
     
-        sStage = 1;
-        IDE_TEST( sStmt.end(SMI_STATEMENT_RESULT_SUCCESS)
-                  != IDE_SUCCESS );
-
         sStage = 0;
         QC_SMI_STMT(sStatement) = sDummyStmt;
+
+        IDE_TEST( sStmt.end(SMI_STATEMENT_RESULT_SUCCESS)
+                  != IDE_SUCCESS );
 
         // src filename, path
         sSrcFilenameValue = (mtdCharType*)aStack[2].value;
@@ -433,14 +430,13 @@ IDE_RC qsfCalculate_FCopy( mtcNode*     aNode,
             iduFileStream::closeFile(sSrcFp );
             break;
             
-        case 2:
+        case 1:
+            QC_SMI_STMT(sStatement) = sDummyStmt;
             if ( sStmt.end(SMI_STATEMENT_RESULT_FAILURE) != IDE_SUCCESS )
             {
                 IDE_ERRLOG(IDE_QP_1);
                 
             }
-        case 1:
-            QC_SMI_STMT(sStatement) = sDummyStmt;
         default:
             break;
     }

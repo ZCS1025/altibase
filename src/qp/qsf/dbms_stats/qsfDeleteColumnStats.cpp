@@ -253,12 +253,11 @@ IDE_RC qsfCalculate_DeleteColumnStats( mtcNode*     aNode,
 
     /* Begin Statement for meta scan */
     sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
+
+    IDE_TEST( sDummyStmt.begin( sStatement->mStatistics, sDummyParentStmt, sSmiStmtFlag ) != IDE_SUCCESS);
     qcg::getSmiStmt( sStatement, &sOldStmt   );
     qcg::setSmiStmt( sStatement, &sDummyStmt );
     sState = 3;
-
-    IDE_TEST( sDummyStmt.begin( sStatement->mStatistics, sDummyParentStmt, sSmiStmtFlag ) != IDE_SUCCESS);
-    sState = 4;
 
     /* Table Á¤º¸ È¹µæ */
     IDE_TEST( qcmUser::getUserID( sStatement,
@@ -399,13 +398,11 @@ IDE_RC qsfCalculate_DeleteColumnStats( mtcNode*     aNode,
         // Nothing to do.
     }
 
-    // End Statement
-    sState = 3;
-    IDE_TEST( sDummyStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS );
-
     // restore
     sState = 2;
     qcg::setSmiStmt( sStatement, sOldStmt );
+    // End Statement
+    IDE_TEST( sDummyStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS );
 
     // transaction commit
     sState = 1;
@@ -421,7 +418,8 @@ IDE_RC qsfCalculate_DeleteColumnStats( mtcNode*     aNode,
 
     switch ( sState )
     {
-        case 4:
+        case 3:
+            qcg::setSmiStmt( sStatement, sOldStmt );
             if ( sDummyStmt.end( SMI_STATEMENT_RESULT_FAILURE ) != IDE_SUCCESS )
             {
                 IDE_ERRLOG(IDE_QP_1);
@@ -430,9 +428,6 @@ IDE_RC qsfCalculate_DeleteColumnStats( mtcNode*     aNode,
             {
                 // Nothing to do.
             }
-            /* fall through */
-        case 3:
-            qcg::setSmiStmt( sStatement, sOldStmt );
             /* fall through */
         case 2:
             sSmiTrans.rollback();

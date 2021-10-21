@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smrRecoveryMgr.h 90522 2021-04-09 01:29:20Z emlee $
+ * $Id: smrRecoveryMgr.h 91673 2021-09-13 04:15:58Z justin.kwon $
  **********************************************************************/
 
 /***********************************************************************
@@ -497,9 +497,6 @@ public:
 
     static smGetDtxMinLSN    mGetDtxMinLSNFunc;
     static smManageDtxInfo   mManageDtxInfoFunc;
-    static IDE_RC processPrepareReqLog( SChar * aLogPtr,
-                                        smrXaPrepareReqLog * aXaPrepareReqLog,
-                                        smLSN * aLSN );
     static IDE_RC processDtxLog( SChar      * aLogPtr,
                                  smrLogType   aLogType,
                                  smLSN      * aLSN,

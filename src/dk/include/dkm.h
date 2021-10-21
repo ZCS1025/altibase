@@ -224,7 +224,7 @@ typedef struct dkmNotifierTransactionInfo
 
     SChar mTargetInfo[ DK_NAME_LEN + 1 ];
 
-    ID_XID mSourceXID;
+    ID_XID mParentXID;
 
     UInt   mTransactionState;
 

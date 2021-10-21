@@ -24,6 +24,8 @@ import java.sql.*;
 import java.util.Calendar;
 import java.util.List;
 
+import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
+
 public class DataNodeShardingCallableStatement extends DataNodeShardingPreparedStatement
         implements InternalShardingCallableStatement
 {
@@ -246,6 +248,7 @@ public class DataNodeShardingCallableStatement extends DataNodeShardingPreparedS
         return ((CallableStatement)mRoutedStatementMap.get(getRoutedNode())).getTimestamp(aParameterName, aCal);
     }
 
+    @Override
     protected List<Statement> route() throws SQLException
     {
         mRouteResult = mRoutingEngine.route(mSql, mParameters);
@@ -268,6 +271,7 @@ public class DataNodeShardingCallableStatement extends DataNodeShardingPreparedS
         );
     }
 
+    @Override
     CallableStatement getNodeStatement(DataNode aNode, Connection aConn) throws SQLException
     {
         CallableStatement sStmt = (CallableStatement)mRoutedStatementMap.get(aNode);
@@ -278,5 +282,28 @@ public class DataNodeShardingCallableStatement extends DataNodeShardingPreparedS
         mShardStmt.setShardMetaNumber(mMetaConn.getShardMetaNumber());
 
         return  sStmt;
+    }
+
+    @Override
+    protected void prepareNodeStatementsForNonLazyMode(List<DataNode> aNodes) throws SQLException
+    {
+        // BUG-47145 lazy mode가 false일때도 PreparedStatement를 병렬로 생성한다.
+        ExecutorEngine sExecutorEngine = mMetaConn.getExecutorEngine();
+        sExecutorEngine.generateStatement(aNodes,
+                new GenerateCallback<CallableStatement>()
+                {
+                    public CallableStatement generate(DataNode aNode) throws SQLException
+                    {
+                        Connection sNodeCon = mMetaConn.getNodeConnection(aNode);
+                        CallableStatement sStmt = sNodeCon.prepareCall(mSql, mResultSetType,
+                                                                       mResultSetConcurrency,
+                                                                       mResultSetHoldability);
+                        shard_log("(NODE PREPARE) {0}", sStmt);
+                        // BUG-46513 Meta 커넥션에 있는 SMN 값을 세팅한다.
+                        mShardStmt.setShardMetaNumber(mMetaConn.getShardMetaNumber());
+                        mRoutedStatementMap.put(aNode, sStmt);
+                        return sStmt;
+                    }
+                });
     }
 }

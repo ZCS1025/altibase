@@ -6052,10 +6052,12 @@ IDE_RC qcg::startupService( idvSQL * aStatistics )
 
     smiStatement    sSmiStmt;
     smiStatement   *sDummySmiStmt;
+    UInt            sState         = 0;
 
     procBuildMem.init(IDU_MEM_QCI);
 
     IDE_TEST( trans.initialize() != IDE_SUCCESS);
+    sState = 1;
 
     //-------------------------------------------
     // [1] check META and upgrade META
@@ -6063,15 +6065,19 @@ IDE_RC qcg::startupService( idvSQL * aStatistics )
     ideLog::log(IDE_SERVER_0,"\n      [QP] META DB checking....");
 
     IDE_TEST(trans.begin( &sDummySmiStmt, aStatistics ) != IDE_SUCCESS);
+    sState = 2;
 
     IDE_TEST(sSmiStmt.begin( aStatistics, sDummySmiStmt,
                              SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR)
              != IDE_SUCCESS);
+    sState = 3;
 
     IDE_TEST( qcm::check( & sSmiStmt ) != IDE_SUCCESS );
 
+    sState = 2;
     IDE_TEST(sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
 
+    sState = 1;
     IDE_TEST(trans.commit() != IDE_SUCCESS);
 
     //-------------------------------------------
@@ -6079,11 +6085,13 @@ IDE_RC qcg::startupService( idvSQL * aStatistics )
     //-------------------------------------------
 
     IDE_TEST(trans.begin( &sDummySmiStmt, aStatistics ) != IDE_SUCCESS);
+    sState = 2;
 
     IDE_TEST(sSmiStmt.begin( aStatistics,
                              sDummySmiStmt,
                              SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR)
              != IDE_SUCCESS);
+    sState = 3;
 
     // initialize global meta handles ( table, index )
     IDE_TEST(qcm::initMetaHandles(&sSmiStmt) != IDE_SUCCESS );
@@ -6125,10 +6133,13 @@ IDE_RC qcg::startupService( idvSQL * aStatistics )
     IDE_TEST( qdnTrigger::loadAllTrigger( & sSmiStmt )
               != IDE_SUCCESS );
 
+    sState = 2;
     IDE_TEST(sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
 
+    sState = 1;
     IDE_TEST(trans.commit() != IDE_SUCCESS);
 
+    sState = 0;
     IDE_TEST(trans.destroy( aStatistics ) != IDE_SUCCESS);
 
     // PROJ-1407 Temporary Table
@@ -6152,6 +6163,20 @@ IDE_RC qcg::startupService( idvSQL * aStatistics )
     {
         (void) ideLog::log(IDE_SERVER_0, "[PREPARE] Query Processor........[FAILURE]\n");
     }
+
+    switch (sState)
+    {
+        case 3:
+            (void)sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+        case 2:
+            (void)trans.rollback();
+        case 1:
+            (void)trans.destroy( aStatistics );
+        case 0:
+        default:
+            break;
+    }
+
     procBuildMem.destroy();
     return IDE_FAILURE;
 
@@ -6164,16 +6189,20 @@ IDE_RC qcg::startupShutdown( idvSQL * aStatistics )
     smiTrans      sTrans;
     smiStatement  sSmiStmt;
     smiStatement *sDummySmiStmt;
+    UInt          sState         = 0;
 
     sIduMem.init(IDU_MEM_QCI);
     IDE_TEST(sTrans.initialize() != IDE_SUCCESS);
+    sState = 1;
     IDE_TEST(sTrans.begin( &sDummySmiStmt,
                            aStatistics ) != IDE_SUCCESS);
+    sState = 2;
 
     IDE_TEST(sSmiStmt.begin( aStatistics,
                              sDummySmiStmt,
                              SMI_STATEMENT_UNTOUCHABLE | SMI_STATEMENT_MEMORY_CURSOR)
              != IDE_SUCCESS);
+    sState = 3;
 
     if ( ! ( QCU_STORED_PROC_MODE & QCU_SPM_MASK_DISABLE ) )
     {
@@ -6182,10 +6211,13 @@ IDE_RC qcg::startupShutdown( idvSQL * aStatistics )
 
     IDE_TEST(qcm::finiMetaCaches(&sSmiStmt) != IDE_SUCCESS);
 
+    sState = 2;
     IDE_TEST(sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS);
 
+    sState = 1;
     IDE_TEST(sTrans.commit() != IDE_SUCCESS);
 
+    sState = 0;
     IDE_TEST(sTrans.destroy( aStatistics ) != IDE_SUCCESS);
 
     // PROJ-1407 Temporary Table
@@ -6222,6 +6254,19 @@ IDE_RC qcg::startupShutdown( idvSQL * aStatistics )
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    switch (sState)
+    {
+        case 3:
+            (void)sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+        case 2:
+            (void)sTrans.rollback();
+        case 1:
+            (void)sTrans.destroy( aStatistics );
+        case 0:
+        default:
+            break;
+    }
 
     sIduMem.destroy();
     return IDE_FAILURE;
