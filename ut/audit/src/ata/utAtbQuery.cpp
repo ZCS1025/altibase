@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utAtbQuery.cpp 82786 2018-04-12 08:04:45Z bethy $
+ * $Id: utAtbQuery.cpp 91790 2021-10-05 01:14:45Z chkim $
  ******************************************************************************/
 
 #include <uto.h>
@@ -588,7 +588,15 @@ IDE_RC utAtbQuery::lobAtToAt(Query * aGetLob,
     }
 
     /* Fetch LOB */
-    putConn = aPutLob->getConn()->getDbchp();
+    /* BUG-49274 Activate commit count */
+    if ( aGetLob->lobCompareMode )
+    {
+        putConn = aPutLob->getConn()->getDbchp();
+    }
+    else
+    {
+        putConn = this->getConn()->getDbchp();
+    }
 
     IDE_TEST_RAISE(SQLAllocStmt(putConn, &putLobStmt) != SQL_SUCCESS,
                    AllocStmt_Err);

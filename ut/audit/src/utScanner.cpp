@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utScanner.cpp 89731 2021-01-11 00:37:00Z chkim $
+ * $Id: utScanner.cpp 91790 2021-10-05 01:14:45Z chkim $
  ******************************************************************************/
 #include <mtcl.h>
 #include <uto.h>
@@ -210,18 +210,10 @@ IDE_RC utScanner::fetch( bool aFetchA, bool aFetchB)
 UInt utScanner::progress()
 {
     ++_fetch;
-    if( (_fetch % mCountToCommit) == 0)
+
+    /* BUG-49274 Activate commit count */
+    if( ( _fetch % mCountToFetch ) == 0)
     {
-        /* //BUGBUG Altibase can not do SELECT + DELETE
-           if( mConnB )
-           {
-           IDE_TEST( mConnB->commit() != IDE_SUCCESS);
-           }
-           if( mConnA )
-           {
-           /IDE_TEST( mConnA->commit() != IDE_SUCCESS);
-           }
-        */
         idlOS::fprintf(stderr,".");
         idlOS::fflush(stderr);
     }
@@ -239,6 +231,75 @@ UInt utScanner::progress()
     }
 
     return 0;
+}
+
+/* BUG-49274 Activate commit count */
+IDE_RC utScanner::commitSync( bool aIsLastCommit )
+{
+    UShort i;
+    
+    for( i = 0; i < SERVERS; i++)
+    {
+        /* 
+         * 서버 또는 네트워크 문제로 DML connection이 끊어지는 경우를 체크해야 한다.  
+         * 특히 BUG-39193와 같이 서버에 의해 강제로 끊어진 경우 조기에 체크하지 않으면,
+         * 많은 양의 테이블 로그(U1-SYS.T1.log)를 생성하게 된다.
+         *
+         * 연결을 성공한 이후 발생하는 Connection 에러만 처리하므로 아래의 에러는 다루지 않는다.
+         * ERR_FAIL_TO_ESTABLISH_CONNECTION  0x50032
+         * ERR_CONNECTION_TIME_OUT           0x5104d
+         * ERR_CM_GENERAL_ERROR              0x5104f
+         */
+        IDE_TEST( mConn4DML[i]->getErrNo() == ERR_COMMUNICATION_LINK_FAILURE );
+
+        commitSyncEach( aIsLastCommit, i );
+    }
+
+    return IDE_SUCCESS;
+    
+    IDE_EXCEPTION_END;
+    
+    return IDE_FAILURE;
+}
+
+/*
+ * Best-effort strategy에 의거하여 connection lost를 제외하고는 계속 진행한다.
+ * 그리고, 양쪽의 DML 연결이 서로 영향을 주지 않도록, 분리하여 처리한다.
+ */
+void utScanner::commitSyncEach( bool aIsLastCommit, UShort aServerId )
+{
+    bool sIsCommitRequired = true;
+
+    if ( aIsLastCommit == false)
+    {
+        sIsCommitRequired = ( mCnts2Commit[aServerId] % mCountToCommit ) == 0;
+    }
+
+    if( (mConn4DML[aServerId] != NULL) 
+            && ( mCnts2Commit[aServerId] > 0 ) 
+            && ( sIsCommitRequired == true) )
+    {
+        mCnts2Commit[aServerId] = 0;
+        IDE_TEST_RAISE( mConn4DML[aServerId]->commit() != IDE_SUCCESS, ERR_COMMIT );
+        mCommittedCnts[aServerId]++;
+    }
+
+    return;
+   
+    IDE_EXCEPTION( ERR_COMMIT )
+    {
+        if( _error )
+        {
+            // handle connection lost case only due to best-effort strategy.
+            if ( idlOS::strncmp( uteGetErrorSTATE( &gErrorMgr ) , "08S01", 5 ) == 0 )
+            {
+                mConn4DML[aServerId] = NULL;
+            }
+        }
+    }
+    IDE_EXCEPTION_END;
+
+    return;
 }
 
 void utScanner::reset()
@@ -347,12 +408,19 @@ IDE_RC utScanner::execute()
 
             default:;
         }
-
-        IDE_TEST( fetch( fetchA, fetchB ) != IDE_SUCCESS);
+        
         if( progress() == 0 )
         {
             goto LIMIT;
         }
+
+        /* BUG-49274 Activate commit count */
+        if ( mProp->mMode == SYNC )
+        {
+            IDE_TEST( commitSync( false ) != IDE_SUCCESS );
+        }
+        
+        IDE_TEST( fetch( fetchA, fetchB ) != IDE_SUCCESS);
     }
 
     /* TASK-4212: audit툴의 대용량 처리시 개선 */
@@ -367,6 +435,12 @@ IDE_RC utScanner::execute()
             goto LIMIT;
         }
 
+        /* BUG-49274 Activate commit count */
+        if ( mProp->mMode == SYNC )
+        {
+            IDE_TEST( commitSync( false ) != IDE_SUCCESS );
+        }
+        
         if ( mIsFileMode == false )
         {
             mRowA = mSelectA->fetch(mConnA->getDbType());
@@ -388,6 +462,12 @@ IDE_RC utScanner::execute()
             goto LIMIT;
         }
 
+        /* BUG-49274 Activate commit count */
+        if ( mProp->mMode == SYNC )
+        {
+            IDE_TEST( commitSync( false ) != IDE_SUCCESS );
+        }
+        
         if ( mIsFileMode == false )
         {
             mRowB = mSelectB->fetch(mConnB->getDbType());
@@ -399,9 +479,6 @@ IDE_RC utScanner::execute()
     }
 
   LIMIT: /*  Limit expression end point */
-
-    IDE_TEST( mConnB->commit() != IDE_SUCCESS);
-    IDE_TEST( mConnA->commit() != IDE_SUCCESS);
 
     mTimeStamp = getTimeStamp() - mTimeStamp;
     if( flog != NULL )
@@ -416,6 +493,12 @@ IDE_RC utScanner::execute()
         IDE_TEST_RAISE(idlOS::fclose(mSlaveFile.mFile) != 0, ERR_SFILE_CLOSE);
         idlOS::remove( mMasterFile.mName );
         idlOS::remove( mSlaveFile.mName );
+    }
+
+    /* BUG-49274 Activate commit count */
+    if ( mProp->mMode == SYNC )
+    {
+        IDE_TEST( commitSync( true ) != IDE_SUCCESS );
     }
 
     return IDE_SUCCESS;
@@ -673,6 +756,9 @@ IDE_RC utScanner::doMOSO()
                 }
                 IDE_TEST_RAISE( exec(mSD) != IDE_SUCCESS, err_sync_exec );
             }
+
+            /* BUG-49274 Activate commit count */
+            mCnts2Commit[SLAVE]++;
             break;
 
         default:;
@@ -710,6 +796,9 @@ IDE_RC utScanner::doMXSO()
                     IDE_TEST( mMI->bind(mRowB) != IDE_SUCCESS);
                 }
                 IDE_TEST_RAISE( exec( mMI ) != IDE_SUCCESS, err_sync_exec );
+                
+                /* BUG-49274 Activate commit count */
+                mCnts2Commit[MASTER]++;
             }
             else
             {
@@ -718,6 +807,9 @@ IDE_RC utScanner::doMXSO()
                     IDE_TEST( mSD->bind(mRowB) != IDE_SUCCESS);
                 }
                 IDE_TEST_RAISE( exec( mSD ) != IDE_SUCCESS, err_sync_exec );
+                
+                /* BUG-49274 Activate commit count */
+                mCnts2Commit[SLAVE]++;
             }
             break;
 
@@ -733,6 +825,7 @@ IDE_RC utScanner::doMXSO()
 
     return IDE_SUCCESS;
 }
+
 IDE_RC utScanner::doMOSX()
 {
     switch(mMode)
@@ -752,6 +845,9 @@ IDE_RC utScanner::doMOSX()
                 IDE_TEST( mSI->bind(mRowA) != IDE_SUCCESS);
             }
             IDE_TEST_RAISE(exec(mSI) != IDE_SUCCESS, err_sync_exec);
+            
+            /* BUG-49274 Activate commit count */
+            mCnts2Commit[SLAVE]++;
 
             break;
 
@@ -788,6 +884,9 @@ IDE_RC utScanner::prepare( utProperties *aProp )
 
     mDML = sDML;
     mDiffCount  = 0;
+
+    /* BUG-49274 Activate commit count */
+    mCountToCommit = aProp->mCountToCommit;
 
     IDE_TEST( mSelectA->close() != IDE_SUCCESS);
     IDE_TEST( mSelectB->close() != IDE_SUCCESS);
@@ -1439,9 +1538,12 @@ IDE_RC utScanner::setModeDIFF(bool on)
 
 IDE_RC utScanner::initialize(Connection * aConnA,
                              Connection * aConnB,
+                             Connection * aConn4DML[],
                              SInt aCountToCommit,
                              SChar* errorBuffer)
 {
+    UShort i = 0;
+
     mDiffCount =  0;
     mPKCount   =  0;
 
@@ -1472,20 +1574,35 @@ IDE_RC utScanner::initialize(Connection * aConnA,
     mSelectB = aConnB->query();
     IDE_TEST( mSelectB == NULL );
     
+    /* BUG-49274 Activate commit count */
+    for( i = 0 ; i < SERVERS; i++)
+    {
+        IDE_TEST( aConn4DML[i] == NULL );
+        mConn4DML[i] = aConn4DML[i];
+    }
+
     IDE_TEST(Object::initialize() != IDE_SUCCESS );
 
-    if( aCountToCommit > 0)
+    mCountToCommit = aCountToCommit;
+
+    /* BUG-49274 Activate commit count */
+    mCountToFetch       = 100; // set defalut value as the same as iLoader
+
+    for( i = 0 ; i < SERVERS; i++)
     {
-        mCountToCommit = aCountToCommit;
-        IDE_TEST( mConnA->autocommit(false) != IDE_SUCCESS);
-        IDE_TEST( mConnB->autocommit(false) != IDE_SUCCESS);
+        mCommittedCnts[i]  = 0;
+        mCnts2Commit[i]    = 0;
     }
-    else
+
+    IDE_TEST( mConnA->autocommit(false) != IDE_SUCCESS);
+    IDE_TEST( mConnB->autocommit(false) != IDE_SUCCESS);
+   
+    /* BUG-49274 Activate commit count */
+    for( i = 0 ; i < SERVERS; i++)
     {
-        mCountToCommit = 100;
-        mConnA->autocommit(false);
-        mConnB->autocommit(false);
+        IDE_TEST( mConn4DML[i]->autocommit(false) != IDE_SUCCESS);
     }
+    
 
     // BUG-17951
     mMOSODiffCount = 0;
@@ -1703,6 +1820,16 @@ IDE_RC utScanner::printResult(FILE* f)
                         ? mSelectA->rows() : mSelectB->rows())*1000000.0/mTimeStamp //9
                        , mTimeStamp/1000000.0);               // 10
     }
+
+    /* BUG-49274 Activate commit count */
+    if(utProperties::mVerbose)
+    {
+        idlOS::fprintf( f,
+                        "\nDML commit to Master: %10d\n"
+                        "DML commit to Slave:  %10d\n"
+                        , mCommittedCnts[MASTER]
+                        , mCommittedCnts[SLAVE] );
+    }
     IDE_TEST( idlOS::fflush(f) < 0);
 
     return IDE_SUCCESS;
@@ -1751,7 +1878,7 @@ IDE_RC utScanner::setSI()
         mSI = NULL;
     }
 
-    sQuery = mConnB->query();
+    sQuery = mConn4DML[SLAVE]->query();
     IDE_TEST( sQuery == NULL);
 
     mSI = new dmlQuery();
@@ -1788,7 +1915,7 @@ IDE_RC utScanner::setSU()
         mSU = NULL;
     }
 
-    sQuery = mConnB->query();
+    sQuery = mConn4DML[SLAVE]->query();
     IDE_TEST( sQuery == NULL);
 
     mSU = new dmlQuery();
@@ -1826,7 +1953,7 @@ IDE_RC utScanner::setSD()
         mSD = NULL;
     }
 
-    sQuery = mConnB->query();
+    sQuery = mConn4DML[SLAVE]->query();
     IDE_TEST( sQuery == NULL);
 
     mSD = new dmlQuery();
@@ -1863,7 +1990,7 @@ IDE_RC utScanner::setMI()
         mMI = NULL;
     }
 
-    sQuery = mConnA->query();
+    sQuery = mConn4DML[MASTER]->query();
     IDE_TEST( sQuery == NULL);
 
     mMI = new dmlQuery();

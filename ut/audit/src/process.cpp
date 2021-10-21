@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: process.cpp 88614 2020-09-17 05:15:36Z chkim $
+ * $Id: process.cpp 91790 2021-10-05 01:14:45Z chkim $
  ******************************************************************************/
 #include <uto.h>
 
@@ -58,10 +58,6 @@ IDE_RC utScanner::log_equal()
             mSelectB->rows());
 
     return logWritePK(mRowA);
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
 }
 
 IDE_RC utScanner::log_diff(ps_t pst)
