@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdcTXSegMgr.cpp 88545 2020-09-10 09:14:02Z emlee $
+ * $Id: sdcTXSegMgr.cpp 91863 2021-10-17 23:48:12Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -58,12 +58,10 @@ idBool                 sdcTXSegMgr::mIsAttachSegment;
 IDE_RC  sdcTXSegMgr::adjustEntryCount( UInt    aEntryCnt,
                                        UInt  * aAdjustEntryCnt )
 {
-    SChar sBuffer[ sdcTXSegMgr::CONV_BUFF_SIZE ]="";
-
     if ( aEntryCnt > 1 )
     {
-        mFreeListCnt = IDL_MIN(smuUtility::getPowerofTwo( ID_SCALABILITY_CPU ), 512);
-        mTotEntryCnt = IDL_MIN(smuUtility::getPowerofTwo( aEntryCnt ), 512);
+        mFreeListCnt   = aEntryCnt;
+        mTotEntryCnt   = aEntryCnt;
     }
     else
     {
@@ -72,30 +70,12 @@ IDE_RC  sdcTXSegMgr::adjustEntryCount( UInt    aEntryCnt,
         mTotEntryCnt = 2;
     }
 
-    if ( mTotEntryCnt < mFreeListCnt )
-    {
-        /* BUG-47681 undo tablespace full */
-        mFreeListCnt =  mTotEntryCnt;
-    }
-
-    idlOS::snprintf( sBuffer, sdcTXSegMgr::CONV_BUFF_SIZE,
-                     "%"ID_UINT32_FMT"", mTotEntryCnt );
-
-    // PROJ-2446 bugbug
-    IDE_TEST( idp::update( NULL, "TRANSACTION_SEGMENT_COUNT", sBuffer, 0 )
-              != IDE_SUCCESS );
-
     if ( aAdjustEntryCnt != NULL )
     {
         *aAdjustEntryCnt = mTotEntryCnt;
     }
 
     return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-
 }
 
 
