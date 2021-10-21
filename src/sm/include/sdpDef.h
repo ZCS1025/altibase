@@ -16,7 +16,7 @@
  
 
 /*******************************************************************************
- * $Id: sdpDef.h 91766 2021-09-29 08:07:37Z justin.kwon $
+ * $Id: sdpDef.h 91841 2021-10-15 00:59:27Z seulki $
  *
  * Description :
  *      본 파일은 page layer의 자료구조를 정의한 헤더파일이다.
@@ -35,8 +35,8 @@
 # define SDP_MAX_TSSEG_PID_CNT     (256)
 # define SDP_MAX_UDSEG_PID_CNT     (256)
 #else
-# define SDP_MAX_TSSEG_PID_CNT     (512)
-# define SDP_MAX_UDSEG_PID_CNT     (512)
+# define SDP_MAX_TSSEG_PID_CNT     (900)
+# define SDP_MAX_UDSEG_PID_CNT     (900)
 #endif
 
 /*

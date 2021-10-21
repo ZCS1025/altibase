@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idpDescResource.cpp 91628 2021-09-08 01:48:35Z ahra.cho $
+ * $Id: idpDescResource.cpp 91841 2021-10-15 00:59:27Z seulki $
  *
  * Description:
  *
@@ -4259,18 +4259,19 @@ IDE_RC registProperties()
     // 트랜잭션 세그먼트 엔트리 개수 지정
     // 트랜잭션 세그먼트 최대 개수는 첫번째
     // 데이타파일의 File Space Header에 저장될 수 있는
-    // SegHdr PID의 개수이다. SegHdr PID 가 4 바이트이고
-    // TSSEG 512개 UDSEG 512개까지 생성하고 저장할수 있음.
+    // SegHdr PID의 개수이다.
+    // TSSEG, UDSEG SegHdr PID 가  각각 4 바이트이고
+    // 최대 997 개 까지 생성될수 있다.
     IDP_DEF(UInt, "TRANSACTION_SEGMENT_COUNT",
             IDP_ATTR_SL_ALL |
             IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
             IDP_ATTR_MS_ANY |
             IDP_ATTR_LC_EXTERNAL |
-            IDP_ATTR_RD_WRITABLE |
+            IDP_ATTR_RD_READONLY |
             IDP_ATTR_ML_JUSTONE  |
             IDP_ATTR_CK_CHECK,
-            1, 512, (256));
+            1, 900, (256));
 
     // 트랜잭션 세그먼트 테이블이 모두 ONLINE인 상황에서
     // 트랜잭션 세그먼트 엔트리를 할당 받지 못할 경우에
