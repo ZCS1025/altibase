@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smcRecordUpdate.cpp 90089 2021-02-26 06:29:49Z jiwon.kim $
+ * $Id: smcRecordUpdate.cpp 91859 2021-10-17 22:37:22Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -3820,8 +3820,6 @@ IDE_RC smcRecordUpdate::writeVCPieceFlagLog( void            * aTrans,
         sTmpPieceCnt++;
     }
 
-    //(*aColCnt)++;
-
     IDE_TEST( smLayerCallback::writeLogToBuffer( aTrans,
                                                  &sTmpPieceCnt,
                                                  sTmpOffset,
@@ -3837,14 +3835,14 @@ IDE_RC smcRecordUpdate::writeVCPieceFlagLog( void            * aTrans,
 
 /*>>>>>>>>>>>>>> redo: SMR_SMC_PERS_DELETE_VERSION_ROW                        */
 IDE_RC smcRecordUpdate::redo_SMC_PERS_DELETE_VERSION_ROW(
-    smTID       aTID,
-    scSpaceID   aSpaceID,
-    scPageID    aPID,
-    scOffset    aOffset,
-    vULong      aData,
-    SChar     * aImage,     // BUG-46854: VAR 피스 플래그 로그 처리하기 위함 
-    SInt        aSize,      // BUG-46854: VAR 피스 플래그 로그 처리하기 위함 
-    UInt        aFlag)      // BUG-46854: VAR 피스 플래그 로그 처리하기 위함
+                                    smTID       aTID,
+                                    scSpaceID   aSpaceID,
+                                    scPageID    aPID,
+                                    scOffset    aOffset,
+                                    vULong      aData,
+                                    SChar     * aImage,     // BUG-46854: VAR 피스 플래그 로그 처리하기 위함 
+                                    SInt        aSize,      // BUG-46854: VAR 피스 플래그 로그 처리하기 위함 
+                                    UInt        aFlag )     // BUG-46854: VAR 피스 플래그 로그 처리하기 위함
 {
     smpSlotHeader    *sSlotHeader;
     smOID             sRowID;
@@ -3973,15 +3971,14 @@ IDE_RC smcRecordUpdate::redo_SMC_PERS_DELETE_VERSION_ROW(
 }
 
 /*>>>>>>>>>>>>>> undo: SMR_SMC_PERS_DELETE_VERSION_ROW                        */
-IDE_RC smcRecordUpdate::undo_SMC_PERS_DELETE_VERSION_ROW(
-    smTID       aTID,
-    scSpaceID   aSpaceID,
-    scPageID    aPID,
-    scOffset    aOffset,
-    vULong      aData,
-    SChar      *aImage,
-    SInt        aSize,
-    UInt        aFlag)
+IDE_RC smcRecordUpdate::undo_SMC_PERS_DELETE_VERSION_ROW( smTID       aTID,
+                                                          scSpaceID   aSpaceID,
+                                                          scPageID    aPID,
+                                                          scOffset    aOffset,
+                                                          vULong      aData,
+                                                          SChar      *aImage,
+                                                          SInt        aSize,
+                                                          UInt        aFlag )
 {
     smpSlotHeader    *sSlotHeader;
     smOID             sRowID;
@@ -4173,14 +4170,14 @@ IDE_RC smcRecordUpdate::redo_undo_SMC_PERS_UPDATE_FIXED_ROW( smTID        aTID,
 
 /* Update type:  SMR_SMC_PERS_UPDATE_FIXED_ROW_NEXT_FREE     */
 IDE_RC smcRecordUpdate::redo_undo_SMC_PERS_UPDATE_FIXED_ROW_NEXT_FREE(
-    smTID        aTID,
-    scSpaceID    aSpaceID,
-    scPageID     aPID,
-    scOffset     aOffset,
-    vULong       aData,
-    SChar    * /*aImage*/,
-    SInt       /*aSize*/,
-    UInt       /*aFlag*/)
+                                                            smTID        aTID,
+                                                            scSpaceID    aSpaceID,
+                                                            scPageID     aPID,
+                                                            scOffset     aOffset,
+                                                            vULong       aData,
+                                                            SChar    * /*aImage*/,
+                                                            SInt       /*aSize*/,
+                                                            UInt       /*aFlag*/)
 {
     SChar             *sRow;
     void              *sTransPtr;
@@ -4280,14 +4277,14 @@ IDE_RC smcRecordUpdate::redo_SMC_PERS_UPDATE_FIXED_ROW_NEXT_VERSION(
 
 /* Update type:  SMR_SMC_PERS_UPDATE_FIXED_ROW_NEXT_VERSION     */
 IDE_RC smcRecordUpdate::undo_SMC_PERS_UPDATE_FIXED_ROW_NEXT_VERSION(
-    smTID     aTID,
-    scSpaceID aSpaceID,
-    scPageID  aPID,
-    scOffset  aOffset,
-    vULong    aData,
-    SChar    *aImage,
-    SInt      aSize,
-    UInt      /*aFlag*/)
+                                                            smTID     aTID,
+                                                            scSpaceID aSpaceID,
+                                                            scPageID  aPID,
+                                                            scOffset  aOffset,
+                                                            vULong    aData,
+                                                            SChar    *aImage,
+                                                            SInt      aSize,
+                                                            UInt      /*aFlag*/ )
 {
     smpSlotHeader     *sSlotHeader;
     smSCN              sHeaderNext;
@@ -4358,7 +4355,7 @@ IDE_RC smcRecordUpdate::redo_SMC_PERS_SET_FIX_ROW_DROP_FLAG(
                                                       vULong       aData,
                                                       SChar     * /*aImage*/,
                                                       SInt        /*aSize*/,
-                                                      UInt        /*aFlag*/)
+                                                      UInt        /*aFlag*/ )
 {
     return smcTable::setTableHeaderDropFlag( aSpaceID,
                                              aPID,
@@ -4374,7 +4371,7 @@ IDE_RC smcRecordUpdate::undo_SMC_PERS_SET_FIX_ROW_DROP_FLAG(
                                                       vULong        aData,
                                                       SChar     * /*aImage*/,
                                                       SInt        /*aSize*/,
-                                                      UInt        /*aFlag*/)
+                                                      UInt        /*aFlag*/ )
 {
     void              *sTransPtr;
 
@@ -4412,7 +4409,7 @@ IDE_RC smcRecordUpdate::redo_SMC_PERS_SET_FIX_ROW_DELETE_BIT(
                                                        vULong     /*aData*/,
                                                        SChar    * /*aImage*/,
                                                        SInt       /*aSize*/,
-                                                       UInt       /*aFlag*/)
+                                                       UInt       /*aFlag*/ )
 {
     smpSlotHeader*  sSlotHeader;
 
@@ -4439,7 +4436,7 @@ IDE_RC smcRecordUpdate::undo_SMC_PERS_SET_FIX_ROW_DELETE_BIT(
                                                        vULong      /*aData*/,
                                                        SChar     * /*aImage*/,
                                                        SInt        /*aSize*/,
-                                                       UInt        /*aFlag*/)
+                                                       UInt        /*aFlag*/ )
 {
     smpSlotHeader  * sSlotHeader;
     void           * sTransPtr;
@@ -4471,14 +4468,14 @@ IDE_RC smcRecordUpdate::undo_SMC_PERS_SET_FIX_ROW_DELETE_BIT(
 
 /* Update type:  SMR_SMC_PERS_UPDATE_VAR_ROW_HEAD       */
 IDE_RC smcRecordUpdate::redo_undo_SMC_PERS_UPDATE_VAR_ROW_HEAD(
-    smTID         aTID,
-    scSpaceID     aSpaceID,
-    scPageID      aPID,
-    scOffset      aOffset,
-    vULong      /*aData*/,
-    SChar        *aImage,
-    SInt          aSize,
-    UInt        /*aFlag*/)
+                                                        smTID         aTID,
+                                                        scSpaceID     aSpaceID,
+                                                        scPageID      aPID,
+                                                        scOffset      aOffset,
+                                                        vULong      /*aData*/,
+                                                        SChar        *aImage,
+                                                        SInt          aSize,
+                                                        UInt        /*aFlag*/ )
 {
     SChar             *sRow;
     void              *sTransPtr;
@@ -4521,7 +4518,7 @@ IDE_RC smcRecordUpdate::redo_undo_SMC_PERS_UPDATE_VAR_ROW(
                                                     vULong     /*aData*/,
                                                     SChar     *aImage,
                                                     SInt       /*aSize*/,
-                                                    UInt       /*aFlag*/)
+                                                    UInt       /*aFlag*/ ) 
 {
     SChar           *sRow;
     UShort           sSize;
@@ -4578,7 +4575,7 @@ IDE_RC smcRecordUpdate::redo_SMC_PERS_SET_VAR_ROW_FLAG(
                                                         vULong     aData,
                                                         SChar     *aImage,
                                                         SInt     /*aSize*/,
-                                                        UInt     /*aFlag*/)
+                                                        UInt     /*aFlag*/ )
 {
     smVCPieceHeader  *sVCPieceHeader;
     smOID             sVCPieceOID = SM_MAKE_OID(aPID, aOffset);
@@ -4627,7 +4624,7 @@ IDE_RC smcRecordUpdate::undo_SMC_PERS_SET_VAR_ROW_FLAG(
                                                         vULong     /*aData*/,
                                                         SChar     *aImage,
                                                         SInt       /*aSize*/,
-                                                        UInt       /*aFlag*/)
+                                                        UInt       /*aFlag*/ )
 {
     smVCPieceHeader *sVCPieceHeader;
     void            *sTransPtr;

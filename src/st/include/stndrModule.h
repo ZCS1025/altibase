@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: stndrModule.h 89495 2020-12-14 05:19:22Z emlee $ 
+ * $Id: stndrModule.h 91859 2021-10-17 22:37:22Z emlee $ 
  **********************************************************************/
 
 #ifndef _O_STNDR_MODULE_H_
@@ -738,9 +738,9 @@ public:
     static IDE_RC moveSlots( sdrMtx         * aMtx,
                              stndrHeader    * aIndex,
                              sdpPhyPageHdr  * aSrcNode,
-                             stndrKeyArray  * sKeyArray,
-                             UShort           sFromIdx,
-                             UShort           sToIdx,
+                             stndrKeyArray  * aKeyArray,
+                             UShort           aFromIdx,
+                             UShort           aToIdx,
                              sdpPhyPageHdr  * aDstNode );
 
     static void getSplitInfo( stndrHeader   * aHeaer,

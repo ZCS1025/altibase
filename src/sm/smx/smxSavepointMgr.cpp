@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smxSavepointMgr.cpp 90824 2021-05-13 05:35:21Z minku.kang $
+ * $Id: smxSavepointMgr.cpp 91859 2021-10-17 22:37:22Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -500,8 +500,7 @@ IDE_RC smxSavepointMgr::setImpSavepoint( smxSavepoint ** aSavepoint,
      * Partial Rollback을 지원해야 합니다. */
     sNewSavepoint->mStmtDepth   = aStmtDepth;
 
-    sNewSavepoint->mReplImpSvpStmtDepth
-        = SMI_STATEMENT_DEPTH_NULL;
+    sNewSavepoint->mReplImpSvpStmtDepth = SMI_STATEMENT_DEPTH_NULL;
 
     /* PROJ-1594 Volatile TBS */
     sNewSavepoint->mVolatileLSN = aVolLSN;

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: stndrDef.h 89278 2020-11-19 01:41:49Z justin.kwon $
+ * $Id: stndrDef.h 91859 2021-10-17 22:37:22Z emlee $
  ***********************************************************************/
 
 #ifndef _O_STNDR_DEF_H_
@@ -375,22 +375,22 @@ typedef struct stndrRunInfo
 #define STNDR_SET_CCTS_NO( aKey, aValue )               \
     {                                                   \
         (aKey)->mTxInfo[0] &= STNDR_CREATE_CTS_UNMASK;  \
-        (aKey)->mTxInfo[0] |= ((UChar)aValue << 2);     \
+        (aKey)->mTxInfo[0] |= ((UChar)(aValue) << 2);   \
     }
 #define STNDR_SET_STATE( aKey, aValue )             \
     {                                               \
         (aKey)->mTxInfo[0] &= STNDR_STATE_UNMASK;   \
-        (aKey)->mTxInfo[0] |= ((UChar)aValue); \
+        (aKey)->mTxInfo[0] |= ((UChar)(aValue));    \
     }
 #define STNDR_SET_LCTS_NO( aKey, aValue )               \
     {                                                   \
         (aKey)->mTxInfo[1] &= STNDR_LIMIT_CTS_UNMASK;   \
-        (aKey)->mTxInfo[1] |= ((UChar)aValue << 2);     \
+        (aKey)->mTxInfo[1] |= ((UChar)(aValue) << 2);   \
     }
 #define STNDR_SET_TB_TYPE( aKey, aValue )       \
     {                                           \
         (aKey)->mTxInfo[1] &= STNDR_TB_UNMASK;  \
-        (aKey)->mTxInfo[1] |= (UChar)aValue;    \
+        (aKey)->mTxInfo[1] |= (UChar)(aValue);  \
     }
 
 #define STNDR_SET_TBK_CSCN( aKey, aValue )                              \

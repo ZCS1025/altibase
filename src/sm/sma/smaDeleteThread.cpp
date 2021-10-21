@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smaDeleteThread.cpp 90259 2021-03-19 01:22:22Z emlee $
+ * $Id: smaDeleteThread.cpp 91859 2021-10-17 22:37:22Z emlee $
  **********************************************************************/
 
 #include <smErrorCode.h>
@@ -401,8 +401,6 @@ IDE_RC smaDeleteThread::realDelete( idBool aDeleteAll, SInt aListN )
     
     mHandled = ID_FALSE;
 
-//    IDE_TEST( mListLock[sListN].lock(NULL) !=IDE_SUCCESS );
-//    sState = ID_TRUE;
     mListLock[sListN].trylock( sState );
 
     if( sState != ID_TRUE )
@@ -1334,24 +1332,20 @@ IDE_RC smaDeleteThread::processFreeSlotPending(smxTrans   *aTrans,
     return IDE_FAILURE;
 }
 
-IDE_RC  smaDeleteThread::lockAll()
+void  smaDeleteThread::lockAll()
 {
     UInt i;
     for ( i = 0; i < smaLogicalAger::mListCnt ; i++ )
     {
         mListLock[i].lock( NULL );
     }
-
-    return IDE_SUCCESS;
 }
 
-IDE_RC  smaDeleteThread::unlockAll()
+void  smaDeleteThread::unlockAll()
 {
     UInt i;
     for ( i = 0; i < smaLogicalAger::mListCnt ; i++ )
     {
         mListLock[i].unlock();
     }
-   
-    return IDE_SUCCESS; 
 }
