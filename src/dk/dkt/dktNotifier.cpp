@@ -178,7 +178,7 @@ IDE_RC dktNotifier::askResultToRequestNode( dktDtxInfo * aDtxInfo, UInt * aResul
         /* 모든 노드를 돌면서 request node 를 찾는다. 
          * 찾지 못할 경우 prepare 상태로 두고 넘어간다. */
         SMI_INIT_SCN( &sGlobalCommitSCN );
-        if ( sdi::findRequestNodeNGetResultWithoutSession( &(aDtxInfo->mXID), 
+        if ( sdi::findRequestNodeNGetResultWithoutSession( &(aDtxInfo->mParentXID), 
                                                            &sIsFindRequestNode,
                                                            &sIsCommit,
                                                            &sGlobalCommitSCN ) 
@@ -649,7 +649,7 @@ IDE_RC dktNotifier::notifyOneBranchXaResultForShard( dktDtxInfo          * aDtxI
      if ( IDL_LIKELY_FALSE( IDE_TRC_SD_32 != 0 ) )
      {
             (void)idaXaConvertXIDToString( NULL,
-                                           &(aDtxInfo->mXID),
+                                           &(aDtxInfo->mParentXID),
                                            sXidString,
                                            DKT_2PC_XID_STRING_LEN );
 
@@ -677,7 +677,7 @@ IDE_RC dktNotifier::notifyOneBranchXaResultForShard( dktDtxInfo          * aDtxI
     if ( IDE_TRC_DK_3 )
     {
         (void)idaXaConvertXIDToString(NULL,
-                                      &(aDtxInfo->mXID),
+                                      &(aDtxInfo->mParentXID),
                                       sXidString,
                                       DKT_2PC_XID_STRING_LEN);
 
@@ -705,7 +705,7 @@ IDE_RC dktNotifier::notifyOneBranchXaResultForShard( dktDtxInfo          * aDtxI
     if ( IDL_LIKELY_FALSE( IDE_TRC_SD_32 != 0 ) )                                       \
     {
         (void)idaXaConvertXIDToString( NULL,
-                                       &(aDtxInfo->mXID),
+                                       &(aDtxInfo->mParentXID),
                                        sXidString,
                                        DKT_2PC_XID_STRING_LEN );
 
@@ -766,7 +766,7 @@ idBool dktNotifier::findDtxInfo( DK_NOTIFY_TYPE aType,
 
 idBool dktNotifier::findDtxInfoByXID( DK_NOTIFY_TYPE    aType,
                                       idBool            aLocked,
-                                      ID_XID          * aXID,
+                                      ID_XID          * aParentXID,
                                       dktDtxInfo     ** aDtxInfo )
 {
     iduListNode * sDtxInfoIterator = NULL;
@@ -797,7 +797,7 @@ idBool dktNotifier::findDtxInfoByXID( DK_NOTIFY_TYPE    aType,
     IDU_LIST_ITERATE( sDtxInfoList, sDtxInfoIterator )
     {
         sDtxInfo = (dktDtxInfo *)sDtxInfoIterator->mObj;
-        if ( dktXid::isEqualXID( &(sDtxInfo->mXID), aXID ) == ID_TRUE )
+        if ( dktXid::isEqualXID( &(sDtxInfo->mParentXID), aParentXID ) == ID_TRUE )
         {
             *aDtxInfo = sDtxInfo;
             sIsFind = ID_TRUE;
@@ -853,7 +853,7 @@ idBool dktNotifier::setResultPassiveDtxInfo( ID_XID * aXID, idBool aCommit )
     IDU_LIST_ITERATE( &mDtxInfo, sDtxInfoIterator )
     {
         sDtxInfo = (dktDtxInfo *)sDtxInfoIterator->mObj;
-        if ( dktXid::isEqualXID( &sDtxInfo->mXID, aXID ) == ID_TRUE )
+        if ( dktXid::isEqualXID( &sDtxInfo->mParentXID, aXID ) == ID_TRUE )
         {
             sIsFind = ID_TRUE;
 
@@ -877,7 +877,6 @@ idBool dktNotifier::setResultPassiveDtxInfo( ID_XID * aXID, idBool aCommit )
         {
             /* Nothing to do */
         }
-    
     }
     IDE_ASSERT( mNotifierDtxInfoMutex.unlock() == IDE_SUCCESS );
 
@@ -897,7 +896,7 @@ idBool dktNotifier::setResultFailoverDtxInfo( ID_XID * aXID,
     IDU_LIST_ITERATE( &mFailoverDtxInfo, sDtxInfoIterator )
     {
         sDtxInfo = (dktDtxInfo *)sDtxInfoIterator->mObj;
-        if ( dktXid::isEqualGlobalXID( &sDtxInfo->mXID, aXID ) == ID_TRUE )
+        if ( dktXid::isEqualGlobalXID( &sDtxInfo->mParentXID, aXID ) == ID_TRUE )
         {
             sDtxInfo->globalTxResultLock();
 
@@ -989,25 +988,64 @@ void dktNotifier::writeNotifyFailLog( ID_XID       * aFailXIDs,
     }
 }
 
+/* 이 함수는 RECOVERY시에만 호출된다. */
 IDE_RC dktNotifier::setResult( DK_NOTIFY_TYPE aType,
                                UInt    aLocalTxId,
                                UInt    aGlobalTxId,
                                UChar   aResult,
                                smSCN * aGlobalCommitSCN )
 {
-    dktDtxInfo * sDtxInfo  = NULL;
+    dktDtxInfo  * sDtxInfo         = NULL;
+    iduListNode * sDtxInfoIterator = NULL;
+    iduList     * sDtxInfoList     = NULL;
 
-    IDE_TEST_RAISE( findDtxInfo( aType, 
-                                 aLocalTxId, 
-                                 aGlobalTxId, 
+    IDE_ERROR_MSG( aLocalTxId != 0,
+                   "Local Tx ID is 0" );
+
+    IDE_TEST_RAISE( findDtxInfo( aType,
+                                 aLocalTxId,
+                                 aGlobalTxId,
                                  &sDtxInfo )
                     != ID_TRUE, ERR_NOT_EXIST_DTX_INFO );
 
-    sDtxInfo->mResult = aResult;
-    if ( aGlobalCommitSCN != NULL )
+    /* TASK-7361
+       NOTIFY가 발견된 경우 
+       동일한 Local Tx ID를 사용하는 모든 NOTIFY에 반영한다. */
+
+    if ( aType == DK_NOTIFY_NORMAL )
     {
-        SM_SET_SCN( &sDtxInfo->mGlobalCommitSCN, aGlobalCommitSCN );
+        sDtxInfoList = &mDtxInfo;
     }
+    else if ( aType == DK_NOTIFY_FAILOVER )
+    {
+        sDtxInfoList = &mFailoverDtxInfo;
+    }
+    else
+    {
+        IDE_DASSERT( 0 );
+    }
+
+    IDE_ASSERT( mNotifierDtxInfoMutex.lock( NULL /*idvSQL* */ ) == IDE_SUCCESS );
+    IDU_LIST_ITERATE( sDtxInfoList, sDtxInfoIterator )
+    {
+        sDtxInfo = (dktDtxInfo *)sDtxInfoIterator->mObj;
+        if ( sDtxInfo->mLocalTxId == aLocalTxId )
+        {
+            sDtxInfo->mResult = aResult;
+            if ( aGlobalCommitSCN != NULL )
+            {
+                SM_SET_SCN( &sDtxInfo->mGlobalCommitSCN, aGlobalCommitSCN );
+            }
+
+            /*
+               TASK-7361
+               이 함수가 호출되었다는것은 (RECOVERY시뿐이며) COMMIT 또는 ROLLBACK이 확정되었다는것이다.
+               PASSIVE를 끄고 COMMIT / ROLLBACK 을 설정한다.
+             */
+            sDtxInfo->mIsPassivePending = ID_FALSE;
+        }
+    }
+    IDE_ASSERT( mNotifierDtxInfoMutex.unlock() == IDE_SUCCESS );
 
     return IDE_SUCCESS;
 
@@ -1181,6 +1219,9 @@ IDE_RC  dktNotifier::manageDtxInfoListByLog( ID_XID * aXID,
                                                                   aBranchTxInfoSize )
                           != IDE_SUCCESS );
                 idlOS::memcpy( &(sDtxInfo->mPrepareLSN), aPrepareLSN, ID_SIZEOF( smLSN ) );
+
+                /* TASK-7361 : commit/abort 로그에 기록할수있도록 global tx id를 설정해준다. */
+                smiSetGlobalTxId( aLocalTxId, aGlobalTxId );
             }
             else
             {
@@ -1269,8 +1310,8 @@ IDE_RC dktNotifier::getNotifierTransactionInfo( dktNotifierTransactionInfo ** aI
             }
             dktXid::copyXID( &(sInfo[sIndex].mXID),
                              &(sBranchTxInfo->mXID) );
-            dktXid::copyXID( &(sInfo[sIndex].mSourceXID),
-                             &(sDtxInfo->mXID) );
+            dktXid::copyXID( &(sInfo[sIndex].mParentXID),
+                             &(sDtxInfo->mParentXID) );
             idlOS::memcpy( sInfo[sIndex].mTargetInfo,
                            sBranchTxInfo->mData.mTargetName,
                            DK_NAME_LEN + 1 );
@@ -1364,8 +1405,8 @@ IDE_RC dktNotifier::getShardNotifierTransactionInfo( dktNotifierTransactionInfo 
                              &(sDtxInfo->mGlobalXID) );
             dktXid::copyXID( &(sInfo[sIndex].mXID),
                              &(sBranchTxInfo->mXID) );
-            dktXid::copyXID( &(sInfo[sIndex].mSourceXID),
-                             &(sDtxInfo->mXID) );
+            dktXid::copyXID( &(sInfo[sIndex].mParentXID),
+                             &(sDtxInfo->mParentXID) );
             idlOS::memcpy( sInfo[sIndex].mTargetInfo,
                            sBranchTxInfo->mData.mTargetName,
                            DK_NAME_LEN + 1 );
@@ -1399,8 +1440,8 @@ IDE_RC dktNotifier::getShardNotifierTransactionInfo( dktNotifierTransactionInfo 
 
         dktXid::copyXID( &(sInfo[sIndex].mGlobalXID),
                          &(sDtxInfo->mGlobalXID) );
-        dktXid::copyXID( &(sInfo[sIndex].mSourceXID),
-                         &(sDtxInfo->mXID) );
+        dktXid::copyXID( &(sInfo[sIndex].mParentXID),
+                         &(sDtxInfo->mParentXID) );
 
         sIndex++;
     }

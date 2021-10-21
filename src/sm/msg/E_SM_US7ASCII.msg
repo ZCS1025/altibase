@@ -16,7 +16,7 @@
 # 브랜치에서 에러코드를 할당받으시면 안됩니다.
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
-# Last Number = 442
+# Last Number = 444
 
 SECTION = 1
 
@@ -1743,25 +1743,33 @@ SECTION = 1
 # *Cause: A log file has been lost. If Incomplete media recovery continues, data may be lost.
 # *Action: Copy a valid log file to [LOG_DIR] or move log files that are not needed for recovery to another directory.
 
-438, smERR_ABORT_Distributed_Aborted = A distributed deadlock situation has been detected. ( <0%s> )
+438, smERR_ABORT_ERR_NOT_USED_LOCK_MGR_TYPE_VALUE = LOCK_MGR_TYPE 1 is deprecated.
+# *Cause: Spin lock mode is no longer used.
+# *Action: You must change LOCK_MGR_TYPE to 0 or 2.
+
+439, smERR_ABORT_Distributed_Aborted = A distributed deadlock situation has been detected. ( <0%s> )
 # *Cause: A deadlock victim transaction has been stopped and terminated due to the deadlock resolution scheme.
 # *Action: Re-execute the transaction.
 
-439,smERR_ABORT_StatementTooOld = The records required for consistent reading are out of date. ( <0%s> )
+440,smERR_ABORT_StatementTooOld = The records required for consistent reading are out of date. ( <0%s> )
 # *Cause: The records required for consistent reading are out of date.
 # *Action: Re-execute the transaction.
 
-440,smERR_ABORT_INVALID_SCN = Invalid SCN(System Commit Number) : <0%lu>.
+441,smERR_ABORT_INVALID_SCN = Invalid SCN(System Commit Number) : <0%lu>.
 # *Cause: Internal error.
 # *Action: Contact Altibase's Support Center (http://support.altibase.com).
 
-#441,smERR_ABORT_NOT_SUPPORT_DISK = Altibase sharding does not support statements on disk table spaces for global consistent transactions.
+#442,smERR_ABORT_NOT_SUPPORT_DISK = Altibase sharding does not support statements on disk table spaces for global consistent transactions.
 # *Cause: Altibase sharding does not support statements on disk table spaces for global consistent transactions.
 # *Action: Use memory tablespace.
 
-442,smERR_ABORT_INDOUBT_FETCH_TIMEOUT = The transaction has exceeded the in-doubt fetch timeout specified by the user due to a prepared transaction. (XID:<0%s>).
+443,smERR_ABORT_INDOUBT_FETCH_TIMEOUT = The transaction has exceeded the in-doubt fetch timeout specified by the user due to a prepared transaction. (XID:<0%s>).
 # *Cause: The statement attempts to access a resource locked by a global consistent transaction in a prepare state.
 # *Action: Execute commit or abort command to finalize the global consistent transaction.
+
+444,smERR_ABORT_TX_SEGMENT_ENTRY_ALLOC = Failed to allocate transaction segment entry. (Entry count:<0%d>)  (TID:<1%d>)
+# *Cause: The number of transaction segments exceeds TRANSACTION_SEGMENT_COUNT
+# # *Action: Check TRANSACTION_SEGMENT_COUNT
 
 #
 #  Server Internal Message

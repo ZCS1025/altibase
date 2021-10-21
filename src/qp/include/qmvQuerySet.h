@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmvQuerySet.h 86122 2019-09-04 07:20:21Z donovan.seo $
+ * $Id: qmvQuerySet.h 91656 2021-09-10 01:38:30Z jayce.park $
  **********************************************************************/
 
 #ifndef _Q_QMV_QUERY_SET_H_
@@ -180,6 +180,11 @@ public:
 
     static IDE_RC convertAnsiInnerJoin( qcStatement * aStatement,
                                         qmsSFWGH    * aSFWGH );
+
+    /* BUG-48957 Target convertion for created view definition */
+    static IDE_RC makeConvertedTargetForCreatedView ( qcStatement * aStatement,
+                                                      qcmColumn   * aColumns,
+                                                      qmsQuerySet * aQuerySet );
 
 private:
     static IDE_RC validateGroupOneColumn(

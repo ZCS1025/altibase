@@ -69,7 +69,7 @@ public class ErrorDef
     public static final int       UNSUPPORTED_PROPERTY                              = 0x420DB;
 
     // PROJ-2733 For stmt retry
-    public static final int       STATEMENT_TOO_OLD                                 = 0x111B7;
+    public static final int       STATEMENT_TOO_OLD                                 = 0x111B8;
 
     // #endregion
 
@@ -230,8 +230,10 @@ public class ErrorDef
     public static final int       CANNOT_BE_UNWRAPPED                               = 0x51A97;
     public static final int       SHARD_NEED_ROLLBACK                               = 0x51A98;
     public static final int       SHARD_INTERNAL_ERROR                              = 0x51A99;
-    private static final int      LAST_ERROR_CODE                                   = 0x51A99;
-
+    public static final int       INVALID_METHOD_WITH_THIS_SQL                      = 0x51A9A;
+    public static final int       THIS_METHOD_NOT_SUPPORTED_IN_SHARDJDBC            = 0x51A9B;
+    private static final int      LAST_ERROR_CODE                                   = 0x51A9B;
+    
     // #endregion
 
     private static final String[] ERROR_MAP_MESSAGE  = new String[LAST_ERROR_CODE - FIRST_ERROR_CODE + 1];
@@ -368,6 +370,8 @@ public class ErrorDef
         register(CANNOT_BE_UNWRAPPED                               , "22023" , "%s cannot be unwrapped as %s" );
         register(SHARD_NEED_ROLLBACK                               , "HYC00" , "Failed to execute the statement, because the global transaction has been terminated." );
         register(SHARD_INTERNAL_ERROR                              , "HY000" , "Shard internal error: %s" );
+        register(INVALID_METHOD_WITH_THIS_SQL                      , "HY000" , "Commit, rollback and DDL cannot be executed with this method." );
+        register(THIS_METHOD_NOT_SUPPORTED_IN_SHARDJDBC            , "HY000" , "%s not supported in shardjdbc" );
     }
 
     private static void register(int aErrorCode, String aSQLState, String aMessageForm)

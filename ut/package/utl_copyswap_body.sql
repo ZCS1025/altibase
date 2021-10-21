@@ -232,7 +232,7 @@ BEGIN
     EXECUTE IMMEDIATE sql_buffer;
 
     -- 마지막으로 남은 DML을 반영하고 원본과 교체하기 전에, X Lock을 획득한다.
-    sql_buffer := 'LOCK TABLE "' || source_user_name || '"."' || source_table_name || '" IN EXCLUSIVE MODE UNTIL NEXT DDL';
+    sql_buffer := 'LOCK TABLE "' || source_user_name || '"."' || source_table_name || '" IN EXCLUSIVE MODE';
     EXECUTE IMMEDIATE sql_buffer;
 
     sql_buffer := 'ALTER REPLICATION "' || replication_name || '" FLUSH';
@@ -356,7 +356,7 @@ BEGIN
     EXECUTE IMMEDIATE sql_buffer;
 
     -- 마지막으로 남은 DML을 반영하고 원본과 교체하기 전에, X Lock을 획득한다.
-    sql_buffer := 'LOCK TABLE "' || source_user_name || '"."' || source_table_name || '" IN EXCLUSIVE MODE UNTIL NEXT DDL';
+    sql_buffer := 'LOCK TABLE "' || source_user_name || '"."' || source_table_name || '" IN EXCLUSIVE MODE';
     EXECUTE IMMEDIATE sql_buffer;
 
     sql_buffer := 'ALTER REPLICATION "' || replication_name || '" FLUSH';

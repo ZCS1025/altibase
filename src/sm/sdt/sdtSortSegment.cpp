@@ -1474,7 +1474,7 @@ IDE_RC sdtSortSegment::readNPageFromDisk( sdtSortSegHdr* aWASegment,
                                aWCBPtr );
 
     // TC/FIT/Server/sm/Bugs/BUG-45263/BUG-45263.tc
-    IDU_FIT_POINT( "BUG-45263@sdtSortSegment::readNPageFromDisk::iduFileopen" );
+    IDU_FIT_POINT_RAISE( "BUG-45263@sdtSortSegment::readNPageFromDisk::iduFileopen", ERR_ART );
 
     IDE_TEST( sddDiskMgr::read( aWASegment->mStatistics,
                                 aWASegment->mSpaceID,
@@ -1488,6 +1488,12 @@ IDE_RC sdtSortSegment::readNPageFromDisk( sdtSortSegHdr* aWASegment,
 
     return IDE_SUCCESS;
 
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION( ERR_ART );
+    {
+        IDE_SET(ideSetErrorCode(smERR_ABORT_ART));
+    }
+#endif
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;

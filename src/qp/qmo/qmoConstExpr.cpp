@@ -232,7 +232,9 @@ qmoConstExpr::processConstExprForOrderBy( qcStatement  * aStatement,
     //------------------------------------------
 
     // simple view merging에 의해 필요한 경우만 처리한다.
-    if ( aParseTree->isTransformed == ID_TRUE )
+    // BUG-49273 SET연산이 있는 경우 ORDER-BY 절은 변경되지 않는다.
+    if ( ( aParseTree->isTransformed == ID_TRUE ) &&
+         ( aParseTree->querySet->setOp == QMS_NONE ) )
     {
         if ( aParseTree->orderBy != NULL )
         {

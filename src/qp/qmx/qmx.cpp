@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qmx.cpp 91584 2021-09-03 07:55:16Z khkwak $
+ * $Id: qmx.cpp 91716 2021-09-16 01:23:00Z khkwak $
  **********************************************************************/
 
 #include <cm.h>
@@ -73,49 +73,6 @@ IDE_RC qmx::atomicExecuteInsertBefore( qcStatement  * aStatement )
     // PROJ-1566
     smiTableLockMode     sLockMode;
 
-    sParseTree = (qmmInsParseTree*) aStatement->myPlan->parseTree;
-
-    IDE_ASSERT( sParseTree != NULL );
-
-    //------------------------------------------
-    // 해당 Table에 lock을 획득함.
-    //------------------------------------------
-
-    if ( ((qmncINST*)aStatement->myPlan->plan)->isAppend == ID_TRUE )
-    {
-        sLockMode = SMI_TABLE_LOCK_SIX;
-    }
-    else
-    {
-        sLockMode = SMI_TABLE_LOCK_IX;
-    }
-
-    IDE_TEST( lockTableForDML( aStatement,
-                               sParseTree->insertTableRef,
-                               sLockMode )
-              != IDE_SUCCESS );
-
-    sTableForInsert = sParseTree->insertTableRef->tableInfo;
-
-    //------------------------------------------
-    // STATEMENT GRANULARITY TRIGGER의 수행
-    //------------------------------------------
-    // before trigger
-    IDE_TEST( qdnTrigger::fireTrigger( aStatement,
-                                       aStatement->qmxMem,
-                                       sTableForInsert,
-                                       QCM_TRIGGER_ACTION_EACH_STMT,
-                                       QCM_TRIGGER_BEFORE,
-                                       QCM_TRIGGER_EVENT_INSERT,
-                                       NULL,  // UPDATE Column
-                                       NULL,            /* Table Cursor */
-                                       SC_NULL_GRID,    /* Row GRID */
-                                       NULL,  // OLD ROW
-                                       NULL,  // OLD ROW Column
-                                       NULL,  // NEW ROW
-                                       NULL ) // NEW ROW Column
-              != IDE_SUCCESS );
-
     //------------------------------------------
     // INSERT를 처리하기 위한 기본 값 획득
     //------------------------------------------
@@ -126,28 +83,113 @@ IDE_RC qmx::atomicExecuteInsertBefore( qcStatement  * aStatement )
     // initialize result row count
     QC_PRIVATE_TMPLATE(aStatement)->numRows = 0;
 
-    //------------------------------------------
-    // INSERT Plan 초기화
-    //------------------------------------------
+    if ( aStatement->myPlan->plan->type == QMN_SDEX )
+    {
+        IDE_TEST( qmnSDEX::init( QC_PRIVATE_TMPLATE(aStatement),
+                                 aStatement->myPlan->plan)
+                  != IDE_SUCCESS);
+	}
+    else if ( aStatement->myPlan->plan->type == QMN_SDIN )
+    {
+        sParseTree = (qmmInsParseTree*) aStatement->myPlan->parseTree;
 
-    // BUG-45288 atomic insert 는 direct path 가능. normal insert 불가능.
-    ((qmndINST*) (QC_PRIVATE_TMPLATE(aStatement)->tmplate.data +
-                  aStatement->myPlan->plan->offset))->isAppend =
-        ((qmncINST*)aStatement->myPlan->plan)->isAppend;
-  
-    sPlanID = ((qmncINST*)(aStatement->myPlan->plan))->planID;
-    sINSTflag = &(QC_PRIVATE_TMPLATE(aStatement)->planFlag[sPlanID]);
+        //------------------------------------------
+        // 해당 Table에 IS lock을 획득함.
+        //------------------------------------------
 
-    *sINSTflag &= ~QMND_INST_ATOMIC_MASK;
-    *sINSTflag |= QMND_INST_ATOMIC_TRUE;
+        IDE_TEST( lockTableForDML( aStatement,
+                                   sParseTree->insertTableRef,
+                                   SMI_TABLE_LOCK_IS )
+                  != IDE_SUCCESS );
 
-    IDE_TEST( qmnINST::init( QC_PRIVATE_TMPLATE(aStatement),
-                             aStatement->myPlan->plan)
-             != IDE_SUCCESS);
+        //------------------------------------------
+        // INSERT Plan 초기화
+        //------------------------------------------
+
+        IDE_TEST( qmnSDIN::init( QC_PRIVATE_TMPLATE(aStatement),
+                                 aStatement->myPlan->plan )
+                 != IDE_SUCCESS);
+    }
+	else
+	{
+        sParseTree = (qmmInsParseTree*) aStatement->myPlan->parseTree;
+
+        IDE_ASSERT( sParseTree != NULL );
+
+        //------------------------------------------
+        // 해당 Table에 lock을 획득함.
+        //------------------------------------------
+
+        if ( ((qmncINST*)aStatement->myPlan->plan)->isAppend == ID_TRUE )
+        {
+            sLockMode = SMI_TABLE_LOCK_SIX;
+        }
+        else
+        {
+            sLockMode = SMI_TABLE_LOCK_IX;
+        }
+
+        IDE_TEST( lockTableForDML( aStatement,
+                                   sParseTree->insertTableRef,
+                                   sLockMode )
+                  != IDE_SUCCESS );
+
+        sTableForInsert = sParseTree->insertTableRef->tableInfo;
+
+        //------------------------------------------
+        // STATEMENT GRANULARITY TRIGGER의 수행
+        //------------------------------------------
+        // before trigger
+        IDE_TEST( qdnTrigger::fireTrigger( aStatement,
+                                           aStatement->qmxMem,
+                                           sTableForInsert,
+                                           QCM_TRIGGER_ACTION_EACH_STMT,
+                                           QCM_TRIGGER_BEFORE,
+                                           QCM_TRIGGER_EVENT_INSERT,
+                                           NULL,  // UPDATE Column
+                                           NULL,            /* Table Cursor */
+                                           SC_NULL_GRID,    /* Row GRID */
+                                           NULL,  // OLD ROW
+                                           NULL,  // OLD ROW Column
+                                           NULL,  // NEW ROW
+                                           NULL ) // NEW ROW Column
+                  != IDE_SUCCESS );
+
+        //------------------------------------------
+        // INSERT Plan 초기화
+        //------------------------------------------
+
+        // BUG-45288 atomic insert 는 direct path 가능. normal insert 불가능.
+        ((qmndINST*) (QC_PRIVATE_TMPLATE(aStatement)->tmplate.data +
+                      aStatement->myPlan->plan->offset))->isAppend =
+            ((qmncINST*)aStatement->myPlan->plan)->isAppend;
+      
+        sPlanID = ((qmncINST*)(aStatement->myPlan->plan))->planID;
+        sINSTflag = &(QC_PRIVATE_TMPLATE(aStatement)->planFlag[sPlanID]);
+
+        *sINSTflag &= ~QMND_INST_ATOMIC_MASK;
+        *sINSTflag |= QMND_INST_ATOMIC_TRUE;
+
+        IDE_TEST( qmnINST::init( QC_PRIVATE_TMPLATE(aStatement),
+                                 aStatement->myPlan->plan)
+                 != IDE_SUCCESS);
+	}
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    if ( aStatement->myPlan->plan->type == QMN_SDEX )
+    {
+        /* BUG-47459 */
+        qmnSDEX::shardStmtPartialRollbackUsingSavepoint( QC_PRIVATE_TMPLATE(aStatement),
+                                                         aStatement->myPlan->plan );
+    }
+    else if ( aStatement->myPlan->plan->type == QMN_SDIN )
+    {
+        qmnSDIN::shardStmtPartialRollbackUsingSavepoint( QC_PRIVATE_TMPLATE(aStatement),
+                                                         aStatement->myPlan->plan );
+    }
 
     return IDE_FAILURE;
 }
@@ -181,10 +223,6 @@ IDE_RC qmx::atomicExecuteInsert( qcStatement  * aStatement )
         IDE_TEST(findSessionSeqCaches(aStatement,
                                       aStatement->myPlan->parseTree) != IDE_SUCCESS);
     }
-    else
-    {
-        // Nothing to do
-    }
 
     // get SEQUENCE.NEXTVAL
     if (aStatement->myPlan->parseTree->nextValSeqs != NULL)
@@ -192,27 +230,54 @@ IDE_RC qmx::atomicExecuteInsert( qcStatement  * aStatement )
         IDE_TEST(addSessionSeqCaches(aStatement,
                                      aStatement->myPlan->parseTree) != IDE_SUCCESS);
     }
-    else
-    {
-        // Nothing to do
-    }
 
     //------------------------------------------
     // INSERT를 수행
     //------------------------------------------
-
-    // 미리 증가시킨다. doIt중 참조될 수 있다.
-    QC_PRIVATE_TMPLATE(aStatement)->numRows++;
     
-    // insert의 plan을 수행한다.
-    IDE_TEST( qmnINST::doIt( QC_PRIVATE_TMPLATE(aStatement),
-                             aStatement->myPlan->plan,
-                             &sFlag )
-              != IDE_SUCCESS );
+    if ( aStatement->myPlan->plan->type == QMN_SDEX )
+    {
+        IDE_TEST( qmnSDEX::doIt( QC_PRIVATE_TMPLATE(aStatement),
+                                 aStatement->myPlan->plan,
+                                 &sFlag )
+                  != IDE_SUCCESS );
+    }
+    else if ( aStatement->myPlan->plan->type == QMN_SDIN )
+    {
+        // update의 plan을 수행한다.
+        IDE_TEST( qmnSDIN::doIt( QC_PRIVATE_TMPLATE(aStatement),
+                                 aStatement->myPlan->plan,
+                                 &sFlag )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        // 미리 증가시킨다. doIt중 참조될 수 있다.
+        QC_PRIVATE_TMPLATE(aStatement)->numRows++;
+
+        // insert의 plan을 수행한다.
+        IDE_TEST( qmnINST::doIt( QC_PRIVATE_TMPLATE(aStatement),
+                                 aStatement->myPlan->plan,
+                                 &sFlag )
+                  != IDE_SUCCESS );
+    }
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    if ( aStatement->myPlan->plan->type == QMN_SDEX )
+    {
+        /* BUG-47459 */
+        qmnSDEX::shardStmtPartialRollbackUsingSavepoint( QC_PRIVATE_TMPLATE(aStatement),
+                                                         aStatement->myPlan->plan );
+    }
+    else if ( aStatement->myPlan->plan->type == QMN_SDIN )
+    {
+        qmnSDIN::shardStmtPartialRollbackUsingSavepoint( QC_PRIVATE_TMPLATE(aStatement),
+                                                         aStatement->myPlan->plan );
+    }
+
 
     return IDE_FAILURE;
 }
@@ -234,70 +299,90 @@ IDE_RC qmx::atomicExecuteInsertAfter( qcStatement   * aStatement )
     qmmInsParseTree     * sParseTree;
     qcmTableInfo        * sTableForInsert;
 
-    sParseTree = (qmmInsParseTree*) aStatement->myPlan->parseTree;
-    sTableForInsert = sParseTree->insertTableRef->tableInfo;
-    
-    //------------------------------------------
-    // INSERT cursor close
-    //------------------------------------------
-
-    IDE_TEST( qmnINST::closeCursor( QC_PRIVATE_TMPLATE(aStatement),
-                                    aStatement->myPlan->plan )
-              != IDE_SUCCESS );
-    
-    /* PROJ-1071 */
-    IDE_TEST(qcg::joinThread(aStatement) != IDE_SUCCESS);
-    
-    IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor(aStatement->mStatistics)
-              != IDE_SUCCESS );
-
-    IDE_TEST(qcg::finishAndReleaseThread(aStatement) != IDE_SUCCESS);
-
-    //------------------------------------------
-    // Foreign Key Reference 검사
-    //------------------------------------------
-    
-    if ( QC_PRIVATE_TMPLATE(aStatement)->numRows == 0 )
+    if ( aStatement->myPlan->plan->type == QMN_SDEX )
     {
-        // Nothing to do.
+        /* Nothing to do. */
+    }
+    else if ( aStatement->myPlan->plan->type == QMN_SDIN )
+    {
+        /* PROJ-1071 */
+        IDE_TEST(qcg::joinThread(aStatement) != IDE_SUCCESS);
+
+        IDE_TEST(qcg::finishAndReleaseThread(aStatement) != IDE_SUCCESS);
     }
     else
     {
-        if ( sParseTree->parentConstraints != NULL )
-        {
-            IDE_TEST( qmnINST::checkInsertRef(
-                      QC_PRIVATE_TMPLATE(aStatement),
-                      aStatement->myPlan->plan )
+        sParseTree = (qmmInsParseTree*) aStatement->myPlan->parseTree;
+        sTableForInsert = sParseTree->insertTableRef->tableInfo;
+        
+        //------------------------------------------
+        // INSERT cursor close
+        //------------------------------------------
+
+        IDE_TEST( qmnINST::closeCursor( QC_PRIVATE_TMPLATE(aStatement),
+                                        aStatement->myPlan->plan )
                   != IDE_SUCCESS );
+        
+        /* PROJ-1071 */
+        IDE_TEST(qcg::joinThread(aStatement) != IDE_SUCCESS);
+        
+        IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor(aStatement->mStatistics)
+                  != IDE_SUCCESS );
+
+        IDE_TEST(qcg::finishAndReleaseThread(aStatement) != IDE_SUCCESS);
+
+        //------------------------------------------
+        // Foreign Key Reference 검사
+        //------------------------------------------
+        
+        if ( QC_PRIVATE_TMPLATE(aStatement)->numRows == 0 )
+        {
+            // Nothing to do.
         }
         else
         {
-            // Nothing To Do
+            if ( sParseTree->parentConstraints != NULL )
+            {
+                IDE_TEST( qmnINST::checkInsertRef(
+                          QC_PRIVATE_TMPLATE(aStatement),
+                          aStatement->myPlan->plan )
+                      != IDE_SUCCESS );
+            }
+            else
+            {
+                // Nothing To Do
+            }
         }
-    }
 
-    //------------------------------------------
-    // PROJ-1359 Trigger
-    // STATEMENT GRANULARITY TRIGGER의 수행
-    //------------------------------------------
-    IDE_TEST( qdnTrigger::fireTrigger( aStatement,
-                                       aStatement->qmxMem,
-                                       sTableForInsert,
-                                       QCM_TRIGGER_ACTION_EACH_STMT,
-                                       QCM_TRIGGER_AFTER,
-                                       QCM_TRIGGER_EVENT_INSERT,
-                                       NULL,  // UPDATE Column
-                                       NULL,            /* Table Cursor */
-                                       SC_NULL_GRID,    /* Row GRID */
-                                       NULL,  // OLD ROW
-                                       NULL,  // OLD ROW Column
-                                       NULL,  // NEW ROW
-                                       NULL ) // NEW ROW Column
-              != IDE_SUCCESS );
+        //------------------------------------------
+        // PROJ-1359 Trigger
+        // STATEMENT GRANULARITY TRIGGER의 수행
+        //------------------------------------------
+        IDE_TEST( qdnTrigger::fireTrigger( aStatement,
+                                           aStatement->qmxMem,
+                                           sTableForInsert,
+                                           QCM_TRIGGER_ACTION_EACH_STMT,
+                                           QCM_TRIGGER_AFTER,
+                                           QCM_TRIGGER_EVENT_INSERT,
+                                           NULL,  // UPDATE Column
+                                           NULL,            /* Table Cursor */
+                                           SC_NULL_GRID,    /* Row GRID */
+                                           NULL,  // OLD ROW
+                                           NULL,  // OLD ROW Column
+                                           NULL,  // NEW ROW
+                                           NULL ) // NEW ROW Column
+                  != IDE_SUCCESS );
+    }
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    if ( aStatement->myPlan->plan->type == QMN_SDIN )
+    {
+        qmnSDIN::shardStmtPartialRollbackUsingSavepoint( QC_PRIVATE_TMPLATE(aStatement),
+                                                         aStatement->myPlan->plan );
+    }
 
     return IDE_FAILURE;
 }
@@ -318,13 +403,33 @@ IDE_RC qmx::atomicExecuteFinalize( qcStatement  * aStatement )
     // INSERT cursor close
     //------------------------------------------
 
-    IDE_TEST( qmnINST::closeCursor( QC_PRIVATE_TMPLATE(aStatement),
-                                    aStatement->myPlan->plan )
-              != IDE_SUCCESS );
+    if ( aStatement->myPlan->plan->type != QMN_SDEX )
+    {
+        IDE_TEST( qmnINST::closeCursor( QC_PRIVATE_TMPLATE(aStatement),
+                                        aStatement->myPlan->plan )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        IDE_TEST( QC_PRIVATE_TMPLATE(aStatement)->cursorMgr->closeAllCursor(aStatement->mStatistics)
+                  != IDE_SUCCESS );
+    }
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    if ( aStatement->myPlan->plan->type == QMN_SDEX )
+    {
+        /* BUG-47459 */
+        qmnSDEX::shardStmtPartialRollbackUsingSavepoint( QC_PRIVATE_TMPLATE(aStatement),
+                                                         aStatement->myPlan->plan );
+    }
+    else if ( aStatement->myPlan->plan->type == QMN_SDIN )
+    {
+        qmnSDIN::shardStmtPartialRollbackUsingSavepoint( QC_PRIVATE_TMPLATE(aStatement),
+                                                         aStatement->myPlan->plan );
+    }
 
     return IDE_FAILURE;
 }

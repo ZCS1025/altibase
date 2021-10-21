@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smrRecoveryMgr.cpp 91224 2021-07-14 05:36:12Z minku.kang $
+ * $Id: smrRecoveryMgr.cpp 91673 2021-09-13 04:15:58Z justin.kwon $
  **********************************************************************/
 
 #include <smErrorCode.h>
@@ -10807,30 +10807,6 @@ IDE_RC smrRecoveryMgr::restoreDiskDataFile4Level1( smriBISlot * aBISlot )
     return IDE_FAILURE;
 }
 
-IDE_RC smrRecoveryMgr::processPrepareReqLog( SChar              * aLogPtr,
-                                             smrXaPrepareReqLog * aXaPrepareReqLog,
-                                             smLSN              * aLSN )
-{
-    /* smrRecoveryMgr_processPrepareReqLog_ManageDtxInfoFunc.tc */
-    IDU_FIT_POINT( "smrRecoveryMgr::processPrepareReqLog::ManageDtxInfoFunc" );
-    IDE_DASSERT( mManageDtxInfoFunc != NULL ); 
-    IDE_TEST( mManageDtxInfoFunc( &(aXaPrepareReqLog->mGlobalXID),
-                                  smrLogHeadI::getTransID( &(aXaPrepareReqLog->mHead) ),
-                                  aXaPrepareReqLog->mGlobalTxId,
-                                  aXaPrepareReqLog->mBranchTxSize,
-                                  (UChar*)aLogPtr,
-                                  aLSN,
-                                  NULL, //mCommitSCN
-                                  SMI_DTX_PREPARE )
-              != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-}
-
 IDE_RC smrRecoveryMgr::processDtxLog( SChar      * aLogPtr,
                                       smrLogType   aLogType,
                                       smLSN      * aLSN,
@@ -10863,9 +10839,16 @@ IDE_RC smrRecoveryMgr::processDtxLog( SChar      * aLogPtr,
                            aLogPtr,
                            SMR_LOGREC_SIZE( smrXaPrepareReqLog ) );
 
-            IDE_TEST( processPrepareReqLog( aLogPtr + SMR_LOGREC_SIZE(smrXaPrepareReqLog),
-                                            &sXaPrepareReqLog,
-                                            aLSN )
+            IDU_FIT_POINT( "smrRecoveryMgr::processPrepareReqLog::ManageDtxInfoFunc" );
+            IDE_DASSERT( mManageDtxInfoFunc != NULL ); 
+            IDE_TEST( mManageDtxInfoFunc( &(sXaPrepareReqLog.mGlobalXID),
+                                          smrLogHeadI::getTransID( &(sXaPrepareReqLog.mHead) ),
+                                          sXaPrepareReqLog.mGlobalTxId,
+                                          sXaPrepareReqLog.mBranchTxSize,
+                                          (UChar*)aLogPtr + SMR_LOGREC_SIZE(smrXaPrepareReqLog),
+                                          aLSN,
+                                          NULL,
+                                          SMI_DTX_PREPARE ) /* dktNotifier::manageDtxInfoListByLog */
                       != IDE_SUCCESS );
 
             *aRedoSkip = ID_TRUE;

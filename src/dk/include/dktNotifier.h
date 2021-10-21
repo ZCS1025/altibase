@@ -117,7 +117,7 @@ public:
                         dktDtxInfo ** aDtxInfo );
     idBool findDtxInfoByXID( DK_NOTIFY_TYPE    aType,
                              idBool            aLocked,
-                             ID_XID          * aXID,
+                             ID_XID          * aParentXID,
                              dktDtxInfo     ** aDtxInfo );
 
     IDE_RC removeEndedDtxInfo( DK_NOTIFY_TYPE aType,

@@ -437,13 +437,13 @@ SQLRETURN getObjModeQueueQuery( FILE   *aQueueFp,
     SQLRETURN   sRet;
     SChar       sQuery[QUERY_LEN];
     SChar       sUserName[UTM_NAME_LEN+1];
-    SQLLEN      sUserName_ind;
+    SQLLEN      sUserNameInd;   // BUG-49358
     SChar       sTableName[UTM_NAME_LEN+1];
-    SQLLEN      sTableName_ind;
+    SQLLEN      sTableNameInd;  // BUG-49358
     SChar       sTbsName[UTM_NAME_LEN+1];
-    SQLLEN      sTbsName_ind;
+    SQLLEN      sTbsNameInd;    // BUG-49358
     SInt        sTbsType  = 0;
-    SQLLEN      sTbsType_ind;
+    SQLLEN      sTbsTypeInd;    // BUG-49358
 
     idlOS::fprintf( stdout, "\n##### QUEUE #####\n" );
 
@@ -457,19 +457,19 @@ SQLRETURN getObjModeQueueQuery( FILE   *aQueueFp,
                                    != SQL_SUCCESS, sStmtError );
     IDE_TEST_RAISE(
         SQLBindCol( sStmt, 2, SQL_C_CHAR, (SQLPOINTER)sUserName,
-                    (SQLLEN)ID_SIZEOF(sUserName), &sUserName_ind)
+                    (SQLLEN)ID_SIZEOF(sUserName), &sUserNameInd)
         != SQL_SUCCESS, sStmtError );
     IDE_TEST_RAISE(    
         SQLBindCol( sStmt, 3, SQL_C_CHAR, (SQLPOINTER)sTableName,
-                    (SQLLEN)ID_SIZEOF(sTableName), &sTableName_ind)
+                    (SQLLEN)ID_SIZEOF(sTableName), &sTableNameInd)
         != SQL_SUCCESS, sStmtError );
     IDE_TEST_RAISE(    
         SQLBindCol( sStmt, 4, SQL_C_CHAR, (SQLPOINTER)sTbsName,
-                    (SQLLEN)ID_SIZEOF(sTbsName), &sTbsName_ind)
+                    (SQLLEN)ID_SIZEOF(sTbsName), &sTbsNameInd)
         != SQL_SUCCESS, sStmtError );
     IDE_TEST_RAISE(    
         SQLBindCol( sStmt, 5, SQL_C_SLONG, (SQLPOINTER)&sTbsType,
-                    0, &sTbsType_ind)
+                    0, &sTbsTypeInd)
         != SQL_SUCCESS, sStmtError );
 
     sRet = SQLFetch(sStmt);

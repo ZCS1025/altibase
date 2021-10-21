@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmgSelection.cpp 91627 2021-09-08 01:47:35Z ahra.cho $
+ * $Id: qmgSelection.cpp 91651 2021-09-09 07:00:27Z donovan.seo $
  *
  * Description :
  *     Selection Graph를 위한 수행 함수
@@ -1650,6 +1650,9 @@ qmgSelection::makeViewScan( qcStatement * aStatement,
     qmnPlan         * sFILT   = NULL;
     qmnPlan         * sVSCN   = NULL;
     qmnPlan         * sVIEW   = NULL;
+    qmsQuerySet     * sQuerySet = NULL;
+    qmsTarget       * sTarget = NULL;
+    idBool            sIsTrue = ID_FALSE;
 
     IDU_FIT_POINT_FATAL( "qmgSelection::makeViewScan::__FT__" );
 
@@ -1717,19 +1720,44 @@ qmgSelection::makeViewScan( qcStatement * aStatement,
             /* BUG-47752 left outer join의 on절이 OR 조건으로 구성되고있고
              * 오른쪽 view에 aggregaion이 존재할경우 fatal
              */
-            if ( ( ( aMyGraph->graph.flag & QMG_JOIN_RIGHT_MASK )
-                   == QMG_JOIN_RIGHT_TRUE ) &&
-                 ( ( aMyGraph->graph.flag & QMG_VIEW_PUSH_MASK )
-                   == QMG_VIEW_PUSH_TRUE ) )
+            if ( ( aMyGraph->graph.flag & QMG_JOIN_RIGHT_MASK )
+                   == QMG_JOIN_RIGHT_TRUE )
             {
-                sTmp = sFilter;
+                sQuerySet = aMyGraph->graph.left->myQuerySet;
 
-                IDE_TEST( qtc::copyNodeTree( aStatement, 
-                                             sTmp,
-                                             &sFilter,
-                                             ID_FALSE,
-                                             ID_TRUE )
-                           != IDE_SUCCESS );
+                if ( sQuerySet != NULL )
+                {
+                    if ( sQuerySet->SFWGH != NULL )
+                    {
+                        /* BUG-49281 window sort를 alias 로 하는 컬럼을 join의
+                         * on절에 and or와 함께 복잡하게 사용할 경우 FATAL */
+                        for ( sTarget = sQuerySet->SFWGH->target;
+                              sTarget != NULL;
+                              sTarget = sTarget->next )
+                        {
+                            if ( ( QTC_HAVE_AGGREGATE( sTarget->targetColumn ) == ID_TRUE ) ||
+                                 ( QTC_HAVE_AGGREGATE2( sTarget->targetColumn ) == ID_TRUE ) ||
+                                 ( QTC_IS_VARIABLE( sTarget->targetColumn ) == ID_TRUE ) ||
+                                 ( ( sTarget->targetColumn->lflag & QTC_NODE_ANAL_FUNC_MASK )
+                                   == QTC_NODE_ANAL_FUNC_EXIST ) )
+                            {
+                                sIsTrue = ID_TRUE;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if ( sIsTrue == ID_TRUE )
+                {
+                    sTmp = sFilter;
+                    IDE_TEST( qtc::copyNodeTree( aStatement,
+                                                 sTmp,
+                                                 &sFilter,
+                                                 ID_FALSE,
+                                                 ID_TRUE )
+                              != IDE_SUCCESS );
+                }
             }
             else
             {
@@ -3863,21 +3891,6 @@ qmgSelection::doViewPushSelection( qcStatement  * aStatement,
     else
     {
         sLast->next = NULL;
-
-        /* BUG-47752 left outer join의 on절이 OR 조건으로 구성되고있고
-         * 오른쪽 view에 aggregaion이 존재할경우 fatal
-         */
-        if ( ( ( aGraph->flag & QMG_JOIN_RIGHT_MASK )
-               == QMG_JOIN_RIGHT_TRUE ) &&
-             ( sIsPushed == ID_TRUE ) )
-        {
-            aGraph->flag &= ~QMG_VIEW_PUSH_MASK;
-            aGraph->flag |= QMG_VIEW_PUSH_TRUE;
-        }
-        else
-        {
-            /* Nothing to do */
-        }
     }
 
     aGraph->myPredicate = sRemainPredicate;

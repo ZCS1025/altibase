@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcmProc.cpp 91584 2021-09-03 07:55:16Z khkwak $
+ * $Id: qcmProc.cpp 91801 2021-10-06 07:39:37Z ahra.cho $
  **********************************************************************/
 
 #include <idl.h>
@@ -926,11 +926,13 @@ retry:
         {
             case E_ACTION_RETRY:
                 qcg::setSmiStmt( aQcStmt, sSmiStmtOrg );
-
+                sState = 2;
                 sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
 
+                sState = 1;
                 sSmiTrans.rollback();
 
+                sState = 0;
                 sSmiTrans.destroy( aQcStmt->mStatistics );
 
                 goto retry;

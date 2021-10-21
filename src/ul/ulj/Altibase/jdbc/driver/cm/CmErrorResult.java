@@ -43,6 +43,7 @@ public class CmErrorResult
     private List<FailoverAlignInfo> mAlignInfoList;            // BUG-46790 shard failover align정보를 담고 있는 ArrayList
     private long                    mSCN;                      // TASK-7220 고성능 분산공유트랜잭션 정합성 
     private long                    mNodeId;                   // TASK-7218 Multi-Error Handling
+    private boolean                 mIsPrepareError;           // BUG-49250 prepare단계에서 발생하는 에러인지 여부
 
     CmErrorResult()
     {
@@ -250,5 +251,15 @@ public class CmErrorResult
     long getSCN()
     {
         return mSCN;
+    }
+
+    public final void setPrepareError(boolean aPrepareError)
+    {
+        this.mIsPrepareError = aPrepareError;
+    }
+
+    public boolean isPrepareError()
+    {
+        return mIsPrepareError;
     }
 }

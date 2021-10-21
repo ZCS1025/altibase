@@ -340,7 +340,8 @@ IDE_RC  dktGlobalCoordinator::createRemoteTxForShard( idvSQL          *aStatisti
                                             aDataNode->mUserPassword,
                                             aDataNode->mServerIP,
                                             aDataNode->mPortNo,
-                                            aDataNode->mConnectType )
+                                            aDataNode->mConnectType,
+                                            ID_FALSE )
                   != IDE_SUCCESS );
 
         /* shard data에 XID를 설정한다. */
@@ -3472,7 +3473,8 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitCommitForShard()
         #endif
     }
 
-    mDtxInfo->mResult = SMI_DTX_COMMIT;
+    mDtxInfo->mResult           = SMI_DTX_COMMIT;
+    mDtxInfo->mIsPassivePending = ID_FALSE; /* TASK-7361 */
 
     setAllRemoteTxStatus( DKT_RTX_STATUS_COMMIT_WAIT );
     mGTxStatus = DKT_GTX_STATUS_COMMIT_WAIT;
@@ -3867,7 +3869,9 @@ IDE_RC  dktGlobalCoordinator::executeTwoPhaseCommitRollbackForShard(SChar * aSav
         sFailoverSuspend.set( sClientInfo,
                               SDI_FAILOVER_SUSPEND_ALL );
 
-        mDtxInfo->mResult = SMI_DTX_ROLLBACK;
+        mDtxInfo->mResult           = SMI_DTX_ROLLBACK;
+        mDtxInfo->mIsPassivePending = ID_FALSE; /* TASK-7361 */
+
         setAllRemoteTxStatus( DKT_RTX_STATUS_ROLLBACK_WAIT );
         mGTxStatus = DKT_GTX_STATUS_ROLLBACK_WAIT;
 

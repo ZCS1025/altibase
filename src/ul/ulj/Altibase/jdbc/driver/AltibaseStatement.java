@@ -264,10 +264,10 @@ public class AltibaseStatement extends WrapperAdapter implements Statement
             catch (SQLException aEx)
             {
                 mIsSuccess = false;  // For partial rollback
-                /* BUG-46790 direct execute일 경우 SQLException이 발생하면 prepare결과를 초기화 한다.
-                   그렇지 않으면 Failure to find statement 오류가 발생할 수 있다. */
-                if (!(this instanceof PreparedStatement))
+                 /* BUG-49250 direct execute이고 prepare단계에서 에러가 발생한 경우 prepare결과를 초기화한다. */
+                if (sErrorResult.isPrepareError() && !(this instanceof PreparedStatement))
                 {
+                    mContext.clearCmResult(CmPrepareResult.MY_OP);
                     mPrepareResult = null;
                 }
                 throw aEx;
@@ -360,6 +360,13 @@ public class AltibaseStatement extends WrapperAdapter implements Statement
                 }
                 mMetaConn.setShardStatementRetry(Short.parseShort(sPropValue));
                 break;
+            case (AltibaseProperties.PROP_CODE_TRANSACTIONAL_DDL):
+                for (Connection sEach : mMetaConn.getCachedConnections().values())
+                {
+                    ((AltibaseConnection)sEach).sendIntProperty((byte)sPropID, Integer.parseInt(sPropValue));
+                }
+                mMetaConn.setTransactionalDDL(Integer.parseInt(sPropValue));
+                break;
             case (AltibaseProperties.PROP_CODE_EXPLAIN_PLAN):
                 for (Connection sEach : mMetaConn.getCachedConnections().values())
                 {
@@ -423,7 +430,6 @@ public class AltibaseStatement extends WrapperAdapter implements Statement
             case (AltibaseProperties.PROP_CODE_SERIAL_EXECUTE_MODE):
             case (AltibaseProperties.PROP_CODE_ST_OBJECT_BUFFER_SIZE):
             case (AltibaseProperties.PROP_CODE_TOP_RESULT_CACHE_MODE):
-            case (AltibaseProperties.PROP_CODE_TRANSACTIONAL_DDL):
             case (AltibaseProperties.PROP_CODE_TRCLOG_DETAIL_INFORMATION):
             case (AltibaseProperties.PROP_CODE_INDOUBT_FETCH_TIMEOUT):
                 // Property type : integer
@@ -675,9 +681,14 @@ public class AltibaseStatement extends WrapperAdapter implements Statement
         }
     }
 
-    boolean shouldCloseCursor()
+    public boolean shouldCloseCursor()
     {
         return mPrepareResult != null && mPrepareResult.isSelectStatement();
+    }
+
+    public boolean isStoredProcedureStatement()
+    {
+        return mPrepareResult != null && mPrepareResult.isStoredProcedureStatement();
     }
 
     public void clearBatch() throws SQLException
@@ -1770,6 +1781,12 @@ public class AltibaseStatement extends WrapperAdapter implements Statement
     {
         // BUG-47274 Sharding statement로부터 CmPrepareResult객체를 주입받는다.
         this.mPrepareResult = aPrepareResult;
+    }
+
+    // BUG-49296 : BUG-48315, BUG-48384
+    public int getStatementType()
+    {
+        return mPrepareResult.getStatementType();
     }
 
     @Override

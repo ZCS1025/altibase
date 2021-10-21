@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdv.cpp 90270 2021-03-21 23:20:18Z bethy $
+ * $Id: qdv.cpp 91656 2021-09-10 01:38:30Z jayce.park $
  **********************************************************************/
 
 #include <idl.h>
@@ -1037,6 +1037,8 @@ IDE_RC qdv::executeAlter(qcStatement * aStatement)
     void                * sNewTableHandle = NULL;
     smSCN                 sNewSCN         = SM_SCN_INIT;
 
+    qcStatement         * sSelectStatement = NULL;
+
     // ALTER VIEW : executing only VIEW RECOMPILE
     // The status of Related PSMs are NOT changed.
 
@@ -1063,6 +1065,24 @@ IDE_RC qdv::executeAlter(qcStatement * aStatement)
               != IDE_SUCCESS );
 
     sCreateStatement = sAlterParseTree->select;
+
+    /* BUG-48957
+     * Sharding 에서는 view의 recompile시 shard transformation을 재수행 해야 한다.
+     */
+    if ( SDU_SHARD_ENABLE == 1 )
+    {
+        sSelectStatement = (qcStatement*)((qdTableParseTree*)sCreateStatement->myPlan->parseTree)->select;
+
+        IDE_TEST( qmv::parseSelectInternal( sSelectStatement )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( qmvShardTransform::doTransform( sSelectStatement )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
 
     IDE_TEST( qtc::fixAfterParsing( QC_SHARED_TMPLATE(sCreateStatement) )
               != IDE_SUCCESS );

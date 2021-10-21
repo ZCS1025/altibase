@@ -163,7 +163,7 @@ IDE_RC qsfCalculate_DeleteUserSrs( mtcNode*     aNode,
  ***********************************************************************/
 
     qcStatement             * sStatement;
-    smiStatement            * sOldStmt;
+    smiStatement            * sOldStmt      = NULL;
     smiStatement              sSmiStmt;
     UInt                      sSmiStmtFlag;
     mtdIntegerType            sSRID;
@@ -221,17 +221,15 @@ IDE_RC qsfCalculate_DeleteUserSrs( mtcNode*     aNode,
 
         sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
 
-        sOldStmt = QC_SMI_STMT(sStatement);
-
-        QC_SMI_STMT( sStatement ) = &sSmiStmt;
-
-        sState = 1;
-
         IDE_TEST( sSmiStmt.begin( sStatement->mStatistics,
-                                  sOldStmt,
+                                  QC_SMI_STMT(sStatement),
                                   sSmiStmtFlag )
                   != IDE_SUCCESS );
-        sState = 2;
+
+        sOldStmt = QC_SMI_STMT(sStatement);
+        QC_SMI_STMT( sStatement ) = &sSmiStmt;
+        sState = 1;
+
         //---------------------------------
         // Begin Statement for meta
         //---------------------------------
@@ -291,14 +289,9 @@ IDE_RC qsfCalculate_DeleteUserSrs( mtcNode*     aNode,
         //---------------------------------
         // End Statement
         //---------------------------------
-
-        sState = 1;
-        
-        IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
-
         sState = 0;
-
         QC_SMI_STMT(sStatement) = sOldStmt;
+        IDE_TEST( sSmiStmt.end( SMI_STATEMENT_RESULT_SUCCESS ) != IDE_SUCCESS );
     }
 
     *(mtdIntegerType*)aStack[0].value = 0;
@@ -321,7 +314,8 @@ IDE_RC qsfCalculate_DeleteUserSrs( mtcNode*     aNode,
 
     switch ( sState )
     {
-        case 2:
+        case 1:
+            QC_SMI_STMT(sStatement) = sOldStmt;
             if ( sSmiStmt.end(SMI_STATEMENT_RESULT_FAILURE) != IDE_SUCCESS )
             {
                 IDE_ERRLOG(IDE_QP_1);
@@ -330,8 +324,7 @@ IDE_RC qsfCalculate_DeleteUserSrs( mtcNode*     aNode,
             {
                 /* Nothing to do */
             }
-        case 1:
-            QC_SMI_STMT(sStatement) = sOldStmt;
+            /* fall through */
         default:
             break;
     }

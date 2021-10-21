@@ -21,6 +21,7 @@ import Altibase.jdbc.driver.AltibaseConnection;
 import Altibase.jdbc.driver.AltibaseStatement;
 import Altibase.jdbc.driver.cm.CmProtocolContextShardConnect;
 import Altibase.jdbc.driver.cm.CmProtocolContextShardStmt;
+import Altibase.jdbc.driver.cm.CmPrepareResult;
 import Altibase.jdbc.driver.ex.*;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.sharding.executor.*;
@@ -33,8 +34,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
 
-public class DataNodeShardingStatement implements InternalShardingStatement
+public abstract class DataNodeShardingStatement implements InternalShardingStatement
 {
+    static final String                SAVEPOINT_FOR_SHARD_CLONE_PROC_PARTIAL_ROLLBACK = "$$SHARD_CLONE_PROC_PARTIAL_ROLLBACK";
+    
     AltibaseShardingConnection         mMetaConn;
     CmProtocolContextShardStmt         mShardStmtCtx;
     ResultSet                          mCurrentResultSet;
@@ -799,30 +802,53 @@ public class DataNodeShardingStatement implements InternalShardingStatement
         try
         {
             // BUGBUG : select여부를 먼저 체크하여 select일때만 closeCursor 호출?
-            // AltibaseStatement sStmt0 = (AltibaseStatement)aStatementUnits.get(0);
-            mMetaConn.getExecutorEngine().closeCursor(aStatementUnits, 
-                    new ParallelProcessCallback<Statement>()
-                    {
-                        public Void processInParallel(Statement aStmt) throws SQLException 
+            AltibaseStatement sStmt0 = (AltibaseStatement)aStatementUnits.get(0);
+            if (sStmt0.shouldCloseCursor())
+            {
+                mMetaConn.getExecutorEngine().closeCursor(aStatementUnits, 
+                        new ParallelProcessCallback<Statement>()
                         {
-                            ((AltibaseStatement)aStmt).closeCursor();
-                            return null;
-                        }
-                    });
+                            public Void processInParallel(Statement aStmt) throws SQLException 
+                            {
+                                ((AltibaseStatement)aStmt).closeCursor();
+                                return null;
+                            }
+                        });
+            }
 
-            mMetaConn.getExecutorEngine().doPartialRollback(aStatementUnits,
-                    new ParallelProcessCallback<Statement>()
-                    {
-                          public Void processInParallel(Statement aStmt) throws SQLException
-                          {
-                              if (((AltibaseStatement) aStmt).getIsSuccess())  // 성공인 노드만 partial rollback 수행.
-                              {
-                                  AltibaseConnection sConn = (AltibaseConnection) aStmt.getConnection();
-                                  sConn.shardStmtPartialRollback();
-                              }
-                              return null;
-                          }
-                    });
+            if (sStmt0.isStoredProcedureStatement())
+            {
+                // BUG-49197
+                mMetaConn.getExecutorEngine().doPartialRollbackToSavepoint(aStatementUnits,
+                        new ParallelProcessCallback<Statement>()
+                        {
+                            public Void processInParallel(Statement aStmt) throws SQLException
+                            {
+                                if (((AltibaseStatement) aStmt).getIsSuccess())  // 성공인 노드만 partial rollback 수행.
+                                {
+                                    AltibaseConnection sConn = (AltibaseConnection) aStmt.getConnection();
+                                    sConn.rollbackToSavepointInternal(SAVEPOINT_FOR_SHARD_CLONE_PROC_PARTIAL_ROLLBACK);
+                                }
+                                return null;
+                            }
+                        });
+            }
+            else
+            {
+                mMetaConn.getExecutorEngine().doPartialRollback(aStatementUnits,
+                        new ParallelProcessCallback<Statement>()
+                        {
+                            public Void processInParallel(Statement aStmt) throws SQLException
+                            {
+                                if (((AltibaseStatement) aStmt).getIsSuccess())  // 성공인 노드만 partial rollback 수행.
+                                {
+                                    AltibaseConnection sConn = (AltibaseConnection) aStmt.getConnection();
+                                    sConn.shardStmtPartialRollback();
+                                }
+                                return null;
+                            }
+                        });
+            }
         }
         catch (ShardJdbcException sShardJdbcEx1)
         {
@@ -856,6 +882,23 @@ public class DataNodeShardingStatement implements InternalShardingStatement
         }
     }
 
+    public int getStmtType()
+    {
+        int sResult = CmPrepareResult.STATEMENT_TYPE_NONE;
+
+        // BUGBUG : lazyMode일때는 execute() 시 route()에서 prepare를 수행하므로 execute() 수행 전인 현 시점에서 stmtType을 알 수가 없다.
+        //          현재는 lazyMode에 대해 고려하지 않는다.
+        if (!mMetaConn.isLazyNodeConnect())
+        {
+            Map.Entry<DataNode, Statement> sEntry = mRoutedStatementMap.entrySet().iterator().next();
+            if (sEntry != null)
+            {
+                sResult = ((AltibaseStatement)sEntry.getValue()).getStatementType();
+            }
+        }
+        return sResult;
+    }
+    
     private interface GetMoreResultsTemplate
     {
         boolean getMoreResults(Statement aStmt) throws SQLException;

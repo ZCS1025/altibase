@@ -34,6 +34,7 @@
 #include <mmcPlanCache.h>
 #include <mtz.h>
 #include <mmuAccessList.h>
+
 #include <dki.h>
 
 typedef IDE_RC (*mmcSessionSetFunc)(mmcSession *aSession, SChar *aValue);
@@ -7259,9 +7260,10 @@ IDE_RC mmcSession::processShardRetryError( mmcStatement * aStatement,
                                            UInt         * aRebuildRetryMax )
 {
     UInt                   sErrorType;
-    smSCN                  sRequestSCN;
     sdiStmtShardRetryType  sRetryType;
+    smSCN                  sRequestSCN;
     ULong                  sSMN = ID_ULONG(0);
+    idBool                 sResult = ID_FALSE;
 
     /* Error 가 발생한 상태로 현재 함수 진입 */
     sErrorType  = (ideGetErrorCode() & E_ACTION_MASK);
@@ -7284,10 +7286,18 @@ IDE_RC mmcSession::processShardRetryError( mmcStatement * aStatement,
                  * 혼자 Rebuild 또는 Retry 하지 않고
                  * 에러를 응답하여 재시도를 유도한다.
                  * (RebuildRaiseError/TX_LEVEL_03.tc) */
-                IDE_TEST_RAISE( ( ( SM_SCN_IS_NOT_INIT( sRequestSCN ) ) &&
-                                  ( isGCTx() == ID_TRUE ) &&
-                                  ( aStatement->isNeedRequestSCN() == ID_TRUE ) ),
-                                StatementIsTooOld );
+                if  ( ( SM_SCN_IS_NOT_INIT( sRequestSCN ) ) &&
+                      ( isGCTx() == ID_TRUE ) )
+                {
+                    /* BUG-49047
+                     * Retry rebuild 도중 statement가 clear된 경우 parser tree가 없을 수 있다.
+                     * 이 때 isNeedRequestSCN 함수를 호출하면 기존의 error message가 unexpected error로 덮어진다. */
+                    IDE_PUSH();
+                    sResult = aStatement->isNeedRequestSCN();
+                    IDE_POP();
+
+                    IDE_TEST_RAISE( sResult == ID_TRUE, StatementIsTooOld );
+                }
             }
             break;
 

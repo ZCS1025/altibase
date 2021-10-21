@@ -49,6 +49,7 @@ public class ServerSideShardingPreparedStatement extends ServerSideShardingState
         shard_log("(META NODE EXECUTEQUERY) {0}",
                   ((AltibasePreparedStatement)mServersidePstmt).getStmtId());
         calcDistTxInfo();
+        buildClientTouchedNodes();
         return mServersidePstmt.executeQuery();
     }
 
@@ -58,6 +59,7 @@ public class ServerSideShardingPreparedStatement extends ServerSideShardingState
         shard_log("(META NODE EXECUTEUPDATE) {0}",
                   ((AltibasePreparedStatement)mServersidePstmt).getStmtId());
         calcDistTxInfo();
+        buildClientTouchedNodes();
         return mServersidePstmt.executeUpdate();
     }
 
@@ -67,6 +69,7 @@ public class ServerSideShardingPreparedStatement extends ServerSideShardingState
         shard_log("(META NODE EXECUTEBATCH) {}",
                   ((AltibasePreparedStatement)mServersidePstmt).getStmtId());
         calcDistTxInfo();
+        buildClientTouchedNodes();
         return mServersidePstmt.executeBatch();
     }
 
@@ -81,6 +84,7 @@ public class ServerSideShardingPreparedStatement extends ServerSideShardingState
         shard_log("(META NODE EXECUTE) {}",
                   ((AltibasePreparedStatement)mServersidePstmt).getStmtId());
         calcDistTxInfo();
+        buildClientTouchedNodes();
         return mServersidePstmt.execute();
     }
 

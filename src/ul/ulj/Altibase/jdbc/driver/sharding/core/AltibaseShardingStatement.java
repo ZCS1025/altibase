@@ -20,10 +20,12 @@ package Altibase.jdbc.driver.sharding.core;
 import Altibase.jdbc.driver.*;
 import Altibase.jdbc.driver.cm.CmPrepareResult;
 import Altibase.jdbc.driver.cm.CmProtocolContextShardStmt;
+import Altibase.jdbc.driver.datatype.Column;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 
 import java.sql.*;
+import java.util.List;
 import java.util.Map;
 
 import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
@@ -35,8 +37,8 @@ public class AltibaseShardingStatement extends WrapperAdapter implements Stateme
     AltibaseShardingConnection                 mMetaConn;
     String                                     mSql;
     Map<Integer, JdbcMethodInvocation>         mSetParamInvocationMap;
-    InternalShardingStatement                  mInternalStmt;
-    Statement                                  mServerSideStmt;
+    InternalShardingPreparedStatement          mInternalStmt;
+    PreparedStatement                          mServerSideStmt;
     AltibaseStatement                          mStatementForAnalyze; // BUG-47274 analyze를 위한 내부 statement
     long                                       mShardMetaNumber;
     int                                        mResultSetType;
@@ -88,6 +90,7 @@ public class AltibaseShardingStatement extends WrapperAdapter implements Stateme
     {
         mMetaConn.checkCommitState();
         shardAnalyze(aSql);
+        checkStmtType();
         ResultSet sResult;
         short sRetryCount = mMetaConn.getShardStatementRetry();
 
@@ -97,7 +100,7 @@ public class AltibaseShardingStatement extends WrapperAdapter implements Stateme
             {
                 try
                 {
-                    sResult = mInternalStmt.executeQuery(aSql);
+                    sResult = mInternalStmt.executeQuery();
                     break;
                 }
                 catch (SQLException aEx)
@@ -124,13 +127,32 @@ public class AltibaseShardingStatement extends WrapperAdapter implements Stateme
         int sResult;
         short sRetryCount = mMetaConn.getShardStatementRetry();
 
+        // BUG-49296 : BUG-48216 Fixed COMMIT and ROLLBACK with SQLExecute()
+        switch (mInternalStmt.getStmtType())
+        {
+            case CmPrepareResult.STATEMENT_TYPE_COMMIT:
+                mMetaConn.commit();
+                return 0;   // return nothing
+            case CmPrepareResult.STATEMENT_TYPE_ROLLBACK:
+                mMetaConn.rollback();
+                return 0;   // return nothing
+            case CmPrepareResult.STATEMENT_TYPE_DDL:    // BUG-49296 : BUG-48592 Added a commit with executing DDL
+                if (mMetaConn.getTransactionalDDL() == 0)
+                {
+                    mMetaConn.commit();
+                }
+                break;
+            default:
+                break;
+        }
+    
         try
         {
             while(true)
             {
                 try
                 {
-                    sResult = mInternalStmt.executeUpdate(aSql);
+                    sResult = mInternalStmt.executeUpdate();
                     break;
                 }
                 catch (SQLException aEx)
@@ -297,14 +319,33 @@ public class AltibaseShardingStatement extends WrapperAdapter implements Stateme
         shardAnalyze(aSql);
         boolean sResult;
         short sRetryCount = mMetaConn.getShardStatementRetry();
-        
+
+        // BUG-49296 : BUG-48216 Fixed COMMIT and ROLLBACK with SQLExecute()
+        switch (mInternalStmt.getStmtType())
+        {
+            case CmPrepareResult.STATEMENT_TYPE_COMMIT:
+                mMetaConn.commit();
+                return false;   // there are no results
+            case CmPrepareResult.STATEMENT_TYPE_ROLLBACK:
+                mMetaConn.rollback();
+                return false;   // there are no results
+            case CmPrepareResult.STATEMENT_TYPE_DDL:    // BUG-49296 : BUG-48592 Added a commit with executing DDL
+                if (mMetaConn.getTransactionalDDL() == 0)
+                {
+                    mMetaConn.commit();
+                }
+                break;
+            default:
+                break;
+        }
+    
         try
         {
             while(true)
             {
                 try
                 {
-                    sResult = mInternalStmt.execute(aSql);
+                    sResult = mInternalStmt.execute();
                     break;
                 }
                 catch (SQLException aEx)
@@ -327,7 +368,7 @@ public class AltibaseShardingStatement extends WrapperAdapter implements Stateme
     {
         SQLException sEx;
         
-        if (mInternalStmt instanceof ServerSideShardingStatement ||
+        if (mInternalStmt instanceof ServerSideShardingPreparedStatement ||
             !mMetaConn.getGlobalTransactionLevel().equals(GlobalTransactionLevel.GCTX) ||
             aRetryCount == 0)
         {
@@ -349,6 +390,12 @@ public class AltibaseShardingStatement extends WrapperAdapter implements Stateme
     
     public ResultSet getResultSet() throws SQLException
     {
+        // BUG-49296 : BUG-48216
+        if ( isEndTran() )
+        {
+            return null;
+        }
+
         /* BUG-47127 아직 analyze 전 이라면 Statement Not Yet Execute예외를 올려야 한다.  */
         if (mInternalStmt == null)
         {
@@ -360,6 +407,12 @@ public class AltibaseShardingStatement extends WrapperAdapter implements Stateme
 
     public int getUpdateCount() throws SQLException
     {
+        // BUG-49296 : BUG-48216
+        if ( isEndTran() )
+        {
+            return 0;
+        }
+        
         return (mInternalStmt == null) ? AltibaseStatement.DEFAULT_UPDATE_COUNT :
                                          mInternalStmt.getUpdateCount();
     }
@@ -455,130 +508,22 @@ public class AltibaseShardingStatement extends WrapperAdapter implements Stateme
 
     public int executeUpdate(String aSql, int aAutoGeneratedKeys) throws SQLException
     {
-        mMetaConn.checkCommitState();
-        shardAnalyze(aSql);
-        int sResult;
-        short sRetryCount = mMetaConn.getShardStatementRetry();
-        
-        try
-        {
-            while(true)
-            {
-                try
-                {
-                    sResult = mInternalStmt.executeUpdate(aSql, aAutoGeneratedKeys);
-                    break;
-                }
-                catch (SQLException aEx)
-                {
-                    // STATEMENT_TOO_OLD 이 외 에러가 있을 경우는 stmt retry 하지 않는다. 
-                    checkStmtTooOld(aEx, sRetryCount);
-                    --sRetryCount;
-                }
-            }
-        }
-        finally
-        {
-            updateShardMetaNumberIfNecessary();
-        }
-
-        return sResult;
+        throw Error.createSQLException(ErrorDef.THIS_METHOD_NOT_SUPPORTED_IN_SHARDJDBC, "executeUpdate(String sql, int autoGenKeys)");
     }
 
     public int executeUpdate(String aSql, int[] aColumnIndexes) throws SQLException
     {
-        mMetaConn.checkCommitState();
-        shardAnalyze(aSql);
-        int sResult;
-        short sRetryCount = mMetaConn.getShardStatementRetry();
-        
-        try
-        {
-            while(true)
-            {
-                try
-                {
-                    sResult = mInternalStmt.executeUpdate(aSql, aColumnIndexes);
-                    break;
-                }
-                catch (SQLException aEx)
-                {
-                    // STATEMENT_TOO_OLD 이 외 에러가 있을 경우는 stmt retry 하지 않는다. 
-                    checkStmtTooOld(aEx, sRetryCount);
-                    --sRetryCount;
-                }
-            }
-        }
-        finally
-        {
-            updateShardMetaNumberIfNecessary();
-        }
-
-        return sResult;
+        throw Error.createSQLException(ErrorDef.THIS_METHOD_NOT_SUPPORTED_IN_SHARDJDBC, "executeUpdate(String sql, int[] columnIndexes)");
     }
 
     public int executeUpdate(String aSql, String[] aColumnNames) throws SQLException
     {
-        mMetaConn.checkCommitState();
-        shardAnalyze(aSql);
-        int sResult;
-        short sRetryCount = mMetaConn.getShardStatementRetry();
-        
-        try
-        {
-            while(true)
-            {
-                try
-                {
-                    sResult = mInternalStmt.executeUpdate(aSql, aColumnNames);
-                    break;
-                }
-                catch (SQLException aEx)
-                {
-                    // STATEMENT_TOO_OLD 이 외 에러가 있을 경우는 stmt retry 하지 않는다. 
-                    checkStmtTooOld(aEx, sRetryCount);
-                    --sRetryCount;
-                }
-            }
-        }
-        finally
-        {
-            updateShardMetaNumberIfNecessary();
-        }
-
-        return sResult;
+        throw Error.createSQLException(ErrorDef.THIS_METHOD_NOT_SUPPORTED_IN_SHARDJDBC, "executeUpdate(String sql, String[] columnNames)");
     }
 
     public boolean execute(String aSql, int aAutoGeneratedKeys) throws SQLException
     {
-        mMetaConn.checkCommitState();
-        shardAnalyze(aSql);
-        boolean sResult;
-        short sRetryCount = mMetaConn.getShardStatementRetry();
-        
-        try
-        {
-            while(true)
-            {
-                try
-                {
-                    sResult = mInternalStmt.execute(aSql, aAutoGeneratedKeys);
-                    break;
-                }
-                catch (SQLException aEx)
-                {
-                    // STATEMENT_TOO_OLD 이 외 에러가 있을 경우는 stmt retry 하지 않는다. 
-                    checkStmtTooOld(aEx, sRetryCount);
-                    --sRetryCount;
-                }
-            }
-        }
-        finally
-        {
-            updateShardMetaNumberIfNecessary();
-        }
-
-        return sResult;
+        throw Error.createSQLException(ErrorDef.THIS_METHOD_NOT_SUPPORTED_IN_SHARDJDBC, "execute(String sql, int autoGenKeys)");
     }
 
     /**
@@ -611,66 +556,12 @@ public class AltibaseShardingStatement extends WrapperAdapter implements Stateme
 
     public boolean execute(String aSql, int[] aColumnIndexes) throws SQLException
     {
-        mMetaConn.checkCommitState();
-        shardAnalyze(aSql);
-        boolean sResult;
-        short sRetryCount = mMetaConn.getShardStatementRetry();
-        
-        try
-        {
-            while(true)
-            {
-                try
-                {
-                    sResult = mInternalStmt.execute(aSql, aColumnIndexes);
-                    break;
-                }
-                catch (SQLException aEx)
-                {
-                    // STATEMENT_TOO_OLD 이 외 에러가 있을 경우는 stmt retry 하지 않는다. 
-                    checkStmtTooOld(aEx, sRetryCount);
-                    --sRetryCount;
-                }
-            }
-        }
-        finally
-        {
-            updateShardMetaNumberIfNecessary();
-        }
-
-        return sResult;
+        throw Error.createSQLException(ErrorDef.THIS_METHOD_NOT_SUPPORTED_IN_SHARDJDBC, "execute(String sql, int[] columnIndexes)");
     }
 
     public boolean execute(String aSql, String[] aColumnNames) throws SQLException
     {
-        mMetaConn.checkCommitState();
-        shardAnalyze(aSql);
-        boolean sResult;
-        short sRetryCount = mMetaConn.getShardStatementRetry();
-        
-        try
-        {
-            while(true)
-            {
-                try
-                {
-                    sResult = mInternalStmt.execute(aSql, aColumnNames);
-                    break;
-                }
-                catch (SQLException aEx)
-                {
-                    // STATEMENT_TOO_OLD 이 외 에러가 있을 경우는 stmt retry 하지 않는다. 
-                    checkStmtTooOld(aEx, sRetryCount);
-                    --sRetryCount;
-                }
-            }
-        }
-        finally
-        {
-            updateShardMetaNumberIfNecessary();
-        }
-
-        return sResult;
+        throw Error.createSQLException(ErrorDef.THIS_METHOD_NOT_SUPPORTED_IN_SHARDJDBC, "execute(String sql, String[] columnNames)");
     }
 
     public int getResultSetHoldability()
@@ -693,6 +584,12 @@ public class AltibaseShardingStatement extends WrapperAdapter implements Stateme
             AltibaseFailover.trySTF(mMetaConn.getMetaConnection().failoverContext(), aEx);
         }
 
+        // prepare가 sql과 1:1 매칭되기 때문에 direct-execute가 실행될 때마다 내부의  PreparedStatement 객체를 초기화해야 함.
+        if (mInternalStmt != null)
+        {
+            mInternalStmt.close();
+        }
+        
         if (mShardStmtCtx.getShardAnalyzeResult().isCoordQuery())
         {
             // BUG-46513 ONENODE이고 analyze 결과가 성공이 아닐경우에는 예외를 던진다.
@@ -701,25 +598,27 @@ public class AltibaseShardingStatement extends WrapperAdapter implements Stateme
                 mSqlwarning = Error.processServerError(mSqlwarning, mShardStmtCtx.getError());
             }
             Connection sConn = mMetaConn.getMetaConnection();
-            // BUG-46790 이미 생성한 serverside statement가 있는 경우에는 재사용한다.
-            if (mServerSideStmt == null)
-            {
-                mServerSideStmt = sConn.createStatement(mResultSetType, mResultSetConcurrency,
-                                                        mResultSetHoldability);
-            }
+            mServerSideStmt = sConn.prepareStatement(aSql, mResultSetType,
+                                                           mResultSetConcurrency,
+                                                           mResultSetHoldability);
             mIsCoordQuery = true;
             // BUG-46513 서버사이드일때는 meta connection을 AltibaseStatement에 주입한다.
             ((AltibaseStatement)mServerSideStmt).setMetaConnection(mMetaConn);
-            mInternalStmt = new ServerSideShardingStatement(mServerSideStmt, mMetaConn);
+            mInternalStmt = new ServerSideShardingPreparedStatement(mServerSideStmt, mMetaConn);
         }
         else
         {
-            mInternalStmt = new DataNodeShardingStatement(mMetaConn,
+            mInternalStmt = new DataNodeShardingPreparedStatement(mMetaConn, aSql,
                                                           mResultSetType, mResultSetConcurrency,
                                                           mResultSetHoldability,
                                                           this);
-            ((DataNodeShardingStatement)mInternalStmt).setShardStmtCtx(mShardStmtCtx);
+            ((DataNodeShardingPreparedStatement)mInternalStmt).setShardStmtCtx(mShardStmtCtx);
         }
+    }
+
+    List<Column> getParameters()
+    {
+        return null;
     }
 
     public boolean isPrepared()
@@ -819,5 +718,23 @@ public class AltibaseShardingStatement extends WrapperAdapter implements Stateme
     public boolean isPoolable() throws SQLException
     {
         throw Error.createSQLFeatureNotSupportedException();
+    }
+
+    void checkStmtType() throws SQLException
+    {
+        int sStmtType = mInternalStmt.getStmtType();
+        if ( sStmtType == CmPrepareResult.STATEMENT_TYPE_COMMIT || 
+             sStmtType == CmPrepareResult.STATEMENT_TYPE_ROLLBACK || 
+             sStmtType == CmPrepareResult.STATEMENT_TYPE_DDL )
+        {
+            Error.throwSQLException(ErrorDef.INVALID_METHOD_WITH_THIS_SQL);
+        }
+    }
+
+    private boolean isEndTran()
+    {
+        int sStmtType = mInternalStmt.getStmtType();
+        return ( sStmtType == CmPrepareResult.STATEMENT_TYPE_COMMIT || 
+                 sStmtType == CmPrepareResult.STATEMENT_TYPE_ROLLBACK );
     }
 }

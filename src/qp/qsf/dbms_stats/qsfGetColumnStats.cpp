@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qsfGetColumnStats.cpp 88191 2020-07-27 03:08:54Z mason.lee $
+ * $Id: qsfGetColumnStats.cpp 91801 2021-10-06 07:39:37Z ahra.cho $
  *
  * Description :
  *
@@ -232,12 +232,11 @@ IDE_RC qsfCalculate_GetColumnStats( mtcNode*     aNode,
 
     /* Begin Statement for meta scan */
     sSmiStmtFlag = SMI_STATEMENT_NORMAL | SMI_STATEMENT_MEMORY_CURSOR;
+
+    IDE_TEST( sDummyStmt.begin( sStatement->mStatistics, sDummyParentStmt, sSmiStmtFlag ) != IDE_SUCCESS);
     qcg::getSmiStmt( sStatement, &sOldStmt   );
     qcg::setSmiStmt( sStatement, &sDummyStmt );
     sState = 3;
-
-    IDE_TEST( sDummyStmt.begin( sStatement->mStatistics, sDummyParentStmt, sSmiStmtFlag ) != IDE_SUCCESS);
-    sState = 4;
 
     /* Table¡§∫∏ »πµÊ */
     IDE_TEST( qcmUser::getUserID( sStatement,
@@ -411,13 +410,11 @@ IDE_RC qsfCalculate_GetColumnStats( mtcNode*     aNode,
         // Nothing to do.
     }
 
-    // End Statement
-    sState = 3;
-    IDE_TEST( sDummyStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS );
-
     // restore
     sState = 2;
     qcg::setSmiStmt( sStatement, sOldStmt );
+    // End Statement
+    IDE_TEST( sDummyStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS );
 
     // transaction commit
     sState = 1;
@@ -433,7 +430,8 @@ IDE_RC qsfCalculate_GetColumnStats( mtcNode*     aNode,
 
     switch( sState )
     {
-        case 4:
+        case 3:
+            qcg::setSmiStmt( sStatement, sOldStmt );
             if ( sDummyStmt.end( SMI_STATEMENT_RESULT_FAILURE ) != IDE_SUCCESS )
             {
                 IDE_ERRLOG(IDE_QP_1);
@@ -442,9 +440,6 @@ IDE_RC qsfCalculate_GetColumnStats( mtcNode*     aNode,
             {
                 // Nothing to do.
             }
-            /* fall through */
-        case 3:
-            qcg::setSmiStmt( sStatement, sOldStmt );
             /* fall through */
         case 2:
             sSmiTrans.rollback();

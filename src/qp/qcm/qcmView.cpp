@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcmView.cpp 89835 2021-01-22 10:10:02Z andrew.shin $
+ * $Id: qcmView.cpp 91656 2021-09-10 01:38:30Z jayce.park $
  **********************************************************************/
 
 #include <idl.h>
@@ -31,6 +31,8 @@
 #include <qcpManager.h>
 #include <qsvEnv.h>
 #include <qsxRelatedProc.h>
+#include <qmv.h>
+#include <qmvShardTransform.h>
 
 const void * gQcmViews;
 const void * gQcmViewParse;
@@ -1132,6 +1134,8 @@ IDE_RC qcmView::recompileView(
     UInt                  sUserID = 0;
     UInt                  sStage = 0;
 
+    qcStatement         * sSelectStatement = NULL;
+
     // get qcmTableInfo
     IDE_TEST(qcm::getTableInfoByID( aStatement,
                                     aTableID,
@@ -1208,6 +1212,27 @@ IDE_RC qcmView::recompileView(
     sCreateParseTree = (qdTableParseTree *)(sCreateStatement->myPlan->parseTree);
     sCreateParseTree->flag &= ~QDV_OPT_REPLACE_MASK;
     sCreateParseTree->flag |= QDV_OPT_REPLACE_TRUE;
+
+    /* BUG-48957
+     * Sharding 에서는 view의 recompile시 shard transformation을 재수행 해야 한다.
+     */
+    if ( SDU_SHARD_ENABLE == 1 )
+    {
+        sSelectStatement = (qcStatement*)((qdTableParseTree*)sCreateStatement->myPlan->parseTree)->select;
+
+        IDE_TEST( qmv::parseSelectInternal( sSelectStatement )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( qmvShardTransform::doTransform( sSelectStatement )
+                  != IDE_SUCCESS );
+
+        IDE_TEST( qtc::fixAfterParsing( QC_SHARED_TMPLATE(sCreateStatement) )
+                  != IDE_SUCCESS );
+    }
+    else
+    {
+        /* Nothing to do. */
+    }
 
     //---------------------------------------------------------------
     // validation

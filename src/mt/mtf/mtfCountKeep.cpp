@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtfCountKeep.cpp 91741 2021-09-27 00:50:01Z donovan.seo $
+ * $Id: mtfCountKeep.cpp 91798 2021-10-06 06:55:55Z donovan.seo $
  **********************************************************************/
 
 #include <mte.h>
@@ -152,7 +152,6 @@ IDE_RC mtfCountKeepEstimate( mtcNode     * aNode,
                              mtcCallBack * /*aCallBack*/ )
 {
     mtcNode *   sNode;
-    idBool      sTransForm = ID_TRUE;
     UInt        sArgCount;
     UInt        sFuncArgCount;
     idBool      sIsAsterisk = ID_FALSE;

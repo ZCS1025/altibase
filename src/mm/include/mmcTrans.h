@@ -204,8 +204,8 @@ public:
                                      mmcSession  * aSession,
                                      ID_XID      * aXID,
                                      idBool        aIsCommit,
-                                    idBool         aMySelf,
-                                     smSCN       * aCommitSCN );
+                                     smSCN       * aCommitSCN,
+                                     idBool      * aIsNotMatchedXID = NULL );
     static IDE_RC endPendingSharedTx( mmcSession * aSession,
                                       ID_XID     * aXID,
                                       idBool       aIsCommit,
