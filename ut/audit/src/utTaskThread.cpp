@@ -15,18 +15,25 @@
  */
  
 /*******************************************************************************
- * $Id: utTaskThread.cpp 86150 2019-09-10 06:40:44Z bethy $
+ * $Id: utTaskThread.cpp 91790 2021-10-05 01:14:45Z chkim $
  ******************************************************************************/
 #include <uto.h>
 #include <utAtb.h>
 
 IDE_RC utTaskThread::initialize(utProperties * aProp)
 {
+    UShort i = 0;
 
     mScanner = NULL;
     mConnA   = NULL;
     mConnB   = NULL;
     *_error  = '\0';
+    
+    /* BUG-49274 Activate commit count */
+    for( i = 0; i < SERVERS; i++)
+    {
+        mConn4DML[i] = NULL;
+    }
 
     IDE_TEST( aProp == NULL );
     mProp = aProp;
@@ -62,9 +69,27 @@ IDE_RC utTaskThread::initialize(utProperties * aProp)
                     ) != IDE_SUCCESS, err_con_b);
     IDE_TEST_RAISE( mConnB->connect() != IDE_SUCCESS, err_con_b );
 
+    /* BUG-49274 Activate commit count */
+    mConn4DML[MASTER] = mProp->newMaConn();
+    mConn4DML[MASTER]->setServerType(MASTER); /* BUG-47434 */
+
+    IDE_TEST_RAISE( mConn4DML[MASTER] == NULL, err_con_a);
+    IDE_TEST_RAISE( mConn4DML[MASTER]->initialize(_error, sizeof(_error)
+                ) != IDE_SUCCESS, err_con_a);
+    IDE_TEST_RAISE( mConn4DML[MASTER]->connect() != IDE_SUCCESS, err_con_a );
+
+    mConn4DML[SLAVE] = mProp->newSlConn();
+    mConn4DML[SLAVE]->setServerType(SLAVE); /* BUG-47434 */
+
+    IDE_TEST_RAISE( mConn4DML[SLAVE] == NULL , err_con_b);
+    IDE_TEST_RAISE( mConn4DML[SLAVE]->initialize(_error, sizeof(_error)
+                ) != IDE_SUCCESS, err_con_b);
+    IDE_TEST_RAISE( mConn4DML[SLAVE]->connect() != IDE_SUCCESS, err_con_b );
+
     IDE_TEST( mScanner->initialize(
                 mConnA,
                 mConnB,
+                mConn4DML,
                 aProp->mCountToCommit,
                 _error) != IDE_SUCCESS);
 
@@ -133,9 +158,6 @@ void utTaskThread::run()
 
         /* Print result of job */
         IDE_TEST(mScanner->printResult(mProp->getFLog()) != IDE_SUCCESS);
-
-        mConnA->commit();
-        mConnB->commit();
 
         /* get next table */
         IDE_TEST( mProp->getTabProp( &sTab) != IDE_SUCCESS);

@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utdb.h 86150 2019-09-10 06:40:44Z bethy $
+ * $Id: utdb.h 91790 2021-10-05 01:14:45Z chkim $
  ******************************************************************************/
 
 #ifndef _UT_DB_H_
@@ -79,8 +79,9 @@ typedef enum
 /* BUG-47434 에러를 출력할 때 에러 코드도 포함해야 합니다 */
 typedef enum
 {
-    MASTER = 0,
-    SLAVE
+    MASTER  = 0,
+    SLAVE   = 1,
+    SERVERS = 2
 } SERVER_TYPE;
 
 /* Dynamic load & link and create conection */

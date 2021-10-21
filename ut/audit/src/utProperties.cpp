@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: utProperties.cpp 89731 2021-01-11 00:37:00Z chkim $
+ * $Id: utProperties.cpp 91790 2021-10-05 01:14:45Z chkim $
  ******************************************************************************/
 
 #include <utProperties.h>
@@ -84,7 +84,8 @@ IDE_RC utProperties::initialize(int argc, char **argv)
     logDir         = NULL;
     mDSNMaster = mDSNSlave = NULL;
     mTimeInterval  = -1;
-    mCountToCommit = -1;
+    /* BUG-49274 Activate commit count */
+    mCountToCommit = 1000; // set default value as 1000
 
     for(i = 0; i < DML_MAX; i++)
     {

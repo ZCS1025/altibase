@@ -15,7 +15,7 @@
  */
  
 /*******************************************************************************
- * $Id: uto.h 88614 2020-09-17 05:15:36Z chkim $
+ * $Id: uto.h 91790 2021-10-05 01:14:45Z chkim $
  ******************************************************************************/
 #ifndef _UTO_H_
 #define _UTO_H_ 1
@@ -36,6 +36,9 @@
 #define FILE_BUF_LIMIT   (10240*0.95)
 /* 토큰의 최대 길이 = VARBIT 문자열 표현의 최대 길이 */
 #define MAX_TOKEN_VALUE_LEN 131070
+
+/* BUG-49274 Activate commit count */
+#define ERR_COMMUNICATION_LINK_FAILURE    0x51043
 
 typedef enum
 {
@@ -133,6 +136,9 @@ class utTaskThread : public idtBaseThread
 {
     utScanner           *mScanner; // current scanner
     Connection   *mConnA, *mConnB; // Master (A), Slave(B) connection
+    /* BUG-49274 Activate commit count */
+    Connection   *mConn4DML[SERVERS];
+
     utProperties           *mProp; // Properties link pointer
 
     SChar   _error[ERROR_BUFSIZE]; // Private error buffer is shared
@@ -223,6 +229,14 @@ class utScanner: public Object
 
     SInt mCountToCommit;
 
+    /* BUG-49274 Activate commit count */
+    SInt mCountToFetch; // fetch counter to print progress
+    
+    /* Counters for how many times committed for master/slave */
+    UInt mCommittedCnts[SERVERS];
+
+    /* Not yet committed DML operation for master/slave */
+    UInt mCnts2Commit[SERVERS];
 
     inline UInt  did(dmlQuery *v) { return (v) ?  v->did() :0; }
     inline UInt fail(dmlQuery *v) { return (v) ? v->fail() :0; }
@@ -269,12 +283,17 @@ class utScanner: public Object
     // utaGetCSVTokenFromBuff 함수를 반복 호출하여 한 Row의 Field들에 대한 data값을 쎄팅한다.
     Row *utaReadCSVRow( utaFileInfo *aFileInfo, Query *aQuery );
 
+    /* BUG-49274 Activate commit count */
+    IDE_RC commitSync( bool aIsLastCommit );
+    void   commitSyncEach( bool aIsLastCommit, UShort aServerId );
+
 public:
     utScanner();
-    IDE_RC initialize(Connection * aConnA, // Master connection
-                      Connection * aConnB, // Slave  connection
-                      SInt aCountToCommit, // Process commit count
-                      SChar      * =NULL); // Error message buffer
+    IDE_RC initialize(Connection * aConnA,      // Master connection
+                      Connection * aConnB,      // Slave  connection
+                      Connection * aConn4DML[], /* BUG-49274 Activate commit count */
+                      SInt aCountToCommit,      // Process commit count
+                      SChar      * =NULL);      // Error message buffer
     IDE_RC finalize();
 
     /* TASK-4212: audit툴의 대용량 처리시 개선 */
@@ -345,6 +364,14 @@ protected:
     IDE_RC logWriteRow(Row *); /* BUG-44461 */
 
     Connection   *mConnA,   *mConnB;
+    /* 
+     * BUG-49274 Activate commit count 
+     * Before: SELECT + DML -> After: SELECT only
+     * mConnA, mConnB: Master, Slave connection
+     * 
+     * Added: Connections for DML
+     * */
+    Connection   *mConn4DML[SERVERS];
 
     const SChar        *mTableNameA;
     const SChar        *mTableNameB;
