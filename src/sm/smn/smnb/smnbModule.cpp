@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnbModule.cpp 91256 2021-07-19 01:28:30Z emlee $
+ * $Id: smnbModule.cpp 91871 2021-10-20 00:28:18Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -11604,15 +11604,14 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
     smnbINode   * sCurINode = NULL;
     smnbNode    * sFreeNodeList = NULL;
     UInt          sDeleteNodeCount = 0;
-    UInt          sLockState = 0;
-    UInt          sNodeState = 0;
     void        * sOldKeyRow = NULL;
     void        * sNewKeyRow = NULL;
     void        * sNewKey = NULL;
-    SInt          sInternalSlotPos = 0;
-    SInt          sNodeOldCount = 0;
-    SInt          sNodeNewCount = 0;
-    SInt          i = 0;
+    SInt          sInternalSlotPos     = 0;
+    idBool        sIsTreeLocked        = ID_FALSE;
+    idBool        sIsCurLNodeLocked    = ID_FALSE;
+    idBool        sIsNxtLNodeLocked    = ID_FALSE;
+    idBool        sIsNxtNxtLNodeLocked = ID_FALSE;
 
     sCurINode = ( smnbINode * )aIndex->root;
 
@@ -11624,10 +11623,8 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
                    ( SMNB_IS_LEAF_NODE( sCurINode ) ), 
                    SKIP_KEY_REORGANIZATION );
 
-    IDU_FIT_POINT( "smnbBTree::keyReorganization::findFirstLeafNode" );
-
     lockTree( aIndex );
-    sLockState = 1;
+    sIsTreeLocked = ID_TRUE;
 
     while ( SMNB_IS_INTERNAL_NODE( sCurINode->mChildPtrs[0] ) )
     {
@@ -11635,7 +11632,7 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
     }
     sCurLNode = (smnbLNode*)sCurINode->mChildPtrs[0];
 
-    sLockState = 0;
+    sIsTreeLocked = ID_FALSE;
     unlockTree( aIndex );
 
     while ( sCurLNode != NULL )
@@ -11703,24 +11700,19 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
         }
         else
         {
-            sNodeState = 0;
-
-            sNxtLNode = sCurLNode->nextSPtr;
             IDU_FIT_POINT( "smnbBTree::keyReorganization::beforeLock" );
 
             /* 3. lock을 잡는다. */
             lockTree( aIndex );
-            sLockState = 1;
+            sIsTreeLocked = ID_TRUE;
 
-            IDU_FIT_POINT( "smnbBTree::keyReorganization::exceptionPoint1" );
+            sNxtLNode = sCurLNode->nextSPtr; /* BUG-49320 : TREE LOCK을 잡아야 현재 NODE의 NEXT임이 보장된다. */
 
             lockNode( sCurLNode );
-            sLockState = 2;
-
-            IDU_FIT_POINT( "smnbBTree::keyReorganization::exceptionPoint2" );
+            sIsCurLNodeLocked = ID_TRUE;
 
             lockNode( sNxtLNode );
-            sLockState = 3;
+            sIsNxtLNodeLocked = ID_TRUE;
 
             IDU_FIT_POINT( "smnbBTree::keyReorganization::afterLock" );
 
@@ -11729,13 +11721,13 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
                                          sCurINode,
                                          SMNB_LEAF_SLOT_MAX_COUNT( aIndex ) ) == ID_FALSE )       
             {
-                sLockState = 2;
+                sIsNxtLNodeLocked = ID_FALSE;
                 unlockNode( sNxtLNode );
 
-                sLockState = 1;
+                sIsCurLNodeLocked = ID_FALSE;
                 unlockNode( sCurLNode );
 
-                sLockState = 0;
+                sIsTreeLocked = ID_FALSE;
                 unlockTree( aIndex );
 
                 continue;
@@ -11759,14 +11751,9 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
             SMNB_SCAN_LATCH( sCurLNode );
             SMNB_SCAN_LATCH( sNxtLNode );
 
-            sLockState = 4;
-
-            IDU_FIT_POINT( "smnbBTree::keyReorganization::exceptionPoint3" );
-
-            sNodeOldCount = sCurLNode->mSlotCount;
-
-            IDE_ERROR( sCurLNode->mSlotCount + sNxtLNode->mSlotCount 
-                       <= SMNB_LEAF_SLOT_MAX_COUNT( aIndex ) );
+            /* checkEnableReorgInNode() 에서 확인했다. DASSERT로만 남겨둔다. */
+            IDE_DASSERT( sCurLNode->mSlotCount + sNxtLNode->mSlotCount 
+                         <= SMNB_LEAF_SLOT_MAX_COUNT( aIndex ) );
 
             /* 6.1 다음 노드의 slot들을 현재 노드에 복사한다. */
             copyLeafSlots( sCurLNode, 
@@ -11775,56 +11762,35 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
                            0, /* aSrcStartIdx */
                            sNxtLNode->mSlotCount );
 
-            sNodeState = 1;
-
-            IDU_FIT_POINT( "smnbBTree::keyReorganization::exceptionPoint4" );
-
             /* 6.2 현재 노드의 메타 정보를 갱신한다. */
 
-            /* 트리의 마지막 노드에 대해서는 수행하지 않으므로
-             * 항상 다음 노드의 next노드의 prev pointer를 조절해야 한다. */
-            IDE_ERROR( sNxtLNode->nextSPtr != NULL );
+            /* checkEnableReorgInNode() 에서 확인했다. DASSERT로만 남겨둔다. */
+            IDE_DASSERT( sNxtLNode->nextSPtr != NULL );
 
             lockNode( sNxtLNode->nextSPtr );
-            sLockState = 5;
-
-            IDU_FIT_POINT( "smnbBTree::keyReorganization::exceptionPoint10" );
+            sIsNxtNxtLNodeLocked = ID_TRUE;
 
             SMNB_SCAN_LATCH( sNxtLNode->nextSPtr );
-            sLockState = 6;
-
-            IDU_FIT_POINT( "smnbBTree::keyReorganization::exceptionPoint5" );
 
             sNxtLNode->nextSPtr->prevSPtr = sNxtLNode->prevSPtr;
 
             SMNB_SCAN_UNLATCH( sNxtLNode->nextSPtr );
-            sLockState = 5;
 
+            sIsNxtNxtLNodeLocked = ID_FALSE;
             unlockNode( sNxtLNode->nextSPtr );
-            sLockState = 4;
 
             sCurLNode->mSlotCount += sNxtLNode->mSlotCount;
-            sNodeNewCount = sCurLNode->mSlotCount;
+
             sCurLNode->nextSPtr = sNxtLNode->nextSPtr;
 
             sNxtLNode->flag |= SMNB_NODE_INVALID;
 
-            sNodeState = 2;
-
-            IDU_FIT_POINT( "smnbBTree::keyReorganization::exceptionPoint6" );
-
             SMNB_SCAN_UNLATCH( sNxtLNode );
             SMNB_SCAN_UNLATCH( sCurLNode );
-
-            sLockState = 3;
 
             /* 7. 제거될 이웃 노드를 free node list에 연결한다. */
             sNxtLNode->freeNodeList = sFreeNodeList;
             sFreeNodeList = (smnbNode*)sNxtLNode;
-
-            sNodeState = 3;
-
-            IDU_FIT_POINT( "smnbBTree::keyReorganization::exceptionPoint7" );
 
             sDeleteNodeCount++;
 
@@ -11838,10 +11804,10 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
                          (SShort)( sCurLNode->mSlotCount - 1 ) );
 
             /* 9. 리프 노드의 lock을 해제한다. */
-            sLockState = 2;
+            sIsNxtLNodeLocked = ID_FALSE;
             unlockNode( sNxtLNode );
 
-            sLockState = 1;
+            sIsCurLNodeLocked = ID_FALSE;
             unlockNode( sCurLNode );
 
             /* 10. 인터널 노드를 갱신한다. */
@@ -11864,21 +11830,46 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
                              NULL,
                              NULL );
 
-            sNodeState = 4;
-
-            IDU_FIT_POINT( "smnbBTree::keyReorganization::exceptionPoint8" );
-
             sCurINode->mSlotCount--;
-
-            sNodeState = 5;
-
-            IDU_FIT_POINT( "smnbBTree::keyReorganization::exceptionPoint9" );
 
             SMNB_SCAN_UNLATCH( sCurINode );
 
             /* 11. tree latch를 해제한다. */
-            sLockState = 0;
+            sIsTreeLocked = ID_FALSE;
             unlockTree( aIndex );
+        }
+    }
+
+    IDE_EXCEPTION_CONT( SKIP_KEY_REORGANIZATION );
+
+    if ( sIsTreeLocked == ID_TRUE )
+    {
+        sIsTreeLocked = ID_FALSE;
+        unlockTree( aIndex );
+    }
+    if ( sIsCurLNodeLocked == ID_TRUE )
+    {
+        sIsCurLNodeLocked = ID_FALSE;
+        if ( sCurLNode != NULL )
+        {
+            unlockNode( sCurLNode );
+        }
+    }
+    if ( sIsNxtLNodeLocked == ID_TRUE )
+    {
+        sIsNxtLNodeLocked = ID_FALSE;
+        if ( sNxtLNode != NULL )
+        {
+            unlockNode( sNxtLNode );
+        }
+    }
+    if ( sIsNxtNxtLNodeLocked == ID_TRUE )
+    {
+        sIsNxtNxtLNodeLocked = ID_FALSE;
+        if ( ( sNxtLNode != NULL ) &&
+             ( sNxtLNode->nextSPtr != NULL ) )
+        {
+            unlockNode( sNxtLNode->nextSPtr );
         }
     }
 
@@ -11896,108 +11887,39 @@ IDE_RC smnbBTree::keyReorganization( smnbHeader    * aIndex )
         /* do nothing... */
     }
 
-    IDE_EXCEPTION_CONT( SKIP_KEY_REORGANIZATION );
-
-    IDU_FIT_POINT_RAISE( "BUG-46504@smnbBTree::keyReorganization::errNotStateZero", ERR_NOT_STATE_ZERO );
-    IDE_ERROR_RAISE( sLockState == 0, ERR_NOT_STATE_ZERO );
-
     return IDE_SUCCESS;
     
-    IDE_EXCEPTION( ERR_NOT_STATE_ZERO )
-    {
-        IDE_SET( ideSetErrorCode( smERR_ABORT_INCONSISTENT_INDEX ) );
-        ideLog::log( IDE_ERR_0, "[SM] lock state is not zero. [%"ID_UINT32_FMT"]", sLockState );
-    }
     IDE_EXCEPTION_END;
 
-    switch ( sNodeState )
+    if ( sIsTreeLocked == ID_TRUE )
     {
-        case 5:     /* 인터널 노드의 slotcounter 정보 변경 복원 */
-            sCurINode->mSlotCount++;
-        case 4:     /* 인터널 노드의 slot 변경 복원 */
-            /* 인터널 노드의 slot shift 복원 */
-            shiftInternalSlots( sCurINode,
-                                ( SShort )( sInternalSlotPos + 1 ),
-                                ( SShort )( sCurINode->mSlotCount - 1 ),
-                                ( SShort )(1) );
-
-            /* 통합으로 사라질 노드와의 연결을 복원 */
-            getLeafSlot( (SChar **)&sNewKeyRow,
-                         &sNewKey,
-                         sNxtLNode,
-                         (SShort)( sNxtLNode->mSlotCount - 1 ) );
-            setInternalSlot( sCurINode,
-                             ( SShort )( sInternalSlotPos + 1 ),
-                             (smnbNode *)sNxtLNode,
-                             (SChar *)sNewKeyRow,
-                             sNewKey );
-
-            /* 통합대상인 리프노드의 키 값을 복원 */
-            getLeafSlot( (SChar **)&sNewKeyRow,
-                         &sNewKey,
-                         sCurLNode,
-                         (SShort)( sNodeOldCount - 1 ) ); 
-            setInternalSlot( sCurINode,
-                             ( SShort )sInternalSlotPos,
-                             (smnbNode *)sCurLNode,
-                             (SChar *)sNewKeyRow,
-                             sNewKey );
-            SMNB_SCAN_UNLATCH( sCurINode );
-
-            lockNode( sCurLNode );
-            sLockState = 2;
-            lockNode( sNxtLNode );
-            sLockState = 3;
-
-            sDeleteNodeCount--;
-        case 3:     /* 다음 리프 노드를 freelist에 연결한 변경을 복원 */
-            sFreeNodeList = (smnbNode*)sNxtLNode->freeNodeList;
-            sNxtLNode->freeNodeList = NULL;
-
-            SMNB_SCAN_LATCH( sCurLNode );
-            SMNB_SCAN_LATCH( sNxtLNode );
-            sLockState = 4;
-        case 2:     /* 통합이 수행된 노드의 메타정보 갱신을 복원 */
-            sNxtLNode->flag |= SMNB_NODE_VALID;
-
-            SMNB_SCAN_LATCH( sNxtLNode->nextSPtr );
-            sNxtLNode->nextSPtr->prevSPtr = sNxtLNode;
-            SMNB_SCAN_UNLATCH( sNxtLNode->nextSPtr );
-
-            sCurLNode->mSlotCount = sNodeOldCount;
-            sCurLNode->nextSPtr = sNxtLNode;
-
-        case 1:     /* 다음 리프 노드의 slot을 현재 리프노드에 통합한 수정을 복원 */
-            for ( i = 0; i < sNodeNewCount - sNodeOldCount; i++ )
-            {
-                setLeafSlot( sCurLNode,
-                             (SShort)( sNodeNewCount - 1 - i ),
-                             NULL,
-                             NULL );
-            }
-        case 0:
-        default:
-            break;
+        sIsTreeLocked = ID_FALSE;
+        unlockTree( aIndex );
     }
-
-    switch ( sLockState )
+    if ( sIsCurLNodeLocked == ID_TRUE )
     {
-        case 6:
-            SMNB_SCAN_UNLATCH( sNxtLNode->nextSPtr );
-        case 5:
-            unlockNode( sNxtLNode->nextSPtr );
-        case 4:
-            SMNB_SCAN_UNLATCH( sNxtLNode );
-            SMNB_SCAN_UNLATCH( sCurLNode );
-        case 3:
-            unlockNode( sNxtLNode );
-        case 2:
+        sIsCurLNodeLocked = ID_FALSE;
+        if ( sCurLNode != NULL )
+        {
             unlockNode( sCurLNode );
-        case 1:
-            unlockTree( aIndex );
-        case 0:
-        default:
-            break;
+        }
+    }
+    if ( sIsNxtLNodeLocked == ID_TRUE )
+    {
+        sIsNxtLNodeLocked = ID_FALSE;
+        if ( sNxtLNode != NULL )
+        {
+            unlockNode( sNxtLNode );
+        }
+    }
+    if ( sIsNxtNxtLNodeLocked == ID_TRUE )
+    {
+        sIsNxtNxtLNodeLocked = ID_FALSE;
+        if ( (sNxtLNode != NULL) &&
+             (sNxtLNode->nextSPtr != NULL ) )
+        {
+            unlockNode( sNxtLNode->nextSPtr );
+        }
     }
 
     /* 작업이 완료 된 후 free list의 노드들을 정리한다. */

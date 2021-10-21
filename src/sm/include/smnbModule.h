@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnbModule.h 89495 2020-12-14 05:19:22Z emlee $
+ * $Id: smnbModule.h 91871 2021-10-20 00:28:18Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMNB_MODULE_H_
@@ -1366,6 +1366,7 @@ inline idBool smnbBTree::checkEnableReorgInNode( smnbLNode * aLNode,
     idBool  sEnableReorg = ID_FALSE;
     smnbLNode   * sCurLNode = aLNode;
     smnbLNode   * sNxtLNode = (smnbLNode*)aLNode->nextSPtr;
+    SShort        sSlotCnt  = 0;
 
     IDE_ERROR( aLNode != NULL );
     IDE_ERROR( aINode != NULL );
@@ -1374,7 +1375,9 @@ inline idBool smnbBTree::checkEnableReorgInNode( smnbLNode * aLNode,
     {
         if ( sNxtLNode->nextSPtr != NULL )
         {
-            if ( ( (smnbLNode*)aINode->mChildPtrs[ ( aINode->mSlotCount ) - 1 ] ) != aLNode )
+            sSlotCnt = aINode->mSlotCount;
+            if ( ( sSlotCnt > 0 ) &&
+                 ( ( (smnbLNode*)aINode->mChildPtrs[ sSlotCnt - 1 ] ) != aLNode ) )
             {
                 if ( ( sCurLNode->mSlotCount + sNxtLNode->mSlotCount ) < aSlotMaxCount )
                 {
