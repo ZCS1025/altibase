@@ -156,16 +156,6 @@ class svmReqFunc
             return smlLockMgr::unlockItem( aTrans,
                                            aLockSlot );
         };
-
-        /* sma */
-        static IDE_RC blockMemGC()
-        {
-            return smaLogicalAger::block();
-        };
-        static IDE_RC unblockMemGC()
-        {
-            return smaLogicalAger::unblock();
-        };
 };
 
 #define smLayerCallback    svmReqFunc

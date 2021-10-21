@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smiMain.cpp 90259 2021-03-19 01:22:22Z emlee $
+ * $Id: smiMain.cpp 91859 2021-10-17 22:37:22Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -205,13 +205,13 @@ UInt smiGetMinDBPageCount()
  *                       포함되지 않는다.
  * aDBCharSet       [IN] 데이터베이스 캐릭터 셋
  * aNationalCharSet [IN] 내셔널 캐릭터 셋
- * aArchiveLog      [IN] 아카이브 로그 모드
+ * aArchiveMode     [IN] 아카이브 로그 모드
  */
 IDE_RC smiCreateDB( SChar         * aDBName,
                     UInt            aCreatePageCount,
                     SChar         * aDBCharSet,
                     SChar         * aNationalCharSet,
-                    smiArchiveMode  aArchiveLog )
+                    smiArchiveMode  aArchiveMode )
 {
     /* -------------------------
      * [2] create Memory Mgr & init
@@ -245,7 +245,7 @@ IDE_RC smiCreateDB( SChar         * aDBName,
     IDE_CALLBACK_SEND_MSG("[SUCCESS]\n");
 
     /* create database dbname ..[archivelog|noarchivelog] */
-    IDE_TEST( smiBackup::alterArchiveMode( aArchiveLog,
+    IDE_TEST( smiBackup::alterArchiveMode( aArchiveMode,
                                            ID_FALSE )
               != IDE_SUCCESS );
 

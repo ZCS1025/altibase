@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smaDeleteThread.h 88191 2020-07-27 03:08:54Z mason.lee $
+ * $Id: smaDeleteThread.h 91859 2021-10-17 22:37:22Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMA_DELETE_THREAD_H_
@@ -58,16 +58,15 @@ public:
     static IDE_RC  lock() { return mMutex.lock( NULL ); }
     static IDE_RC  unlock() { return mMutex.unlock(); }
 
-    static IDE_RC  lockAll();
-    static IDE_RC  unlockAll();
+    static void  lockAll();
+    static void  unlockAll();
 
     IDE_RC  lockCheckMtx() { return mCheckMutex.lock( NULL ); }
     IDE_RC  unlockCheckMtx() { return mCheckMutex.unlock(); }
     
     static void waitForNoAccessAftDropTbl();
-    static IDE_RC processFreeSlotPending(
-        smxTrans   *aTrans,
-        smxOIDList *aOIDList);
+    static IDE_RC processFreeSlotPending( smxTrans   *aTrans,
+                                          smxOIDList *aOIDList );
 
     smaDeleteThread();
 

@@ -130,7 +130,7 @@ public:
 
     static IDE_RC unbindCTS( sdrMtx           * aMtx,
                              sdpPhyPageHdr    * aPage,
-                             UChar              aTSSlotNum,
+                             UChar              aSlotNum,
                              UShort             aKeyOffset );
 
     static idBool isMyTransaction( void          * aTrans,

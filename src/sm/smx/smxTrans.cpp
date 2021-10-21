@@ -21,7 +21,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: smxTrans.cpp 91255 2021-07-19 01:08:26Z emlee $
+ * $Id: smxTrans.cpp 91859 2021-10-17 22:37:22Z emlee $
  **********************************************************************/
 
 #include <ida.h>
@@ -2753,6 +2753,7 @@ IDE_RC smxTrans::addTID4GroupCommit( UInt    * aGCList,
     UInt   sGCCnt;
     UInt   sGCList;
     idBool sWriteCommitLog = ID_FALSE;
+    UInt   sState = 0;
 
     IDE_TEST( mTableInfoMgr.requestAllEntryForCheckMaxRow()
               != IDE_SUCCESS );
@@ -2766,6 +2767,7 @@ IDE_RC smxTrans::addTID4GroupCommit( UInt    * aGCList,
     sListNumber = sGCList % mGCListCnt;
 
     mGCMutex[sListNumber].lock(NULL);
+    sState = 1;
 
     /* lock을 획득하는 동안 해당 List의 ID가 변경되었을수 있기 때문에
      * lock을 잡은후에 정확한 ID를 가져가야한다. */
@@ -2791,11 +2793,12 @@ IDE_RC smxTrans::addTID4GroupCommit( UInt    * aGCList,
     if ( mGCCnt[sListNumber] == mGroupCnt )
     {
         mGCList++;
-        writeGroupCommitLog( sListNumber );
+        IDE_TEST( writeGroupCommitLog( sListNumber ) != IDE_SUCCESS );
         /* Write가 끝났으면 GCListNumber를 높여서 wait 중인 Tx가 알게 한다. */
         mGCListID[sListNumber] += mGCListCnt;
         sWriteCommitLog = ID_TRUE;
     }
+    sState = 0;
     mGCMutex[sListNumber].unlock();
 
     *aWriteCommitLog = sWriteCommitLog;
@@ -2804,6 +2807,12 @@ IDE_RC smxTrans::addTID4GroupCommit( UInt    * aGCList,
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    if ( sState != 0 )
+    {
+        sState = 0;
+        mGCMutex[sListNumber].unlock();
+    }
 
     return IDE_FAILURE;
 }
@@ -2951,6 +2960,7 @@ IDE_RC smxTrans::writeGroupCommitLog( UInt aListNumber )
 IDE_RC smxTrans::waitGroupCommit( UInt aGCList )
 {
     UInt sListNumber;
+    UInt sState = 0;
 
     sListNumber = aGCList % mGCListCnt;
 
@@ -2958,21 +2968,33 @@ IDE_RC smxTrans::waitGroupCommit( UInt aGCList )
     if ( aGCList == mGCListID[sListNumber] )
     {
         mGCMutex[sListNumber].lock(NULL);
+        sState = 1;
 
         /* lock을 획득하는 동안 write가 일어났을수 있다.
          * ListID가 내 ID와 같은지 확인한다. */
         if ( aGCList == mGCListID[sListNumber] )
         {
             mGCList++;
-            writeGroupCommitLog( sListNumber );
+            IDE_TEST( writeGroupCommitLog( sListNumber ) != IDE_SUCCESS );
             /* Write가 끝났으면 GCListID를 높여서 wait 중인 Tx가 알게 한다. */
             mGCListID[sListNumber] += mGCListCnt;
         }
 
+        sState = 0;
         mGCMutex[sListNumber].unlock();
     }
 
     return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    if ( sState != 0 )
+    {
+        sState = 0;
+        mGCMutex[sListNumber].unlock();
+    }
+
+    return IDE_FAILURE;
 }
 
 /*********************************************************
