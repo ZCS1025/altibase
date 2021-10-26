@@ -194,6 +194,11 @@ public class CmProtocolContextConnect extends CmProtocolContext
         return Integer.parseInt(getPropertyResult().getProperty(AltibaseProperties.PROP_CODE_UTRANS_TIMEOUT));
     }
 
+    public int getTransactionalDDL() throws NumberFormatException, SQLException
+    {
+        return Integer.parseInt(getPropertyResult().getProperty(AltibaseProperties.PROP_CODE_TRANSACTIONAL_DDL));
+    }
+
     int getPropertyCount()
     {
         return mPropKeyList.size();

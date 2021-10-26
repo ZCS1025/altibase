@@ -271,6 +271,9 @@ public class CmOperation extends CmOperationDef
                     break;
                 case DB_OP_LOB_TRIM_RESULT:
                     break;
+                case DB_OP_ROLLBACK_TO_SAVEPOINT_RESULT:
+                    // nothing to read
+                    break;
 
                 // #region 안쓰는 프로토콜
 
@@ -311,6 +314,11 @@ public class CmOperation extends CmOperationDef
                 case DB_OP_PREPARE_BY_CID_V3:
                     // prepare 에러는 Error Index가 설정되지 않으므로(항상 0), 현재 RowNumber 값으로 초기
                     sError.initErrorIndex(sExecResult.getUpdatedRowCountArraySize());
+                    // BUG-49250 prepare단계에서의 에러여부인지 플래그 셋팅. batch 모드는 여러개의 sql이 실행될 수 있기 때문에 제외한다.
+                    if (!sExecResult.isBatchMode())
+                    {
+                        sError.setPrepareError(true);
+                    }
                 case DB_OP_PARAM_DATA_IN_LIST_V3:
                 case DB_OP_EXECUTE_V3:
                     sExecResult.setUpdatedRowCount(Statement.EXECUTE_FAILED);
@@ -424,6 +432,15 @@ public class CmOperation extends CmOperationDef
         aChannel.writeByte(TRANSACTION_OP_ROLLBACK);
     }
 
+    static void writeRollbackToSavepoint(CmChannel aChannel, String aSavepointName) throws SQLException
+    {
+        int sSavepointNameLen = aSavepointName.length();
+        aChannel.checkWritable(1 + 4 + sSavepointNameLen);
+        aChannel.writeOp(DB_OP_ROLLBACK_TO_SAVEPOINT);
+        aChannel.writeInt(sSavepointNameLen);
+        aChannel.writeBytes(aSavepointName.getBytes());
+    }
+
     /* PROJ-2733 */
     static void writeShardTransaction(CmChannel aChannel, boolean aIsCommit) throws SQLException
     {
@@ -480,7 +497,8 @@ public class CmOperation extends CmOperationDef
 
     static void writeExecuteV3(CmChannel aChannel, int aStatementId, int aRowNumber, byte aMode, CmProtocolContext aContext) throws SQLException
     {
-        aChannel.checkWritable(41);
+        short sClientTouchedNodeCount = aContext.getClientTouchedNodeCount();
+        aChannel.checkWritable( 41 + (sClientTouchedNodeCount * 4) );
         aChannel.writeOp(DB_OP_EXECUTE_V3);
         aChannel.writeInt(aStatementId);
         aChannel.writeInt(aRowNumber);
@@ -491,8 +509,12 @@ public class CmOperation extends CmOperationDef
         aChannel.writeLong(aContext.getDistTxInfo().getTxFirstStmtSCN());
         aChannel.writeLong(aContext.getDistTxInfo().getTxFirstStmtTime());
         aChannel.writeByte(aContext.getDistTxInfo().getDistLevel());
-        aChannel.writeInt(0);  /* TASK-7219 Non-shard DML */
-        aChannel.writeShort((short)0);  /* BUG-48315 FIXME */
+        aChannel.writeInt(0);                             /* TASK-7219 Non-shard DML */
+        aChannel.writeShort(sClientTouchedNodeCount);     /* BUG-49296 : BUG-48315 */
+        for (Integer sNodeId : aContext.getClientTouchNodes())
+        {
+            aChannel.writeInt(sNodeId);
+        }
     }
 
     private static void readExecuteV3Result(CmChannel aChannel, CmProtocolContext aContext) throws SQLException
@@ -858,7 +880,8 @@ public class CmOperation extends CmOperationDef
                                            boolean aIsArray,
                                            CmProtocolContext aContext) throws SQLException
     {
-        aChannel.checkWritable(53);
+        short sClientTouchedNodeCount = aContext.getClientTouchedNodeCount();
+        aChannel.checkWritable( 53 + (sClientTouchedNodeCount * 4) );
         aChannel.writeOp(DB_OP_PARAM_DATA_IN_LIST_V3);
         aChannel.writeInt(aStatementId);
         // List Protocol 에서 FromRowNumber 는 항상 1
@@ -880,8 +903,12 @@ public class CmOperation extends CmOperationDef
         aChannel.writeLong(aContext.getDistTxInfo().getTxFirstStmtSCN());
         aChannel.writeLong(aContext.getDistTxInfo().getTxFirstStmtTime());
         aChannel.writeByte(aContext.getDistTxInfo().getDistLevel());
-        aChannel.writeInt(0);  /* TASK-7219 Non-shard DML */
-        aChannel.writeShort((short)0);  /* BUG-48489 FIXME */
+        aChannel.writeInt(0);                             /* TASK-7219 Non-shard DML */
+        aChannel.writeShort(sClientTouchedNodeCount);     /* BUG-49296 : BUG-48315 */
+        for (Integer sNodeId : aContext.getClientTouchNodes())
+        {
+            aChannel.writeInt(sNodeId);
+        }
 
         aChannel.writeLong(aBufferHandle.getBufferPosition());
         aBufferHandle.flipBuffer();
@@ -978,6 +1005,7 @@ public class CmOperation extends CmOperationDef
             case (AltibaseProperties.PROP_CODE_DDL_TIMEOUT):
             case (AltibaseProperties.PROP_CODE_LOB_CACHE_THRESHOLD):
             case (AltibaseProperties.PROP_CODE_INDOUBT_FETCH_TIMEOUT):
+            case (AltibaseProperties.PROP_CODE_TRANSACTIONAL_DDL):
                 sIntValue = aChannel.readInt();
                 sValueContainer = ColumnFactory.createIntegerColumn();
                 sValueContainer.setValue(sIntValue);
@@ -1033,13 +1061,6 @@ public class CmOperation extends CmOperationDef
                 {
                     aContext.updateSCN(sSCN);
                 }
-            }
-            else
-            {
-                aContext.initDistTxInfo();
-                // tc에서 검증을 위해 initDistTxInfo 호출 후 AltibaseConnection.setDistTxInfoForVerify()를 호출해야 하는데.. 여기서는 생략하기로 함.
-                // 왜냐하면 여기에서는 현재 커넥션 인스턴스를 알 수가 없음.
-                // 현재 기준으로, 본 함수는 connection 시점에만 호출되고 tc에서 connect 후에 distTxInfo 검사를 하지 않으므로 생략해도 무방..
             }
         }
     }

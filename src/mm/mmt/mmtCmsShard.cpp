@@ -1565,7 +1565,7 @@ IDE_RC mmtServiceThread::shardPrepareProtocol(cmiProtocolContext *aProtocolConte
     smSCN                sPrepareSCN;
 
     UInt                 sXIDSize;
-    ID_XID               sXID;
+    ID_XID               sParentXID;
     idBool               sReadOnly;
 
     SM_INIT_SCN( &sPrepareSCN );
@@ -1578,7 +1578,7 @@ IDE_RC mmtServiceThread::shardPrepareProtocol(cmiProtocolContext *aProtocolConte
             CMI_RD4(aProtocolContext, &sXIDSize);
             if ( sXIDSize == ID_SIZEOF(ID_XID) )
             {
-                CMI_RCP(aProtocolContext, &sXID, ID_SIZEOF(ID_XID));
+                CMI_RCP(aProtocolContext, &sParentXID, ID_SIZEOF(ID_XID));
             }
             else
             {
@@ -1604,7 +1604,7 @@ IDE_RC mmtServiceThread::shardPrepareProtocol(cmiProtocolContext *aProtocolConte
     IDE_TEST_RAISE(sSession->getXaAssocState() != MMD_XA_ASSOC_STATE_NOTASSOCIATED,
                    DCLNotAllowedError);
 
-    IDE_TEST(sSession->prepareForShard(&sXID, &sReadOnly, &sPrepareSCN) != IDE_SUCCESS);
+    IDE_TEST(sSession->prepareForShard(&sParentXID, &sReadOnly, &sPrepareSCN) != IDE_SUCCESS);
 
     SM_SET_SCN( &sSession->getInfo()->mGCTxCommitInfo.mPrepareSCN, &sPrepareSCN );
 

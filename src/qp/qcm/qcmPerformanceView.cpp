@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcmPerformanceView.cpp 91512 2021-08-21 07:50:50Z emlee $
+ * $Id: qcmPerformanceView.cpp 91828 2021-10-13 03:57:29Z justin.kwon $
  *
  * Description :
  *
@@ -820,13 +820,13 @@ SChar * gQcmPerformanceViews[] =
             "FROM X$TABLE_INFO "
             "WHERE TABLE_TYPE = 12288 ",
 
-    (SChar*) "CREATE VIEW V$QUEUE "
-            "( TABLE_OID, DELETE_ON, QUEUED ) "
+    (SChar*) "CREATE VIEW V$QUEUE_DELETE_OFF "
+            "( TABLE_OID ) "
             "AS SELECT  "
-            "  TABLE_OID, DECODE(DELETE_ON, 1, 'T', 0, 'F') as DELETE_ON, FIXED_RECORD_CNT "
+            "  TABLE_OID "
             "  FROM X$TABLE_INFO "
-            "  WHERE IS_QUEUE = 1 ", 
-      
+            "  WHERE DELETE_ON = 0 ", 
+
         // lock performance view.
     (SChar*)"CREATE VIEW V$LOCK "
                "( LOCK_ITEM_TYPE, TBS_ID, TABLE_OID, DBF_ID, TRANS_ID, "
@@ -2450,7 +2450,7 @@ IDE_RC qcmPerformanceView::runDDLforPV( idvSQL    * aStatistics,
     sSmiStmtFlag |= SMI_STATEMENT_MEMORY_CURSOR;
 
     sIduMem.init(IDU_MEM_QCM);
-    IDE_TEST(sTrans.initialize() != IDE_SUCCESS);
+    sStage = 1;
 
     // make qcStatement : alloc the members of qcStatement
     IDE_TEST( qcg::allocStatement( &sStatement,
@@ -2458,8 +2458,10 @@ IDE_RC qcmPerformanceView::runDDLforPV( idvSQL    * aStatistics,
                                    NULL,
                                    NULL )
               != IDE_SUCCESS );
+    sStage = 2;
 
-    sStage = 1;
+    IDE_TEST(sTrans.initialize() != IDE_SUCCESS);
+    sStage = 3;
 
     qcg::setSmiStmt( &sStatement, &sSmiStmt);
 
@@ -2476,7 +2478,7 @@ IDE_RC qcmPerformanceView::runDDLforPV( idvSQL    * aStatistics,
                              SMI_TRANSACTION_REPL_DEFAULT |
                              SMI_COMMIT_WRITE_NOWAIT) )
               != IDE_SUCCESS );
-    sStage = 2;
+    sStage = 4;
 
     // PROJ-1726 - performance view 스트링을 얻기 위해서
     // gQcmPerformanceViews 를 직접접근하는 대신
@@ -2491,26 +2493,30 @@ IDE_RC qcmPerformanceView::runDDLforPV( idvSQL    * aStatistics,
 
         IDE_TEST( sSmiStmt.begin( aStatistics, sDummySmiStmt, sSmiStmtFlag )
                   != IDE_SUCCESS );
-        sStage = 3;
+        sStage = 5;
 
         IDE_TEST( executeDDL( &sStatement, sStmtText )
                   != IDE_SUCCESS );
-        sStage = 2;
 
+        sStage = 4;
         IDE_TEST( sSmiStmt.end(SMI_STATEMENT_RESULT_SUCCESS)
                   != IDE_SUCCESS );
-        sStage = 1;
     }
 
     // transaction commit
+    sStage = 3;
     IDE_TEST( sTrans.commit() != IDE_SUCCESS );
-    sStage = 0;
 
-    // free the members of qcStatement
-    IDE_TEST( qcg::freeStatement( &sStatement ) != IDE_SUCCESS );
+    sStage = 2;
     IDE_TEST( sTrans.destroy( aStatistics ) != IDE_SUCCESS );
 
+    // free the members of qcStatement
+    sStage = 1;
+    IDE_TEST( qcg::freeStatement( &sStatement ) != IDE_SUCCESS );
+
+    sStage = 0;
     sIduMem.destroy();
+    // free the members of qcStatement
 
     return IDE_SUCCESS;
 
@@ -2524,17 +2530,19 @@ IDE_RC qcmPerformanceView::runDDLforPV( idvSQL    * aStatistics,
 
     switch ( sStage )
     {
-        case 3:
+        case 5:
             (void) sSmiStmt.end(SMI_STATEMENT_RESULT_FAILURE);
             /* fallthrough */
-        case 2:
+        case 4:
             (void) sTrans.rollback();
             /* fallthrough */
-        case 1:
-            (void) qcg::freeStatement( &sStatement );
+        case 3:
             (void) sTrans.destroy( aStatistics );
             /* fallthrough */
-        case 0:
+        case 2:
+            (void) qcg::freeStatement( &sStatement );
+            /* fallthrough */
+        case 1:
             sIduMem.destroy();
             break;
         default:

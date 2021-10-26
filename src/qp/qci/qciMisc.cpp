@@ -2369,7 +2369,7 @@ void qciMisc::executeJobItem( UInt     aJobThreadIndex,
         case 3:
             ( void )sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
         case 2:
-            ( void )sTrans.commit();
+            ( void )sTrans.rollback();
         case 1:
             ( void )sTrans.destroy( NULL );
         default:
@@ -2486,7 +2486,7 @@ void qciMisc::resetInitialJobState( void )
         case 3:
             ( void )sSmiStmt.end( SMI_STATEMENT_RESULT_FAILURE );
         case 2:
-            ( void )sTrans.commit();
+            ( void )sTrans.rollback();
         case 1:
             ( void )sTrans.destroy( NULL );
         default:

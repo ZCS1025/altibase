@@ -583,6 +583,13 @@ public final class AltibaseConnection extends AbstractConnection
         {
             mTransTimeout = mContext.getUtransTimeout();
         }
+        if (mContext.isSetPropertyResult(AltibaseProperties.PROP_CODE_TRANSACTIONAL_DDL))
+        {
+            if (mMetaConnection != null)
+            {
+                mMetaConnection.setTransactionalDDL(mContext.getTransactionalDDL());
+            }
+        }
     }
 
     /* BUG-41908 Add processing the error 'mmERR_IGNORE_UNSUPPORTED_PROPERTY' in JDBC 
@@ -738,8 +745,16 @@ public final class AltibaseConnection extends AbstractConnection
                                aProp.getProperty(AltibaseProperties.PROP_OPTIMIZER_MODE));
         setOptionalIntProperty(AltibaseProperties.PROP_CODE_STACK_SIZE,
                                aProp.getProperty(AltibaseProperties.PROP_STACK_SIZE));
-        setOptionalIntProperty(AltibaseProperties.PROP_CODE_TRANSACTIONAL_DDL,
-                               aProp.getProperty(AltibaseProperties.PROP_TRANSACTIONAL_DDL));
+
+        sValue = aProp.getProperty(AltibaseProperties.PROP_TRANSACTIONAL_DDL);
+        if (sValue != null)
+        {
+            setOptionalIntProperty(AltibaseProperties.PROP_CODE_TRANSACTIONAL_DDL, sValue);
+            if (mMetaConnection != null)
+            {
+                mMetaConnection.setTransactionalDDL(aProp.getTransactionalDDL());
+            }
+        }
 
         /* BUG-39817 */
         setOptionalIsolationLevelProperty(AltibaseProperties.PROP_CODE_ISOLATION_LEVEL,
@@ -1256,6 +1271,34 @@ public final class AltibaseConnection extends AbstractConnection
         }
     }
 
+    // BUG-49296 : BUG-47459
+    public void rollbackToSavepointInternal(String aSavepointName) throws SQLException
+    {
+        throwErrorForClosed();
+
+        try
+        {
+            CmProtocol.rollbackToSavepoint(mContext, aSavepointName);
+        }
+        catch (SQLException aEx)
+        {
+            AltibaseShardingFailover.tryShardFailOver(this, aEx);
+        }
+        if (mContext.getError() != null)
+        {
+            try
+            {
+                mWarning = Error.processServerError(mWarning, mContext.getError());
+                setSMNInvalidErrorResults();
+            }
+            finally
+            {
+                // BUG-46790 Exception이 발생하더라도 shard align작업을 수행해야 한다.
+                ShardError.processShardError(mMetaConnection, mContext.getError());
+            }
+        }
+    }
+
     /**
      * SMN Invalid 에러가 넘어온 경우 파싱한 SMN값과 needToDisconnect 값을 node connection 및
      * meta connection에 저장한다.
@@ -1568,6 +1611,19 @@ public final class AltibaseConnection extends AbstractConnection
         ((AltibaseSavepoint)aSavepoint).rollback();
     }
 
+    public void rollbackForShard(Savepoint aSavepoint) throws SQLException
+    {
+        throwErrorForClosed();
+        throwErrorForInvalidSavePoint(aSavepoint);
+        // BUG-23343 JDBC spec에 따르면 예외를 내야 하지만, 사용자 편의를 위해 무시.
+        if (isServerSideAutoCommit())
+        {
+            return;
+        }
+        
+        ((AltibaseSavepoint)aSavepoint).rollbackForShard();
+    }
+
     public void setAutoCommit(boolean aAutoCommit) throws SQLException
     {
         throwErrorForClosed();
@@ -1678,12 +1734,30 @@ public final class AltibaseConnection extends AbstractConnection
         return sSavepoint;
     }
 
+    public Savepoint setSavepointForShard() throws SQLException
+    {
+        throwErrorForClosed();
+        throwErrorForSavePoint();
+        AltibaseSavepoint sSavepoint = new AltibaseSavepoint(this);
+        sSavepoint.setSavepointForShard();
+        return sSavepoint;
+    }
+
     public Savepoint setSavepoint(String aName) throws SQLException
     {
         throwErrorForClosed();
         throwErrorForSavePoint();
         AltibaseSavepoint sSavepoint = new AltibaseSavepoint(this, aName);
         sSavepoint.setSavepoint();
+        return sSavepoint;
+    }
+
+    public Savepoint setSavepointForShard(String aName) throws SQLException
+    {
+        throwErrorForClosed();
+        throwErrorForSavePoint();
+        AltibaseSavepoint sSavepoint = new AltibaseSavepoint(this, aName);
+        sSavepoint.setSavepointForShard();
         return sSavepoint;
     }
 

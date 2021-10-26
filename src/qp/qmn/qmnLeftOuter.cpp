@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmnLeftOuter.cpp 90785 2021-05-06 07:26:22Z hykim $
+ * $Id: qmnLeftOuter.cpp 91830 2021-10-13 06:32:09Z hykim $
  *
  * Description :
  *     LOJN(Left Outer JoiN) Node
@@ -420,7 +420,7 @@ qmnLOJN::doItLeft( qcTemplate * aTemplate,
 
     // PROJ-2750
     *aFlag &= ~QMC_ROW_NULL_PADDING_MASK;
-    *aFlag |=  QMC_ROW_NULL_PADDING_FALSE;
+    *aFlag |= QMC_ROW_NULL_PADDING_FALSE;
 
     IDE_TEST( aPlan->left->doIt( aTemplate, aPlan->left, aFlag )
               != IDE_SUCCESS );
@@ -485,6 +485,7 @@ qmnLOJN::doItLeft( qcTemplate * aTemplate,
             if ( (sFlag & QMC_ROW_DATA_MASK) == QMC_ROW_DATA_EXIST )
             {
                 // PROJ-2750
+                *aFlag &= ~QMC_ROW_NULL_PADDING_MASK;
                 *aFlag |= QMC_ROW_NULL_PADDING_FALSE;
                 sDataPlan->doIt = qmnLOJN::doItRight;
             }
@@ -494,6 +495,7 @@ qmnLOJN::doItLeft( qcTemplate * aTemplate,
                           != IDE_SUCCESS );
 
                 // PROJ-2750
+                *aFlag &= ~QMC_ROW_NULL_PADDING_MASK;
                 *aFlag |= QMC_ROW_NULL_PADDING_TRUE;
                 sDataPlan->doIt = qmnLOJN::doItLeft;
             }
@@ -503,6 +505,7 @@ qmnLOJN::doItLeft( qcTemplate * aTemplate,
     {
         // 더 이상 결과가 없음
         // PROJ-2750
+        *aFlag &= ~QMC_ROW_NULL_PADDING_MASK;
         *aFlag |= QMC_ROW_NULL_PADDING_FALSE;
     }
 
@@ -848,6 +851,7 @@ IDE_RC qmnLOJN::doItInverseNonHitFirst( qcTemplate * aTemplate,
         sDataPlan->doIt = qmnLOJN::doItInverseNonHitNext;
 
         // PROJ-2750
+        *aFlag &= ~QMC_ROW_NULL_PADDING_MASK;
         *aFlag |= QMC_ROW_NULL_PADDING_TRUE;
     }
     else
@@ -856,6 +860,7 @@ IDE_RC qmnLOJN::doItInverseNonHitFirst( qcTemplate * aTemplate,
         sDataPlan->doIt = qmnLOJN::doItInverseLeft;
 
         // PROJ-2750
+        *aFlag &= ~QMC_ROW_NULL_PADDING_MASK;
         *aFlag |= QMC_ROW_NULL_PADDING_FALSE;
     }
 
@@ -897,6 +902,7 @@ IDE_RC qmnLOJN::doItInverseNonHitNext( qcTemplate * aTemplate,
                   != IDE_SUCCESS );
 
         // PROJ-2750
+        *aFlag &= ~QMC_ROW_NULL_PADDING_MASK;
         *aFlag |= QMC_ROW_NULL_PADDING_TRUE;
     }
     else
@@ -905,6 +911,7 @@ IDE_RC qmnLOJN::doItInverseNonHitNext( qcTemplate * aTemplate,
         sDataPlan->doIt = qmnLOJN::doItInverseLeft;
 
         // PROJ-2750
+        *aFlag &= ~QMC_ROW_NULL_PADDING_MASK;
         *aFlag |= QMC_ROW_NULL_PADDING_FALSE;
     }
 

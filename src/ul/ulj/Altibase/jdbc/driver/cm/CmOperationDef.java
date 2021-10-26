@@ -94,6 +94,8 @@ abstract public class CmOperationDef
     static final byte             DB_OP_SHARD_HANDSHAKE_RESULT           = 94;
     static final byte             DB_OP_SHARD_TRANSACTION_RESULT         = 96;
 
+    static final byte             DB_OP_ROLLBACK_TO_SAVEPOINT            = 103;
+    static final byte             DB_OP_ROLLBACK_TO_SAVEPOINT_RESULT     = 104;
     static final byte             DB_OP_SHARD_STMT_PARTIAL_ROLLBACK      = 105;
     static final byte             DB_OP_SHARD_STMT_PARTIAL_ROLLBACK_RESULT = 106;
     static final byte             DB_OP_SHARD_NODE_REPORT                = 107;

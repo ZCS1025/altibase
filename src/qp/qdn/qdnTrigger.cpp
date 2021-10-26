@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdnTrigger.cpp 90192 2021-03-12 02:01:03Z jayce.park $
+ * $Id: qdnTrigger.cpp 91801 2021-10-06 07:39:37Z ahra.cho $
  *
  * Description :
  *
@@ -4882,8 +4882,8 @@ qdnTrigger::recompileTrigger( qcStatement     * aStatement,
     IDE_TEST_RAISE(
         sTriggerStatement->myPlan->parseTree->parse( sTriggerStatement )
         != IDE_SUCCESS, err_trigger_recompile );
-    IDE_TEST( qcg::fixAfterParsing( sTriggerStatement ) != IDE_SUCCESS );
     sStage = 3;
+    IDE_TEST( qcg::fixAfterParsing( sTriggerStatement ) != IDE_SUCCESS );
 
     // Validation
     IDE_TEST_RAISE(
@@ -4920,6 +4920,7 @@ qdnTrigger::recompileTrigger( qcStatement     * aStatement,
 
     sCache->isValid = ID_TRUE;
 
+    sStage = 2;
     IDE_TEST( qsxRelatedProc::unlatchObjects( sTriggerStatement->spvEnv->procPlanList )
               != IDE_SUCCESS );
     sTriggerStatement->spvEnv->latched = ID_FALSE;

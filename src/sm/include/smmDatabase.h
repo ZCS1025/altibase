@@ -59,81 +59,25 @@ public :
     -------------------------------*/
     // mDBName
     static inline SChar* getDBName(smmMemBase * aMemBase);
-//    static inline void setDBName(smmMemBase * aMemBase,
-//                                 SChar*       aDBName,
-//                                 UInt         aNameLength);
-    
-//    // mProductSignature
-//    static inline SChar* getProductSignature(smmMemBase * aMemBase);
-//    static inline void setProductSignature(smmMemBase * aMemBase,
-//                                           SChar*       aSignature);
-            
-//    // mDBFileSignature
-//    static inline SChar* getDBFileSignature(smmMemBase * aMemBase);
-//    static inline void setDBFileSignature(smmMemBase * aMemBase,
-//                                          SChar*       aSignature);
-    
-//    // mVersionID
-//    static inline UInt getVersionID(smmMemBase * aMemBase);
-//    static inline void setVersionID(smmMemBase * aMemBase,
-//                                    UInt         aVersionID);
-
-//    // mCompileBit
-//    static inline UInt getCompileBit(smmMemBase * aMemBase);
-//    static inline void setCompileBit(smmMemBase * aMemBase,
-//                                     UInt         aCompileBit);
-    
-//    // mBigEndian
-//    static inline idBool getBigEndian(smmMemBase * aMemBase);
-//    static inline void setBigEndian(smmMemBase * aMemBase,
-//                                    idBool       aBigEndian);
-    
-//    // mLogSize
-//    static inline vULong getLogSize(smmMemBase * aMemBase);
-//    static inline void setLogSize(smmMemBase * aMemBase,
-//                                  vULong       aLogSize);
     
     // mDBFilePageCount
     static inline vULong getDBFilePageCount(smmMemBase * aMemBase);
-//    static inline void setDBFilePageCount(smmMemBase * aMemBase,
-//                                          vULong       aDBFilePageCount);
     
     // mTxTBLSize
-//    static inline UInt getTxTBLSize(smmMemBase * aMemBase);
     static inline void setTxTBLSize(smmMemBase * aMemBase,
                                     UInt         aTxTBLSize);
 
     // mDBFileCount
     static inline UInt getDBFileCount(smmMemBase * aMemBase, UInt aWhichDB);
-//    static inline void setDBFileCount(smmMemBase * aMemBase,
-//                                      UInt         aWhichDB,
-//                                      UInt         aDBFileCount);
-        
-//    // mTimestamp
-//    static inline struct timeval * getTimestamp(smmMemBase * aMemBase);
-//    static inline void setTimestamp(smmMemBase * aMemBase,
-//                                    timeval *    aTimestamp);
-    
+   
     // mAllocPersPageCount
     static inline vULong getAllocPersPageCount(smmMemBase * aMemBase);
-/* not  used 
-    static inline void setAllocPersPageCount(smmMemBase * aMemBase,
-                                             vULong       aAllocPersPageCount);
-*/    
+
     // mExpandChunkPageCnt
     static inline vULong getExpandChunkPageCnt(smmMemBase * aMemBase);
-//    static inline void setExpandChunkPageCnt(smmMemBase * aMemBase,
-//                                             vULong       aExpandChunkPageCnt);
     
     // mmCurrentExpandChunkCnt
     static inline vULong getCurrentExpandChunkCnt(smmMemBase * aMemBase);
-//    static inline void setCurrentExpandChunkCnt(smmMemBase * aMemBase,
-//                                                vULong       amCurrentExpandChunkCnt);
-    
-//    // mFreePageListCount
-//    static inline UInt getFreePageListCount(smmMemBase * aMemBase);
-//    static inline void setFreePageListCount(smmMemBase * aMemBase,
-//                                            UInt         aFreePageListCount);
     
     // mFreePageLists
     static inline smmDBFreePageList getFreePageList(smmMemBase * aMemBase,
@@ -205,121 +149,6 @@ public :
 
 
 
-//// mDBName
-//inline SChar* smmDatabase::getDBName(smmMemBase * aMemBase)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    
-//    return aMemBase->mDBname;
-//}
-//inline void smmDatabase::setDBName(smmMemBase * aMemBase,
-//                                   SChar*       aDBName,
-//                                   UInt         aNameLength)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    IDE_DASSERT( aDBName != NULL );
-//    
-//    
-//    idlOS::strncpy(aMemBase->mDBname, aDBName, aNameLength);
-//    aMemBase->mDBname[ aNameLength ] = '\0';
-//}
-    
-//// mProductSignature
-//inline SChar* smmDatabase::getProductSignature(smmMemBase * aMemBase)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    
-//    return aMemBase->mProductSignature;
-//}
-//inline void smmDatabase::setProductSignature(smmMemBase * aMemBase,
-//                                             SChar*       aSignature)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    IDE_DASSERT( aSignature != NULL );
-//    
-//    idlOS::strncpy(aMemBase->mProductSignature,
-//                   aSignature,
-//                   IDU_SYSTEM_INFO_LENGTH);
-//    aMemBase->mProductSignature[ IDU_SYSTEM_INFO_LENGTH - 1 ] = '\0';
-//}
-            
-//// mDBFileSignature
-//inline SChar* smmDatabase::getDBFileSignature(smmMemBase * aMemBase)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    
-//    return aMemBase->mDBFileSignature;
-//}
-//inline void smmDatabase::setDBFileSignature(smmMemBase * aMemBase,
-//                                            SChar*       aSignature)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    IDE_DASSERT( aSignature != NULL );
-//    
-//    idlOS::memcpy(aMemBase->mDBFileSignature,
-//                  aSignature,
-//                  IDU_SYSTEM_INFO_LENGTH);
-//}
-
-//// mVersionID
-//inline UInt smmDatabase::getVersionID(smmMemBase * aMemBase)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    
-//    return aMemBase->mVersionID;
-//}
-//inline void smmDatabase::setVersionID(smmMemBase * aMemBase,
-//                                      UInt         aVersionID)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    
-//    aMemBase->mVersionID = aVersionID;
-//}
-
-//// mCompileBit
-//inline UInt smmDatabase::getCompileBit(smmMemBase * aMemBase)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    
-//    return aMemBase->mCompileBit;
-//}
-//inline void smmDatabase::setCompileBit(smmMemBase * aMemBase,
-//                                       UInt         aCompileBit)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    
-//    aMemBase->mCompileBit = aCompileBit;
-//}
-    
-//// mBigEndian
-//inline idBool smmDatabase::getBigEndian(smmMemBase * aMemBase)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    
-//    return aMemBase->mBigEndian;
-//}
-//inline void smmDatabase::setBigEndian(smmMemBase * aMemBase,
-//                                      idBool       aBigEndian)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    
-//    aMemBase->mBigEndian = aBigEndian;
-//}
-            
-//// mLogSize
-//inline vULong smmDatabase::getLogSize(smmMemBase * aMemBase)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    
-//    return aMemBase->mLogSize;
-//}
-//inline void smmDatabase::setLogSize(smmMemBase * aMemBase,
-//                                    vULong       aLogSize)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    
-//    aMemBase->mLogSize = aLogSize;
-//}
                      
 // mDBFilePageCount
 inline vULong smmDatabase::getDBFilePageCount(smmMemBase * aMemBase)
@@ -328,21 +157,8 @@ inline vULong smmDatabase::getDBFilePageCount(smmMemBase * aMemBase)
     
     return aMemBase->mDBFilePageCount;
 }
-//inline void smmDatabase::setDBFilePageCount(smmMemBase * aMemBase,
-//                                            vULong       aDBFilePageCount)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    
-//    aMemBase->mDBFilePageCount = aDBFilePageCount;
-//}
 
 // mTxTBLSize
-//inline UInt smmDatabase::getTxTBLSize(smmMemBase * aMemBase)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    
-//    return aMemBase->mTxTBLSize;
-//}
 inline void smmDatabase::setTxTBLSize(smmMemBase * aMemBase,
                                       UInt         aTxTBLSize)
 {
@@ -356,32 +172,6 @@ inline UInt smmDatabase::getDBFileCount(smmMemBase * aMemBase, UInt aWhichDB)
 {
     return aMemBase->mDBFileCount[aWhichDB];
 }
-//inline void smmDatabase::setDBFileCount(smmMemBase * aMemBase,
-//                                        UInt         aWhichDB,
-//                                        UInt         aDBFileCount)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    
-//    aMemBase->mDBFileCount[aWhichDB] = aDBFileCount;
-//}
-    
-//// mTimestamp
-//inline struct timeval * smmDatabase::getTimestamp(smmMemBase * aMemBase)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    
-//    return &aMemBase->mTimestamp;
-//}
-//inline void smmDatabase::setTimestamp(smmMemBase * aMemBase,
-//                                      timeval *    aTimestamp)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    IDE_DASSERT( aTimestamp != NULL )
-//    
-//    idlOS::memcpy(&aMemBase->mTimestamp,
-//                  aTimestamp,
-//                  ID_SIZEOF(struct timeval));
-//}
     
 // mAllocPersPageCount
 inline vULong smmDatabase::getAllocPersPageCount(smmMemBase * aMemBase)
@@ -390,13 +180,7 @@ inline vULong smmDatabase::getAllocPersPageCount(smmMemBase * aMemBase)
     
     return aMemBase->mAllocPersPageCount;
 }
-/* not used 
-inline void smmDatabase::setAllocPersPageCount(smmMemBase * aMemBase,
-                                               vULong       aAllocPersPageCount)
-{
-    aMemBase->mAllocPersPageCount = aAllocPersPageCount;
-}
-*/
+
 // mExpandChunkPageCnt
 inline vULong smmDatabase::getExpandChunkPageCnt(smmMemBase * aMemBase)
 {
@@ -404,13 +188,6 @@ inline vULong smmDatabase::getExpandChunkPageCnt(smmMemBase * aMemBase)
     
     return aMemBase->mExpandChunkPageCnt;
 }
-//inline void smmDatabase::setExpandChunkPageCnt(smmMemBase * aMemBase,
-//                                               vULong       aExpandChunkPageCnt)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    
-//    aMemBase->mExpandChunkPageCnt = aExpandChunkPageCnt;
-//}
 
 // mCurrentExpandChunkCnt
 inline vULong smmDatabase::getCurrentExpandChunkCnt(smmMemBase * aMemBase)
@@ -419,28 +196,6 @@ inline vULong smmDatabase::getCurrentExpandChunkCnt(smmMemBase * aMemBase)
     
     return aMemBase->mCurrentExpandChunkCnt;
 }
-//inline void smmDatabase::setCurrentExpandChunkCnt(smmMemBase * aMemBase,
-//                                                  vULong       aCurrentExpandChunkCnt)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    
-//    aMemBase->mCurrentExpandChunkCnt = aCurrentExpandChunkCnt;
-//}
-
-//// mFreePageListCount
-//inline UInt smmDatabase::getFreePageListCount(smmMemBase * aMemBase)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    
-//    return aMemBase->mFreePageListCount;
-//}
-//inline void smmDatabase::setFreePageListCount(smmMemBase * aMemBase,
-//                                              UInt         aFreePageListCount)
-//{
-//    IDE_DASSERT( aMemBase != NULL );
-//    
-//    aMemBase->mFreePageListCount = aFreePageListCount;
-//}
 
 // mFreePageLists
 inline smmDBFreePageList smmDatabase::getFreePageList(smmMemBase * aMemBase,
@@ -473,7 +228,6 @@ inline smSCN* smmDatabase::getSystemSCN()
  * fillPCHEntry함수에서 PCH 가 NULL이 아니어도 서버를 죽이지 않는다.
  * Service Phase에서는 PCH가 NULL 이 아닌데도 fillPCHEntry가 불릴 수 있기 때문.
  */
-
 inline smSCN smmDatabase::getLstSystemSCN()
 {
     return acpAtomicGet64( &mLstSystemSCN );
@@ -489,7 +243,6 @@ inline void smmDatabase::makeMembaseBackup()
 {
     IDE_DASSERT( mDicMemBase != NULL );
     idlOS::memcpy(&mMemBaseBackup, mDicMemBase, ID_SIZEOF(smmMemBase));
-
 }
 
 

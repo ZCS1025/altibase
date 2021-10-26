@@ -21,7 +21,7 @@
 # 브랜치에서 에러코드를 할당받으시면 안됩니다.
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
-# Last Number = 439
+# Last Number = 440
 
 SECTION = 6
 
@@ -2616,6 +2616,13 @@ SECTION = 6
 #   - Reused TABLE OID is included in replication gap.
 # *Action:
 #   - Resolve the replication gap before operating ADD TABLE query.
+
+440, rpERR_ABORT_TX_SEGMENT_ENTRY_ALLOC = [Receiver] Transaction updating disk table data failed due to transaction segment allocation failure.
+# *Cause:
+# #   - The number of transaction segments exceeds TRANSACTION_SEGMENT_COUNT
+# # *Action:
+# #   - 1. Increase the value of TRANSACTION_SEGMENT_COUNT property.
+# #   - 2. Check the status of the replication receiver.
 
 INTERNAL_TRACE_MESSAGE_BEGIN
 

@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: qcmFixedTable.cpp 90270 2021-03-21 23:20:18Z bethy $
+ * $Id: qcmFixedTable.cpp 91801 2021-10-06 07:39:37Z ahra.cho $
  *
  * Description :
  *
@@ -269,6 +269,7 @@ IDE_RC qcmFixedTable::makeAndSetQcmTableInfo( idvSQL * aStatistics,
     // fix BUG-31958
     static UInt          sStaticTableID = (UInt)(QCM_TABLES_SEQ_MAXVALUE + 1);
     UInt                 sState = 0;
+    UInt                 sStage = 0;
 
     // fix BUG-31958
     IDE_TEST_RAISE( sStaticTableID == (UInt)0, ERR_OBJECTS_OVERFLOW );
@@ -277,13 +278,16 @@ IDE_RC qcmFixedTable::makeAndSetQcmTableInfo( idvSQL * aStatistics,
     sCursor.initialize();
 
     IDE_TEST( sTrans.initialize() != IDE_SUCCESS );
-    
+    sStage++; //1
+
     IDE_TEST( sTrans.begin( &spRootStmt, aStatistics) != IDE_SUCCESS );
+    sStage++; //2
     
     IDE_TEST( sStmt.begin( aStatistics,
                            spRootStmt,
                            SMI_STATEMENT_UNTOUCHABLE | SMI_STATEMENT_MEMORY_CURSOR)
               != IDE_SUCCESS );
+    sStage++; //3
 
     sFlag = SMI_LOCK_READ|SMI_TRAVERSE_FORWARD|SMI_PREVIOUS_DISABLE;
 
@@ -312,6 +316,7 @@ IDE_RC qcmFixedTable::makeAndSetQcmTableInfo( idvSQL * aStatistics,
                             SMI_SELECT_CURSOR,
                             &gMetaDefaultCursorProperty)
               != IDE_SUCCESS );
+    sStage++; //4
 
     IDE_TEST( sCursor.beforeFirst( ) != IDE_SUCCESS );
 
@@ -473,12 +478,16 @@ IDE_RC qcmFixedTable::makeAndSetQcmTableInfo( idvSQL * aStatistics,
                   != IDE_SUCCESS );
     }
 
+    sStage--; //3
     IDE_TEST( sCursor.close( ) != IDE_SUCCESS );
 
+    sStage--; //2
     IDE_TEST( sStmt.end(SMI_STATEMENT_RESULT_SUCCESS) != IDE_SUCCESS );
     
+    sStage--; //1
     IDE_TEST( sTrans.commit() != IDE_SUCCESS );
 
+    sStage--; //0
     IDE_TEST( sTrans.destroy( aStatistics ) != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -525,6 +534,20 @@ IDE_RC qcmFixedTable::makeAndSetQcmTableInfo( idvSQL * aStatistics,
             }
             (void)iduMemMgr::free(sTableInfo);
             /* fall through */
+        default:
+            break;
+    }
+
+    switch ( sStage )
+    {
+        case 4:
+            (void)sCursor.close();
+        case 3:
+            (void)sStmt.end( SMI_STATEMENT_RESULT_FAILURE );
+        case 2:
+            (void)sTrans.rollback();
+        case 1:
+            (void)sTrans.destroy( aStatistics );
         default:
             break;
     }
@@ -652,6 +675,8 @@ IDE_RC qcmFixedTable::getQcmColumn( qcmTableInfo * aTableInfo )
             // smiColumn.id 값을 설정해 주어야 함.
             sMtcColumn->column.id = i;
             sMtcColumn->column.value = NULL;
+            /* BUG-49311 */
+            sMtcColumn->column.colSpace = 0;
 
             // PR-13597과 관련하여 fixedTable, performanceView는 항상 null 값이 올 수 있도록 설정.
             sMtcColumn->column.flag &= ~(MTC_COLUMN_NOTNULL_MASK);

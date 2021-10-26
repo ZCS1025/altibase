@@ -17,7 +17,7 @@
 
 
 /***********************************************************************
- * $Id: smmManager.h 90522 2021-04-09 01:29:20Z emlee $
+ * $Id: smmManager.h 91859 2021-10-17 22:37:22Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMM_MANAGER_H_
@@ -232,25 +232,25 @@ public:
 
     // Tablespace의 모든 Checkpoint Image File들을
     // Close하고 (선택적으로) 지워준다.
-    static IDE_RC closeAndRemoveChkptImages(smmTBSNode * aTBSNode,
-                                            idBool       aRemoveImageFiles );
+    static IDE_RC closeAndRemoveChkptImages( smmTBSNode * aTBSNode,
+                                             idBool       aRemoveImageFiles );
 
 
-    static IDE_RC removeAllChkptImages(smmTBSNode *   aTBSNode);
+    static IDE_RC removeAllChkptImages( smmTBSNode *   aTBSNode );
 
     // Membase가 들어있는 Meta Page(0번)을 Flush한다.
-    static IDE_RC flushTBSMetaPage(smmTBSNode *   aTBSNode,
-                            UInt           aWhichDB);
+    static IDE_RC flushTBSMetaPage( smmTBSNode *   aTBSNode,
+                                    UInt           aWhichDB );
 
     // 0번 Page를 디스크로부터 읽어서
     // MemBase로부터 데이터베이스관련 정보를 읽어온다.
-    static IDE_RC readMemBaseInfo(smmTBSNode * aTBSNode,
-                                  UInt       * aDbFilePageCount,
-                                  UInt       * aChunkPageCount );
+    static IDE_RC readMemBaseInfo( smmTBSNode * aTBSNode,
+                                   UInt       * aDbFilePageCount,
+                                   UInt       * aChunkPageCount );
 
     // 0번 Page를 디스크로부터 읽어서 MemBase를 복사한다.
-    static IDE_RC readMemBaseFromFile(smmTBSNode *   aTBSNode,
-                                      smmMemBase *   aMemBase );
+    static IDE_RC readMemBaseFromFile( smmTBSNode *   aTBSNode,
+                                       smmMemBase *   aMemBase );
 
     // PROJ 2281 storing bufferpool stat persistantly
     static IDE_RC setSystemStatToMemBase( smiSystemStat      * aSystemStat );
@@ -262,17 +262,17 @@ public:
     // 하나의 Page의 데이터가 저장되는 메모리 공간을 PCH Entry에서 가져온다.
     static inline IDE_RC getPersPagePtr( scSpaceID    aSpaceID, 
                                          scPageID     aPID, 
-                                         void      ** aPagePtr );
+                                         void      ** aPersPagePtr );
     static IDE_RC getPersPagePtrErr( scSpaceID    aSpaceID, 
                                      scPageID     aPID, 
-                                     void      ** aPagePtr );
-    static UInt   getPageNoInFile(smmTBSNode * aTBSNode, scPageID aPageID );
+                                     void      ** aPersPagePtr );
+    static UInt   getPageNoInFile( smmTBSNode * aTBSNode, scPageID aPageID );
     // Page ID가 Valid한 값인지 체크한다.
     static idBool isValidPageID( scSpaceID aSpaceID, scPageID aPageID );
 
     // 테이블에 할당된 페이지이면서 메모리가 없는 경우 있는지 체크
     // Free Page이면서 페이지 메모리 설정된 경우 있는지 체크
-    static idBool isAllPageMemoryValid(smmTBSNode * aTBSNode);
+    static idBool isAllPageMemoryValid( smmTBSNode * aTBSNode );
 
     /***********************************************************
      * smmTableSpace 에서 호출하는 함수들
@@ -592,12 +592,6 @@ public:
                                           scPageID      aNewChunkLastPID,
                                           idBool        aSetFreeListOfMembase,
                                           idBool        aSetNextFreePageOfFPL );
-#if 0 // not used
-    // DB로부터 하나의 Page를 할당받는다.
-    static IDE_RC allocatePersPage (void       *  aTrans,
-                                    scSpaceID     aSpaceID,
-                                    void      **  aAllocatedPage);
-#endif
 
     // DB로부터 Page를 여러개 할당받아 트랜잭션에게 Free Page를 제공한다.
     // aHeadPage부터 aTailPage까지
@@ -608,12 +602,7 @@ public:
                                         void       **aHeadPage,
                                         void       **aTailPage,
                                         UInt        *aAllocPageCnt);
-#if 0
-    // 하나의 Page를 데이터베이스로 반납한다
-    static IDE_RC freePersPage (void     *   aTrans,
-                                scSpaceID    aSpaceID,
-                                void     *   aToBeFreePage );
-#endif
+
     // 여러개의 Page를 한꺼번에 데이터베이스로 반납한다.
     // aHeadPage부터 aTailPage까지
     // Page Header의 Prev/Next포인터로 연결되어 있어야 한다.
@@ -629,8 +618,8 @@ public:
      *     informations
      * ----------------------*/
     // 특정 Page의 PCH를 가져온다.
-    static smPCHBase  * getPCHBase(scSpaceID aSpaceID, scPageID aPID );
-    static smmPCH      * getPCH(scSpaceID aSpaceID, scPageID aPID );
+    static smPCHBase * getPCHBase(scSpaceID aSpaceID, scPageID aPID );
+    static smmPCH    * getPCH(scSpaceID aSpaceID, scPageID aPID );
     static smPCSlot  * getPCHSlot(scSpaceID aSpaceID, scPageID aPID );
     static inline idBool isPageExist( scSpaceID aSpaceID, scPageID aPID );
     static inline void * getPagePtr(scSpaceID aSpaceID, scPageID aPID );
@@ -781,15 +770,13 @@ inline smPCHBase * smmManager::getPCHBase(scSpaceID aSpaceID, scPageID aPID )
     return mPCArray[aSpaceID].mPC[ aPID ].mPCH;
 }
 
-inline smmPCH *
-smmManager::getPCH(scSpaceID aSpaceID, scPageID aPID )
+inline smmPCH * smmManager::getPCH(scSpaceID aSpaceID, scPageID aPID )
 {
     IDE_DASSERT( isValidPageID( aSpaceID, aPID ) == ID_TRUE );
     return (smmPCH*)getPCHBase( aSpaceID, aPID );
 }
 
-inline smPCSlot *
-smmManager::getPCHSlot(scSpaceID aSpaceID, scPageID aPID )
+inline smPCSlot * smmManager::getPCHSlot(scSpaceID aSpaceID, scPageID aPID )
 {
     IDE_DASSERT( isValidPageID( aSpaceID, aPID ) == ID_TRUE );
 
@@ -845,42 +832,18 @@ inline IDE_RC smmManager::getOIDPtr( scSpaceID     aSpaceID,
     return IDE_FAILURE;
 }
 
-///*
-// * GRID를 메모리 주소값으로 변환한다.
-// *
-// * aGRID [IN] 메모리 주소값으로 변환할 GRID
-// */
-//inline IDE_RC smmManager::getGRIDPtr( scGRID aGRID, void ** aPtr )
-//{
-//    IDE_TEST( getPersPagePtr( SC_MAKE_SPACE( aGRID ),
-//                              SC_MAKE_PID( aGRID ),
-//                              aPtr )
-//              != IDE_SUCCESS );
-//
-//    (*aPtr) = (void *)( ((UChar *)(*aPtr)) + SC_MAKE_OFFSET( aGRID ) );
-//
-//    return IDE_SUCCESS ;
-//
-//    IDE_EXCEPTION_END;
-//
-//    return IDE_FAILURE;
-//}
-
 /*
  * Membase에 설정된 DB File수를 가져온다.
  *
  * aCurrentDB [IN] Ping/Pong 데이터베이스 번호 ( 0 혹은 1 )
  */
 
-inline UInt
-smmManager::getDbFileCount(smmTBSNode * aTBSNode,
-                           SInt         aCurrentDB)
+inline UInt smmManager::getDbFileCount( smmTBSNode * aTBSNode,
+                                        SInt         aCurrentDB )
 {
     IDE_DASSERT( (aCurrentDB == 0) || (aCurrentDB == 1) );
     IDE_DASSERT( aTBSNode->mRestoreType !=
                  SMM_DB_RESTORE_TYPE_NOT_RESTORED_YET );
-
-
 
     return smmDatabase::getDBFileCount(aTBSNode->mMemBase, aCurrentDB);
 }
@@ -940,8 +903,7 @@ inline UInt smmManager::getPageNoInFile( smmTBSNode * aTBSNode,
  * aPageID [IN]  어느 데이터베이스 파일에 속한 것인지 알고싶은 페이지의 ID
  * return  [OUT] aPageID가 속한 데이터베이스 파일의 번호
  */
-inline SInt
-smmManager::getDbFileNo(smmTBSNode * aTBSNode, scPageID aPageID)
+inline SInt smmManager::getDbFileNo( smmTBSNode * aTBSNode, scPageID aPageID )
 {
     vULong   sDbFilePageCount;
 
@@ -1011,23 +973,6 @@ smmManager::getPageCountPerFile(smmTBSNode * aTBSNode, UInt aDBFileNo )
     return sDBFilePageCount ;
 }
 
-#if 0
-/* TRUE만 리턴하고 있어서 함수삭제함. */
-
-// Page 수가 Valid한 값인지 체크한다.
-inline idBool
-smmManager::isValidPageCount( smmTBSNode * /* aTBSNode*/,
-                              vULong       /*aPageCount*/ )
-{
-/*
-  IDE_ASSERT( mHighLimitPAGE > 0 );
-  return ( aPageCount <= mHighLimitPAGE ) ?
-  ID_TRUE : ID_FALSE ;
-*/
-    return ID_TRUE;
-}
-#endif
-
 // Page ID가 Valid한 값인지 체크한다.
 // 이함수는 Validation작업이 없습니다. 사용하는 곳에서 aSpaceID 가 정상인지 확인이 필요합니다. 
 inline idBool smmManager::isValidPageID( scSpaceID  aSpaceID ,
@@ -1036,28 +981,6 @@ inline idBool smmManager::isValidPageID( scSpaceID  aSpaceID ,
     return ( aPageID < mPCArray[aSpaceID].mMaxPageCount ) ? ID_TRUE : ID_FALSE;
 }
 
-#if 0 // not used
-/***********************************************************************
- * Description : 찾는 PCH가 메모리에 존재하고 있는지 확인한다.
- *
- * [IN] aSpaceID    - SpaceID
- * [IN] aPageID     - PageID
- **********************************************************************/
-inline idBool
-smmManager::isExistPCH( scSpaceID aSpaceID, scPageID aPageID )
-{
-    if ( isValidPageID(aSpaceID, aPageID) == ID_TRUE )
-    {
-        if ( ( mPCHArray[aSpaceID][aPageID] != NULL ) &&
-             ( mPCHArray[aSpaceID][aPageID]->m_page != NULL ) )
-        {
-            return ID_TRUE;
-        }
-    }
-
-    return ID_FALSE;
-}
-#endif 
 /*
  * 하나의 Page의 데이터가 저장되는 메모리 공간을 PCH Entry에서 가져온다.
  *

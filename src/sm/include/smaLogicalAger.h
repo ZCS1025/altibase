@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smaLogicalAger.h 88423 2020-08-26 04:06:55Z emlee $
+ * $Id: smaLogicalAger.h 91859 2021-10-17 22:37:22Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMA_LOGICAL_AGER_H_
@@ -121,13 +121,13 @@ public:
     
     IDE_RC shutdown( void );
     
-    static IDE_RC setAger( idBool aValue);
+    static void setAger( idBool aValue );
 
     // Ager가 초기화되었는지 여부를 리턴한다.
     static idBool isInitialized( void );
     
-    static IDE_RC block( void );
-    static IDE_RC unblock( void );
+    static void block( void );
+    static void unblock( void );
 
     static IDE_RC lock() { return mBlock.lock( NULL /* idvSQL* */); }
     static IDE_RC unlock() { return mBlock.unlock(); }

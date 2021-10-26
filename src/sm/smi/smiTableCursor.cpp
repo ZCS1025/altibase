@@ -16,7 +16,7 @@
  
 
 /*******************************************************************************
- * $Id: smiTableCursor.cpp 91512 2021-08-21 07:50:50Z emlee $
+ * $Id: smiTableCursor.cpp 91859 2021-10-17 22:37:22Z emlee $
  ******************************************************************************/
 
 #include <idl.h>
@@ -3613,10 +3613,8 @@ IDE_RC smiTableCursor::openMRVRDB( smiTableCursor *    aCursor,
         SM_SET_SCN( &sCreateSCN, &(((smpSlotHeader *)aTable)->mCreateSCN) );
         SMX_GET_SCN_AND_TID( sCreateSCN, sSCN, sDummyTID );
 
-        IDE_TEST_RAISE( ( SM_SCN_IS_EQ(&sSCN, &aSCN) != ID_TRUE
-                          && SM_SCN_IS_NOT_INIT(aSCN) ) ||
-                        ( SM_SCN_IS_GT(&sSCN, &aCursor->mSCN)  &&
-                          SM_SCN_IS_NOT_INFINITE(sSCN) ),
+        IDE_TEST_RAISE( ( (SM_SCN_IS_EQ(&sSCN, &aSCN) != ID_TRUE) && (SM_SCN_IS_NOT_INIT(aSCN)) ) ||
+                        ( (SM_SCN_IS_GT(&sSCN, &aCursor->mSCN)) && (SM_SCN_IS_NOT_INFINITE(sSCN)) ),
                         ERR_MODIFIED );
     }
     else

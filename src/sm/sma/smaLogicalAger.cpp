@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smaLogicalAger.cpp 90259 2021-03-19 01:22:22Z emlee $
+ * $Id: smaLogicalAger.cpp 91859 2021-10-17 22:37:22Z emlee $
  **********************************************************************/
 
 #include <smErrorCode.h>
@@ -319,7 +319,7 @@ IDE_RC smaLogicalAger::shutdown( void )
     // BUGBUG smi interface layer구현되면 그때 하자.
     //IDE_TEST( _smiSetAger( ID_TRUE ) != IDE_SUCCESS );
 
-    IDE_TEST( setAger( ID_TRUE ) != IDE_SUCCESS );
+    setAger( ID_TRUE );
 
     IDE_TEST_RAISE( join() != IDE_SUCCESS, ERR_THREAD_JOIN );
 
@@ -334,7 +334,7 @@ IDE_RC smaLogicalAger::shutdown( void )
 
 }
 
-IDE_RC smaLogicalAger::setAger( idBool aValue )
+void smaLogicalAger::setAger( idBool aValue )
 {
     static idBool sValue = ID_TRUE;
 
@@ -342,41 +342,18 @@ IDE_RC smaLogicalAger::setAger( idBool aValue )
     {
         if( aValue == ID_TRUE )
         {
-            IDE_TEST( smaLogicalAger::unblock() != IDE_SUCCESS );
+            smaLogicalAger::unblock();
         }
         else
         {
-            IDE_TEST( smaLogicalAger::block() != IDE_SUCCESS );
+            smaLogicalAger::block();
         }
         sValue = aValue;
     }
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-
 }
 
-/*
-    Ager가 초기화되었는지 여부를 리턴한다.
-
-    BLOCK/UNBLOCK을 호출하기 전에 이 함수를 호출하여
-    AGER가 초기화되었는지를 검사할 수 있다.
-
-    Ager가 초기화되지 않은 META이전 단계에서 BLOCK/UNBLOCK을
-    호출하지 않도록 하기 위해 사용된다.
-*/
-idBool smaLogicalAger::isInitialized( void )
+void smaLogicalAger::block( void )
 {
-    return mIsInitialized;
-}
-
-
-IDE_RC smaLogicalAger::block( void )
-{
-    UInt sStage = 0;
     UInt i = 0;
 
     // Ager가 초기화 된 META상태에서만 Block/Unblock이 호출되어야 한다.
@@ -388,65 +365,22 @@ IDE_RC smaLogicalAger::block( void )
         mListLock[i].lock(NULL);
     }
 
-    sStage = 1;
-
-    IDE_TEST( smaDeleteThread::lockAll() != IDE_SUCCESS );
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    IDE_PUSH();
-    switch( sStage )
-    {
-        case 1:
-        for ( i = 0; i < mListCnt; i++ )
-        {
-            mListLock[i].unlock();
-        }
-        break;
-    }
-    IDE_POP();
-
-    return IDE_FAILURE;
-
+    smaDeleteThread::lockAll();
 }
 
-IDE_RC smaLogicalAger::unblock( void )
+void smaLogicalAger::unblock( void )
 {
-
-    UInt sStage = 1;
     UInt i = 0;
 
     // Ager가 초기화 된 META상태에서만 Block/Unblock이 호출되어야 한다.
     IDE_ASSERT( mIsInitialized == ID_TRUE );
 
-    IDE_TEST( smaDeleteThread::unlockAll() != IDE_SUCCESS );
+    smaDeleteThread::unlockAll();
 
-    sStage = 0;
     for ( i = 0; i< mListCnt; i++ )
     {
         mListLock[i].unlock();
     }
-
-    return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    IDE_PUSH();
-    switch( sStage )
-    {
-        case 1:
-        for ( i = 0; i < mListCnt; i++ )
-        {
-            mListLock[i].unlock();
-        }
-        break;
-    }
-    IDE_POP();
-
-    return IDE_FAILURE;
-
 }
 
 IDE_RC smaLogicalAger::addList( smTID         aTID,
@@ -1265,9 +1199,6 @@ void smaLogicalAger::run()
          * 서로 다른 Ager가 다른 List의 접근 하는 경우 Parallel 처럼 동작한다.
          * Parallel을 막으려면 List lock대신 전체 lock을 잡도록 해주면 된다.
          */
-//        IDE_TEST( mListLock[sListN].lock(NULL) !=IDE_SUCCESS );
-//        sState = ID_TRUE;
-
         mListLock[sListN].trylock( sState );
 
         if ( sState != ID_TRUE )
@@ -1633,7 +1564,7 @@ IDE_RC smaLogicalAger::agingInstantly( smaInstantAgingFilter * aAgingFilter )
         mListLock[ sLocked ].lock(NULL);
     }
 
-    for ( sListN = 0 ; sListN < mListCnt; sListN ++ )
+    for ( sListN = 0 ; sListN < mListCnt; sListN++ )
     {
         /* BUG-32655 [sm-mem-index] The MMDB Ager must not ignore the failure of
          * index aging.

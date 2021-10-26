@@ -38,4 +38,5 @@ public interface ExecutorEngine
 
     <T> void closeCursor(Collection<T> aStatements, ParallelProcessCallback<T> aParallelProcessCallback) throws SQLException;
     <T> void doPartialRollback(Collection<T> aStatements, ParallelProcessCallback<T> aParallelProcessCallback) throws SQLException;
+    <T> void doPartialRollbackToSavepoint(Collection<T> aStatements, ParallelProcessCallback<T> aParallelProcessCallback) throws SQLException;
 }

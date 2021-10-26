@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smxTableInfoMgr.cpp 91252 2021-07-19 00:47:57Z emlee $
+ * $Id: smxTableInfoMgr.cpp 91859 2021-10-17 22:37:22Z emlee $
  **********************************************************************/
 
 # include <smErrorCode.h>
@@ -433,9 +433,8 @@ IDE_RC smxTableInfoMgr::releaseEntryAndUpdateMemTableInfoForIns()
 
                 if ( sCurTableHeaderPtr->mMaxRow != ID_ULONG_MAX ) 
                 {
-                    IDE_TEST_RAISE(
-                        sCurTableHeaderPtr->mFixed.mMRDB.mRuntimeEntry->mMutex.unlock()
-                        != IDE_SUCCESS, err_mutex_unlock);
+                    IDE_TEST_RAISE( sCurTableHeaderPtr->mFixed.mMRDB.mRuntimeEntry->mMutex.unlock()
+                                    != IDE_SUCCESS, err_mutex_unlock );
                 }
                 
                 sCurTableInfoPtr->mRecordCnt = 0;
@@ -451,9 +450,8 @@ IDE_RC smxTableInfoMgr::releaseEntryAndUpdateMemTableInfoForIns()
 
                 if ( sCurTableHeaderPtr->mMaxRow != ID_ULONG_MAX )
                 {
-                    IDE_TEST_RAISE(
-                        sCurTableHeaderPtr->mFixed.mVRDB.mRuntimeEntry->mMutex.unlock()
-                        != IDE_SUCCESS, err_mutex_unlock);
+                    IDE_TEST_RAISE( sCurTableHeaderPtr->mFixed.mVRDB.mRuntimeEntry->mMutex.unlock()
+                                    != IDE_SUCCESS, err_mutex_unlock );
                 }
                 
                 sCurTableInfoPtr->mRecordCnt = 0;

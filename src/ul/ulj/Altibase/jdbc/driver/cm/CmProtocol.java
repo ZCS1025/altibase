@@ -122,6 +122,10 @@ public class CmProtocol
                 {
                     CmOperation.writeGetProperty(aContext.channel(), AltibaseProperties.PROP_CODE_UTRANS_TIMEOUT);
                 }
+                if (!aContext.isSetProperty(AltibaseProperties.PROP_CODE_TRANSACTIONAL_DDL))
+                {
+                    CmOperation.writeGetProperty(aContext.channel(), AltibaseProperties.PROP_CODE_TRANSACTIONAL_DDL);
+                }
                 aContext.channel().sendAndReceive();
                 readProtocolResult(aContext);
             }
@@ -181,6 +185,17 @@ public class CmProtocol
         synchronized (aContext.channel())
         {
             CmOperation.writeRollback(aContext.channel());
+            aContext.channel().sendAndReceive();
+            readProtocolResult(aContext);
+        }
+    }
+
+    public static void rollbackToSavepoint(CmProtocolContext aContext, String aSavepointName) throws SQLException
+    {
+        aContext.clearError();
+        synchronized (aContext.channel())
+        {
+            CmOperation.writeRollbackToSavepoint(aContext.channel(), aSavepointName);
             aContext.channel().sendAndReceive();
             readProtocolResult(aContext);
         }

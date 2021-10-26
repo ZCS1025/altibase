@@ -48,7 +48,7 @@ public class DataNodeShardingPreparedStatement extends DataNodeShardingStatement
 
     DataNodeShardingPreparedStatement(AltibaseShardingConnection aShardCon, String aSql, int aResultSetType,
                                       int aResultSetConcurrency, int aResultSetHoldability,
-                                      AltibaseShardingPreparedStatement aShardStmt) throws SQLException
+                                      AltibaseShardingStatement aShardStmt) throws SQLException
     {
         super(aShardCon, aResultSetType, aResultSetConcurrency, aResultSetHoldability, aShardStmt);
         mSql = aSql;
@@ -115,7 +115,7 @@ public class DataNodeShardingPreparedStatement extends DataNodeShardingStatement
      * @param aNodes 실행할 노드 리스트
      * @throws SQLException 노드 Statement 생성시 에러가 발생한 경우
      */
-    private void prepareNodeStatementsForNonLazyMode(List<DataNode> aNodes) throws SQLException
+    protected void prepareNodeStatementsForNonLazyMode(List<DataNode> aNodes) throws SQLException
     {
         // BUG-47145 lazy mode가 false일때도 병렬로 PreparedStatement를 생성한다.
         ExecutorEngine sExecutorEngine = mMetaConn.getExecutorEngine();

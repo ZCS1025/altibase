@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.util.regex.Pattern;
 
+import Altibase.jdbc.driver.sharding.core.AltibaseShardingStatement;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 
@@ -81,17 +82,30 @@ class AltibaseSavepoint implements Savepoint
         return mConnection;
     }
 
-    Savepoint setSavepoint() throws SQLException
+    void setSavepoint() throws SQLException
     {
         AltibaseStatement sStmt = (AltibaseStatement)mConnection.createStatement();
         sStmt.executeUpdate(INTERNAL_SQL_PREFIX_SAVEPOINT + mName + INTERNAL_SQL_POSTFIX);
         sStmt.close();
-        return this;
+    }
+
+    void setSavepointForShard() throws SQLException
+    {
+        AltibaseShardingStatement sStmt = (AltibaseShardingStatement)mConnection.getMetaConnection().createStatement();
+        sStmt.executeUpdate(INTERNAL_SQL_PREFIX_SAVEPOINT + mName + INTERNAL_SQL_POSTFIX);
+        sStmt.close();
     }
 
     void rollback() throws SQLException
     {
         AltibaseStatement sStmt = (AltibaseStatement)mConnection.createStatement();
+        sStmt.executeUpdate(INTERNAL_SQL_PREFIX_ROLLBACK_TO + mName + INTERNAL_SQL_POSTFIX);
+        sStmt.close();
+    }
+
+    void rollbackForShard() throws SQLException
+    {
+        AltibaseShardingStatement sStmt = (AltibaseShardingStatement)mConnection.getMetaConnection().createStatement();
         sStmt.executeUpdate(INTERNAL_SQL_PREFIX_ROLLBACK_TO + mName + INTERNAL_SQL_POSTFIX);
         sStmt.close();
     }

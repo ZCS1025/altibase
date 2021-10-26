@@ -1388,6 +1388,9 @@ switch( gUlpCOMPStartCond )
 <EMSQL,EJ,EP,EN>ROW_NUMBER               {  WRITESTR2QUERYCOMP( yytext ); return(SES_V_ROW_NUMBER); }
 <EMSQL,EJ,EP,EN>COLUMN_NUMBER            {  WRITESTR2QUERYCOMP( yytext ); return(SES_V_COLUMN_NUMBER); }
 
+<EMSQL,EJ,EP,EN>NODE[ \t\r\n]*"["[ \t\r\n]*META[ \t\r\n]*"]" { WRITESTR2QUERYCOMP( yytext ); return TA_NODE_META;         } /* BUG-45359 */
+<EMSQL,EJ,EP,EN>NODE[ \t\r\n]*"["[ \t\r\n]*DATA              { WRITESTR2QUERYCOMP( yytext ); return TA_NODE_DATA;         } /* BUG-45359 */
+
 <EMSQL,EN>([_A-Z$]|({NEG_TRAIL_CH}))([_0-9A-Z$@]|({NEG_TRAIL_CH}))*  {
     WRITESTR2QUERYCOMP( yytext ); return SES_V_IDENTIFIER;
 }

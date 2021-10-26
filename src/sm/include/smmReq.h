@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smmReq.h 89495 2020-12-14 05:19:22Z emlee $
+ * $Id: smmReq.h 91859 2021-10-17 22:37:22Z emlee $
  **********************************************************************/
 
 #ifndef _O_SMM_REQ_H_
@@ -555,23 +555,6 @@ class smmReqFunc
         static IDE_RC unlockItem( void * aTrans, void * aLockSlot )
         {
             return smlLockMgr::unlockItem( aTrans, aLockSlot );
-        };
-
-
-        /* sma */
-        static idBool isMemGCinitialized()
-        {
-            return smaLogicalAger::isInitialized();
-        };
-
-        static IDE_RC blockMemGC()
-        {
-            return smaLogicalAger::block();
-        };
-
-        static IDE_RC unblockMemGC()
-        {
-            return smaLogicalAger::unblock();
         };
 };
 

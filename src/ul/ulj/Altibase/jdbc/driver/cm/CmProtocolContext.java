@@ -16,6 +16,9 @@
 
 package Altibase.jdbc.driver.cm;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import Altibase.jdbc.driver.sharding.core.DistTxInfo;
 
 public class CmProtocolContext
@@ -28,6 +31,10 @@ public class CmProtocolContext
     private static Object mlock        = new Object();
     private static long   mSCN         = 0;  // cli의 Env->mSCN에 대응. 여러 Connection이 공유한다.
     private DistTxInfo    mDistTxInfo; 
+    
+    // BUG-49296 : BUG-48315
+    private List<Integer> mClientTouchedNodes     = new ArrayList<Integer>();
+    private short         mClientTouchedNodeCount = 0;
 
     public CmProtocolContext(CmChannel aChannel)
     {
@@ -78,7 +85,12 @@ public class CmProtocolContext
         }
         return sResult;
     }
-    
+
+    public void clearCmResult(byte aResultOp)
+    {
+        mResults[Byte.toUnsignedInt(aResultOp)] = null;
+    }
+
     public void addError(CmErrorResult aError)
     {
         if (mError == null)
@@ -131,5 +143,31 @@ public class CmProtocolContext
         {
             return mSCN;
         }
+    }
+
+    public short getClientTouchedNodeCount()
+    {
+        return mClientTouchedNodeCount;
+    }
+
+    public void setClientTouchedNodeCount(short aClientTouchedNodeCount)
+    {
+        mClientTouchedNodeCount = aClientTouchedNodeCount;
+    }
+
+    public List<Integer> getClientTouchNodes()
+    {
+        return mClientTouchedNodes;
+    }
+
+    public void setClientTouchedNodes(int aNodeId)
+    {
+        mClientTouchedNodes.add(aNodeId);
+    }
+
+    public void clearClientTouchedNodes()
+    {
+        mClientTouchedNodeCount = 0;
+        mClientTouchedNodes.clear();
     }
 }

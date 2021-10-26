@@ -260,5 +260,4 @@ end dbms_shard;
 /
 
 CREATE OR REPLACE PUBLIC SYNONYM dbms_shard FOR sys.dbms_shard;
-GRANT EXECUTE ON dbms_shard TO PUBLIC;
 

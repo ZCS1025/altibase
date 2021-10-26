@@ -19,6 +19,7 @@ package Altibase.jdbc.driver.cm;
 
 import Altibase.jdbc.driver.sharding.core.DataNode;
 import Altibase.jdbc.driver.sharding.core.NodeConnectionReport;
+import Altibase.jdbc.driver.util.AltiSqlProcessor;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -72,6 +73,11 @@ public class CmShardProtocol
                              String aSql, int aStmtID) throws SQLException
     {
         aShardContextStmt.clearError();
+        // BUG-49197
+        // BUGBUG : prepare or execute 에도 processEscape 하므로 중복수행됨.
+        //          그러나 analyze에서도 processEscape 처리가 필요하여 일단 여기에서도 수행.
+        //          sharding이 아닌 경우에는 prepare or execute에서 processEscape 해야하므로 prepare/execute에서 processEscape을 제거할 수 없는 상황.
+        aSql = AltiSqlProcessor.processEscape(aSql);
         synchronized (mShardContextConnect.channel())
         {
             mShardOperation.writeShardAnalyze(aSql, aStmtID);

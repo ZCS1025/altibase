@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: dumplf.cpp 91224 2021-07-14 05:36:12Z minku.kang $
+ * $Id: dumplf.cpp 91859 2021-10-17 22:37:22Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -269,9 +269,12 @@ IDE_RC dumpLogHead( UInt         aOffsetInFile,
     [IN] aLogType - 출력할 로그의 Type
     [IN] aLogBody - 출력할 로그의 Body
  **********************************************************************/
-IDE_RC dumpLogBody( UInt aLogType, smrLogHead * aLogHead, SChar *aLogPtr )
+IDE_RC dumpLogBody( UInt          aLogType, 
+                    smrLogHead  * aLogHead, 
+                    SChar       * aLogPtr )
 {
     UInt                 i;
+    UInt                 j;
     smrBeginChkptLog     sBeginChkptLog;
     smrNTALog            sNTALog;
     smrUpdateLog         sUpdateLog;
@@ -718,7 +721,7 @@ IDE_RC dumpLogBody( UInt aLogType, smrLogHead * aLogHead, SChar *aLogPtr )
             idlOS::printf( "Group Count: %"ID_UINT32_FMT"\n", sGCCnt );
 
 
-            for( UInt i = 0 ; i < sGCCnt ; i++ )
+            for( i = 0 ; i < sGCCnt ; i++ )
             {
                 idlOS::memcpy( &sTID,
                                sLogBuffer,
@@ -896,27 +899,27 @@ IDE_RC dumpLogBody( UInt aLogType, smrLogHead * aLogHead, SChar *aLogPtr )
                 idlOS::printf("# Column Cnt: %"ID_UINT32_FMT"\n", sColCnt);
                 sLogPtr += ID_SIZEOF(UInt);
 
-                for ( UInt i = 0 ; i < sColCnt ; i++ )
+                for ( i = 0 ; i < sColCnt ; i++ )
                 {               
                     idlOS::memcpy(&sPieceCnt, sLogPtr, ID_SIZEOF(UInt));
                     idlOS::printf("# Piece Cnt: %"ID_UINT32_FMT"\n", sPieceCnt);
                     sLogPtr += ID_SIZEOF(UInt);
 
-                    for ( UInt j = 0 ; j < sPieceCnt ; j++ )
+                    for ( j = 0 ; j < sPieceCnt ; j++ )
                     {
                         idlOS::memcpy(&sVCPieceOID, sLogPtr, ID_SIZEOF(smOID));
                         idlOS::printf("# VarColPieceOID: %"ID_vULONG_FMT", ", sVCPieceOID);
                         sLogPtr += ID_SIZEOF(smOID);
 
                         idlOS::memcpy(&sBefFlag, sLogPtr, ID_SIZEOF(UShort));
-                        idlOS::printf("# before VALUE: 0x%x, ", sBefFlag);
+                        idlOS::printf("# before VALUE: 0x%"ID_xINT32_FMT", ", sBefFlag);
                         sLogPtr += ID_SIZEOF(UShort);
 
                         idlOS::memcpy(&sAftFlag, sLogPtr, ID_SIZEOF(UShort));
-                        idlOS::printf("# after VALUE: 0x%x\n", sAftFlag);
+                        idlOS::printf("# after VALUE: 0x%"ID_xINT32_FMT"\n", sAftFlag);
                         sLogPtr += ID_SIZEOF(UShort);
 
-                        idlOS::printf("# PID: %u, Offset: %u\n", 
+                        idlOS::printf("# PID: %"ID_UINT32_FMT", Offset: %"ID_UINT32_FMT"\n", 
                                        SM_MAKE_PID( sVCPieceOID ),
                                        SM_MAKE_OFFSET( sVCPieceOID ) ); 
                     }
@@ -1009,23 +1012,23 @@ IDE_RC dumpLogBody( UInt aLogType, smrLogHead * aLogHead, SChar *aLogPtr )
                 idlOS::printf("# Column Cnt: %"ID_UINT32_FMT"\n", sColCnt);
                 sLogPtr += ID_SIZEOF(UInt);
 
-                for ( UInt i = 0 ; i < sColCnt ; i++ )
+                for ( i = 0 ; i < sColCnt ; i++ )
                 {               
                     idlOS::memcpy(&sPieceCnt, sLogPtr, ID_SIZEOF(UInt));
                     idlOS::printf("# Piece Cnt: %"ID_UINT32_FMT"\n", sPieceCnt);
                     sLogPtr += ID_SIZEOF(UInt);
 
-                    for ( UInt j = 0 ; j < sPieceCnt ; j++ )
+                    for ( j = 0 ; j < sPieceCnt ; j++ )
                     {
                         idlOS::memcpy(&sVCPieceOID, sLogPtr, ID_SIZEOF(smOID));
                         idlOS::printf("# VarColPieceOID: %"ID_vULONG_FMT", ", sVCPieceOID);
                         sLogPtr += ID_SIZEOF(smOID);
 
                         idlOS::memcpy(&sBefFlag, sLogPtr, ID_SIZEOF(UShort));
-                        idlOS::printf("# before VALUE: 0x%x, ", sBefFlag);
+                        idlOS::printf("# before VALUE: 0x%"ID_xINT32_FMT", ", sBefFlag);
                         sLogPtr += ID_SIZEOF(UShort);
 
-                        idlOS::printf("# PID: %u, Offset: %u\n", 
+                        idlOS::printf("# PID: %"ID_UINT32_FMT", Offset: %"ID_UINT32_FMT"\n", 
                                       SM_MAKE_PID( sVCPieceOID ),
                                       SM_MAKE_OFFSET( sVCPieceOID ) ); 
                     }

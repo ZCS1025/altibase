@@ -101,8 +101,8 @@ static iduFixedTableColDesc gFixedTableColDesc[] =
         0, 0, NULL // for internal use
     },
     {
-        (SChar *)"SOURCE_XID",
-        IDU_FT_OFFSETOF( dkmNotifierTransactionInfo, mSourceXID ),
+        (SChar *)"PARENT_XID",
+        IDU_FT_OFFSETOF( dkmNotifierTransactionInfo, mParentXID ),
         DKT_2PC_XID_STRING_LEN,
         IDU_FT_TYPE_VARCHAR,
         idaXaConvertXIDToString,

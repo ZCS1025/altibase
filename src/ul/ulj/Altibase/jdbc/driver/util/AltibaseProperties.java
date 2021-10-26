@@ -921,6 +921,16 @@ public class AltibaseProperties extends CaseInsensitiveProperties
         setProperty(PROP_INDOUBT_FETCH_METHOD, aIndoubtFetchMethod);
     }
 
+    public int getTransactionalDDL()
+    {
+        return getIntProperty(PROP_TRANSACTIONAL_DDL);
+    }
+
+    public void setTransactionalDDL(String aTransactionalDDL)
+    {
+        setProperty(PROP_TRANSACTIONAL_DDL, aTransactionalDDL);
+    }
+
     /* unused */
     public void setFetchEnough(int aFetchEnough)
     {

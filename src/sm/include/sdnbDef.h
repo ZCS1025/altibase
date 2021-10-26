@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdnbDef.h 88414 2020-08-25 04:45:02Z justin.kwon $
+ * $Id: sdnbDef.h 91859 2021-10-17 22:37:22Z emlee $
  **********************************************************************/
 
 #ifndef _O_SDNB_DEF_H_
@@ -340,27 +340,27 @@ typedef struct sdnbLKeyEx
 #define SDNB_SET_CCTS_NO( aKey, aValue )          \
 {                                                 \
     (aKey)->mTxInfo[0] &= SDNB_CREATE_CTS_UNMASK; \
-    (aKey)->mTxInfo[0] |= ((UChar)aValue << 2);   \
+    (aKey)->mTxInfo[0] |= ((UChar)(aValue) << 2); \
 }
 #define SDNB_SET_STATE( aKey, aValue )          \
 {                                               \
     (aKey)->mTxInfo[0] &= SDNB_STATE_UNMASK;    \
-    (aKey)->mTxInfo[0] |= (UChar)aValue; \
+    (aKey)->mTxInfo[0] |= (UChar)(aValue);      \
 }
 #define SDNB_SET_LCTS_NO( aKey, aValue )          \
 {                                                 \
     (aKey)->mTxInfo[1] &= SDNB_LIMIT_CTS_UNMASK;  \
-    (aKey)->mTxInfo[1] |= ((UChar)aValue << 2);   \
+    (aKey)->mTxInfo[1] |= ((UChar)(aValue) << 2); \
 }
 #define SDNB_SET_DUPLICATED( aKey, aValue )       \
 {                                                 \
     (aKey)->mTxInfo[1] &= SDNB_DUPLICATED_UNMASK; \
-    (aKey)->mTxInfo[1] |= ((UChar)aValue << 1);   \
+    (aKey)->mTxInfo[1] |= ((UChar)(aValue) << 1); \
 }
 #define SDNB_SET_TB_TYPE( aKey, aValue )    \
 {                                           \
     (aKey)->mTxInfo[1] &= SDNB_TB_UNMASK;   \
-    (aKey)->mTxInfo[1] |= (UChar)aValue;    \
+    (aKey)->mTxInfo[1] |= (UChar)(aValue);  \
 }
 
 #define SDNB_SET_TBK_CSCN( aKey, aValue )       \

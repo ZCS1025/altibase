@@ -201,7 +201,7 @@ typedef struct dktNotifierTransactionInfo
     UInt   mIsRequestNode;
     SChar  mTransactionResult[DK_TX_RESULT_STR_SIZE];
     SChar  mTargetInfo[DK_NAME_LEN + 1];
-    ID_XID mSourceXID;
+    ID_XID mParentXID;
     UInt   mTransactionState;
     smSCN  mGlobalCommitSCN;
 } dktNotifierTransactionInfo;

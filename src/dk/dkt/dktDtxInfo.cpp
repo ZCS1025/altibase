@@ -35,8 +35,9 @@ IDE_RC dktDtxInfo::initialize( ID_XID * aGlobalXID,
     idlOS::memset( &(mPrepareLSN), 0x00, ID_SIZEOF( smLSN ) );
     IDU_LIST_INIT( &mBranchTxInfo );
 
-    dktXid::initXID( &mXID );
+    dktXid::initXID( &mParentXID );
     dktXid::initXID( &mGlobalXID );
+    mIsRelayed        = ID_FALSE;
     mIsPassivePending = ID_FALSE;
 
     if ( aGlobalXID != NULL )
@@ -263,7 +264,8 @@ IDE_RC  dktDtxInfo::addDtxBranchTx( ID_XID              * aXID,
                                     SChar               * aUserPassword,
                                     SChar               * aDataServerIP,
                                     UShort                aDataPortNo,
-                                    UShort                aConnectType )
+                                    UShort                aConnectType,
+                                    idBool                aIsRecovery )
 {
     dktDtxBranchTxInfo * sDtxBranchTxInfo = NULL;
 
@@ -282,13 +284,33 @@ IDE_RC  dktDtxInfo::addDtxBranchTx( ID_XID              * aXID,
 
     /* set shard node info */
     sDtxBranchTxInfo->mData.mNode.mCoordinatorType = (dktCoordinatorType)aCoordinatorType;
-    if ( aCoordinatorType == SDI_COORDINATOR_RESHARD )
+
+    /* TASK-7361 : mIsPassivePending을 설정한다.
+                   (초기값은 ID_FALSE 이고 필요시에 ID_TRUE 로 변경한다.) */
+    if ( aIsRecovery == ID_TRUE )
     {
-        if ( mIsPassivePending == ID_FALSE )
+        /* 1. RECOVERY 중이라면,
+              PREPARE_REQ에 기록된 mRelayed 정보에 따라 PASSIVE 상태를 변경한다.
+         
+          예를들어, LIBRARY SESSION으로 2PC하게 된경우
+          coordinatorType은 SDI_COORD_NATOR_RESHARD 지만 mIsRelayed는 ID_FALSE 이다.
+          이경우 PassivePending으로 설정되면 안된다. */
+        if ( mIsRelayed == ID_TRUE )
         {
             mIsPassivePending = ID_TRUE;
         }
     }
+    else
+    {
+        /* 2. SERVICE 중이라면,
+              여기에서 먼저 설정한뒤 PREPARE_REQ 전송전에 2PC 릴레이 여부에 따라 재설정된다. 
+              (dktGlobalCoordinator::setParentXIDnRelayed) */
+        if ( aCoordinatorType == SDI_COORDINATOR_RESHARD )
+        {
+            mIsPassivePending = ID_TRUE;
+        }
+    }
+
     idlOS::strncpy( sDtxBranchTxInfo->mData.mNode.mNodeName,
                     aNodeName,
                     DK_NAME_LEN + 1 );
@@ -345,6 +367,16 @@ IDE_RC  dktDtxInfo::addDtxBranchTx( ID_XID              * aXID,
     return IDE_FAILURE;
 }
 
+/*
+   아래함수들은 모두 XA_PREPARE_REQ 로그에 관련된다.
+   수정할경우 다른 함수도 모두 살펴보자.
+
+   dktDtxInfo::dumpBranchTx()
+   dktDtxInfo::estimateSerializeBranchTx()
+   dktDtxInfo::serializeBranchTx()
+   dktDtxInfo::unserializeAndAddDtxBranchTx()
+   smrLogFileDump::dumpPrepareReqBranchTx()
+ */
 void dktDtxInfo::dumpBranchTx( SChar  * aBuf,
                                SInt     aBufSize,
                                UInt   * aBranchTxCnt ) /* out */
@@ -388,11 +420,16 @@ void dktDtxInfo::dumpBranchTx( SChar  * aBuf,
 
             if ( sShardBranchCounter == 0 )
             {
-                (void)idaXaConvertXIDToString(NULL, &mXID, sXidString, SMR_XID_DATA_MAX_LEN);
+                (void)idaXaConvertXIDToString(NULL, &mParentXID, sXidString, SMR_XID_DATA_MAX_LEN);
                 sLen += idlOS::snprintf( aBuf + sLen,
                                          aBufSize - sLen,
-                                         "FromXID: %s, ",
+                                         "ParentXID: %s, ",
                                          sXidString );
+
+                sLen += idlOS::snprintf( aBuf + sLen,
+                                         aBufSize - sLen,
+                                         "Relayed: %"ID_UINT32_FMT", ",
+                                         ( (mIsRelayed == ID_TRUE) ? (UInt)1 : (UInt)0 ) );
             }
             ++sShardBranchCounter;
 
@@ -451,10 +488,12 @@ UInt  dktDtxInfo::estimateSerializeBranchTx()
 
             if ( sShardBranchCounter == 0 )
             {
-                /* XID 길이 1byte */
+                /* PARENT-XID 길이 1byte */
                 sSize += 1;
-                /* XID */
+                /* PARENT-XID */
                 sSize += dktXid::sizeofXID( &(sBranchTxNode->mXID) );
+                /* GLOBAL TX IS RELAYED */
+                sSize += 1;
             }
             ++sShardBranchCounter;
 
@@ -495,6 +534,7 @@ IDE_RC  dktDtxInfo::serializeBranchTx( UChar * aBranchTxInfo, UInt aSize )
     UChar              * sFence = NULL;
     UChar                sXidLen;
     UInt                 sShardBranchCounter = 0;
+    UChar                sIsRelayed;
 
     sBuffer = aBranchTxInfo;
     sFence = sBuffer + aSize;
@@ -540,16 +580,22 @@ IDE_RC  dktDtxInfo::serializeBranchTx( UChar * aBranchTxInfo, UInt aSize )
 
             if ( sShardBranchCounter == 0 )
             {
-                /* XID 길이 1byte */
-                sXidLen = dktXid::sizeofXID( &mXID );
+                /* PARENT-XID 길이 1byte */
+                sXidLen = dktXid::sizeofXID( &mParentXID );
                 IDE_TEST_RAISE( sBuffer >= sFence, ERR_OVERFLOW );
                 ID_1_BYTE_ASSIGN( sBuffer, &sXidLen );
                 sBuffer += 1;
 
-                /* XID */
+                /* PARENT-XID */
                 IDE_TEST_RAISE( sBuffer >= sFence, ERR_OVERFLOW );
-                idlOS::memcpy( sBuffer, &mXID, sXidLen );
+                idlOS::memcpy( sBuffer, &mParentXID, sXidLen );
                 sBuffer += sXidLen;
+
+                /* GLOBAL TX IS RELAYED */
+                sIsRelayed = ( ( mIsRelayed == ID_TRUE ) ? (UChar)1 : (UChar)0 );
+                IDE_TEST_RAISE( sBuffer >= sFence, ERR_OVERFLOW );
+                ID_1_BYTE_ASSIGN( sBuffer, &sIsRelayed );
+                sBuffer += 1;
             }
             ++sShardBranchCounter;
 
@@ -623,6 +669,7 @@ IDE_RC  dktDtxInfo::unserializeAndAddDtxBranchTx( UChar * aBranchTxInfo, UInt aS
     UChar          sXidLen;
     UInt           i;
     UInt           sShardBranchCounter = 0;
+    UChar          sIsRelayed;
 
     sBuffer = aBranchTxInfo;
 
@@ -667,13 +714,18 @@ IDE_RC  dktDtxInfo::unserializeAndAddDtxBranchTx( UChar * aBranchTxInfo, UInt aS
 
             if ( sShardBranchCounter == 0 )
             {
-                /* XID 길이 1byte */
+                /* PARENT-XID 길이 1byte */
                 ID_1_BYTE_ASSIGN( &sXidLen, sBuffer );
                 sBuffer += 1;
 
-                /* XID */
-                idlOS::memcpy( &mXID, sBuffer, sXidLen );
+                /* PARENT-XID */
+                idlOS::memcpy( &mParentXID, sBuffer, sXidLen );
                 sBuffer += sXidLen;
+
+                /* GLOBAL TX IS RELAYED */
+                ID_1_BYTE_ASSIGN( &sIsRelayed, sBuffer );
+                mIsRelayed = ( (sIsRelayed == (UChar)1 ) ? ID_TRUE : ID_FALSE );
+                sBuffer += 1;
             }
             ++sShardBranchCounter;
 
@@ -721,7 +773,8 @@ IDE_RC  dktDtxInfo::unserializeAndAddDtxBranchTx( UChar * aBranchTxInfo, UInt aS
                                       sUserPassword,
                                       sDataServerIP,
                                       sDataPortNo,
-                                      sConnectType )
+                                      sConnectType,
+                                      ID_TRUE /* recovery */ )
                       != IDE_SUCCESS );
         }
     }

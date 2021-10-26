@@ -310,7 +310,8 @@ smVCPieceHeader* sgmManager::getNxtVCPieceHeader( smVCPieceHeader *  aVCPieceHea
 
     sOffsetIdx = aColumn->varOrder;
 
-    do {
+    do 
+    {
         if ( sVCPieceHeader->nxtPieceOID == SM_NULL_OID )
         {
             sVCPieceHeader  = NULL;

@@ -36,8 +36,10 @@ public:
     UInt           mBranchTxCount;
     dktLinkerType  mLinkerType;
     iduListNode    mNode;
-    ID_XID         mXID;
     ID_XID         mGlobalXID;
+    ID_XID         mParentXID; /* 릴레이된 Global TX 일때 바로 앞쪽의 Global TX의 XID */
+    idBool         mIsRelayed; /* 릴레이된 Global TX인지 여부
+                                  (ID_TRUE : 릴레이된 Global TX / ID_FALSE : 최초 Gobal TX) */
     idBool         mIsFailoverRequestNode;
     idBool         mIsPassivePending;
     smSCN          mGlobalCommitSCN;
@@ -63,7 +65,8 @@ public:
                            SChar                * aUserPassword,
                            SChar                * aDataServerIP,
                            UShort                 aDataPortNo,
-                           UShort                 aConnectType );
+                           UShort                 aConnectType,
+                           idBool                 aIsRecovery );
     IDE_RC addDtxBranchTx( dktDtxBranchTxInfo * aDtxBranchTxInfo );
     dktDtxBranchTxInfo * getDtxBranchTx( ID_XID * aXID );
 

@@ -20,7 +20,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: smiMisc.cpp 91512 2021-08-21 07:50:50Z emlee $
+ * $Id: smiMisc.cpp 91859 2021-10-17 22:37:22Z emlee $
  **********************************************************************/
 
 #include <smErrorCode.h>
@@ -1049,11 +1049,11 @@ IDE_RC _smiSetAger( idBool aValue )
     {
         if ( aValue == ID_TRUE )
         {
-            IDE_TEST( smaLogicalAger::unblock() != IDE_SUCCESS );
+            smaLogicalAger::unblock();
         }
         else
         {
-            IDE_TEST( smaLogicalAger::block() != IDE_SUCCESS );
+            smaLogicalAger::block();
         }
         sValue = aValue;
     }
@@ -1063,11 +1063,6 @@ IDE_RC _smiSetAger( idBool aValue )
     }
 
     return IDE_SUCCESS;
-
-    IDE_EXCEPTION_END;
-
-    return IDE_FAILURE;
-
 }
 
 #define MSG_BUFFER_SIZE (128 * 1024)
@@ -2778,27 +2773,13 @@ void smiGetTableModifyCount( const void   * aTable,
 idBool smiIsAllowDeleteQueue( const void   * aTable )
 {
     smcTableHeader      * sTableHdr;
-    idBool                sIsAllowDelete;
 
     IDE_DASSERT( aTable != NULL );
 
     sTableHdr = (smcTableHeader *)SMI_MISC_TABLE_HEADER(aTable);
 
-    if ( ( sTableHdr->mFlag & SMI_TABLE_QUEUE_ALLOW_DELETE_MASK )
-         == SMI_TABLE_QUEUE_ALLOW_DELETE_FALSE )
-    {
-        sIsAllowDelete = ID_FALSE;
-    }
-    else
-    {
-        sIsAllowDelete = ID_TRUE;        
-
-        /* delete 가 허용되는 QUEUE 라면 QUEUE TABLE 설정이 되어 있어야 함. */
-        IDE_DASSERT( ( sTableHdr->mFlag & SMI_TABLE_QUEUE_MASK )
-                     == SMI_TABLE_QUEUE_TRUE )
-    }
-
-    return sIsAllowDelete;
+    return ( ( sTableHdr->mFlag & SMI_TABLE_QUEUE_ALLOW_DELETE_MASK )
+             == SMI_TABLE_QUEUE_ALLOW_DELETE_TRUE ) ? ID_TRUE : ID_FALSE;
 }
 
 IDE_RC smiWriteXaStartReqLog( ID_XID * aGlobalXID,
