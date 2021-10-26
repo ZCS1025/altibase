@@ -1,0 +1,54 @@
+table TEST
+{
+"K01" integer;
+"K02" integer;
+"K03" integer;
+"K04" integer;
+"K05" integer;
+"K06" integer;
+"K07" integer;
+"K08" integer;
+"K09" integer;
+"K10" integer;
+"K11" integer;
+"K12" integer;
+"K13" integer;
+"K14" integer;
+"K15" integer;
+"K16" integer;
+"K17" integer;
+"K18" integer;
+"K19" integer;
+"K20" integer;
+"K21" integer;
+"K22" integer;
+"K23" integer;
+"K24" integer;
+"K25" integer;
+"K26" integer;
+"K27" integer;
+"K28" integer;
+"K29" integer;
+"K30" integer;
+"K31" integer;
+"K32" integer;
+"K33" integer;
+"K34" integer;
+"K35" integer;
+"K36" integer;
+"K37" integer;
+"K38" integer;
+"K39" integer;
+"K40" integer;
+"K41" integer;
+"K42" integer;
+"K43" integer;
+"K44" integer;
+"K45" integer;
+"K46" varchar (30);
+"K47" varchar (30);
+"K48" varchar (30);
+"K49" varchar (30);
+"K50" varchar (30);
+}
+DATA_NLS_USE=US7ASCII
