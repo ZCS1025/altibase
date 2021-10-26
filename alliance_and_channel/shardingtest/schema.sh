@@ -1,0 +1,1 @@
+is -f schema.sql
