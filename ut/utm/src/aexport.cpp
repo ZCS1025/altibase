@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: aexport.cpp 91504 2021-08-19 23:38:48Z chkim $
+ * $Id: aexport.cpp 91918 2021-10-28 02:52:21Z chkim $
  **********************************************************************/
 
 #include <idl.h>
@@ -51,6 +51,9 @@ FileStream     gFileStream;
 utmDbmsMeta       *gMeta;
 
 extern ObjectModeInfo *gObjectModeInfo;
+
+/* BUG-49356 Cross-schema reference index */
+utmExportModeType mExportModeType;
 
 static void show_copyright();
 static void show_runmsg();
@@ -96,6 +99,8 @@ int main(int argc, char** argv)
 
         if ( gProgOption.m_bExist_OBJECT == ID_TRUE )
         {
+            /* BUG-49356 Cross-schema reference index */
+            mExportModeType = UTM_EXPORT_OBJECT_MODE;
             doObjModeExport();
         }
         else
@@ -592,6 +597,14 @@ static IDE_RC doExport()
 
     if ( idlOS::strcasecmp( sUserName, (SChar*)UTM_STR_SYS ) == 0 )
     {
+        /* BUG-49356 Cross-schema reference index */
+        mExportModeType = UTM_EXPORT_DB_MODE;
+        
+        IDE_TEST_RAISE( gMeta->setExportDbMode( m_hdbc ), init_error );
+
+        /* BUG-49356 DB mode export의 ALL_CRT_INDEX.sql은 SYS/xxxxx 로 시작한다. */
+        idlOS::fprintf( gFileStream.mIndexFp, "connect \"%s\" / \"%s\"\n", sUserName, sPasswd);
+
         IDE_TEST_RAISE( getTBSQuery( gFileStream.mTbsFp)
                                    != SQL_SUCCESS, init_error );
 
@@ -610,6 +623,9 @@ static IDE_RC doExport()
     }
     else
     {
+        /* BUG-49356 Cross-schema reference index */
+        mExportModeType = UTM_EXPORT_USER_MODE;
+        
         m_user_cnt = 1;
         
         m_UserInfo = (UserInfo *) idlOS::malloc(sizeof(UserInfo) * m_user_cnt);

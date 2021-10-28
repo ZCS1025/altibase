@@ -31,6 +31,7 @@ psm_terminator           CHAR(4) := '';
 param_notnull_constraints CHAR(1) := 'T';
 param_access_mode         CHAR(1) := 'T';
 param_schema              CHAR(1) := 'T';
+param_export_db_mode      CHAR(1) := 'F'; /* BUG-49356 */
 /* only for shard */
 param_partition_orderby_name CHAR(1) := 'F';
 
@@ -66,6 +67,8 @@ begin
         param_access_mode := value;
     ELSIF name = 'SCHEMA' THEN
         param_schema := value;
+    ELSIF name = 'EXPORT_DB_MODE' THEN
+        param_export_db_mode := value;
     ELSIF name = 'PARTITION_ORDERBY_NAME' THEN
         param_partition_orderby_name := value;
     ELSE
@@ -871,19 +874,29 @@ begin
         return null;
 end get_constraints;
 
-function get_object_clause(
-                  object_name IN VARCHAR(128),
-                  userName    IN VARCHAR(128)) return varchar(270)
+/* BUG-49356 Cross-schema reference index */
+function get_object_clause_force(
+                  object_name   IN VARCHAR(128),
+                  userName      IN VARCHAR(128),
+                  isWithschema  IN BOOLEAN) return varchar(270)
 as
 objectClause VARCHAR(270);
 begin
     objectClause := '';
-    IF param_schema = 'T' THEN
+    IF isWithSchema = TRUE THEN
         objectClause := '"' || userName || '".';
     END IF;
     objectClause := objectClause || '"' || object_name || '"';
 
     return objectClause;
+end get_object_clause_force;
+
+function get_object_clause(
+                  object_name IN VARCHAR(128),
+                  userName    IN VARCHAR(128)) return varchar(270)
+as
+begin
+    return get_object_clause_force(object_name, userName, (param_schema = 'T'));
 end get_object_clause;
 
 function get_table_ddl(
@@ -1077,6 +1090,8 @@ accessMode       VARCHAR(12);
 tbsName          VARCHAR(40);
 isPersistent     VARCHAR(20);
 ddlStr           varchar(65534);
+tblSchemaObjName varchar(261);
+idxSchemaObjName varchar(261);
 begin
     SELECT /*+ USE_HASH( A, C ) */
             A.INDEX_ID,
@@ -1086,23 +1101,44 @@ begin
             DECODE(A.IS_PERS, 'T', 'SET PERSISTENT=ON'),
             DECODE(A.IS_DIRECTKEY, 'T', 'DIRECTKEY'),
             A.IS_PARTITIONED,
-            U.USER_NAME,
+            UT.USER_NAME,
             B.TABLE_NAME,
             B.TBS_ID,
             C.NAME, C.TYPE
         INTO indexId, indexType, uniqueClause, isPersistent, directkeyClause,
              isPartitioned, tableOwner, tableName, tableTbsId, tbsName, tbsType
     FROM SYSTEM_.SYS_INDICES_ A, SYSTEM_.SYS_PART_INDICES_ P,
-         SYSTEM_.SYS_TABLES_ B, V$TABLESPACES C, SYSTEM_.SYS_USERS_ U
+         SYSTEM_.SYS_TABLES_ B, V$TABLESPACES C, SYSTEM_.SYS_USERS_ U,
+         SYSTEM_.SYS_USERS_ UT
     WHERE A.USER_ID = userId
         AND A.INDEX_ID = P.INDEX_ID(+)
         AND A.TABLE_ID = B.TABLE_ID
         AND A.TBS_ID = C.ID AND A.USER_ID = U.USER_ID
+        AND B.USER_ID = UT.USER_ID
         AND A.INDEX_NAME = object_name;
 
+   /* 
+    *  BUG-49356 DB mode export에서 ALL_CRT_INDEX.sql는 connect sys/manager로 접속하게 된다.
+    *  따라서, SYS 이외의 스키마를 가진 객체는 모두 명시해야 한다.
+    *  SYS만 예외로 하는 이유는 최대한 하위 호환성을 지키기 위해서다.
+    */
+    -- index schema
+    IF param_export_db_mode = 'T' AND userName != 'SYS' THEN
+        idxSchemaObjName := get_object_clause_force(object_name, userName, TRUE);
+    ELSE
+        idxSchemaObjName := get_object_clause(object_name, userName);
+    END IF;
+
+    -- table schema
+    IF param_export_db_mode = 'T' AND tableOwner != 'SYS' THEN
+        tblSchemaObjName := get_object_clause_force(tableName, tableOwner, TRUE);
+    ELSE
+        tblSchemaObjName := get_object_clause(tableName, tableOwner);
+    END IF;
+    
     ddlStr := 'CREATE' || uniqueClause || ' INDEX ' ||
-              get_object_clause(object_name, userName) || ' ON ' ||
-              get_object_clause(tableName, tableOwner) || ' (';
+              idxSchemaObjName || ' ON ' ||
+              tblSchemaObjName || ' (';
     
     -- key columns
     ddlStr := ddlStr || get_index_columns(indexId) || ')';
@@ -2146,6 +2182,7 @@ tbsIds           INT_ARRAY;
 constNames       CHAR150_ARRAY;
 tmpDdl           varchar(65534);
 ddlStr           varchar(65534);
+tblSchemaObjName varchar(261);
 begin
     IF object_type = 0 THEN
         SELECT A.CONSTRAINT_ID,
@@ -2157,7 +2194,7 @@ begin
           AND B.USER_ID = userId
           AND B.TABLE_NAME = base_object_name
           AND A.CONSTRAINT_TYPE = 0
-        ORDER BY A.INDEX_ID;
+        ORDER BY A.INDEX_ID, A.CONSTRAINT_NAME ASC;
     ELSE
         SELECT A.CONSTRAINT_ID,
            CASE2(A.CONSTRAINT_NAME LIKE '%__SYS_CON_%', '', ' CONSTRAINT "' || A.CONSTRAINT_NAME || '"'),
@@ -2168,11 +2205,23 @@ begin
           AND B.USER_ID = userId
           AND B.TABLE_NAME = base_object_name
           AND A.CONSTRAINT_TYPE IN (1, 2, 3, 6, 7)
-        ORDER BY A.INDEX_ID;
+        ORDER BY A.INDEX_ID, A.CONSTRAINT_NAME ASC;
     END IF;
 
-    alterAdd := 'ALTER TABLE ' || get_object_clause(base_object_name, userName) || ' ADD';
-    alterMod := 'ALTER TABLE ' || get_object_clause(base_object_name, userName) || ' MODIFY';
+    /* 
+     *  BUG-49356 DB mode export에서 ALL_CRT_INDEX.sql는 connect sys/manager로 접속하게 된다.
+     *  따라서, SYS 이외의 스키마를 가진 객체는 모두 명시해야 한다.
+     *  SYS만 예외로 하는 이유는 최대한 하위 호환성을 지키기 위해서다.
+     */
+       
+    IF param_export_db_mode = 'T' AND userName != 'SYS' THEN
+        tblSchemaObjName := get_object_clause_force(base_object_name, userName, TRUE);
+    ELSE
+        tblSchemaObjName := get_object_clause(base_object_name, userName); 
+    END IF;
+
+    alterAdd := 'ALTER TABLE ' || tblSchemaObjName || ' ADD';
+    alterMod := 'ALTER TABLE ' || tblSchemaObjName || ' MODIFY';
     tmpDdl := '';
     ddlStr := '';
     cnt := 0;
@@ -2223,17 +2272,18 @@ end get_dep_constraint;
                 
 function get_dep_index(
                  base_object_name   IN VARCHAR(128),
-                 userId             IN INTEGER) return varchar(65534)
+                 userId             IN INTEGER,
+                 userName           IN VARCHAR(128)) return varchar(65534)
 as
 n                INTEGER;
 cnt              INTEGER;
 userIds          INT_ARRAY;
 indexNames       CHAR128_ARRAY;
-userNames        CHAR128_ARRAY;
+indexSchemas     CHAR128_ARRAY;
 ddlStr           varchar(65534);
 begin
     SELECT INDEX_NAME, A.USER_ID, B.USER_NAME
-    BULK COLLECT INTO indexNames, userIds, userNames
+    BULK COLLECT INTO indexNames, userIds, indexSchemas
     FROM SYSTEM_.SYS_INDICES_ A, SYSTEM_.SYS_USERS_ B
     WHERE TABLE_ID = (SELECT TABLE_ID 
                       FROM SYSTEM_.SYS_TABLES_
@@ -2250,12 +2300,16 @@ begin
     ddlStr := '';
     cnt := 0;
     FOR n IN indexNames.FIRST() .. indexNames.LAST() LOOP
+        /* BUG-49356 DB mode export가 아니면 테이블 스키마와 인덱스 스키마가 다르면 skip. */ 
+        IF param_export_db_mode != 'T' AND userName != indexSchemas[n] THEN
+            CONTINUE;
+        END IF;
         cnt := 1;
         IF n > 1 THEN
             ddlStr := ddlStr || chr(10) || chr(10);
         END IF;
 
-        ddlStr := ddlStr || get_index_ddl(indexNames[n], userIds[n], userNames[n]);
+        ddlStr := ddlStr || get_index_ddl(indexNames[n], userIds[n], indexSchemas[n]);
     END LOOP;
 
     IF cnt = 0 THEN
@@ -2808,7 +2862,7 @@ begin
         return get_dep_constraint(0, base_object_name, userId, userName);
     ELSIF object_type = 'INDEX' THEN
         get_schema_info(base_object_schema, userId, userName);
-        return get_dep_index(base_object_name, userId);
+        return get_dep_index(base_object_name, userId, userName);
     ELSIF object_type = 'OBJECT_GRANT' THEN
         get_schema_info(base_object_schema, userId, userName);
         return get_dep_obj_grant(base_object_name, userId, userName);

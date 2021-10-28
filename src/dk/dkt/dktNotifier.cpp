@@ -495,6 +495,8 @@ IDE_RC dktNotifier::notifyXaResultForDBLink( dktDtxInfo  * aDtxInfo,
                   != IDE_SUCCESS );
     }
 
+    IDE_TEST_RAISE( *aResultCode != DKP_RC_SUCCESS, ERR_RESULT );
+
     IDE_TEST( smiWriteXaEndLog( aDtxInfo->mLocalTxId,
                                 aDtxInfo->mGlobalTxId )
               != IDE_SUCCESS );
@@ -502,7 +504,14 @@ IDE_RC dktNotifier::notifyXaResultForDBLink( dktDtxInfo  * aDtxInfo,
     EXIT_LABEL:
 
     return IDE_SUCCESS;
-
+    IDE_EXCEPTION( ERR_RESULT );
+    {
+        dkpProtocolMgr::setResultErrorCode( *aResultCode,
+                                            NULL,
+                                            0,
+                                            0,
+                                            NULL );
+    }
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;

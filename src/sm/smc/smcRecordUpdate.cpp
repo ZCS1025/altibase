@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smcRecordUpdate.cpp 91859 2021-10-17 22:37:22Z emlee $
+ * $Id: smcRecordUpdate.cpp 91891 2021-10-21 10:45:20Z emlee $
  **********************************************************************/
 
 #include <idl.h>
@@ -3888,7 +3888,7 @@ IDE_RC smcRecordUpdate::redo_SMC_PERS_DELETE_VERSION_ROW(
                                            SM_OID_DELETE_FIXED_SLOT )
                   != IDE_SUCCESS );
 
-        sBeginTx = ID_TRUE;;
+        sBeginTx = ID_TRUE;
     }
 
     // BUG-46854: Var 피스 플래그 로그 처리 

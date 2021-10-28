@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: utmDbmsMeta.cpp 86068 2019-08-27 06:13:27Z bethy $
+ * $Id: utmDbmsMeta.cpp 91918 2021-10-28 02:52:21Z chkim $
  **********************************************************************/
 
 #include <utmDbmsMeta.h>
@@ -33,6 +33,11 @@
     "  dbms_metadata.set_transform_param('NOTNULL_CONSTRAINTS', 'F'); "\
     "  dbms_metadata.set_transform_param('ACCESS_MODE', 'F'); "        \
     "  dbms_metadata.set_transform_param('SCHEMA', 'F'); "             \
+    "end"
+
+#define SET_EXPORT_DB_MODE_QUERY                                       \
+    "begin "                                                           \
+    "  dbms_metadata.set_transform_param('EXPORT_DB_MODE', 'T'); "     \
     "end"
 
 extern uteErrorMgr    gErrorMgr;
@@ -108,9 +113,10 @@ IDE_RC utmDbmsMeta::existsDbmsMetadata(SQLHDBC aDbc)
     }
     IDE_EXCEPTION_END;
 
-    if (mStmt != SQL_NULL_HSTMT)
+    if (sStmt != SQL_NULL_HSTMT)
     {
         FreeStmt(&sStmt);
+        sStmt = SQL_NULL_HSTMT;
     }
     return IDE_FAILURE;
 }
@@ -446,3 +452,38 @@ IDE_RC utmDbmsMeta::getUserDdl(
     return IDE_FAILURE;
 }
 
+/* BUG-49356 Cross-schema reference index */
+IDE_RC utmDbmsMeta::setExportDbMode( SQLHDBC aDbc )
+{
+    SQLHSTMT sStmt  = SQL_NULL_HSTMT;
+
+    IDE_TEST_RAISE( SQLAllocStmt( aDbc, &sStmt ) != SQL_SUCCESS,
+                   allocError );
+
+    IDE_TEST_RAISE( SQLExecDirect( sStmt, 
+                    (SQLCHAR*)SET_EXPORT_DB_MODE_QUERY, 
+                    SQL_NTS ) != SQL_SUCCESS,
+                    stmtError );
+
+    FreeStmt( &sStmt );
+
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION( allocError );
+    {
+        utmSetErrorMsgWithHandle( SQL_HANDLE_DBC, ( SQLHANDLE ) aDbc );
+    }
+    IDE_EXCEPTION( stmtError );
+    {
+        utmSetErrorMsgWithHandle( SQL_HANDLE_STMT, ( SQLHANDLE ) sStmt );
+    }
+    IDE_EXCEPTION_END;
+
+    if ( sStmt != SQL_NULL_HSTMT )
+    {
+        FreeStmt( &sStmt );
+        sStmt = SQL_NULL_HSTMT;
+    }
+
+    return IDE_FAILURE;
+}

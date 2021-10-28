@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: utmDbmsMeta.h 86068 2019-08-27 06:13:27Z bethy $
+ * $Id: utmDbmsMeta.h 91918 2021-10-28 02:52:21Z chkim $
  **********************************************************************/
 
 #ifndef _O_UTMDBMSMETA_H_
@@ -35,6 +35,14 @@ enum utmDdlType
     STATS_DDL
 };
 
+/* BUG-49356 Cross-schema reference index */
+enum utmExportModeType
+{
+    UTM_EXPORT_OBJECT_MODE  = 1,
+    UTM_EXPORT_USER_MODE    = 2,
+    UTM_EXPORT_DB_MODE      = 3
+};
+
 class utmDbmsMeta
 {
 public:
@@ -52,7 +60,10 @@ public:
     IDE_RC getUserDdl(
                   SChar      *aUserName,
                   SChar      *aUserPasswd);
-
+    
+    /* BUG-49356 Cross-schema reference index */
+    IDE_RC setExportDbMode( SQLHDBC aDbc );
+    
     inline SChar* getDdlStr();
 
 private:

@@ -56,8 +56,11 @@ SQLRETURN getIndexQuery( SChar * a_user,
     {
         idlOS::strcpy( sPuserName, a_puser );
     }
+    
     if (( idlOS::strcmp( a_user, sPuserName ) != 0) &&
-            ( gProgOption.m_bExist_OBJECT != ID_TRUE ))
+            /* BUG-49356 User mode인 경우에만 connect 문 생성,
+             * DB mode는 SYS/manager로 고정 */
+            ( mExportModeType == UTM_EXPORT_USER_MODE ))
     {
         IDE_TEST(getPasswd( a_user, s_passwd) != SQL_SUCCESS);
         sConnectStrFlag = ID_TRUE;

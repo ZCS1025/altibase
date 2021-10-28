@@ -36,4 +36,7 @@ extern SChar   m_alterStr[1024*1024];   /* PROJ-2359 Table/Partition Access Opti
 /* BUG-47159 Using DBMS_METADATA package in aexport */
 extern utmDbmsMeta   *gMeta;
 
+/* BUG-49356 Cross-schema reference index */
+extern utmExportModeType mExportModeType;
+
 #endif /* _O_UTM_EXTERN_H_ */
