@@ -1,0 +1,1 @@
+This is sample python code for Altibase integration from Dataflex 
