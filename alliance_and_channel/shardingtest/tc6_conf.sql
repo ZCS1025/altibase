@@ -1,10 +1,10 @@
 EXEC DBMS_SHARD.CREATE_META();
 
-exec dbms_shard.set_node('dn1','192.168.1.106',20301);
-exec dbms_shard.set_node('dn2','192.168.1.107',20301);
-exec dbms_shard.set_node('dn3','192.168.1.108',20301);
-exec dbms_shard.set_node('dn4','192.168.1.112',20301);
-exec dbms_shard.set_node('dn5','192.168.1.113',20301);
+exec dbms_shard.set_node('dn1','dn1',20301);
+exec dbms_shard.set_node('dn2','dn2',20301);
+exec dbms_shard.set_node('dn3','dn3',20301);
+exec dbms_shard.set_node('dn4','dn4',20301);
+exec dbms_shard.set_node('dn5','dn5',20301);
 
 
 alter session set shard linker=on;
