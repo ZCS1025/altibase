@@ -1,4 +1,4 @@
-HOST="192.168.1.105"
+HOST="localhost"
 PORT="20301"
 CONNTYPE="1"
 
