@@ -176,9 +176,9 @@ public class bmt_select {
         
         numberOfThreads      = 1;
         startValue           = 0;
-        numberOfTransactions = 1000000;
-        sizeOfUnit           = 1000;
-        threshold            = 1000000;
+        numberOfTransactions = 10000000;
+        sizeOfUnit           = 10000;
+        threshold            = 10000000;
         cap                  = 0;
         host                 = "localhost";
         user                 = "SYS";
