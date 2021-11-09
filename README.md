@@ -1,8 +1,21 @@
 ### Altibase: Enterprise grade High performance Relational DBMS
-- Enterprise grade: 17 years of experience in servicing over 600 global enterprise clients including Samsung, HP, E-Trade, China Mobile and more. (Ref: http://altibase.com/product/enterprise-grade-database/ )
+- Enterprise grade: 20 years of experience in servicing over 600 global enterprise clients including Samsung, HP, E-Trade, China Mobile and more. (Ref: http://altibase.com/product/enterprise-grade-database/ )
 - High performance: Accelerate the performance of your mission critical applications by over 10X with in-memory and on-disk hybrid architecture. (Ref: http://altibase.com/product/high-performance-database/ )
 - Relational DBMS: Function and feature rich with all the tools and relational capabilities expected and required by enterprise grade applications. Enjoy the benefits without radically changing your applications. (Ref: http://altibase.com/product/relational-database/ )
 - Low cost: Open source costs with enterprise grade quality. Lower your TCO with flexible subscription fees. (Ref: http://altibase.com/product/low-cost-database/ )
+
+### Download 
+![image](https://user-images.githubusercontent.com/85087821/132642200-91412403-9e06-47d4-b88c-fcbe18eeeb09.png)
+https://altibase.com/en/learn/download.php
+
+### Features and Functions
+
+![image](https://user-images.githubusercontent.com/85087821/132639866-159bf8b0-3433-4f68-96ea-c972e5a03395.png)
+![image](https://user-images.githubusercontent.com/85087821/132639935-50994992-5bc8-40b9-878d-4c4c643abe11.png)
+![image](https://user-images.githubusercontent.com/85087821/132639967-15b664b8-d049-4944-9211-4c995b2450c4.png)
+![image](https://user-images.githubusercontent.com/85087821/132639994-e6c1256c-a3be-4158-8a00-a923f1a2dab1.png)
+![image](https://user-images.githubusercontent.com/85087821/132640019-ffc6fef3-674b-4f19-aff1-cfb0942a63f9.png)
+![image](https://user-images.githubusercontent.com/85087821/132640046-940fe494-a688-4328-97a1-4a99f51c9000.png)
 
 ### Help
 - http://altibase.com/resources/
