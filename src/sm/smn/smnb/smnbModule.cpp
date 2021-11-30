@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnbModule.cpp 91871 2021-10-20 00:28:18Z emlee $
+ * $Id: smnbModule.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -847,6 +847,8 @@ IDE_RC smnbBTree::create( idvSQL               */*aStatistics*/,
     IDU_FIT_POINT_RAISE( "smnbBTree::create::malloc2",
                           ERR_INSUFFICIENT_MEMORY );
 
+    MUL_OVERFLOW_CHECK( ID_SIZEOF(smnbColumn),(aIndex->mColumnCount));
+
     // fix BUG-22898
     // Index HeaderÀÇ Columns »ý¼º
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMN,
@@ -857,6 +859,8 @@ IDE_RC smnbBTree::create( idvSQL               */*aStatistics*/,
     //TC/FIT/Limit/sm/smn/smnb/smnbBTree_create_malloc3.sql
     IDU_FIT_POINT_RAISE( "smnbBTree::create::malloc3",
                           ERR_INSUFFICIENT_MEMORY );
+
+    MUL_OVERFLOW_CHECK(ID_SIZEOF(smnbColumn),(aIndex->mColumnCount));
 
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMN,
                                  ID_SIZEOF(smnbColumn) * (aIndex->mColumnCount),
@@ -11001,6 +11005,7 @@ IDE_RC smnbBTree::dumpIndexNode( smnIndexHeader * aIndex,
 
     sFixedKeySize = ((smnbHeader*)aIndex->mHeader)->mFixedKeySize;
 
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_ID, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sValueBuf )
@@ -11146,6 +11151,7 @@ void smnbBTree::logIndexNode( smnIndexHeader * aIndex,
 
     if( aNode != NULL )
     {
+        //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
         if ( iduMemMgr::calloc( IDU_MEM_SM_SMN,
                                 1,
                                 ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
@@ -12080,6 +12086,7 @@ void smnbBTree::logIndexHeader( smnIndexHeader * aCommonHeader )
 
     if ( aCommonHeader->mHeader != NULL )
     {
+        //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
         if ( iduMemMgr::calloc( IDU_MEM_SM_SMN, 1,
                                 ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                 (void**)&sOutBuffer4Dump )

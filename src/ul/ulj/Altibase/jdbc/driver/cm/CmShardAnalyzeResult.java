@@ -34,13 +34,15 @@ public class CmShardAnalyzeResult extends CmStatementIdResult
     private             ShardKeyDataType     mShardSubKeyDataType;
     private             int                  mShardDefaultNodeID;
     private             boolean              mShardSubKeyExists;
-    private             boolean              mShardCanMerge;
+    private             boolean              mIsShardQuery;
     private             int                  mShardValueCount;
     private             int                  mShardSubValueCount;
     private             List<ShardValueInfo> mShardValueInfoList    = new ArrayList<ShardValueInfo>();
     private             List<ShardValueInfo> mShardSubValueInfoList = new ArrayList<ShardValueInfo>();
     private             ShardRangeList       mShardRangeList;
-    private             boolean              mIsCoordQuery;         // coordinate 孽府 咯何
+    private             boolean              mIsCoordQuery;               // coordinate 孽府 咯何
+    private             byte                 mIsPartialCoordExecNeeded;   // TASK-7219 Non-shard DML
+
 
     protected byte getResultOp()
     {
@@ -82,10 +84,10 @@ public class CmShardAnalyzeResult extends CmStatementIdResult
         return mShardSubKeyExists;
     }
 
-    public void setShardCanMerge(byte aShardCanMerge)
+    public void setIsShardQuery(byte aIsShardQuery)
     {
-        mShardCanMerge = (aShardCanMerge == (byte)1);
-        if (!mShardCanMerge)
+        mIsShardQuery = (aIsShardQuery == (byte)1);
+        if (!mIsShardQuery)
         {
             mIsCoordQuery = true;
         }
@@ -161,9 +163,9 @@ public class CmShardAnalyzeResult extends CmStatementIdResult
         return mShardRangeList;
     }
 
-    public boolean canMerge()
+    public boolean IsShardQuery()
     {
-        return mShardCanMerge;
+        return mIsShardQuery;
     }
 
     public void setShardCoordinate(boolean aShardCoordinate)
@@ -186,6 +188,17 @@ public class CmShardAnalyzeResult extends CmStatementIdResult
         return mIsCoordQuery;
     }
 
+    // TASK-7219 Non-shard DML
+    public byte getIsPartialCoordExecNeeded()
+    {
+        return mIsPartialCoordExecNeeded;
+    }
+
+    public void setIsPartialCoordExecNeeded(byte aIsPartialCoordExecNeeded)
+    {
+        this.mIsPartialCoordExecNeeded = aIsPartialCoordExecNeeded;
+    }
+
     @Override public String toString()
     {
         final StringBuilder sSb = new StringBuilder("CmShardAnalyzeResult{");
@@ -195,12 +208,13 @@ public class CmShardAnalyzeResult extends CmStatementIdResult
         sSb.append(", mShardSubKeyDataType=").append(mShardSubKeyDataType);
         sSb.append(", mShardDefaultNodeID=").append(mShardDefaultNodeID);
         sSb.append(", mShardSubKeyExists=").append(mShardSubKeyExists);
-        sSb.append(", mShardCanMerge=").append(mShardCanMerge);
+        sSb.append(", mIsShardQuery=").append(mIsShardQuery);
         sSb.append(", mShardValueCount=").append(mShardValueCount);
         sSb.append(", mShardSubValueCount=").append(mShardSubValueCount);
         sSb.append(", mShardValueInfoList=").append(mShardValueInfoList);
         sSb.append(", mShardSubValueInfoList=").append(mShardSubValueInfoList);
         sSb.append(", mIsCoordQuery=").append(mIsCoordQuery);
+        sSb.append(", mIsPartialCoordExecNeeded=").append(mIsPartialCoordExecNeeded);
         sSb.append('}');
         return sSb.toString();
     }

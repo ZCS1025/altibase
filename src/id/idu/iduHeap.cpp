@@ -69,6 +69,7 @@ IDE_RC iduHeap::initialize( iduMemoryClientIndex aIndex,
     mArray      = NULL;
 
 
+    MUL_OVERFLOW_CHECK( mDataSize,mDataMaxCnt );
     IDE_TEST(iduMemMgr::malloc( mIndex,
                                 mDataSize * mDataMaxCnt,
                                 (void**)&mArray)

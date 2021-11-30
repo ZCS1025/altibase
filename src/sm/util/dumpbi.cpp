@@ -82,6 +82,7 @@ IDE_RC dumpBackupInfoFile( SChar * aBackupInfoFilePath )
 
     IDE_TEST_CONT( sBIFileHdr.mBISlotCnt == 0, skip_dump_slot );
 
+    MUL_OVERFLOW_CHECK( ID_SIZEOF( smriBISlot ),sBIFileHdr.mBISlotCnt );
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMR,
                                  1,                             
                                  ID_SIZEOF( smriBISlot ) * sBIFileHdr.mBISlotCnt,       

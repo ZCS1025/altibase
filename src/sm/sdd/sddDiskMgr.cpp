@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sddDiskMgr.cpp 91197 2021-07-12 01:15:29Z emlee $
+ * $Id: sddDiskMgr.cpp 91933 2021-10-29 09:45:48Z emlee $
  *
  * Description :
  *
@@ -1440,6 +1440,12 @@ IDE_RC sddDiskMgr::read( idvSQL      * aStatistics,
                                                         (void**)&sSpaceNode )
               != IDE_SUCCESS );
 
+    IDE_ERROR_MSG( sSpaceNode->mHeader.mID == aTableSpaceID,
+                    "aTableSpaceID : %"ID_UINT32_FMT", " 
+                    "mID : %"ID_UINT32_FMT,
+                    aTableSpaceID,
+                    sSpaceNode->mHeader.mID );
+ 
     IDE_TEST( sddTableSpace::getDataFileNodeByPageID( sSpaceNode,
                                                       aFstPageID,
                                                       &sFileNode,

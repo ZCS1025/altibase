@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmgSelection.h 90192 2021-03-12 02:01:03Z jayce.park $
+ * $Id: qmgSelection.h 91978 2021-11-05 05:37:19Z donovan.seo $
  *
  * Description :
  *     Selection Graph를 위한 정의
@@ -272,6 +272,7 @@ private:
 
     // VSCN을 생성
     static IDE_RC makeViewScan( qcStatement * aStatement,
+                                qmgGraph    * aGraph,
                                 qmgSELT     * aMyGraph );
 
     // PROJ-2528 recursive with

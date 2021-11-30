@@ -276,6 +276,7 @@ IDE_RC smiDataPort::beginExport( idvSQL              * aStatistics,
     // ------------------------------------
     // Write trace log
     // -----------------------------------
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMI, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )
@@ -601,6 +602,7 @@ IDE_RC smiDataPort::beginImport( idvSQL               * aStatistics,
     // ------------------------------------
     // Write trace log
     // -----------------------------------
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMI, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )

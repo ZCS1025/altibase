@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $$Id: smrLogMgr.cpp 91226 2021-07-14 08:01:24Z lswhh $
+ * $$Id: smrLogMgr.cpp 92066 2021-11-12 07:46:00Z kclee $
  *
  * 로그관리자 구현파일입니다.
  *
@@ -125,6 +125,7 @@ IDE_RC smrLogMgr::initialize()
 
         /* smrLogMgr_initialize_malloc_mFstChkLSNArr.tc */
         IDU_FIT_POINT("smrLogMgr::initialize::malloc::mFstChkLSNArr");
+        MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF( smrUncompletedLogInfo ),mFstChkLSNArrSize);
         IDE_TEST( iduMemMgr::malloc(IDU_MEM_SM_SMR,
                                    (ULong)ID_SIZEOF( smrUncompletedLogInfo ) * mFstChkLSNArrSize,
                                    (void **)&mFstChkLSNArr) != IDE_SUCCESS );

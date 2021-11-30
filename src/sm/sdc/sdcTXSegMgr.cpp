@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdcTXSegMgr.cpp 91863 2021-10-17 23:48:12Z emlee $
+ * $Id: sdcTXSegMgr.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -193,12 +193,19 @@ IDE_RC sdcTXSegMgr::initialize( idBool   aIsAttachSegment )
 
     mArrEntry         = NULL;
 
+    MUL_OVERFLOW_CHECK_ASSERT((ULong)ID_SIZEOF(sdcTXSegEntry), 
+                                   mTotEntryCnt);
+
     IDE_ASSERT( iduMemMgr::malloc( IDU_MEM_SM_TRANSACTION_SEGMENT_TABLE,
                                    (ULong)ID_SIZEOF(sdcTXSegEntry) * mTotEntryCnt,
                                    (void**)&mArrEntry)
                 == IDE_SUCCESS );
 
     mArrFreeList      = NULL;
+
+    MUL_OVERFLOW_CHECK_ASSERT((ULong)ID_SIZEOF(sdcTXSegFreeList), 
+                                   mFreeListCnt);
+
     IDE_ASSERT( iduMemMgr::malloc( IDU_MEM_SM_TRANSACTION_SEGMENT_TABLE,
                                    (ULong)ID_SIZEOF(sdcTXSegFreeList) * mFreeListCnt,
                                    (void**)&mArrFreeList )

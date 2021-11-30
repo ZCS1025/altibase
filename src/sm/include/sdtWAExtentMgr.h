@@ -76,7 +76,7 @@ public:
          * 변경 될 수 있으므로 변수로 받아서 사용한다.
          * 비교와 반환 만 같으면 된다. (비교시에 작았던 값이 return전에 크게 변경 되어 반환하면 안된다.)
          * 변수로 받은 후에 return 하기 전에 property값이 변경 되는 것은 상관 없다. */
-        return ( sInitTotalWASize < sMaxTotalWASize) ? sInitTotalWASize : sMaxTotalWASize;
+        return ( sInitTotalWASize < sMaxTotalWASize ) ? sInitTotalWASize : sMaxTotalWASize;
     }
     static void lock()
     {
@@ -111,6 +111,7 @@ public:
     static IDE_RC allocFreeNExtent( idvSQL            * aStatistics,
                                     smiTempTableStats * aStatsPtr,
                                     scSpaceID           aSpaceID,
+                                    UInt              * aExtPageCount,
                                     sdtNExtFstPIDList * aNExtFstPIDList );
 
 public:

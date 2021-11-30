@@ -289,6 +289,8 @@ IDE_RC sdptbSpaceDDL::resetTBSCore( idvSQL             *aStatistics,
     IDE_ASSERT( sSpaceNode != NULL );
     IDE_ASSERT( sCache != NULL );
 
+    //BUG-49369
+    MUL_OVERFLOW_CHECK_ASSERT(sSpaceNode->mDataFileCount,ID_SIZEOF(smiDataFileAttr*));
     IDE_ASSERT(iduMemMgr::malloc(
                     IDU_MEM_SM_SDP,
                     sSpaceNode->mDataFileCount * ID_SIZEOF(smiDataFileAttr*),
@@ -296,6 +298,7 @@ IDE_RC sdptbSpaceDDL::resetTBSCore( idvSQL             *aStatistics,
                     IDU_MEM_FORCE )
              == IDE_SUCCESS);
 
+    MUL_OVERFLOW_CHECK_ASSERT(sSpaceNode->mDataFileCount,ID_SIZEOF(smiDataFileAttr));
     IDE_ASSERT(iduMemMgr::malloc(
                     IDU_MEM_SM_SDP,
                     sSpaceNode->mDataFileCount * ID_SIZEOF(smiDataFileAttr),

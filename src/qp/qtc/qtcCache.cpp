@@ -1004,6 +1004,7 @@ IDE_RC qtcCache::getCacheValue( mtcNode     * aNode,
                      * one row return unknown 계열의 scalar subquery는
                      * stack의 mtcColumn정보를 추가로 cache한다.
                      */
+                    sOffset = idlOS::align8( sOffset );
                     sOffset += ID_SIZEOF(mtcColumn);
                 }
                 else
@@ -1631,6 +1632,7 @@ IDE_RC qtcCache::getKeyAndSize( mtcNode     * aNode,
                      * one row return unknown 계열의 scalar subquery는
                      * stack의 mtcColumn정보를 추가로 cache한다.
                      */
+                    sValueSize = idlOS::align( sValueSize );
                     sValueSize += ID_SIZEOF(mtcColumn);
                 }
                 else
@@ -1817,6 +1819,7 @@ IDE_RC qtcCache::setKeyAndSize( mtcNode     * aNode,
                      * one row return unknown 계열의 scalar subquery는
                      * stack의 mtcColumn정보를 추가로 cache한다.
                      */
+                    sOffset = idlOS::align8( sOffset );
                     idlOS::memcpy( (SChar *)sRecord->mValue + sOffset,
                                    aStack[i].column,
                                    ID_SIZEOF(mtcColumn) );

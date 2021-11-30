@@ -112,6 +112,8 @@ IDE_RC sdbFlushMgr::initialize(UInt aFlusherCount)
     IDU_FIT_POINT_RAISE( "sdbFlushMgr::initialize::malloc",
                           insufficient_memory );
 
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(sdbFlusher) ,aFlusherCount);
+
     // flusher들을 생성한다.
     IDE_TEST_RAISE( iduMemMgr::malloc(IDU_MEM_SM_SDB,
                                       (ULong)ID_SIZEOF(sdbFlusher) * aFlusherCount,

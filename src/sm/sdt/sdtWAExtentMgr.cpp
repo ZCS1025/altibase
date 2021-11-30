@@ -764,7 +764,11 @@ IDE_RC sdtWAExtentMgr::freeWAExtents( sdtWAExtentInfo * aWAExtentInfo )
         sExtentCount++;
     }
 
-    IDE_ASSERT( aWAExtentInfo->mCount == sExtentCount );
+    IDE_ERROR_MSG( aWAExtentInfo->mCount == sExtentCount,
+                   "mCount : %"ID_UINT32_FMT", "
+                   "sExtentCount : %"ID_UINT32_FMT,
+                   aWAExtentInfo->mCount,
+                   sExtentCount );
 
     IDE_DASSERT( mFreeExtentPool.getTotItemCnt() <= mWAExtentCount );
 
@@ -801,7 +805,7 @@ IDE_RC sdtWAExtentMgr::freeAllNExtents( scSpaceID           aSpaceID,
 
     if ( aNExtFstPIDList->mHead != NULL )
     {
-        IDE_ASSERT( aNExtFstPIDList->mTail != NULL );
+        IDE_ERROR( aNExtFstPIDList->mTail != NULL );
 
         sCurNExtArr = aNExtFstPIDList->mHead;
 
@@ -842,12 +846,12 @@ IDE_RC sdtWAExtentMgr::freeAllNExtents( scSpaceID           aSpaceID,
  * 예외가 발생한다고 해도 WASegment정리 할 때 정리한다.
  * 즉 여기에서는 NExtent할당한 것에 대한 예외 처리를 하지 않는다.
  *
- * <IN>
- * aWASegment     - 대상 WASegment
+ * aExtPageCount - [IN] Extent의 크기(Extent내 page count)
  ***************************************************************************/
 IDE_RC sdtWAExtentMgr::allocFreeNExtent( idvSQL            * aStatistics,
                                          smiTempTableStats * aStatsPtr,
                                          scSpaceID           aSpaceID,
+                                         UInt              * aExtPageCount,
                                          sdtNExtFstPIDList * aNExtFstPIDList )
 {
     sdpExtDesc        sExtDesc;
@@ -860,18 +864,20 @@ IDE_RC sdtWAExtentMgr::allocFreeNExtent( idvSQL            * aStatistics,
 
         if ( aNExtFstPIDList->mTail != NULL )
         {
-            IDE_ASSERT( aNExtFstPIDList->mHead != NULL );
+            IDE_ERROR( aNExtFstPIDList->mHead != NULL );
 
             aNExtFstPIDList->mTail->mNextArr = sNExtentArr;
         }
         else
         {
-            IDE_ASSERT( aNExtFstPIDList->mHead == NULL );
+            IDE_ERROR_MSG( aNExtFstPIDList->mHead == NULL,
+                           "mHead : 0x%"ID_xPOINTER_FMT,
+                           aNExtFstPIDList->mHead );
 
             aNExtFstPIDList->mHead = sNExtentArr;
         }
         aNExtFstPIDList->mTail = sNExtentArr;
-        sNExtentArr->mNextArr = NULL;
+        sNExtentArr->mNextArr  = NULL;
     }
 
     // TC/FIT/Server/sm/Bugs/BUG-45263/BUG-45263.tc
@@ -881,9 +887,10 @@ IDE_RC sdtWAExtentMgr::allocFreeNExtent( idvSQL            * aStatistics,
                                         aSpaceID,
                                         (sdpExtDesc*)&sExtDesc ) != IDE_SUCCESS );
 
-    IDE_ASSERT( sExtDesc.mLength == SDT_WAEXTENT_PAGECOUNT );
-    IDE_ASSERT( sExtDesc.mExtFstPID != SM_NULL_PID );
+    IDE_ERROR( sExtDesc.mLength != 0 );
+    IDE_ERROR( sExtDesc.mExtFstPID != SM_NULL_PID );
 
+    *aExtPageCount = sExtDesc.mLength; 
     aNExtFstPIDList->mTail->mMap[ aNExtFstPIDList->mCount % SDT_NEXTARR_EXTCOUNT ] = sExtDesc.mExtFstPID;
     aNExtFstPIDList->mLastFreeExtFstPID = sExtDesc.mExtFstPID;
     aNExtFstPIDList->mCount++;
@@ -940,8 +947,6 @@ IDE_RC sdtWAExtentMgr::buildTempInfoRecord( void                * aHeader,
     return IDE_FAILURE;
 }
 
-
-
 void sdtWAExtentMgr::dumpNExtentList( sdtNExtFstPIDList & aNExtentList,
                                       SChar             * aOutBuf,
                                       UInt                aOutSize )
@@ -952,8 +957,14 @@ void sdtWAExtentMgr::dumpNExtentList( sdtNExtFstPIDList & aNExtentList,
 
     if ( aNExtentList.mCount > 0 )
     {
-        IDE_ASSERT( aNExtentList.mHead != NULL );
-        IDE_ASSERT( aNExtentList.mTail != NULL );
+        if( (aNExtentList.mHead == NULL) || (aNExtentList.mTail == NULL) )
+        {
+            (void)idlVA::appendFormat( aOutBuf,
+                                       aOutSize,
+                                       "DUMP NORMAL EXTENT FIRST PAGEID MAP:\n"
+                                       "   SKIP\n" );
+            return;
+        }
 
         (void)idlVA::appendFormat( aOutBuf,
                                    aOutSize,

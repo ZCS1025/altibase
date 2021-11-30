@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
-* $Id: smmManager.cpp 90522 2021-04-09 01:29:20Z emlee $
+* $Id: smmManager.cpp 92066 2021-11-12 07:46:00Z kclee $
 **********************************************************************/
 
 
@@ -263,6 +263,7 @@ IDE_RC smmManager::initDBFileObjects(smmTBSNode *       aTBSNode,
     {
         /* smmManager_initDBFileObjects_calloc_DBFile.tc */
         IDU_FIT_POINT("smmManager::initDBFileObjects::calloc::DBFile");
+        MUL_OVERFLOW_CHECK((SInt)aTBSNode->mHighLimitFile,ID_SIZEOF(smmDatabaseFile *));
         IDE_TEST(iduMemMgr::calloc(IDU_MEM_SM_SMM,
                                    (SInt)aTBSNode->mHighLimitFile,
                                    ID_SIZEOF(smmDatabaseFile *),
@@ -274,6 +275,7 @@ IDE_RC smmManager::initDBFileObjects(smmTBSNode *       aTBSNode,
     // 대한 생성 정보를 저장
     /* smmManager_initDBFileObjects_calloc_CrtDBFileInfo.tc */
     IDU_FIT_POINT("smmManager::initDBFileObjects::calloc::CrtDBFileInfo");
+    MUL_OVERFLOW_CHECK((SInt)aTBSNode->mHighLimitFile,ID_SIZEOF(smmCrtDBFileInfo));
     IDE_TEST( iduMemMgr::calloc(IDU_MEM_SM_SMM,
                     (SInt)aTBSNode->mHighLimitFile,
                     ID_SIZEOF(smmCrtDBFileInfo),
@@ -1736,6 +1738,7 @@ IDE_RC smmManager::allocPCHArray( scSpaceID aSpaceID,
                                   UInt      aMaxPageCount )
 {
     // PCH Array초기화
+    MUL_OVERFLOW_CHECK(aMaxPageCount,ID_SIZEOF(smPCSlot));
     IDE_TEST(iduMemMgr::calloc(IDU_MEM_SM_SMM,
                                aMaxPageCount,
                                ID_SIZEOF(smPCSlot),

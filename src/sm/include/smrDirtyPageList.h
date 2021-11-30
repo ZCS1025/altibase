@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smrDirtyPageList.h 90522 2021-04-09 01:29:20Z emlee $
+ * $Id: smrDirtyPageList.h 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #ifndef _O_SMR_DIRTY_PAGE_LIST_
@@ -130,6 +130,9 @@ inline void  smrDirtyPageList::add( smmPCH    * aPCHPtr,
             scGRID * sTmpDPList;
 
             mMaxDirtyPageCnt = mMaxDirtyPageCnt * 2;
+
+            MUL_OVERFLOW_CHECK_ASSERT(ID_SIZEOF(scGRID), mMaxDirtyPageCnt);
+
             IDE_ASSERT( iduMemMgr::malloc(IDU_MEM_SM_SMR,
                                           ID_SIZEOF(scGRID) * mMaxDirtyPageCnt,
                                           (void**)&sTmpDPList)

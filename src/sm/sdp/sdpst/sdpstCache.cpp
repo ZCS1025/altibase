@@ -206,6 +206,7 @@ void sdpstCache::allocHintPageArray( sdpstSegCache * aSegCache )
     /* Alloc하는 사이에 다른 Thread가 이미 할당 하였는지 확인한다.*/
     if( aSegCache->mHint4DataPage == NULL )
     {
+        MUL_OVERFLOW_CHECK_ASSERT( ID_SIZEOF(scPageID),smuProperty::getTmsHintPageArrSize());
         IDE_ASSERT( iduMemMgr::calloc( IDU_MEM_SM_SDP, 1,
                                        ID_SIZEOF(scPageID) * smuProperty::getTmsHintPageArrSize(),
                                        (void **)&(aSegCache->mHint4DataPage),

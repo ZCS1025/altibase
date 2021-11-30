@@ -16,7 +16,7 @@
 
 
 /***********************************************************************
- * $Id: smlLockMgr.cpp 90597 2021-04-15 01:17:16Z emlee $
+ * $Id: smlLockMgr.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 /**************************************************************
  * FILE DESCRIPTION : smlLockMgr.cpp                          *
@@ -299,6 +299,8 @@ IDE_RC smlLockMgr::initialize( UInt              aTransCnt,
     IDU_FIT_POINT_RAISE( "smlLockMgr::initialize::malloc",
                           insufficient_memory );
 
+    MUL_OVERFLOW_CHECK((ULong)sizeof(smlTransLockList),mTransCnt);
+
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SML,
                                        (ULong)sizeof(smlTransLockList) * mTransCnt,
                                        (void**)&mArrOfLockList ) != IDE_SUCCESS,
@@ -360,14 +362,20 @@ IDE_RC smlLockMgr::initialize( UInt              aTransCnt,
         break;
 
     case 2:
+        MUL_OVERFLOW_CHECK(sizeof(smlLockNode)*64,mTransCnt);
+
         IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SML,
                                            sizeof(smlLockNode) * mTransCnt * 64,
                                            (void**)&mNodeCacheArray ) != IDE_SUCCESS,
                         insufficient_memory );
+
+        MUL_OVERFLOW_CHECK(sizeof(smlLockNode*),mTransCnt);
+
         IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SML,
                                            sizeof(smlLockNode*) * mTransCnt,
                                            (void**)&mNodeCache ) != IDE_SUCCESS,
                         insufficient_memory );
+        MUL_OVERFLOW_CHECK( mTransCnt,sizeof(ULong) );
         IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_SM_SML,
                                            mTransCnt,
                                            sizeof(ULong),

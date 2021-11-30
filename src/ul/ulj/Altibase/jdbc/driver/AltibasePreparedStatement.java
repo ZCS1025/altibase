@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import Altibase.jdbc.driver.cm.*;
+import Altibase.jdbc.driver.cm.CmProtocolContextShardStmt.ShardPartialExecType;
 import Altibase.jdbc.driver.datatype.*;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
@@ -55,9 +56,15 @@ public class AltibasePreparedStatement extends AbstractPreparedStatement
     // BUG-40081 batch처리시 임시컬럼값을 저장할때 사용된다.
     private List mTempArgValueList = new ArrayList();
     private static Logger mLogger;
-    private final boolean    mIsPingQuery;      // BUG-49143 ping query 판별용 flag
+    private final boolean mIsPingQuery;      // BUG-49143 ping query 판별용 flag
+    ShardPartialExecType mShardPartialExecType;
 
     public AltibasePreparedStatement(AltibaseConnection aConnection, String aSql, int aResultSetType, int aResultSetConcurrency, int aResultSetHoldability) throws SQLException
+    {
+        this(aConnection, aSql, aResultSetType, aResultSetConcurrency, aResultSetHoldability, ShardPartialExecType.SHARD_PARTIAL_EXEC_TYPE_NONE);
+    }
+
+    public AltibasePreparedStatement(AltibaseConnection aConnection, String aSql, int aResultSetType, int aResultSetConcurrency, int aResultSetHoldability, ShardPartialExecType aShardPartialExecType) throws SQLException
     {
         super(aConnection, aResultSetType, aResultSetConcurrency, aResultSetHoldability);
 
@@ -83,6 +90,7 @@ public class AltibasePreparedStatement extends AbstractPreparedStatement
             return;
         }
 
+        mShardPartialExecType = aShardPartialExecType;   // TASK-7219 Non-shard DML 
         prepare(aSql);  // BUG-47357 prepare요청만 재사용이 가능하게 하기 위해 메소드 추출
     }
 
@@ -106,7 +114,8 @@ public class AltibasePreparedStatement extends AbstractPreparedStatement
                         getResultSetHoldability() == ResultSet.HOLD_CURSORS_OVER_COMMIT,
                         usingKeySetDriven(),
                         mConnection.nliteralReplaceOn(),
-                        mIsDeferred });
+                        mIsDeferred,
+                        mShardPartialExecType});
                 sContext.addDeferredRequest(sMethodInfo);
             }
             else
@@ -117,7 +126,8 @@ public class AltibasePreparedStatement extends AbstractPreparedStatement
                                    (getResultSetHoldability() == ResultSet.HOLD_CURSORS_OVER_COMMIT),
                                    usingKeySetDriven(),
                                    mConnection.nliteralReplaceOn(),
-                                   false);
+                                   false,
+                                   mShardPartialExecType);
             }
             mPrepareResult = sContext.getPrepareResult();
         }
@@ -207,7 +217,6 @@ public class AltibasePreparedStatement extends AbstractPreparedStatement
         }
         
         CmProtocolContextPrepExec sContext = new CmProtocolContextPrepExec(mConnection.channel());
-        sContext.setDistTxInfo(mConnection.getDistTxInfo());
         mContext.add(sContext);
     }
 

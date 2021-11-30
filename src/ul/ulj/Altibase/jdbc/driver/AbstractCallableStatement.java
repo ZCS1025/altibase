@@ -19,6 +19,7 @@ package Altibase.jdbc.driver;
 import java.io.Reader;
 import java.sql.*;
 
+import Altibase.jdbc.driver.cm.CmProtocolContextShardStmt.ShardPartialExecType;
 import Altibase.jdbc.driver.ex.Error;
 
 /**
@@ -32,7 +33,7 @@ public abstract class AbstractCallableStatement extends AltibasePreparedStatemen
                                      int aResultSetConcurrency,
                                      int aResultSetHoldability) throws SQLException
     {
-        super(aConnection, aSql, aResultSetType, aResultSetConcurrency, aResultSetHoldability);
+        super(aConnection, aSql, aResultSetType, aResultSetConcurrency, aResultSetHoldability, ShardPartialExecType.SHARD_PARTIAL_EXEC_TYPE_NONE);
     }
 
     @Override

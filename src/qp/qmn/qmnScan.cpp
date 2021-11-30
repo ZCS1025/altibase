@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmnScan.cpp 91512 2021-08-21 07:50:50Z emlee $
+ * $Id: qmnScan.cpp 92000 2021-11-08 06:30:03Z donovan.seo $
  *
  * Description :
  *     SCAN Plan Node
@@ -3737,7 +3737,10 @@ IDE_RC qmnSCAN::doItFirstFixedTable( qcTemplate * aTemplate,
         {
             /* Nothing to do */
         }
-        if ( sSmiTrans != NULL )
+        /* BUG-48756 */
+        if ( ( sSmiTrans != NULL ) &&
+             ( ( aTemplate->stmt->myPlan->parseTree->stmtKind & QCI_STMT_MASK_MASK )
+               != QCI_STMT_MASK_DCL ) )
         {
             sDataPlan->fixedTableProperty.mTrans = sSmiTrans->mTrans;
         }
@@ -3792,7 +3795,10 @@ IDE_RC qmnSCAN::doItFirstFixedTable( qcTemplate * aTemplate,
         {
             /* Nothing to do */
         }
-        if ( sSmiTrans != NULL )
+        /* BUG-48756 */
+        if ( ( sSmiTrans != NULL ) &&
+             ( ( aTemplate->stmt->myPlan->parseTree->stmtKind & QCI_STMT_MASK_MASK )
+               != QCI_STMT_MASK_DCL ) )
         {
             sDataPlan->fixedTableProperty.mTrans = sSmiTrans->mTrans;
         }

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qtcSubquery.cpp 90527 2021-04-09 04:25:41Z jayce.park $
+ * $Id: qtcSubquery.cpp 92162 2021-11-30 06:12:48Z ahra.cho $
  *
  * Description :
  *
@@ -1149,12 +1149,13 @@ IDE_RC qtcSubqueryCalculateListTwice( mtcNode     * aNode,
                         sActualSize = (aStack + 1 + sParamCnt + i)->column->module->actualSize( (aStack + 1 + sParamCnt + i)->column,
                                                                                                 (aStack + 1 + sParamCnt + i)->value );
 
+                        sOffset = idlOS::align(sOffset, (aStack + 1 + sParamCnt + i)->column->module->align);
+
                         // value keeping memory¿¡ backup
                         idlOS::memcpy( (SChar*)sDataPlan->mKeepValue + sOffset,
                                        (aStack + 1 + sParamCnt + i)->value,
                                        sActualSize );
 
-                        sOffset = idlOS::align(sOffset, (aStack + 1 + sParamCnt + i)->column->module->align);
                         sOffset += (aStack + 1 + sParamCnt + i)->column->column.size;
                     }
 
@@ -1171,10 +1172,11 @@ IDE_RC qtcSubqueryCalculateListTwice( mtcNode     * aNode,
                     {
                         // keep column restore
                         (aStack + 1 + sParamCnt + i)->column = (sDataPlan->mKeepColumn + i);
+
+                        sOffset = idlOS::align(sOffset, (aStack + 1 + sParamCnt + i)->column->module->align);
                         // keep value restore
                         (aStack + 1 + sParamCnt + i)->value = (void*)((SChar*)sDataPlan->mKeepValue + sOffset);
 
-                        sOffset = idlOS::align(sOffset, (aStack + 1 + sParamCnt + i)->column->module->align);
                         sOffset += (aStack + 1 + sParamCnt + i)->column->column.size;
                     }
                 }

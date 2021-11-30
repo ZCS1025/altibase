@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sddDataFile.cpp 86490 2020-01-02 05:59:08Z et16 $
+ * $Id: sddDataFile.cpp 92066 2021-11-12 07:46:00Z kclee $
  *
  * Description :
  *
@@ -174,6 +174,8 @@ IDE_RC sddDataFile::initialize(scSpaceID         aTableSpaceID,
     /* TC/FIT/Limit/sm/sddDataFile_initialize_malloc.sql */
     IDU_FIT_POINT_RAISE( "sddDataFile::initialize::malloc",
                           insufficient_memory );
+
+    ADD_OVERFLOW_CHECK(aDataFileAttr->mNameLength , 1);
 
     IDE_TEST_RAISE(iduMemMgr::malloc(
                           IDU_MEM_SM_SDD,
@@ -981,6 +983,9 @@ IDE_RC sddDataFile::setDataFileName( sddDataFileNode* aDataFileNode,
 
     /* sddDataFile_setDataFileName_malloc_Name.tc */
     IDU_FIT_POINT("sddDataFile::setDataFileName::malloc::Name");
+
+    ADD_OVERFLOW_CHECK(sStrLen,1);
+
     IDE_TEST(iduMemMgr::malloc( IDU_MEM_SM_SDD,
                                 sStrLen + 1,
                                 (void**)&(aDataFileNode->mName),

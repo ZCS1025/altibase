@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smaDeleteThread.cpp 91859 2021-10-17 22:37:22Z emlee $
+ * $Id: smaDeleteThread.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <smErrorCode.h>
@@ -72,6 +72,8 @@ IDE_RC smaDeleteThread::initializeStatic()
     /* TC/FIT/Limit/sm/sma/smaDeleteThread_alloc_malloc.sql */
     IDU_FIT_POINT_RAISE( "smaDeleteThread::alloc::malloc",
                           insufficient_memory );
+
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(smaDeleteThread),mThreadCnt);
 
     IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_SM_SMA,
                                (ULong)ID_SIZEOF(smaDeleteThread) * mThreadCnt,

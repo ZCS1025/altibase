@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smaLogicalAger.cpp 91859 2021-10-17 22:37:22Z emlee $
+ * $Id: smaLogicalAger.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <smErrorCode.h>
@@ -158,6 +158,8 @@ IDE_RC smaLogicalAger::initializeStatic()
     IDU_FIT_POINT_RAISE( "smaLogicalAger::alloc::malloc4",
                           insufficient_memory );
 
+    MUL_OVERFLOW_CHECK(ID_SIZEOF(smaLogicalAger),
+                            smuProperty::getMaxLogicalAgerCount());
     IDE_TEST_RAISE( iduMemMgr::malloc(IDU_MEM_SM_SMA,
                                  ID_SIZEOF(smaLogicalAger) *
                                  smuProperty::getMaxLogicalAgerCount(),

@@ -349,6 +349,7 @@ IDE_RC rpcDDLSyncManager::ddlSyncEndCommon( smiTrans * aDDLTrans, rpcDDLSyncInfo
     SChar   sErrMsg[RP_MAX_MSG_LEN + 1] = { 0, };
     qciTableInfo * sNewTableInfo        = NULL;
 
+    IDU_FIT_POINT("rpcDDLSyncManager::ddlSyncEndCommon::_FT_");
     IDE_TEST( getTableInfo( aDDLTrans->getStatistics(),
                             aDDLTrans,
                             aDDLSyncInfo->mDDLTableInfo.mTableName,

@@ -204,6 +204,7 @@ IDE_RC sdnbBUBuild::main( idvSQL          *aStatistics,
     IDU_FIT_POINT_RAISE( "sdnbBUBuild::main::calloc", 
                           insufficient_memory );  
     
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(sdnbBUBuild),aThreadCnt);
     IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_SM_SDN,
                                        1,
                                        (ULong)ID_SIZEOF(sdnbBUBuild) * aThreadCnt,
@@ -382,6 +383,7 @@ IDE_RC sdnbBUBuild::initialize( UInt             aTotalThreadCnt,
     IDU_FIT_POINT_RAISE( "sdnbBUBuild::initialize::calloc1", 
                           insufficient_memory );  
 
+    MUL_OVERFLOW_CHECK(mInsertableMaxKeyCnt,ID_SIZEOF(sdnbLKey*));
     IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_SM_SDN,
                                  mInsertableMaxKeyCnt, 
                                  ID_SIZEOF(sdnbLKey*),
@@ -1710,6 +1712,7 @@ IDE_RC sdnbBUBuild::merge( sdnbStatistic * aIndexStat )
 
     /* sdnbBUBuild_merge_calloc_MergeRunInfo.tc */
     IDU_FIT_POINT("sdnbBUBuild::merge::calloc::MergeRunInfo");
+    MUL_OVERFLOW_CHECK((ULong)mMergePageCount,ID_SIZEOF(sdnbMergeRunInfo));
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SDN, 1, 
                                  (ULong)mMergePageCount * ID_SIZEOF(sdnbMergeRunInfo),
                                  (void**)&sMergeRunInfo )
@@ -1725,6 +1728,8 @@ IDE_RC sdnbBUBuild::merge( sdnbStatistic * aIndexStat )
     /* TC/FIT/Limit/sm/sdn/sdnb/sdnbBUBuild_merge_malloc.sql */
     IDU_FIT_POINT_RAISE( "sdnbBUBuild::merge::malloc",
                           insufficient_memory );
+
+    MUL_OVERFLOW_CHECK((ULong)sHeapMapCount,ID_SIZEOF(SInt));
 
     IDE_TEST_RAISE( iduMemMgr::malloc(IDU_MEM_SM_SDN,
                                 (ULong)sHeapMapCount * ID_SIZEOF(SInt),
@@ -2023,6 +2028,7 @@ IDE_RC sdnbBUBuild::makeTree( sdnbBUBuild    * aThreads,
     IDU_FIT_POINT_RAISE( "sdnbBUBuild::makeTree::calloc",
                           insufficient_memory );
 
+    MUL_OVERFLOW_CHECK((ULong)aMergePageCnt,ID_SIZEOF(sdnbMergeRunInfo));
     IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_SM_SDN, 
                                        1,
                                        (ULong)aMergePageCnt * ID_SIZEOF(sdnbMergeRunInfo),
@@ -2038,6 +2044,8 @@ IDE_RC sdnbBUBuild::makeTree( sdnbBUBuild    * aThreads,
     /* TC/FIT/Limit/sm/sdn/sdnb/sdnbBUBuild_makeTree_malloc.sql */
     IDU_FIT_POINT_RAISE( "sdnbBUBuild::makeTree::malloc",
                           insufficient_memory );
+
+    MUL_OVERFLOW_CHECK((ULong)sHeapMapCount,ID_SIZEOF(SInt));
 
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SDN,
                                        (ULong)sHeapMapCount * ID_SIZEOF(SInt),

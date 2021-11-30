@@ -54,6 +54,8 @@ IDE_RC sdsBufferArea::initializeStatic( UInt aExtentCnt,
     IDU_FIT_POINT_RAISE( "sdsBufferArea::initialize::malloc1", 
                           ERR_INSUFFICIENT_MEMORY );
 
+    MUL_OVERFLOW_CHECK((UInt)ID_SIZEOF(sdsBCB*),aBCBCnt);
+
     /* BCB Arrary */
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SDS,
                                        (UInt)ID_SIZEOF(sdsBCB*) * aBCBCnt,
@@ -125,6 +127,8 @@ IDE_RC sdsBufferArea::initializeStatic( UInt aExtentCnt,
 
     IDU_FIT_POINT_RAISE( "sdsBufferArea::initialize::malloc2", 
                           ERR_INSUFFICIENT_MEMORY );
+
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(sdsExtentStateType),mBCBExtentCount);
 
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SDS,
                                        (ULong)ID_SIZEOF(sdsExtentStateType) *

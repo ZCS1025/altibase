@@ -1,4 +1,4 @@
-/** 
+/**
  *  Copyright (c) 1999~2017, Altibase Corp. and/or its affiliates. All rights reserved.
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
  
 
 /*****************************************************************************
- * $Id: mtuProperty.h 83565 2018-07-24 09:07:14Z andrew.shin $
+ * $Id: mtuProperty.h 92098 2021-11-17 06:06:01Z donovan.seo $
  *
  * MT에서 사용하는 System Property에 대한 정의
  * A4에서 제공하는 Property 관리자를 이용하여 처리한다.
@@ -101,8 +101,14 @@
 #define MTU_NUMBER_CONVERSION_MODE ( MTU_PROPERTY( mNumberConversionMode ) )
 
 /* BUG-46267 */
-#define MTU_NUMBER_CONVERSION_DISABLE ( (UInt)0 )
-#define MTU_NUMBER_CONVERSION_ENABLE  ( (UInt)1 )
+#define MTU_NUMBER_CONVERSION_ENABLE_MASK  (0x00000001)
+#define MTU_NUMBER_CONVERSION_ENABLE_TRUE  (0x00000001)
+#define MTU_NUMBER_CONVERSION_ENABLE_FALSE (0x00000000)
+
+/* BUG-49334 */
+#define MTU_NIBBLE_CONVERSION_ENABLE_MASK  (0x00000002)
+#define MTU_NIBBLE_CONVERSION_ENABLE_TRUE  (0x00000002)
+#define MTU_NIBBLE_CONVERSION_ENABLE_FALSE (0x00000000)
 
 typedef enum
 {
@@ -118,7 +124,7 @@ typedef struct mtuProperties
     //-----------------------------------
     // mt properties
     //-----------------------------------
-    
+
     SChar              mDateFormat[IDP_MAX_VALUE_LEN];
     mtuNlsCompMode     mNlsCompMode;
 
@@ -128,13 +134,13 @@ typedef struct mtuProperties
 
     // BUG-34342
     mtcArithmeticOpMode  mArithmeticOpMode;
-    
+
     /* PROJ-2208 Multi Currency */
     SChar              mNlsTerritory[IDP_MAX_VALUE_LEN];
     SChar              mNlsISOCurrency[IDP_MAX_VALUE_LEN];
     SChar              mNlsCurrency[IDP_MAX_VALUE_LEN];
     SChar              mNlsNumChar[IDP_MAX_VALUE_LEN];
-    
+
     /* PROJ -1753 One Pass LIKE */
     UInt               mLikeOpUseOldModule;
 
@@ -144,7 +150,7 @@ typedef struct mtuProperties
     /* PROJ-2209 DBTIMEZONE */
     SChar              mDBTimezoneString[MTC_TIMEZONE_NAME_LEN + 1];
     SLong              mDBTimezoneSecond;
-	
+
     SChar              mOSTimezoneString[MTC_TIMEZONE_NAME_LEN + 1];
     SLong              mOSTimezoneSecond;
 
@@ -156,10 +162,10 @@ typedef struct mtuProperties
 
     // BUG-38101
     UInt               mCaseSensitivePassword;
-    
+
     // BUG-38842
     UInt               mClob2VarcharPrecision;
-    
+
     // BUG-41194
     UInt               mDoubleToNumericFastConversion;
 
@@ -169,7 +175,7 @@ typedef struct mtuProperties
     /* BUG-46267 */
     UInt               mNumberConversionMode;
 } mtuProperties;
-    
+
 class mtuProperty
 {
 public:
@@ -178,11 +184,11 @@ public:
 #else
     static mtuProperties    mStaticProperty;
 #endif
-    
+
 public:
     static IDE_RC initProperty( idvSQL * aStatistics );
     static IDE_RC finalProperty( idvSQL * aStatistics );
-    
+
     // System 구동 시 관련 Property를 Loading 함.
     static IDE_RC load();
 
@@ -220,13 +226,13 @@ public:
                                        void  * aNewValue,
                                        void  * );
 
-    static IDE_RC changeNLS_ISO_CURRENCY( idvSQL * aStatistics, 
+    static IDE_RC changeNLS_ISO_CURRENCY( idvSQL * aStatistics,
                                           SChar *,
                                           void  *,
                                           void  * aNewValue,
                                           void  * );
 
-    static IDE_RC changeNLS_CURRENCY( idvSQL * aStatistics, 
+    static IDE_RC changeNLS_CURRENCY( idvSQL * aStatistics,
                                       SChar *,
                                       void  *,
                                       void  * aNewValue,
@@ -267,14 +273,14 @@ public:
                                                      void  *,
                                                      void  * aNewValue,
                                                      void  * );
-    
-    // BUG-41555 DBMS PIPE    
+
+    // BUG-41555 DBMS PIPE
     static IDE_RC changeMSG_QUEUE_PERMISSION( idvSQL * aStatistics,
                                               SChar *,
                                               void  *,
                                               void  * aNewValue,
                                               void  * );
-    
+
     static IDE_RC changeARITHMETIC_OPERATION_MODE( idvSQL * aStatistics,
                                                    SChar *,
                                                    void  *,

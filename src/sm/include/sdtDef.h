@@ -77,7 +77,7 @@ typedef enum
 
 #define SDT_USED_PAGE_PTR_TERMINATED ((sdtWCB*)1)
 
-/* Extent 하나당 Page개수 64개로 설정 */
+/* WA Extent 하나당 Page개수 64개로 설정 -> NPage 아님. */
 #define SDT_WAEXTENT_PAGECOUNT      (64)
 #define SDT_WAEXTENT_PAGECOUNT_MASK (SDT_WAEXTENT_PAGECOUNT-1)
 
@@ -108,9 +108,9 @@ typedef struct sdtNExtentArr
 
 typedef struct sdtNExtFstPIDList
 {
-    ULong      mCount;
-    UInt       mPageSeqInLFE;   /*LFE(LastFreeExtent)내에서 할당해서 건내준페이지 번호 */
-    scPageID   mLastFreeExtFstPID; /*NExtentArray의 마지막의 Extent*/
+    ULong            mCount;
+    UInt             mPageSeqInLFE;      /*LFE(LastFreeExtent)내에서 할당해서 건내준페이지 번호 */
+    scPageID         mLastFreeExtFstPID; /*NExtentArray의 마지막의 Extent*/
     sdtNExtentArr  * mHead;
     sdtNExtentArr  * mTail;
 } sdtNExtFstPIDList;
@@ -152,9 +152,9 @@ typedef enum
 
 #define SDT_TRFLAG_NULL              (0x00)
 #define SDT_TRFLAG_HEAD              (0x01) /*Head RowPiece인지 여부.*/
-#define SDT_TRFLAG_NEXTGRID          (0x02) /*NextGRID를 사용하는가?*/
+#define SDT_TRFLAG_NEXTGRID          (0x02) /*NextGRID를 사용하는가? */
 #define SDT_TRFLAG_CHILDGRID         (0x04) /*ChildGRID를 사용하는가?*/
-#define SDT_TRFLAG_UNSPLIT           (0x10) /*쪼개지지 않도록 설정함*/
+#define SDT_TRFLAG_UNSPLIT           (0x10) /*쪼개지지 않도록 설정함 */
 /* GRID가 설정되어 있는가? */
 #define SDT_TRFLAG_GRID     ( SDT_TRFLAG_NEXTGRID | SDT_TRFLAG_CHILDGRID )
 

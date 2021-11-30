@@ -117,6 +117,7 @@ IDE_RC sdbBCBHash::initialize( UInt           aBucketCnt,
     IDU_FIT_POINT_RAISE( "sdbBCBHash::initialize::malloc1",
                           insufficient_memory );
 
+    MUL_OVERFLOW_CHECK(ID_SIZEOF(sdbBCBHashBucket),mBucketCnt);
 
     /* mTable 설정 */
     /*BUG-30439  102GB 이상 BUFFER_AREA_SIZE를 할당할 경우, Mutex할당 계산 
@@ -135,6 +136,8 @@ IDE_RC sdbBCBHash::initialize( UInt           aBucketCnt,
     /* TC/FIT/Limit/sm/sdb/sdbBCBHash_initialize_malloc2.sql */
     IDU_FIT_POINT_RAISE( "sdbBCBHash::initialize::malloc2",
                           insufficient_memory );
+
+    MUL_OVERFLOW_CHECK(ID_SIZEOF(iduLatch) ,mLatchCnt);
 
     /* mMutexArray 설정 */
     /*BUG-30439  102GB 이상 BUFFER_AREA_SIZE를 할당할 경우, Mutex할당 계산 

@@ -30,6 +30,7 @@
 #include <dkDef.h>
 #include <dkErrorCode.h>
 
+extern mtdModule mtdChar;
 /*
  *
  */ 
@@ -37,20 +38,27 @@ IDE_RC dkifUtilConvertMtdCharToCString( mtdCharType * aValue,
                                         SChar ** aCString )
 {
     SChar * sCString = NULL;
+    const mtdModule * sModule = &mtdChar;
 
-    IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_DK,
-                                       aValue->length + 1,
-                                       (void **)&sCString,
-                                       IDU_MEM_IMMEDIATE )
-                    != IDE_SUCCESS, ERROR_MEMORY_ALLOC );
+    if ( sModule->isNull(NULL, aValue) != ID_TRUE )
+    {
+        IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_DK,
+                                           aValue->length + 1,
+                                           (void **)&sCString,
+                                           IDU_MEM_IMMEDIATE )
+                        != IDE_SUCCESS, ERROR_MEMORY_ALLOC );
 
-    (void)idlOS::memcpy( sCString, (const char *)aValue->value,
-                          aValue->length );
+        (void)idlOS::memcpy( sCString, (const char *)aValue->value,
+                              aValue->length );
 
-    sCString[ aValue->length ] = '\0';
+        sCString[ aValue->length ] = '\0';
 
-    *aCString = sCString;
-    
+        *aCString = sCString;
+    }
+    else
+    {
+        *aCString = NULL;
+    }
     return IDE_SUCCESS;
 
     IDE_EXCEPTION( ERROR_MEMORY_ALLOC )
@@ -77,7 +85,10 @@ IDE_RC dkifUtilConvertMtdCharToCString( mtdCharType * aValue,
  */ 
 IDE_RC dkifUtilFreeCString( SChar * aCString )
 {
-    IDE_TEST( iduMemMgr::free( aCString ) != IDE_SUCCESS );
+    if( aCString != NULL )
+    {
+        IDE_TEST( iduMemMgr::free( aCString ) != IDE_SUCCESS );
+    }
 
     return IDE_SUCCESS;
 

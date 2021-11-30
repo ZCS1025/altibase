@@ -8508,7 +8508,10 @@ rpdCatalog::insertReplTableOIDInUse( smiStatement    * aSmiStmt,
     SChar   sBuffer[QD_MAX_SQL_LENGTH];
     vSLong  sRowCnt             = 0;
     vSLong  sOldItemRawCount    = 0;
-    
+
+    /* 
+     * BUG-49420 SYS_REPL_TABLE_OID_IN_USE_ disable   
+     *
     IDE_TEST( getReplOldItemsCount( aSmiStmt,
                                     aRepName,
                                     &sOldItemRawCount )
@@ -8530,6 +8533,7 @@ rpdCatalog::insertReplTableOIDInUse( smiStatement    * aSmiStmt,
     
         IDE_TEST_RAISE( sRowCnt != 1, ERR_EXECUTE );
     }
+    */
 
     return IDE_SUCCESS;
 
@@ -8552,6 +8556,7 @@ IDE_RC rpdCatalog::updateReplTableOIDInUse( smiStatement * aSmiStmt,
     SChar   sBuffer[QD_MAX_SQL_LENGTH] = { 0, };
     vSLong  sRowCnt = 0;
 
+    /*    
     idlOS::snprintf( sBuffer, ID_SIZEOF(sBuffer),
                      "UPDATE SYS_REPL_TABLE_OID_IN_USE_ "
                      "SET TABLE_OID = BIGINT'%"ID_INT64_FMT"' "
@@ -8561,6 +8566,7 @@ IDE_RC rpdCatalog::updateReplTableOIDInUse( smiStatement * aSmiStmt,
 
     IDE_TEST( qciMisc::runDMLforDDL( aSmiStmt, sBuffer, & sRowCnt )
               != IDE_SUCCESS );
+    */
 
     return IDE_SUCCESS;
 
@@ -8576,6 +8582,7 @@ rpdCatalog::deleteReplTableOIDInUseRepName( smiStatement*  aSmiStmt,
     SChar   sBuffer[QD_MAX_SQL_LENGTH];
     vSLong  sRowCnt = 0;
 
+    /*
     idlOS::snprintf( sBuffer, ID_SIZEOF(sBuffer),
                      "DELETE FROM SYS_REPL_TABLE_OID_IN_USE_ "
                      "WHERE REPLICATION_NAME = CHAR'%s' ",
@@ -8583,7 +8590,8 @@ rpdCatalog::deleteReplTableOIDInUseRepName( smiStatement*  aSmiStmt,
 
     IDE_TEST( qciMisc::runDMLforDDL( aSmiStmt, sBuffer, & sRowCnt )
               != IDE_SUCCESS );
-
+    
+    */
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -8598,7 +8606,8 @@ rpdCatalog::deleteReplTableOIDInUseOldOID( smiStatement*  aSmiStmt,
 {
     SChar   sBuffer[QD_MAX_SQL_LENGTH];
     vSLong  sRowCnt = 0;
-
+    
+    /*
     idlOS::snprintf( sBuffer, ID_SIZEOF(sBuffer),
                      "DELETE FROM SYS_REPL_TABLE_OID_IN_USE_ "
                      "WHERE REPLICATION_NAME = CHAR'%s' "
@@ -8608,7 +8617,7 @@ rpdCatalog::deleteReplTableOIDInUseOldOID( smiStatement*  aSmiStmt,
 
     IDE_TEST( qciMisc::runDMLforDDL( aSmiStmt, sBuffer, & sRowCnt )
               != IDE_SUCCESS );
-
+    */
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -8624,6 +8633,8 @@ rpdCatalog::deleteReplTableOIDInUseNewOID( smiStatement*  aSmiStmt,
     SChar   sBuffer[QD_MAX_SQL_LENGTH];
     vSLong  sRowCnt = 0;
 
+
+    /*    
     idlOS::snprintf( sBuffer, ID_SIZEOF(sBuffer),
                      "DELETE FROM SYS_REPL_TABLE_OID_IN_USE_ "
                      "WHERE REPLICATION_NAME = CHAR'%s' "
@@ -8633,6 +8644,7 @@ rpdCatalog::deleteReplTableOIDInUseNewOID( smiStatement*  aSmiStmt,
 
     IDE_TEST( qciMisc::runDMLforDDL( aSmiStmt, sBuffer, & sRowCnt )
               != IDE_SUCCESS );
+    */
 
     return IDE_SUCCESS;
 

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
-* $Id: smmPLoadMgr.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+* $Id: smmPLoadMgr.cpp 92066 2021-11-12 07:46:00Z kclee $
 **********************************************************************/
 
 #include <idl.h>
@@ -43,6 +43,7 @@ IDE_RC smmPLoadMgr::initializePloadMgr(smmTBSNode *     aTBSNode,
                           insufficient_memory );
 
     // client 메모리 할당 
+    MUL_OVERFLOW_CHECK(aThreadCount,ID_SIZEOF(smmPLoadChild *));
     IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_SM_SMM,
                                aThreadCount,
                                ID_SIZEOF(smmPLoadChild *),

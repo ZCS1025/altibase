@@ -241,6 +241,7 @@ IDE_RC sdnIndexCTL::allocCTS( idvSQL             * aStatistics,
                                              sPageStartPtr,
                                              "Dump Page:" );
 
+                //MUL_OVERFLOW_CHECK_ASSERT(ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT);
                 IDE_ASSERT( iduMemMgr::calloc( IDU_MEM_SM_SDN, 1,
                                                ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                                (void**)&sDumpBuf )
@@ -1488,7 +1489,9 @@ IDE_RC sdnIndexCTL::makeChainedCTS( idvSQL           * aStatistics,
         sSlotDirPtr = sdpPhyPage::getSlotDirStartPtr( (UChar*)aPage );
         sSlotCount  = sdpSlotDirectory::getCount( sSlotDirPtr );
 
+
         /* SlotNum(UShort) + CreateCTS(UChar) + LimitCTS(UChar) */
+        MUL_OVERFLOW_CHECK(ID_SIZEOF(UChar)*4, sSlotCount);
         if ( iduMemMgr::malloc( IDU_MEM_SM_SDN,
                                 ID_SIZEOF(UChar) * 4 * sSlotCount,
                                 (void**)&sUnchainedKey,

@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import Altibase.jdbc.driver.cm.*;
+import Altibase.jdbc.driver.cm.CmProtocolContextShardStmt.ShardPartialExecType;
 import Altibase.jdbc.driver.datatype.Column;
 import Altibase.jdbc.driver.datatype.ColumnFactory;
 import Altibase.jdbc.driver.datatype.ColumnInfo;
@@ -244,7 +245,6 @@ public class AltibaseStatement extends WrapperAdapter implements Statement
     protected void createProtocolContext()
     {
         mContext = new CmProtocolContextDirExec(mConnection.channel());
-        mContext.setDistTxInfo(mConnection.getDistTxInfo());
     }
     
     public CmProtocolContextDirExec getProtocolContext()
@@ -349,7 +349,7 @@ public class AltibaseStatement extends WrapperAdapter implements Statement
                 }
                 mMetaConn.setGlobalTransactionLevel(GlobalTransactionLevel.get(Short.parseShort(sPropValue)));
                 //mConnection.getProp().setProperty(AltibaseProperties.PROP_GLOBAL_TRANSACTION_LEVEL, sPropValue);
-                mMetaConn.getMetaConnection().getDistTxInfo().initDistTxInfo();
+                mMetaConn.getMetaConnection().initDistTxInfo();
                 mMetaConn.getMetaConnection().setDistTxInfoForVerify();
                 break;
             case (AltibaseProperties.PROP_CODE_SHARD_STATEMENT_RETRY):
@@ -1523,7 +1523,8 @@ public class AltibaseStatement extends WrapperAdapter implements Statement
                                (getResultSetHoldability() == ResultSet.HOLD_CURSORS_OVER_COMMIT),
                                true,
                                mConnection.nliteralReplaceOn(),
-                               false);
+                               false,
+                               ShardPartialExecType.SHARD_PARTIAL_EXEC_TYPE_NONE);
 
             sColumnInfoResult = getProtocolContext().getGetColumnInfoResult();
         }

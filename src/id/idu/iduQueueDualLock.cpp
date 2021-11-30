@@ -4,7 +4,7 @@
  ****************************************************************************/
 
 /*****************************************************************************
- * $Id: iduQueueDualLock.cpp 67616 2014-11-19 05:59:37Z djin $
+ * $Id: iduQueueDualLock.cpp 92066 2021-11-12 07:46:00Z kclee $
  ****************************************************************************/
 
 #include <idu.h>
@@ -28,6 +28,8 @@ IDE_RC iduQueueInitializeDualLock(iduQueue *aQueue, iduMemoryClientIndex aClient
 
     aQueue->mCapacity += 1;
 
+    MUL_OVERFLOW_CHECK(aQueue->mCapacity,ID_SIZEOF(void *));
+    ADD_OVERFLOW_CHECK(ID_SIZEOF(iduQueueDualLock),aQueue->mCapacity*ID_SIZEOF(void *));
     IDE_TEST(iduMemMgr::malloc(aClientIndex,
                                ID_SIZEOF(iduQueueDualLock) + aQueue->mCapacity * ID_SIZEOF(void *),
                                (void **)&sQueue,

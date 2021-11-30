@@ -102,6 +102,8 @@ IDE_RC smiTempTable::initializeStatic()
 
     IDE_TEST( sdtWAExtentMgr::initializeStatic() != IDE_SUCCESS );
 
+    MUL_OVERFLOW_CHECK( smuProperty::getTempStatsWatchArraySize(), 
+                            ID_SIZEOF( smiTempTableStats ) );
     IDE_ASSERT(iduMemMgr::calloc( IDU_MEM_SM_SMI,
                                   smuProperty::getTempStatsWatchArraySize(),
                                   ID_SIZEOF( smiTempTableStats ) ,
@@ -334,7 +336,7 @@ void   smiTempTable::checkAndDump( smiTempTableHeader * aHeader )
         break;
     default:
         /* 그 외의 경우는 __TEMPDUMP_LEVEL에 따라 Dump함 */
-        if( smuProperty::getTempDumpLevel() == 2 )
+        if ( smuProperty::getTempDumpLevel() == SMU_DISK_TEMP_TABLE_DUMP_LEVEL_2 )
         {
             dumpToFile( aHeader );
         }
@@ -362,7 +364,7 @@ void   smiTempTable::checkAndDump( smiTempTableHeader * aHeader )
                  "%s\n",
                  sErrorBuffer );
 
-    if ( smuProperty::getTempDumpLevel() == 1 )
+    if ( smuProperty::getTempDumpLevel() == SMU_DISK_TEMP_TABLE_DUMP_LEVEL_1 )
     {
         smuUtility::dumpFuncWithBuffer( IDE_DUMP_0, dumpTempTableHeader, aHeader );
         smuUtility::dumpFuncWithBuffer( IDE_DUMP_0, dumpTempTableSegment, aHeader );
@@ -1047,7 +1049,7 @@ void smiTempTable::dumpTempTableHeader( void  * aTableHeader,
  * aOutBuf      - [OUT] 정보를 기록할 Buffer
  * aOutSize     - [OUT] Buffer의 크기
  ***************************************************************************/
-void smiTempTable::dumpTempTableSegment( void  * aTableHeader,
+void smiTempTable::dumpTempTableSegment( void   * aTableHeader,
                                          SChar  * aOutBuf, 
                                          UInt     aOutSize )
 {

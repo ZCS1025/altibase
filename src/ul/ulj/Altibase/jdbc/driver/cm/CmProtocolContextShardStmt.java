@@ -23,6 +23,16 @@ import Altibase.jdbc.driver.sharding.core.GlobalTransactionLevel;
 
 public class CmProtocolContextShardStmt extends CmProtocolContext
 {
+    /* TASK-7219 Non-shard DML
+     * sdiShardPartialCoordType과 동일
+     */
+    public enum ShardPartialExecType
+    {
+        SHARD_PARTIAL_EXEC_TYPE_NONE,
+        SHARD_PARTIAL_EXEC_TYPE_COORD,
+        SHARD_PARTIAL_EXEC_TYPE_QUERY
+    }
+
     private AltibaseShardingConnection    mMetaConn;
     private CmShardAnalyzeResult          mShardAnalyzeResult;
     private CmPrepareResult               mShardPrepareResult;
@@ -30,28 +40,29 @@ public class CmProtocolContextShardStmt extends CmProtocolContext
     /* BUG-46513 Node 제거 이후에 getUpdateCount()를 수행해도 결과를 감소시키지 않기 위해
        row count를 Statement shard context에 보관한다.  */
     private int                           mUpdateRowcount;
+    private ShardPartialExecType          mShardPartialExecType;    // TASK-7219 Non-shard DML
 
     public CmProtocolContextShardStmt(AltibaseShardingConnection aMetaConn, AltibaseStatement aStmt)
     {
-        mShardAnalyzeResult = new CmShardAnalyzeResult();
         mShardPrepareResult = new CmPrepareResult();
-        aStmt.setPrepareResult(mShardPrepareResult); // BUG-47274 Analyze용으로 생성한 statement에 CmPrepareResult객체를 주입한다.
-        /* BUG-46790 failover시 shard context객체가 새로 생성되기때문에 context객체를 가지고 있는
-           AltibaseShardingConnection 객체를 주입한다. */
-        mMetaConn = aMetaConn;
-        // mMetaConnection.mDistTxInfo를 CmProtocolContextShardStmt.mDistTxInfo에 주입한다.
-        setDistTxInfo(aStmt.getAltibaseConnection().getDistTxInfo());
+        initialize(aMetaConn, aStmt);
     }
 
     public CmProtocolContextShardStmt(AltibaseShardingConnection aMetaConn, AltibaseStatement aStmt,
                                       CmPrepareResult aPrepareResult)
     {
-        mShardAnalyzeResult = new CmShardAnalyzeResult();
         mShardPrepareResult = aPrepareResult;
-        aStmt.setPrepareResult(mShardPrepareResult);
+        initialize(aMetaConn, aStmt);
+    }
+    
+    private void initialize(AltibaseShardingConnection aMetaConn, AltibaseStatement aStmt)
+    {
+        mShardAnalyzeResult = new CmShardAnalyzeResult();
+        aStmt.setPrepareResult(mShardPrepareResult); // BUG-47274 Analyze용으로 생성한 statement에 CmPrepareResult객체를 주입한다.
+        /* BUG-46790 failover시 shard context객체가 새로 생성되기때문에 context객체를 가지고 있는
+           AltibaseShardingConnection 객체를 주입한다. */
         mMetaConn = aMetaConn;
-        // mMetaConnection.mDistTxInfo를 CmProtocolContextShardStmt.mDistTxInfo에 주입한다.
-        setDistTxInfo(aStmt.getAltibaseConnection().getDistTxInfo());
+        mShardPartialExecType = ShardPartialExecType.SHARD_PARTIAL_EXEC_TYPE_NONE;
     }
 
     public CmShardAnalyzeResult getShardAnalyzeResult()
@@ -92,5 +103,15 @@ public class CmProtocolContextShardStmt extends CmProtocolContext
     public void setUpdateRowcount(int aUpdateRowcount)
     {
         mUpdateRowcount = aUpdateRowcount;
+    }
+
+    public ShardPartialExecType getShardPartialExecType()
+    {
+        return mShardPartialExecType;
+    }
+
+    public void setShardPartialExecType(ShardPartialExecType aShardPartialExecType)
+    {
+        mShardPartialExecType = aShardPartialExecType;
     }
 }

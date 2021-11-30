@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smpFixedPageList.cpp 91157 2021-07-07 06:02:43Z jiwon.kim $
+ * $Id: smpFixedPageList.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -2687,6 +2687,7 @@ IDE_RC smpFixedPageList::dumpSlotHeader( smpSlotHeader     * aSlotHeader )
 
     IDE_ERROR( aSlotHeader != NULL );
 
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     if( iduMemMgr::calloc( IDU_MEM_SM_SMC,
                            1,
                            ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
@@ -2842,6 +2843,7 @@ IDE_RC smpFixedPageList::dumpFixedPage( scSpaceID         aSpaceID,
                                             (void**)&sPagePtr )
                 == IDE_SUCCESS );
 
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     if( iduMemMgr::calloc( IDU_MEM_SM_SMC,
                            1,
                            ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,

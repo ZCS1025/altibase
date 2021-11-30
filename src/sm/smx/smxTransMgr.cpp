@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smxTransMgr.cpp 90521 2021-04-09 01:28:03Z emlee $
+ * $Id: smxTransMgr.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <smErrorCode.h>
@@ -118,6 +118,8 @@ IDE_RC smxTransMgr::initialize()
     IDU_FIT_POINT_RAISE( "smxTransMgr::initialize::malloc1",
                           insufficient_memory );
 
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(smxTrans),mTransCnt);
+
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_TRANSACTION_TABLE,
                                        (ULong)ID_SIZEOF(smxTrans) * mTransCnt,
                                        (void**)&mArrTrans ) != IDE_SUCCESS,
@@ -127,6 +129,8 @@ IDE_RC smxTransMgr::initialize()
     /* TC/FIT/Limit/sm/smx/smxTransMgr_initialize_malloc2.sql */
     IDU_FIT_POINT_RAISE( "smxTransMgr::initialize::malloc2",
                           insufficient_memory );
+
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(smxTransFreeList),mTransFreeListCnt);
 
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_TRANSACTION_TABLE,
                                        (ULong)ID_SIZEOF(smxTransFreeList) * mTransFreeListCnt,

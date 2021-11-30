@@ -20,14 +20,28 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import Altibase.jdbc.driver.sharding.core.DistTxInfo;
+import Altibase.jdbc.driver.cm.CmProtocolContextShardStmt.ShardPartialExecType;
+
 public class CmProtocolContextDirExec extends CmProtocolContext
 {
     private final List<Map<String,Object>> mDeferredRequests;   // BUG-48431 deferred된 prepare 요청 목록
+    private DistTxInfo                     mDistTxInfo;         // PROJ-2733
+
+    // BUG-49296 : BUG-48315
+    private List<Integer>                  mClientTouchedNodes;
+    private short                          mClientTouchedNodeCount = 0;
+
+    // TASK-7219 Non-shard DML
+    private int                            mStmtExecSeqForShardTx;
+    private ShardPartialExecType           mPartialExecType;
 
     public CmProtocolContextDirExec(CmChannel aChannel)
     {
         super(aChannel);
-        mDeferredRequests = new ArrayList<>();
+        mDeferredRequests   = new ArrayList<>();
+        mDistTxInfo         = new DistTxInfo();
+        mClientTouchedNodes = new ArrayList<Integer>();
     }
     
     public CmPrepareResult getPrepareResult()
@@ -88,5 +102,56 @@ public class CmProtocolContextDirExec extends CmProtocolContext
     public void clearDeferredRequests()
     {
         mDeferredRequests.clear();
+    }
+
+    public DistTxInfo getDistTxInfo()
+    {
+        return mDistTxInfo;
+    }
+
+    public short getClientTouchedNodeCount()
+    {
+        return mClientTouchedNodeCount;
+    }
+
+    public void setClientTouchedNodeCount(short aClientTouchedNodeCount)
+    {
+        mClientTouchedNodeCount = aClientTouchedNodeCount;
+    }
+
+    public List<Integer> getClientTouchNodes()
+    {
+        return mClientTouchedNodes;
+    }
+
+    public void setClientTouchedNodes(int aNodeId)
+    {
+        mClientTouchedNodes.add(aNodeId);
+    }
+
+    public void clearClientTouchedNodes()
+    {
+        mClientTouchedNodeCount = 0;
+        mClientTouchedNodes.clear();
+    }
+
+    public int getStmtExecSeqForShardTx()
+    {
+        return mStmtExecSeqForShardTx;
+    }
+    
+    public void setStmtExecSeqForShardTx(int aStmtExecSeqForShardTx)
+    {
+       mStmtExecSeqForShardTx = aStmtExecSeqForShardTx;
+    }
+    
+    ShardPartialExecType getPartialExecType()
+    {
+        return mPartialExecType;
+    }
+
+    void setPartialExecType(ShardPartialExecType aPartialExecType)
+    {
+       mPartialExecType = aPartialExecType;
     }
 }

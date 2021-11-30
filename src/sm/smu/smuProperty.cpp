@@ -2067,7 +2067,7 @@ void smuProperty::loadForSMI()
                          (void*)&mDefaultSegMgmtType)
                == IDE_SUCCESS);
 
-    IDE_ASSERT(idp::read("DEFAULT_EXTENT_CNT_FOR_EXTENT_GROUP",
+    IDE_ASSERT(idp::read("__DEFAULT_EXTENT_CNT_FOR_EXTENT_GROUP_TEST",
                          (void*)&mDefaultExtCntForExtentGroup)
                == IDE_SUCCESS);
 
@@ -2546,7 +2546,7 @@ void smuProperty::registCallbacks()
                                    callbackTmsMaxSlotCntPerExtDir);
 
     /* PROJ-2037 TMS æ»¡§»≠ */
-    idp::setupAfterUpdateCallback( "DEFAULT_EXTENT_CNT_FOR_EXTENT_GROUP",
+    idp::setupAfterUpdateCallback( "__DEFAULT_EXTENT_CNT_FOR_EXTENT_GROUP_TEST",
                                    callbackDefaulExtCntForExtentGroup );
 
     idp::setupAfterUpdateCallback( "__FMS_EXTDESC_CNT_IN_EXTDIRPAGE",

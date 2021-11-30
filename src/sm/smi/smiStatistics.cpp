@@ -1920,6 +1920,7 @@ IDE_RC smiStatistics::beginTableStat( smcTableHeader   * aHeader,
     IDU_LIMITPOINT_RAISE(
         "smiStatistics::beginTableStat::malloc3",
         insufficient_memory );
+    MUL_OVERFLOW_CHECK( aHeader->mColumnCount,ID_SIZEOF( smiStatColumnArgument ) );
     IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_SM_SMI,
                                        aHeader->mColumnCount,
                                        ID_SIZEOF( smiStatColumnArgument ),

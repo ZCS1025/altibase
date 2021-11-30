@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdnUpdate.cpp 89495 2020-12-14 05:19:22Z emlee $
+ * $Id: sdnUpdate.cpp 92066 2021-11-12 07:46:00Z kclee $
  *
  * Description :
  *
@@ -273,6 +273,7 @@ IDE_RC sdnUpdate::getIndexInfoToVerify( SChar     * aLogPtr,
                      sContext.mTxInfo[0],
                      sContext.mTxInfo[1] );
 
+        //MUL_OVERFLOW_CHECK(ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT);
         if( iduMemMgr::calloc( IDU_MEM_SM_SDN, 1,
                                ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                (void**)&sOutBuffer4Dump )
@@ -441,6 +442,7 @@ IDE_RC sdnUpdate::undo_SDR_SDN_INSERT_UNIQUE_KEY( idvSQL   * aStatistics,
                      sContext.mTxInfo[0],
                      sContext.mTxInfo[1] );
 
+        //MUL_OVERFLOW_CHECK(ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT);
         if( iduMemMgr::calloc( IDU_MEM_SM_SDN, 1,
                                ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                (void**)&sOutBuffer4Dump )
@@ -649,6 +651,7 @@ IDE_RC sdnUpdate::undo_SDR_SDN_INSERT_DUP_KEY( idvSQL   * aStatistics,
 
         if( sIndexHeader != NULL )
         {
+            //MUL_OVERFLOW_CHECK(ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT);
             if( iduMemMgr::calloc( IDU_MEM_SM_SDN, 1,
                                    ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                    (void**)&sOutBuffer4Dump )
@@ -872,6 +875,7 @@ IDE_RC sdnUpdate::undo_SDR_SDN_DELETE_KEY_WITH_NTA( idvSQL   * aStatistics,
 
         if( sIndexHeader != NULL )
         {
+            //MUL_OVERFLOW_CHECK(ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT);
             if( iduMemMgr::calloc( IDU_MEM_SM_SDN, 1,
                                    ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                    (void**)&sOutBuffer4Dump )

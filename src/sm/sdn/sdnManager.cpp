@@ -219,6 +219,8 @@ IDE_RC sdnManager::makeFetchColumnList( smcTableHeader      * aTableHeader,
     IDU_FIT_POINT( "sdnManager::makeFetchColumnList::malloc::FetchColumnList",
                     idERR_ABORT_InsufficientMemory );
 
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(smiFetchColumnList),(sColumnCount));
+
     IDE_TEST( iduMemMgr::malloc( 
             IDU_MEM_SM_SDN,
             (ULong)ID_SIZEOF(smiFetchColumnList) * (sColumnCount),

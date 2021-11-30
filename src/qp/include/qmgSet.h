@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmgSet.h 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: qmgSet.h 91978 2021-11-05 05:37:19Z donovan.seo $
  *
  * Description :
  *     SET Graph를 위한 정의
@@ -49,6 +49,11 @@
 #define QMG_SET_PARENT_TYPE_SET_MASK    (0x10000000)
 #define QMG_SET_PARENT_TYPE_SET_FALSE   (0x00000000)
 #define QMG_SET_PARENT_TYPE_SET_TRUE    (0x10000000)
+
+/* BUG-49330 */
+#define QMG_SET_OPTIMIZE_MASK   (0x20000000)
+#define QMG_SET_OPTIMIZE_FALSE  (0x00000000)
+#define QMG_SET_OPTIMIZE_TRUE   (0x20000000)
 
 //---------------------------------------------------
 // SET Graph 를 관리하기 위한 자료 구조

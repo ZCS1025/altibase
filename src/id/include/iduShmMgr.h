@@ -1282,6 +1282,7 @@ inline IDE_RC iduShmMgr::initLtArea( ULong aMaxSegCnt )
 
     mAttachSegCnt = 0;
 
+    MUL_OVERFLOW_CHECK(aMaxSegCnt,ID_SIZEOF(iduShmHeader*));
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_ID_IDU,
                                  aMaxSegCnt,
                                  ID_SIZEOF(iduShmHeader*),

@@ -16,11 +16,6 @@
 
 package Altibase.jdbc.driver.cm;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import Altibase.jdbc.driver.sharding.core.DistTxInfo;
-
 public class CmProtocolContext
 {
     private CmChannel     mChannel;
@@ -30,12 +25,7 @@ public class CmProtocolContext
     // PROJ-2733 DistTxInfo
     private static Object mlock        = new Object();
     private static long   mSCN         = 0;  // cli의 Env->mSCN에 대응. 여러 Connection이 공유한다.
-    private DistTxInfo    mDistTxInfo; 
     
-    // BUG-49296 : BUG-48315
-    private List<Integer> mClientTouchedNodes     = new ArrayList<Integer>();
-    private short         mClientTouchedNodeCount = 0;
-
     public CmProtocolContext(CmChannel aChannel)
     {
         this();
@@ -49,7 +39,6 @@ public class CmProtocolContext
         // BUG-46513 CmProtocolContextShardConnect, CmProtocolContextShasrdStmt에서
         //           참조하기 때문에 CmResult 초기화 구문을 추가
         mResults = new CmResult[sOpCount];
-        mDistTxInfo = new DistTxInfo();
     }
 
     public void addCmResult(CmResult aResult)
@@ -111,21 +100,6 @@ public class CmProtocolContext
         this.mChannel = aChannel;
     }
 
-    public void initDistTxInfo()
-    {
-        mDistTxInfo.initDistTxInfo();
-    }
-
-    public DistTxInfo getDistTxInfo()
-    {
-        return mDistTxInfo;
-    }
-
-    public void setDistTxInfo(DistTxInfo aDistTxInfo)
-    {
-        mDistTxInfo = aDistTxInfo;
-    }
-
     public void updateSCN(long aSCN)
     {
         synchronized(mlock) 
@@ -143,31 +117,5 @@ public class CmProtocolContext
         {
             return mSCN;
         }
-    }
-
-    public short getClientTouchedNodeCount()
-    {
-        return mClientTouchedNodeCount;
-    }
-
-    public void setClientTouchedNodeCount(short aClientTouchedNodeCount)
-    {
-        mClientTouchedNodeCount = aClientTouchedNodeCount;
-    }
-
-    public List<Integer> getClientTouchNodes()
-    {
-        return mClientTouchedNodes;
-    }
-
-    public void setClientTouchedNodes(int aNodeId)
-    {
-        mClientTouchedNodes.add(aNodeId);
-    }
-
-    public void clearClientTouchedNodes()
-    {
-        mClientTouchedNodeCount = 0;
-        mClientTouchedNodes.clear();
     }
 }

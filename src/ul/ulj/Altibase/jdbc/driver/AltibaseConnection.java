@@ -26,6 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import Altibase.jdbc.driver.cm.*;
+import Altibase.jdbc.driver.cm.CmProtocolContextShardStmt.ShardPartialExecType;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
 import Altibase.jdbc.driver.ex.ShardError;
@@ -117,7 +118,9 @@ public final class AltibaseConnection extends AbstractConnection
     private boolean                       mAllowLobNullSelect;      // BUG-47639 lob column이 null일때 Lob객체가 리턴될 수 있는지 여부
     private boolean                       mReUseResultSet;          // BUG-48380 같은 PreparedStatement에서 executeQuery를 했을 때 ResultSet을 재사용할지 여부
 
-    // PROJ-2733 : To Verify DistTxInfo
+    // PROJ-2733
+    private DistTxInfo                    mDistTxInfo; 
+    // To Verify DistTxInfo
     public static final boolean           SHARD_JDBC_DISTTXINFO_VERIFY              = AltibaseEnvironmentVariables.getShardJdbcDisttxinfoVerify();
     private DistTxInfoForVerify           mDistTxInfoForVerify;
 
@@ -127,6 +130,10 @@ public final class AltibaseConnection extends AbstractConnection
     // PROJ-2727 Global property handling 
     private int                           mTransTimeout;
     
+    // TASK-7219 Non-shard DML
+    private static final int              SHARD_STMT_EXEC_SEQ_INIT                  = 0;
+    public static final int               SHARD_STMT_EXEC_SEQ_MAX                   = 1999999999;
+    private int                           mStmtExecSeqForShardTx;
     
     static
     {
@@ -157,12 +164,16 @@ public final class AltibaseConnection extends AbstractConnection
         mChannel = new CmChannel();
         mContext = new CmProtocolContextConnect(mChannel);
         mMetaConnection = aMetaConn;
+        mDistTxInfo = new DistTxInfo();
 
         // PROJ-2733 DistTxInfo : for natc
         if (SHARD_JDBC_DISTTXINFO_VERIFY)
         {    
             mDistTxInfoForVerify = new DistTxInfoForVerify();
         }    
+
+        // TASK-7219 Non-shard DML
+        initStmtExecSeqForShardTx();
 
         // BUG-46790 aMetaConn객체가 있는 경우에는 shard connection 이므로 shard connection type을 설정해 준다.
         if (aMetaConn != null)
@@ -1553,6 +1564,19 @@ public final class AltibaseConnection extends AbstractConnection
         return sStatement;
     }
 
+    public PreparedStatement prepareStatement(String aSql, int aResultSetType, int aResultSetConcurrency, int aResultSetHoldability, ShardPartialExecType aShardPartialExecType) throws SQLException
+    {
+        throwErrorForClosed();
+        throwErrorForTooManyStatements();
+        
+        AltibasePreparedStatement sStatement = new AltibasePreparedStatement(this, aSql, aResultSetType, aResultSetConcurrency, aResultSetHoldability, aShardPartialExecType);
+        synchronized (mStatementList)
+        {
+            mStatementList.add(sStatement);
+        }
+        return sStatement;
+    }
+
     public void releaseSavepoint(Savepoint aSavepoint) throws SQLException
     {
         throwErrorForClosed();
@@ -1680,8 +1704,11 @@ public final class AltibaseConnection extends AbstractConnection
         
         if (mAutoCommit == SERVER_SIDE_AUTOCOMMIT_OFF)
         {
-            mContext.initDistTxInfo();
+            initDistTxInfo();
             setDistTxInfoForVerify();
+            
+            // TASK-7219 Non-shard DML
+            initStmtExecSeqForShardTx();
         }
     }
 
@@ -2401,9 +2428,14 @@ public final class AltibaseConnection extends AbstractConnection
         return mAllowLobNullSelect;
     }
 
+    public void initDistTxInfo()
+    {
+        mDistTxInfo.initDistTxInfo();
+    }
+
     public DistTxInfo getDistTxInfo()
     {
-        return mContext.getDistTxInfo();
+        return mDistTxInfo;
     }
 
     public void setDistTxInfoForVerify()
@@ -2689,5 +2721,30 @@ public final class AltibaseConnection extends AbstractConnection
         {
             mWarning = Error.processServerError(mWarning, mContext.getError());
         }
+    }
+
+    public void initStmtExecSeqForShardTx()
+    {
+        mStmtExecSeqForShardTx = SHARD_STMT_EXEC_SEQ_INIT;
+    }
+
+    public void increaseStmtExecSeqForShardTx()
+    {
+        mStmtExecSeqForShardTx++;
+    }
+
+    public void decreaseStmtExecSeqForShardTx()
+    {
+        mStmtExecSeqForShardTx--;
+    }
+    
+    public void setStmtExecSeqForShardTx(int aStmtExecSeqForShardTx)
+    {
+        mStmtExecSeqForShardTx = aStmtExecSeqForShardTx;
+    }
+    
+    public int getStmtExecSeqForShardTx()
+    {
+        return mStmtExecSeqForShardTx;
     }
 }

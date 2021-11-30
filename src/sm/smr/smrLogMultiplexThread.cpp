@@ -106,6 +106,7 @@ IDE_RC smrLogMultiplexThread::initialize(
 
     /* smrLogMultiplexThread_initialize_calloc_SyncThread.tc */
     IDU_FIT_POINT("smrLogMultiplexThread::initialize::calloc::SyncThread");
+    MUL_OVERFLOW_CHECK( (ULong)ID_SIZEOF( smrLogMultiplexThread ),mMultiplexCnt );
     IDE_TEST( iduMemMgr::calloc( 
                             IDU_MEM_SM_SMR,
                             1,
@@ -116,6 +117,7 @@ IDE_RC smrLogMultiplexThread::initialize(
 
     /* smrLogMultiplexThread_initialize_calloc_CreateThread.tc */
     IDU_FIT_POINT("smrLogMultiplexThread::initialize::calloc::CreateThread");
+    MUL_OVERFLOW_CHECK( (ULong)ID_SIZEOF( smrLogMultiplexThread ),mMultiplexCnt );
     IDE_TEST( iduMemMgr::calloc( 
                             IDU_MEM_SM_SMR,
                             1,
@@ -126,6 +128,7 @@ IDE_RC smrLogMultiplexThread::initialize(
 
     /* smrLogMultiplexThread_initialize_calloc_DeleteThread.tc */
     IDU_FIT_POINT("smrLogMultiplexThread::initialize::calloc::DeleteThread");
+    MUL_OVERFLOW_CHECK( (ULong)ID_SIZEOF( smrLogMultiplexThread ),mMultiplexCnt );
     IDE_TEST( iduMemMgr::calloc( 
                             IDU_MEM_SM_SMR,
                             1,
@@ -136,6 +139,7 @@ IDE_RC smrLogMultiplexThread::initialize(
 
     /* smrLogMultiplexThread_initialize_calloc_AppendThread.tc */
     IDU_FIT_POINT("smrLogMultiplexThread::initialize::calloc::AppendThread");
+    MUL_OVERFLOW_CHECK( (ULong)ID_SIZEOF( smrLogMultiplexThread ),mMultiplexCnt );
     IDE_TEST( iduMemMgr::calloc( 
                             IDU_MEM_SM_SMR,
                             1,
@@ -147,6 +151,7 @@ IDE_RC smrLogMultiplexThread::initialize(
     /* 다중화된 log파일들의 open log file list를 위한 메모리 할당 */
     /* smrLogMultiplexThread_initialize_calloc_LogFileOpenList.tc */
     IDU_FIT_POINT("smrLogMultiplexThread::initialize::calloc::LogFileOpenList");
+    MUL_OVERFLOW_CHECK( (ULong)ID_SIZEOF( smrLogFileOpenList ),mMultiplexCnt );
     IDE_TEST( iduMemMgr::calloc( 
                             IDU_MEM_SM_SMR,
                             1,

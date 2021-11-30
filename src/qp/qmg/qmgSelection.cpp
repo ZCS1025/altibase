@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmgSelection.cpp 91651 2021-09-09 07:00:27Z donovan.seo $
+ * $Id: qmgSelection.cpp 91978 2021-11-05 05:37:19Z donovan.seo $
  *
  * Description :
  *     Selection Graph를 위한 수행 함수
@@ -42,6 +42,7 @@
 #include <qcuProperty.h>
 #include <qcgPlan.h>
 #include <qmgSetRecursive.h>
+#include <qmgSet.h>
 
 IDE_RC
 qmgSelection::init( qcStatement * aStatement,
@@ -1468,6 +1469,7 @@ qmgSelection::makePlan( qcStatement * aStatement, const qmgGraph * aParent, qmgG
     else
     {
         IDE_TEST( makeViewScan( aStatement,
+                                (qmgGraph *)aParent,
                                 sMyGraph )
                   != IDE_SUCCESS );
     }
@@ -1642,6 +1644,7 @@ qmgSelection::makeTableScan( qcStatement * aStatement,
 
 IDE_RC
 qmgSelection::makeViewScan( qcStatement * aStatement,
+                            qmgGraph    * aParent,
                             qmgSELT     * aMyGraph )
 {
     UInt              sFlag   = 0;
@@ -1653,6 +1656,9 @@ qmgSelection::makeViewScan( qcStatement * aStatement,
     qmsQuerySet     * sQuerySet = NULL;
     qmsTarget       * sTarget = NULL;
     idBool            sIsTrue = ID_FALSE;
+    qmgSET          * sSet = NULL;
+    qmgPROJ         * sProj = NULL;
+    qmgPROJ         * sParent = NULL;
 
     IDU_FIT_POINT_FATAL( "qmgSelection::makeViewScan::__FT__" );
 
@@ -1783,6 +1789,8 @@ qmgSelection::makeViewScan( qcStatement * aStatement,
         // Nothing To Do
     }
 
+    sIsTrue = ID_FALSE;
+
     if( (aMyGraph->graph.left->flag &
          QMG_PROJ_VIEW_OPT_TIP_VMTR_MASK)
         == QMG_PROJ_VIEW_OPT_TIP_VMTR_TRUE )
@@ -1796,6 +1804,92 @@ qmgSelection::makeViewScan( qcStatement * aStatement,
     }
     else
     {
+        /* BUG-49330 */
+        if ( ( aMyGraph->graph.left->type == QMG_PROJECTION ) &&
+             ( QCU_OPTIMIZER_SET == 1 ) )
+        {
+            if ( aMyGraph->graph.left->left->type == QMG_SET )
+            {
+                if ( ( aMyGraph->graph.left->left->flag & QMG_PARALLEL_EXEC_MASK )
+                     == QMG_PARALLEL_EXEC_FALSE )
+                {
+                    sProj = (qmgPROJ *)aMyGraph->graph.left;
+                    sSet = (qmgSET *)aMyGraph->graph.left->left;
+
+                    if ( ( sSet->setOp == QMS_UNION_ALL ) ||
+                         ( sSet->setOp == QMS_MINUS ) ||
+                         ( sSet->setOp == QMS_INTERSECT ) )
+                    {
+                        /* 상위 그래프가 projection 일경우
+                         * 하위 그래프의 limit과 loop정보를 넘겨준다
+                         */
+                        if ( aParent->type == QMG_PROJECTION )
+                        {
+                            sParent = (qmgPROJ *)aParent;
+                            if ( ( sParent->limit == NULL ) && ( sParent->loopNode == NULL ) )
+                            {
+                                if ( ( sProj->limit == NULL ) && ( sProj->loopNode == NULL ) )
+                                {
+                                    sIsTrue = ID_TRUE;
+                                }
+                                else
+                                {
+                                    if ( sProj->limit != NULL ) 
+                                    {
+                                        sParent->limit = sProj->limit;
+                                        sIsTrue = ID_TRUE;
+                                    }
+                                    else 
+                                    {
+                                        if ( sProj->loopNode != NULL )
+                                        {
+                                            sParent->loopNode = sProj->loopNode;
+                                            sIsTrue = ID_TRUE;
+                                        }
+                                        else
+                                        {
+                                            sIsTrue = ID_FALSE;
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if ( ( sProj->limit == NULL ) && ( sProj->loopNode == NULL ) )
+                                {
+                                    sIsTrue = ID_TRUE;
+                                }
+                                else
+                                {
+                                    sIsTrue = ID_FALSE;
+                                }
+                            }
+
+                            if ( sIsTrue == ID_TRUE )
+                            {
+                                sSet->graph.flag &= ~QMG_SET_OPTIMIZE_MASK;
+                                sSet->graph.flag |= QMG_SET_OPTIMIZE_TRUE;
+                                aMyGraph->graph.left = aMyGraph->graph.left->left;
+                            }
+                        }
+                        else
+                        {
+                            /* 상위 그래프가 projection이 아닐경우
+                             * 하위 projection그래프에 limit과 loop가 없는경우만 설정한다
+                             */
+                            if ( ( sProj->limit == NULL ) && ( sProj->loopNode == NULL ) )
+                            {
+                                sSet->graph.flag &= ~QMG_SET_OPTIMIZE_MASK;
+                                sSet->graph.flag |= QMG_SET_OPTIMIZE_TRUE;
+                                aMyGraph->graph.left = aMyGraph->graph.left->left;
+                                sIsTrue = ID_TRUE;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         IDE_TEST( qmoOneNonPlan::initVIEW( aStatement ,
                                            aMyGraph->graph.myQuerySet ,
                                            aMyGraph->graph.myPlan ,
@@ -1811,8 +1905,10 @@ qmgSelection::makeViewScan( qcStatement * aStatement,
     //-----------------------------------------------------
     // 2. View를 위한 Selection Graph인 경우
     //-----------------------------------------------------
-
-    IDE_DASSERT( aMyGraph->graph.left->type == QMG_PROJECTION );
+    if ( sIsTrue == ID_FALSE )
+    {
+        IDE_DASSERT( aMyGraph->graph.left->type == QMG_PROJECTION );
+    }
 
     //----------------------
     // 하위 Plan의 생성
@@ -1835,9 +1931,9 @@ qmgSelection::makeViewScan( qcStatement * aStatement,
         // nothing to do
     }
 
-    if( (aMyGraph->graph.left->flag &
-         QMG_PROJ_VIEW_OPT_TIP_VMTR_MASK)
-        == QMG_PROJ_VIEW_OPT_TIP_VMTR_TRUE )
+    if ( ( ( aMyGraph->graph.left->flag & QMG_PROJ_VIEW_OPT_TIP_VMTR_MASK )
+         == QMG_PROJ_VIEW_OPT_TIP_VMTR_TRUE ) &&
+         ( sIsTrue == ID_FALSE ) )
     {
         //---------------------------------------
         // VSCN생성
@@ -1859,7 +1955,6 @@ qmgSelection::makeViewScan( qcStatement * aStatement,
         // VIEW 생성
         //     - Materialization이 없는 경우
         //---------------------------------------
-
         sFlag &= ~QMO_MAKEVIEW_FROM_MASK;
         sFlag |= QMO_MAKEVIEW_FROM_SELECTION;
 

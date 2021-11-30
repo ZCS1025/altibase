@@ -201,6 +201,7 @@ IDE_RC sctTableSpaceMgr::initializeTBSNode( sctTableSpaceNode * aSpaceNode,
 
     /* sctTableSpaceMgr_initializeTBSNode_malloc_Name.tc */
     IDU_FIT_POINT("sctTableSpaceMgr::initializeTBSNode::malloc::Name");
+    ADD_OVERFLOW_CHECK(aSpaceAttr->mNameLength,1);
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SCT,
                                  1,
                                  aSpaceAttr->mNameLength + 1,
@@ -1725,8 +1726,10 @@ IDE_RC sctTableSpaceMgr::addPendingOperation( void               * aTrans,
 
     IDE_DASSERT( aTrans   != NULL );
 
+
     /* sctTableSpaceMgr_addPendingOperation_malloc_PendingOpList.tc */
     IDU_FIT_POINT("sctTableSpaceMgr::addPendingOperation::malloc::PendingOpList");
+    //ADD_OVERFLOW_CHECK( ID_SIZEOF(smuList) , 1);
     IDE_TEST(iduMemMgr::malloc( IDU_MEM_SM_SDD,
                                 ID_SIZEOF(smuList) + 1,
                                 (void**)&sPendingOpList,

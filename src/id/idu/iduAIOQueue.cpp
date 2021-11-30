@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduAIOQueue.cpp 66405 2014-08-13 07:15:26Z djin $
+ * $Id: iduAIOQueue.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -88,6 +88,7 @@ IDE_RC iduAIOQueue::initialize(UInt aQueueCount)
 {
     UInt i;
 
+    MUL_OVERFLOW_CHECK( sizeof(iduAIOQueueUnit),aQueueCount );
     IDE_TEST(iduMemMgr::malloc(IDU_MEM_ID_ASYNC_IO_MANAGER,
                                sizeof(iduAIOQueueUnit) * aQueueCount,
                                (void **)&mUnitArray,

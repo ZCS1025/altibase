@@ -15,7 +15,7 @@
  */
  
 /***********************************************************************
- * $Id: rpdMeta.cpp 91576 2021-09-02 06:39:41Z donghyun1 $
+ * $Id: rpdMeta.cpp 92100 2021-11-17 11:34:19Z lswhh $
  **********************************************************************/
 
 #include <idl.h>
@@ -4954,6 +4954,41 @@ IDE_RC rpdMeta::insertOldMetaRepl(smiStatement * aSmiStmt,
 
     return IDE_FAILURE;
 }
+IDE_RC rpdMeta::deleteOldMetaItemRetry(smiStatement * aSmiStmt,
+                                       SChar        * aRepName,
+                                       ULong          aItemOID)
+{
+    smiStatement *spRootStmt  = aSmiStmt->getTrans()->getStatement();
+    idvSQL       *sStatistics = aSmiStmt->getTrans()->getStatistics();
+    UInt          sStmtFlag   = aSmiStmt->mFlag;
+
+    // Table Meta와 Table Meta Cache를 갱신한다.
+    for(;;)
+    {
+        if ( deleteOldMetaItem( aSmiStmt, aRepName, aItemOID ) != IDE_SUCCESS )
+        {
+            IDE_TEST( ideIsRetry() != IDE_SUCCESS );
+
+            IDE_CLEAR();
+
+            IDE_TEST( aSmiStmt->end(SMI_STATEMENT_RESULT_FAILURE )
+                      != IDE_SUCCESS );
+
+            IDE_ASSERT( aSmiStmt->begin( sStatistics,
+                                         spRootStmt,
+                                         sStmtFlag )
+                        == IDE_SUCCESS );
+            continue;
+        }
+
+        break;
+    }
+    return IDE_SUCCESS;
+
+    IDE_EXCEPTION_END;
+
+    return IDE_FAILURE;
+}
 
 IDE_RC rpdMeta::deleteOldMetaItem(smiStatement * aSmiStmt,
                                   SChar        * aRepName,
@@ -4982,7 +5017,7 @@ IDE_RC rpdMeta::deleteOldMetaItem(smiStatement * aSmiStmt,
                                                          aRepName,
                                                          aItemOID )
               != IDE_SUCCESS );
-    
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
@@ -5034,9 +5069,9 @@ IDE_RC rpdMeta::deleteOldMetaItems(smiStatement    * aSmiStmt,
                                    QC_MAX_OBJECT_NAME_LEN )
                    == 0 ) )
             {
-                IDE_TEST( deleteOldMetaItem( aSmiStmt,
-                                             aRepName,
-                                             (ULong)sItemArr[sIndex].mTableOID )
+                IDE_TEST( deleteOldMetaItemRetry( aSmiStmt,
+                                                  aRepName,
+                                                  (ULong)sItemArr[sIndex].mTableOID )
                           != IDE_SUCCESS );
             }
             else
@@ -5059,9 +5094,9 @@ IDE_RC rpdMeta::deleteOldMetaItems(smiStatement    * aSmiStmt,
                                    QC_MAX_OBJECT_NAME_LEN )
                    == 0 ) )
             {
-                IDE_TEST( deleteOldMetaItem( aSmiStmt,
-                                             aRepName,
-                                             (ULong)sItemArr[sIndex].mTableOID )
+                IDE_TEST( deleteOldMetaItemRetry( aSmiStmt,
+                                                  aRepName,
+                                                  (ULong)sItemArr[sIndex].mTableOID )
                           != IDE_SUCCESS );
             }
             else
@@ -6620,9 +6655,9 @@ IDE_RC rpdMeta::updateOldTableInfo( smiStatement  * aSmiStmt,
     /* PROJ-1915 off-line sender의 경우 meta를 갱신 하지 않는다. */
     if ( ( sUpdateMeta == ID_TRUE ) && ( aIsUpdateOldItem == ID_TRUE ) )
     {
-        IDE_TEST(deleteOldMetaItem(aSmiStmt,
-                                   aItemCache->mItem.mRepName,
-                                   (ULong)aItemMeta->mOldTableOID)
+        IDE_TEST(deleteOldMetaItemRetry(aSmiStmt,
+                                        aItemCache->mItem.mRepName,
+                                        (ULong)aItemMeta->mOldTableOID)
                  != IDE_SUCCESS);
 
         // 갱신된 Table Meta Cache를 Table Meta로 보관한다.

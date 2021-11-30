@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smuUtility.cpp 91197 2021-07-12 01:15:29Z emlee $
+ * $Id: smuUtility.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <smDef.h>
@@ -156,7 +156,7 @@ void smuUtility::dumpFuncWithBuffer( UInt           aChkFlag,
     SChar        * sTempBuf;
 
     /* __TEMPDUMP_LEVEL에 따라 Dump함 */
-    if ( smuProperty::getTempDumpLevel() == 2 )
+    if ( smuProperty::getTempDumpLevel() == SMU_DISK_TEMP_TABLE_DUMP_LEVEL_2 )
     {
         ideLog::logCallStack( aChkFlag, aModule, aLevel );
     }
@@ -169,6 +169,7 @@ void smuUtility::dumpFuncWithBuffer( UInt           aChkFlag,
                  ideGetSystemErrno(),
                  ideGetErrorMsg( ideGetErrorCode() ) );
 
+    //MUL_OVERFLOW_CHECK_ASSERT( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     if ( iduMemMgr::calloc( IDU_MEM_SM_SMU,
                             1,
                             ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
@@ -181,11 +182,13 @@ void smuUtility::dumpFuncWithBuffer( UInt           aChkFlag,
         (void) iduMemMgr::free( sTempBuf );
     }
 }
+
 void smuUtility::printFuncWithBuffer( smuDumpFunc    aDumpFunc,
                                       void         * aTarget ) 
 {
     SChar        * sTempBuf;
 
+    //MUL_OVERFLOW_CHECK_ASSERT( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     if( iduMemMgr::calloc( IDU_MEM_SM_SMU,
                            1,
                            ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,

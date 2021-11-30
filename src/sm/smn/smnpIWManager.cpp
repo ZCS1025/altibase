@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnpIWManager.cpp 82075 2018-01-17 06:39:52Z jina.kim $
+ * $Id: smnpIWManager.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <ide.h>
@@ -155,6 +155,7 @@ IDE_RC smnpIWChildMgr::initialize( SInt aThreadCount)
                           insufficient_memory );
 
     // client 메모리 할당
+    MUL_OVERFLOW_CHECK(aThreadCount,ID_SIZEOF(smnpIWChild*));
     IDE_TEST_RAISE(iduMemMgr::calloc(IDU_MEM_SM_SMN,
                                aThreadCount,
                                ID_SIZEOF(smnpIWChild*),

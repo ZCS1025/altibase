@@ -77,6 +77,8 @@ IDE_RC sdsMeta::initializeStatic( UInt            aGroupCnt,
     IDU_FIT_POINT_RAISE( "sdsMeta::initialize::malloc1", 
                           ERR_INSUFFICIENT_MEMORY );
 
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(sdsMetaData*),mExtCntInGroup);
+
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SDS,
                                        (ULong)ID_SIZEOF(sdsMetaData*) * 
                                        mExtCntInGroup,
@@ -88,6 +90,9 @@ IDE_RC sdsMeta::initializeStatic( UInt            aGroupCnt,
     /* TC/FIT/Limit/sm/sds/sdsMeta_initialize_malloc.sql */
     IDU_FIT_POINT_RAISE( "sdsMeta::initialize::malloc2", 
                           ERR_INSUFFICIENT_MEMORY );
+
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(sdsMetaData),mFrameCntInExt);
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(sdsMetaData)*mFrameCntInExt,mExtCntInGroup);
 
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SDS,
                                        (ULong)ID_SIZEOF(sdsMetaData) *

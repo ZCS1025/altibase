@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMemMgr.h 85026 2019-03-15 02:16:46Z jayce.park $
+ * $Id: iduMemMgr.h 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #ifndef _O_IDU_MEM_MGR_H_
@@ -40,6 +40,20 @@
 // allocator index for special cases
 #define IDU_ALLOC_INDEX_PRIVATE 0xdeaddead
 #define IDU_ALLOC_INDEX_LIBC 0xbeefbeef    
+
+//BUG-49369
+//assume all arguments are UInt type.
+#define MUL_OVERFLOW_CHECK(a,b)                                   \
+        IDE_TEST(iduMemMgr::checkMulOverflow((UInt)a,(UInt)b) == ID_TRUE);
+
+#define MUL_OVERFLOW_CHECK_ASSERT(a,b)                            \
+        IDE_ASSERT(iduMemMgr::checkMulOverflow((UInt)a,(UInt)b) == ID_FALSE);
+
+#define ADD_OVERFLOW_CHECK(a,b)                                   \
+        IDE_TEST(iduMemMgr::checkAddOverflow((UInt)a,(UInt)b) == ID_TRUE);
+
+#define ADD_OVERFLOW_CHECK_ASSERT(a,b)                            \
+        IDE_ASSERT(iduMemMgr::checkAddOverflowAdd((UInt)a,(UInt)b) == ID_FALSE);
 
 typedef enum
 {
@@ -187,6 +201,25 @@ public:
        }
        
        return sRet;
+    }
+
+    //BUG-49367
+    static idBool checkMulOverflow(UInt aX ,UInt aY)
+    {
+        UInt sResult = aX * aY;
+        if ((aX != 0) && (sResult/aX != aY))
+        {
+            return ID_TRUE;
+        }
+        return ID_FALSE;
+    }
+    static idBool checkAddOverflow(UInt aX ,UInt aY)
+    {
+        if(aX >= UINT_MAX - aY)
+        {
+            return ID_TRUE;
+        }
+        return ID_FALSE;
     }
 
     /* Statistics update function */

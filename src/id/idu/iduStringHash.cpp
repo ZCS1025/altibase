@@ -39,6 +39,7 @@ IDE_RC iduStringHash::initialize( iduMemoryClientIndex aIndex,
     mFreeBucketCount = aInitFreeBucketCount;
     mCashBucketCount = aInitFreeBucketCount;
     
+    MUL_OVERFLOW_CHECK( ID_SIZEOF( iduStringHashBucket ),aHashTableSize );
     IDE_TEST( iduMemMgr::malloc( mIndex,
                                  ID_SIZEOF( iduStringHashBucket ) * aHashTableSize,
                                  ( void** )&mHashTable )

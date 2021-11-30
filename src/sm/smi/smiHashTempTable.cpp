@@ -353,6 +353,9 @@ IDE_RC smiHashTempTable::create( idvSQL              * aStatistics,
 
     /* smiTempTable_create_malloc_Columns.tc */
     IDU_FIT_POINT("smiHashTempTable::create::malloc::Columns");
+
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(smiTempColumn),sHeader->mColumnCount);
+
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SMI,
                                  (ULong)ID_SIZEOF(smiTempColumn) * sHeader->mColumnCount,
                                  (void**)&sHeader->mColumns )
@@ -1040,7 +1043,7 @@ void smiHashTempTable::getDisplayInfo( void  * aTable,
     // 이 상황에서 getDisplayInfo 의 return 값은 중요치 않으므로 FATAL 이 발생하지 않도록 한다.
     if ( sWASegment != NULL )
     {
-        *aPageCount = sdtHashModule::getNExtentCount( sWASegment ) * SDT_WAEXTENT_PAGECOUNT ;
+        *aPageCount = sdtHashModule::getNExtentCount( sWASegment ) * sWASegment->mExtPageCount;
     }
     else
     {
@@ -1064,8 +1067,8 @@ ULong smiHashTempTable::getMaxHashBucketCount( void * aTable )
 
     if ( aTable != NULL )
     {
-        sHeader       = (smiTempTableHeader*)aTable;
-        sWASegment    = (sdtHashSegHdr*)sHeader->mWASegment;
+        sHeader        = (smiTempTableHeader*)aTable;
+        sWASegment     = (sdtHashSegHdr*)sHeader->mWASegment;
         sWAExtentCount = sWASegment->mMaxWAExtentCount;
     }
     else
@@ -1138,13 +1141,11 @@ void smiHashTempTable::generateHashStats( smiTempTableHeader * aHeader,
 
     if ( sWASegment != NULL )
     {
-        sStats->mMaxWorkAreaSize =
-            sdtHashModule::getMaxWAPageCount( sWASegment ) * SD_PAGE_SIZE;
-        sStats->mUsedWorkAreaSize =
-            sdtHashModule::getWASegmentUsedPageCount( sWASegment ) * SD_PAGE_SIZE;
-        sStats->mNormalAreaSize = sdtHashModule::getNExtentCount( sWASegment )
-            * SDT_WAEXTENT_PAGECOUNT
-            * SD_PAGE_SIZE;
+        sStats->mMaxWorkAreaSize  = sdtHashModule::getMaxWAPageCount( sWASegment ) * SD_PAGE_SIZE;
+        sStats->mUsedWorkAreaSize = sdtHashModule::getWASegmentUsedPageCount( sWASegment ) * SD_PAGE_SIZE;
+        sStats->mNormalAreaSize   = sdtHashModule::getNExtentCount( sWASegment )
+                                    * sWASegment->mExtPageCount
+                                    * SD_PAGE_SIZE;
     }
     sStats->mRecordLength  = aHeader->mRowSize;
     sStats->mRecordCount   = aHeader->mRowCount;

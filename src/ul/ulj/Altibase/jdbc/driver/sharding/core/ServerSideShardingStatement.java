@@ -269,7 +269,8 @@ public abstract class ServerSideShardingStatement implements InternalShardingSta
     
     void calcDistTxInfo()
     {
-        mServerSideStmt.getProtocolContext().getDistTxInfo().calcDistTxInfoForServerSide(mMetaConn);
+        mMetaConn.getMetaConnection().getDistTxInfo().calcDistTxInfoForServerSide(mMetaConn);
+        mServerSideStmt.getProtocolContext().getDistTxInfo().propagateDistTxInfoToNode(mMetaConn.getMetaConnection().getDistTxInfo());
         mServerSideStmt.getAltibaseConnection().setDistTxInfoForVerify();
     }
 

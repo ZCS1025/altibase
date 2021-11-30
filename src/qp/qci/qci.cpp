@@ -1921,6 +1921,10 @@ IDE_RC qci::hardPrepare( qciStatement           * aStatement,
         qcgPlan::registerPlanProperty( sStatement,
                                        PLAN_PROPERTY_OPTIMIZER_WITH_VIEW );
 
+        /* BUG-49330 */
+        qcgPlan::registerPlanProperty( sStatement,
+                                       PLAN_PROPERTY_OPTIMIZER_SET );
+
         // environment의 기록
         IDE_TEST( qcgPlan::registerPlanProc(
                       sStatement,
@@ -4867,7 +4871,6 @@ IDE_RC qci::executeDCL( qciStatement * aStatement,
         /* BUG-42639 Monitoring query */
         case QCI_STMT_SELECT_FOR_FIXED_TABLE:
             {
-                aSmiStmt->mTrans = NULL;
                 IDE_TEST( qci::execute( aStatement, aSmiStmt )
                           != IDE_SUCCESS );
                 break;
@@ -8622,29 +8625,6 @@ IDE_RC qci::setRemoteTableCallback( qciRemoteTableCallback * aCallback )
     sRet = qmrSetRemoteTableCallback( aCallback );
 
     return sRet;
-}
-
-/* BUG-49194 [mm-altiaudit] INC-45592 방어코드 추가 */
-void qci::getAllRefObjectCount( qciStatement      * aStatement, 
-                                UInt              * aRefObjectCount )
-{
-    qcStatement  *sQCStatement = &(aStatement->statement);
-
-    if ( sQCStatement->myPlan != NULL)
-    {
-        if ( sQCStatement->myPlan->planEnv == NULL)
-        {
-            *aRefObjectCount = 0;
-        }
-        else
-        {
-            *aRefObjectCount = sQCStatement->myPlan->planEnv->auditInfo.refObjectCount;
-        }
-    }
-    else
-    {
-        *aRefObjectCount = 0;
-    }
 }
 
 void qci::getAllRefObjects( qciStatement       * aStatement,

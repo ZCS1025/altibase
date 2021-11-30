@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
-* $Id: smmFPLManager.cpp 90259 2021-03-19 01:22:22Z emlee $
+* $Id: smmFPLManager.cpp 92066 2021-11-12 07:46:00Z kclee $
 **********************************************************************/
 
 #include <idl.h>
@@ -90,6 +90,8 @@ IDE_RC smmFPLManager::initialize( smmTBSNode * aTBSNode )
     // 각 Free Page List의 Mutex를 초기화
     /* smmFPLManager_initialize_malloc_ArrFPLMutex.tc */
     IDU_FIT_POINT("smmFPLManager::initialize::malloc::ArrFPLMutex");
+
+    //MUL_OVERFLOW_CHECK(ID_SIZEOF(iduMutex),SMM_FREE_PAGE_LIST_COUNT);
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SMM,
                                  ID_SIZEOF(iduMutex) *
                                  SMM_FREE_PAGE_LIST_COUNT,
@@ -102,6 +104,8 @@ IDE_RC smmFPLManager::initialize( smmTBSNode * aTBSNode )
 
     /* smmFPLManager_initialize_malloc_ArrPageReservation.tc */
     IDU_FIT_POINT("smmFPLManager::initialize::malloc::ArrPageReservation");
+    //MUL_OVERFLOW_CHECK(ID_SIZEOF( smmPageReservation ),SMM_FREE_PAGE_LIST_COUNT);
+
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SMM,
                                  ID_SIZEOF( smmPageReservation ) *
                                  SMM_FREE_PAGE_LIST_COUNT,
@@ -1372,6 +1376,8 @@ void smmFPLManager::dumpPageReservation(
 {
     SChar          * sTempBuffer;
 
+    //this check must be false,ignore the checking. 
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     if( iduMemMgr::calloc( IDU_MEM_SM_SMM,
                            1,
                            ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,

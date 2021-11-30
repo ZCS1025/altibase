@@ -91,6 +91,8 @@ IDE_RC sdsFlushMgr::initialize( UInt aFlusherCount )
     IDU_FIT_POINT_RAISE( "sdsFlushMgr::initialize::malloc",
                           ERR_INSUFFICIENT_MEMORY );
 
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(sdsFlusher),mMaxFlusherCount);
+
     // flusher들을 생성한다.
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SDS,
                                        (ULong)ID_SIZEOF(sdsFlusher) * mMaxFlusherCount,

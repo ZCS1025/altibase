@@ -6222,6 +6222,7 @@ IDE_RC sdcRow::undo_CHANGE_ROW_PIECE_LINK(
                                      sUndoPageStartPtr,
                                      "[ Hex Dump Undo Page ]\n" );
 
+        //MUL_OVERFLOW_CHECK(ID_SIZEOF(SChar),IDE_DUMP_DEST_LIMIT);
         if ( iduMemMgr::calloc( IDU_MEM_SM_SDC, 
                                 1,
                                 ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,

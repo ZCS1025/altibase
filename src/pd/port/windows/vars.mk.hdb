@@ -4,6 +4,7 @@ DEV_DIR=$(ALTIBASE_DEV)
 TARGET_DIR=$(DEV_DIR)/target/$(BUILD_MODE)
 ALTI_HOME=$(DEV_DIR)/altibase_home
 CORE_DIR=$(DEV_DIR)/src/core
+CORE_EXT_DIR=$(DEV_DIR)/src/core/acl/externalLib
 PD_DIR=$(DEV_DIR)/src/pd
 ID_DIR=$(DEV_DIR)/src/id
 CM_DIR=$(DEV_DIR)/src/cm

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smuHash.cpp 83870 2018-09-03 04:32:39Z kclee $
+ * $Id: smuHash.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <smDef.h>
@@ -433,8 +433,8 @@ IDE_RC smuHash::insertNodeNoLatch(smuHashBase   *aBase,
     aBase->mDidAllocChain = ID_TRUE;
     // alloc Chain & Init 
 #if defined(USE_CLASSIC_MEMORY)
-
-
+    //8 is just added because of align8.
+    ADD_OVERFLOW_CHECK((UInt)ID_SIZEOF(smuHashChain)+8,aBase->mKeyLength);
     sChain = (smuHashChain *)idlOS::malloc(idlOS::align8((UInt)ID_SIZEOF(smuHashChain) 
                                                          + aBase->mKeyLength));
     sState = 1;

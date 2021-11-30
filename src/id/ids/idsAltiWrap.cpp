@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idsAltiWrap.cpp 90502 2021-04-08 01:52:26Z ahra.cho $ 
+ * $Id: idsAltiWrap.cpp 92066 2021-11-12 07:46:00Z kclee $ 
  **********************************************************************/
 
 #include <idsAltiWrap.h>
@@ -165,6 +165,8 @@ IDE_RC idsAltiWrap::doSHA1( UChar  * aCompText,
 
     IDU_FIT_POINT( "idsAltiWrap::doSHA::malloc",
                    idERR_ABORT_InsufficientMemory );
+
+    ADD_OVERFLOW_CHECK(sSHA1ResultLen,1);
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_ID_ALTIWRAP,
                                  sSHA1ResultLen + 1,
                                  (void**)&sSHA1Result )
@@ -278,6 +280,8 @@ IDE_RC idsAltiWrap::makeBase64Result( idsAltiWrapInfo * aAltiWrapInfo,
 
     IDU_FIT_POINT( "idsAltiWrap::makeBase64Result::malloc::sBase64Text",
                    idERR_ABORT_InsufficientMemory );
+
+    ADD_OVERFLOW_CHECK( sCalculatedLen,1 );
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_ID_ALTIWRAP,
                                  sCalculatedLen + 1, 
                                  (void **)&sBase64Text )
@@ -382,6 +386,8 @@ IDE_RC idsAltiWrap::getBase64Result( idsAltiWrapInfo * aAltiWrapInfo )
 
     IDU_FIT_POINT( "idsAltiWrap::getBase64Result::malloc",
                    idERR_ABORT_InsufficientMemory );
+
+    ADD_OVERFLOW_CHECK( sCalculatedLen,1 );
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_ID_ALTIWRAP,
                                  sCalculatedLen + 1, 
                                  (void **)&sText )
@@ -458,6 +464,8 @@ IDE_RC idsAltiWrap::setEncryptedText( idsAltiWrapInfo  * aAltiWrapInfo,
 
     IDU_FIT_POINT( "idsAltiWrap::setEncryptedText::malloc",
                    idERR_ABORT_InsufficientMemory );
+
+    ADD_OVERFLOW_CHECK( sResultLen,1 );
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_ID_ALTIWRAP, 
                                  sResultLen + 1,
                                  (void **)&sResult,
@@ -616,6 +624,7 @@ IDE_RC idsAltiWrap::doDecompression( UChar  * aCompText,
 
     IDU_FIT_POINT( "idsAltiWrap::doDecompression::calloc",
                    idERR_ABORT_InsufficientMemory );
+    ADD_OVERFLOW_CHECK(sDecompTextLen,1);
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_ID_ALTIWRAP,
                                  1,
                                  sDecompTextLen + 1,
@@ -763,6 +772,8 @@ IDE_RC idsAltiWrap::doBase64Decoding( idsAltiWrapInfo * aAltiWrapInfo )
 
     IDU_FIT_POINT( "idsAltiWrap::doBase64Decoding::malloc::sResult", 
                    idERR_ABORT_InsufficientMemory );
+
+    ADD_OVERFLOW_CHECK( sLen,1 );
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_ID_ALTIWRAP,
                                  sLen + 1,
                                  (void **)&sResult,
@@ -837,6 +848,8 @@ IDE_RC idsAltiWrap::doBase64Decoding( idsAltiWrapInfo * aAltiWrapInfo )
     /* compressed text ¼ÂÆÃ */
     IDU_FIT_POINT( "idsAltiWrap::doBase64Decoding::malloc::mCompText",
                    idERR_ABORT_InsufficientMemory );
+
+    ADD_OVERFLOW_CHECK( (aAltiWrapInfo->mCompTextLen),1 );
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_ID_ALTIWRAP,
                                  (aAltiWrapInfo->mCompTextLen) + 1,
                                  (void **)&aAltiWrapInfo->mCompText,
@@ -855,6 +868,8 @@ IDE_RC idsAltiWrap::doBase64Decoding( idsAltiWrapInfo * aAltiWrapInfo )
 
     IDU_FIT_POINT( "idsAltiWrap::doBase64Decoding::malloc::mSHAText",
                    idERR_ABORT_InsufficientMemory );
+
+    ADD_OVERFLOW_CHECK( aAltiWrapInfo->mSHA1TextLen,1 );
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_ID_ALTIWRAP,
                                  aAltiWrapInfo->mSHA1TextLen + 1,
                                  (void **)&aAltiWrapInfo->mSHA1Text,
@@ -917,6 +932,8 @@ IDE_RC idsAltiWrap::setDecryptedText( idsAltiWrapInfo  * aAltiWrapInfo,
 
     IDU_FIT_POINT( "idsAltiWrap::setDecryptedText::malloc",
                    idERR_ABORT_InsufficientMemory );
+
+    ADD_OVERFLOW_CHECK( sResultLen,1 );
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_ID_ALTIWRAP, 
                                  sResultLen + 1,
                                  (void **)&sResult,

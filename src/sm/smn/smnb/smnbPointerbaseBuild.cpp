@@ -97,6 +97,8 @@ IDE_RC smnbPointerbaseBuild::buildIndex( void               * aTrans,
 
     /* smnbPointerbaseBuild_buildIndex_malloc_Threads.tc */
     IDU_FIT_POINT("smnbPointerbaseBuild::buildIndex::malloc::Threads");
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(smnbPointerbaseBuild),aThreadCnt);
+
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SMN,
                                  (ULong)ID_SIZEOF(smnbPointerbaseBuild) * aThreadCnt,
                                  (void**)&sThreads )
@@ -845,6 +847,8 @@ IDE_RC smnbPointerbaseBuild::prepareQuickSort( smcTableHeader * aTable,
         {
             /* smnbPointerbaseBuild_prepareQuickSort_malloc_ArrNode.tc */
             IDU_FIT_POINT("smnbPointerbaseBuild::prepareQuickSort::malloc::ArrNode");
+            MUL_OVERFLOW_CHECK( ID_SIZEOF(smnbLNode *),sNode);
+
             IDE_TEST(iduMemMgr::malloc(IDU_MEM_SM_SMN,
                                        ID_SIZEOF(smnbLNode *) * sNode,
                                        (void**)&sArrNode)

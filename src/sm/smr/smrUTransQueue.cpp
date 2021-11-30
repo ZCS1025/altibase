@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smrUTransQueue.cpp 82426 2018-03-09 05:12:27Z emlee $
+ * $Id: smrUTransQueue.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <smErrorCode.h>
@@ -57,6 +57,7 @@ IDE_RC smrUTransQueue::initialize(SInt aTransCount)
 
     /* smrUTransQueue_initialize_calloc_ArrUndoTransInfo.tc */
     IDU_FIT_POINT("smrUTransQueue::initialize::calloc::ArrUndoTransInfo");
+    MUL_OVERFLOW_CHECK(aTransCount,ID_SIZEOF(smrUndoTransInfo));
     IDE_TEST(iduMemMgr::calloc(IDU_MEM_SM_SMR,
                                aTransCount,
                                ID_SIZEOF(smrUndoTransInfo),

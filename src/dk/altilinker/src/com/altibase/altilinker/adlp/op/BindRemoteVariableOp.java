@@ -87,11 +87,6 @@ public class BindRemoteVariableOp extends RequestOperation
             return false;
         }
         
-        if (mBindVariableString == null)
-        {
-            return false;
-        }
-        
         return true;
     }
 }

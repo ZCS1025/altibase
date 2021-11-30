@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: rpdMeta.h 91576 2021-09-02 06:39:41Z donghyun1 $
+ * $Id: rpdMeta.h 92100 2021-11-17 11:34:19Z lswhh $
  **********************************************************************/
 
 #ifndef _O_RPD_META_H_
@@ -598,6 +598,9 @@ public:
                                     rpdMetaItem  * aItem);
     static IDE_RC insertOldMetaRepl(smiStatement * aSmiStmt,
                                  rpdMeta      * aMeta);
+    static IDE_RC deleteOldMetaItemRetry(smiStatement * aSmiStmt,
+                                 SChar        * aRepName,
+                                 ULong          aItemOID);
     static IDE_RC deleteOldMetaItem(smiStatement * aSmiStmt,
                                  SChar        * aRepName,
                                  ULong          aItemOID);

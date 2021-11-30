@@ -26,15 +26,18 @@
 #include <iduLatch.h>
 #include <smDef.h>
 
-#define SMU_LOG_BUFFER_TYPE_MMAP       (0)
-#define SMU_LOG_BUFFER_TYPE_MEMORY     (1)
+#define SMU_LOG_BUFFER_TYPE_MMAP        (0)
+#define SMU_LOG_BUFFER_TYPE_MEMORY      (1)
 
+#define SMU_THREAD_OFF                  (0)
+#define SMU_THREAD_ON                   (1)
 
-#define SMU_THREAD_OFF                 (0)
-#define SMU_THREAD_ON                  (1)
+#define SMU_LOG_FILE_CREATE_WRITE       (0)
+#define SMU_LOG_FILE_CREATE_FALLOCATE   (1)
 
-#define SMU_LOG_FILE_CREATE_WRITE      (0)
-#define SMU_LOG_FILE_CREATE_FALLOCATE  (1)
+#define SMU_DISK_TEMP_TABLE_DUMP_LEVEL_0 (0) // off
+#define SMU_DISK_TEMP_TABLE_DUMP_LEVEL_1 (1) // Slot,header,Extent,Segment,Page
+#define SMU_DISK_TEMP_TABLE_DUMP_LEVEL_2 (2) // CallStack,to File
 
 /* BUG-27122 Restart Recovery시 UTrans가 접근하는 디스크 인덱스의 Verify 기능
  *           (__SM_CHECK_DISK_INDEX_INTEGRITY = 2 ) 추가

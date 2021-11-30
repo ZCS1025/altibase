@@ -285,6 +285,8 @@ IDE_RC smnbValuebaseBuild::buildIndex( void              * aTrans,
     IDU_FIT_POINT_RAISE( "smnbValuebaseBuild::buildIndex::malloc",
                           insufficient_memory );
 
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(smnbValuebaseBuild),aThreadCnt);
+
     IDE_TEST_RAISE(iduMemMgr::malloc( IDU_MEM_SM_SMN,
                                 (ULong)ID_SIZEOF(smnbValuebaseBuild) * aThreadCnt,
                                 (void**)&sThreads,
@@ -1611,6 +1613,8 @@ IDE_RC smnbValuebaseBuild::mergeRun( smnbStatistic    * aIndexStat )
     IDU_FIT_POINT_RAISE( "smnbValuebaseBuild::mergeRun::malloc",
                           insufficient_memory );
     
+    MUL_OVERFLOW_CHECK((ULong)mSortedRunCount,ID_SIZEOF(smnbMergeRunInfo));
+
     // initialize heap
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMN,
                                  (ULong)mSortedRunCount * ID_SIZEOF(smnbMergeRunInfo),
@@ -1701,6 +1705,8 @@ IDE_RC smnbValuebaseBuild::unionMergeRun( smnbStatistic  * aIndexStat )
     // initialize heap
     /* smnbValuebaseBuild_unionMergeRun_malloc_MergeRunInfo.tc */
     IDU_FIT_POINT("smnbValuebaseBuild::unionMergeRun::malloc::MergeRunInfo");
+    MUL_OVERFLOW_CHECK((ULong)sTotalRunCount,ID_SIZEOF(smnbMergeRunInfo));
+
     IDE_TEST( iduMemMgr::malloc(
                   IDU_MEM_SM_SMN,
                   (ULong)sTotalRunCount * ID_SIZEOF(smnbMergeRunInfo),
@@ -1834,6 +1840,8 @@ IDE_RC smnbValuebaseBuild::makeTree( smnbValuebaseBuild  * aThreads,
     IDU_FIT_POINT_RAISE( "smnbValuebaseBuild::makeTree::malloc1",
                           insufficient_memory );
 
+    MUL_OVERFLOW_CHECK((ULong)sTotalRunCount,ID_SIZEOF(smnbMergeRunInfo));
+
     // initialize heap
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMN, 
                                  (ULong)sTotalRunCount * ID_SIZEOF(smnbMergeRunInfo),
@@ -1864,6 +1872,8 @@ IDE_RC smnbValuebaseBuild::makeTree( smnbValuebaseBuild  * aThreads,
     //TC/FIT/Limit/sm/smn/smnb/smnbValuebaseBuild_makeTree_malloc2.sql
     IDU_FIT_POINT_RAISE( "smnbValuebaseBuild::makeTree::malloc2",
                           insufficient_memory );
+
+    MUL_OVERFLOW_CHECK((ULong)sHeapMapCount,ID_SIZEOF(SInt));
 
     IDE_TEST_RAISE( iduMemMgr::malloc(IDU_MEM_SM_SMN,
                                 (ULong)sHeapMapCount * ID_SIZEOF(SInt),
@@ -2594,6 +2604,8 @@ IDE_RC smnbValuebaseBuild::merge( smnbStatistic     * aIndexStat,
     /* TC/FIT/Limit/sm/smn/smnb/smnbValuebaseBuild_merge_malloc.sql */
     IDU_FIT_POINT_RAISE( "smnbValuebaseBuild::merge::malloc",
                           insufficient_memory );
+
+    MUL_OVERFLOW_CHECK((ULong)sHeapMapCount,ID_SIZEOF(SInt));
 
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMN,
                                  (ULong)sHeapMapCount * ID_SIZEOF(SInt),

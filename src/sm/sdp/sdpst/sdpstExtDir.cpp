@@ -1490,6 +1490,7 @@ IDE_RC sdpstExtDir::dump( UChar    * aPagePtr )
     (void)sdpPhyPage::tracePage( IDE_SERVER_0,
                                  sPagePtr,
                                  "Physical Page:" );
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     if( iduMemMgr::calloc(
             IDU_MEM_SM_SDP, 1,
             ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,

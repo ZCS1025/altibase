@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtf.cpp 85458 2019-05-16 07:13:00Z andrew.shin $
+ * $Id: mtf.cpp 92098 2021-11-17 06:06:01Z donovan.seo $
  **********************************************************************/
 
 #include <mte.h>
@@ -274,6 +274,7 @@ IDE_RC mtf::initializeComparisonTable( void )
     const mtdModule* sModule;
     const mtvTable*  sTable1;
     const mtvTable*  sTable2;
+    idBool           sNibble = ID_FALSE;
 
     IDE_TEST(iduMemMgr::malloc(IDU_MEM_MT,
                                ID_SIZEOF(mtdModule**) *
@@ -356,6 +357,17 @@ IDE_RC mtf::initializeComparisonTable( void )
             comparisonTable[sArgument1][mtdNumeric.no] = &mtdNumeric;
         }
     }
+
+    if ( ( MTU_NUMBER_CONVERSION_MODE & MTU_NIBBLE_CONVERSION_ENABLE_MASK )
+         == MTU_NIBBLE_CONVERSION_ENABLE_TRUE )
+    {
+        sNibble = ID_TRUE;
+    }
+    else
+    {
+        sNibble = ID_FALSE;
+    }
+
     /* PATCH TABLE : CHANGE TO BYTE
                      ASSOCIATED WITH BYTE AND TEXT */
     for( sArgument1 = 0;
@@ -388,6 +400,19 @@ IDE_RC mtf::initializeComparisonTable( void )
                   ( sModule1 == &mtdVarbyte ) ) )
             {
                 comparisonTable[sArgument1][sArgument2] = &mtdVarbyte;
+            }
+
+            /* BUG-49443 */
+            if ( sNibble == ID_TRUE )
+            {
+                if ( ( ( (sModule1->flag & MTD_GROUP_MASK) == MTD_GROUP_TEXT ) &&
+                       ( sModule2 == &mtdNibble ) )
+                     ||
+                     ( ( (sModule2->flag & MTD_GROUP_MASK) == MTD_GROUP_TEXT ) &&
+                       ( sModule1 == &mtdNibble ) ) )
+                {
+                    comparisonTable[sArgument1][sArgument2] = &mtdNibble;
+                }
             }
         }
     }
@@ -706,7 +731,8 @@ IDE_RC mtf::makeConversionNodes( mtcNode*          aNode,
                 sNode->conversion = sConversionNode;
 
                 /* BUG-461267 */
-                if ( MTU_NUMBER_CONVERSION_MODE == MTU_NUMBER_CONVERSION_ENABLE )
+                if ( ( MTU_NUMBER_CONVERSION_MODE & MTU_NUMBER_CONVERSION_ENABLE_MASK )
+                     == MTU_NUMBER_CONVERSION_ENABLE_TRUE )
                 {
                     aNode->cost = sCost;
                 }
@@ -800,9 +826,10 @@ IDE_RC mtf::makeLeftConversionNodes( mtcNode*          aNode,
             if( sNode->leftConversion == NULL )
             {
                 sNode->leftConversion = sConversionNode;
-                
+
                 /* BUG-461267 */
-                if ( MTU_NUMBER_CONVERSION_MODE == MTU_NUMBER_CONVERSION_ENABLE )
+                if ( ( MTU_NUMBER_CONVERSION_MODE & MTU_NUMBER_CONVERSION_ENABLE_MASK )
+                     == MTU_NUMBER_CONVERSION_ENABLE_TRUE )
                 {
                     aNode->cost = sCost;
                 }

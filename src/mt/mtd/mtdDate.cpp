@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: mtdDate.cpp 88554 2020-09-11 06:44:49Z donovan.seo $
+ * $Id: mtdDate.cpp 92028 2021-11-10 04:43:11Z ahra.cho $
  **********************************************************************/
 
 #include <mte.h>
@@ -2733,9 +2733,10 @@ IDE_RC mtdDateInterface::dateDiff( mtdBigintType * aResult,
     }
     else if( sExtractSet == MTD_DATE_DIFF_SECOND )
     {
-        // 68 year = 2185574400 sec
-        IDE_TEST_RAISE ( ( sDiffSecond > ID_LONG(2185574400) ) ||
-                         ( sDiffSecond < ID_LONG(-2185574400) ),
+        // BUG-49418
+        // 68 year = 1*60*60*24*365*68 = 2144448000 sec
+        IDE_TEST_RAISE ( ( sDiffSecond > ID_LONG(2144448000) ) ||
+                         ( sDiffSecond < ID_LONG(-2144448000) ),
                          ERR_DATEDIFF_OUT_OF_RANGE_IN_SECOND );
 
         *aResult = sDiffSecond;

@@ -31,6 +31,7 @@ import javax.transaction.xa.Xid;
 import Altibase.jdbc.driver.AltibaseXAResource;
 import Altibase.jdbc.driver.BlobInputStream;
 import Altibase.jdbc.driver.LobConst;
+import Altibase.jdbc.driver.cm.CmProtocolContextShardStmt.ShardPartialExecType;
 import Altibase.jdbc.driver.datatype.Column;
 import Altibase.jdbc.driver.datatype.ColumnTypes;
 import Altibase.jdbc.driver.datatype.ListBufferHandle;
@@ -217,7 +218,13 @@ public class CmProtocol
             {
                 CmOperation.writeCloseCursor(aContext.channel(), aContext.getStatementId(), CmOperation.FREE_ALL_RESULTSET);                
             }
-            CmOperation.writePrepare(aContext.channel(), aCID, aSql, CmOperation.PREPARE_MODE_EXEC_DIRECT, sHoldability, sForKeySetDriven, aNliteralReplace);
+            /* TASK-7219 Non-shard DML
+             * ShardPartialExecType은 sharding에서만 해당.
+             * sharding의 경우, prepare-execute로 처리되므로 여기로 들어오지 않는다.
+             * 따라서 ShardPartialExecType을 넘겨받지 않고 기본값(CmOperation.PREPARE_MODE_SHARD_PARTIAL_EXEC_NONE)으로 처리한다.
+             * 참고 : this.prepare()
+             */
+            CmOperation.writePrepare(aContext.channel(), aCID, aSql, CmOperation.PREPARE_MODE_EXEC_DIRECT, sHoldability, sForKeySetDriven, aNliteralReplace, CmOperation.PREPARE_MODE_SHARD_PARTIAL_EXEC_NONE);
             CmOperation.writeGetColumn(aContext.channel(), aContext.getStatementId(), aContext.getResultSetId());
             // The zero value (0) can be used for statement id during direct Execute
             CmOperation.writeExecuteV3(aContext.channel(), aContext.getStatementId(), CmOperation.EXECUTION_ARRAY_INDEX_NONE, CmOperation.EXECUTION_MODE_NORMAL, aContext);
@@ -342,7 +349,14 @@ public class CmProtocol
             for (int i = 0; i < aSql.length; i++)
             {
                 // batch execution에서는 select 구문이 없다고 가정하므로 PREPARE_MODE_HOLD_ON으로 줄 필요가 없다.
-                CmOperation.writePrepare(aContext.channel(), aCID, aSql[i], CmOperation.PREPARE_MODE_EXEC_DIRECT, CmOperation.PREPARE_MODE_HOLD_OFF, CmOperation.PREPARE_MODE_KEYSET_OFF, aNliteralReplace);
+                /* TASK-7219 Non-shard DML
+                 * ShardPartialExecType은 sharding에서만 해당.
+                 * sharding의 경우, prepare-execute로 처리되므로 여기로 들어오지 않는다.
+                 * 따라서 ShardPartialExecType을 넘겨받지 않고 기본값(CmOperation.PREPARE_MODE_SHARD_PARTIAL_EXEC_NONE)으로 처리한다.
+                 * 참고 : this.prepare()
+                 */
+                CmOperation.writePrepare(aContext.channel(), aCID, aSql[i], CmOperation.PREPARE_MODE_EXEC_DIRECT, CmOperation.PREPARE_MODE_HOLD_OFF, 
+                                         CmOperation.PREPARE_MODE_KEYSET_OFF, aNliteralReplace, CmOperation.PREPARE_MODE_SHARD_PARTIAL_EXEC_NONE);
                 CmOperation.writeExecuteV3(aContext.channel(), aContext.getStatementId(), i + 1, CmOperation.EXECUTION_MODE_NORMAL, aContext);
 
                 // select 구문이 있어도 다음 update 구문을 제대로 수행하기 위해 cursor를 닫는다.
@@ -381,7 +395,13 @@ public class CmProtocol
             {
                 CmOperation.writeCloseCursor(aContext.channel(), aContext.getStatementId(), CmOperation.FREE_ALL_RESULTSET);                
             }
-            CmOperation.writePrepare(aContext.channel(), aCID, aSql, CmOperation.PREPARE_MODE_EXEC_DIRECT, sHoldability, sForKeySetDriven, aNliteralReplace);
+            /* TASK-7219 Non-shard DML
+             * ShardPartialExecType은 sharding에서만 해당.
+             * sharding의 경우, prepare-execute로 처리되므로 여기로 들어오지 않는다.
+             * 따라서 ShardPartialExecType을 넘겨받지 않고 기본값(CmOperation.PREPARE_MODE_SHARD_PARTIAL_EXEC_NONE)으로 처리한다.
+             * 참고 : this.prepare()
+             */
+            CmOperation.writePrepare(aContext.channel(), aCID, aSql, CmOperation.PREPARE_MODE_EXEC_DIRECT, sHoldability, sForKeySetDriven, aNliteralReplace, CmOperation.PREPARE_MODE_SHARD_PARTIAL_EXEC_NONE);
             CmOperation.writeGetColumn(aContext.channel(), aContext.getStatementId(), aContext.getResultSetId());
             CmOperation.writeExecuteV3(aContext.channel(), aContext.getStatementId(), CmOperation.EXECUTION_ARRAY_INDEX_NONE, CmOperation.EXECUTION_MODE_NORMAL, aContext);
             CmOperation.writeFetchV3(aContext.channel(), aContext.getStatementId(), aContext.getResultSetId(), aFetchCount);
@@ -391,16 +411,30 @@ public class CmProtocol
     }
     
     public static void prepare(CmProtocolContextDirExec aContext, int aCID, String aSql, boolean aHoldable, boolean aForKeySetDriven, 
-                               boolean aNliteralReplace, boolean aIsDeferred) throws SQLException
+                               boolean aNliteralReplace, boolean aIsDeferred, ShardPartialExecType aShardPartialExecType) throws SQLException
     {
         aContext.clearError();
         
         byte sHoldability = aHoldable ? CmOperation.PREPARE_MODE_HOLD_ON : CmOperation.PREPARE_MODE_HOLD_OFF;
         byte sForKeySetDriven = aForKeySetDriven ? CmOperation.PREPARE_MODE_KEYSET_ON : CmOperation.PREPARE_MODE_KEYSET_OFF;
+        /* TASK-7219 Non-shard DML */
+        byte sShardPartialExecType;
+        if (aShardPartialExecType == ShardPartialExecType.SHARD_PARTIAL_EXEC_TYPE_COORD)
+        {
+            sShardPartialExecType = CmOperation.PREPARE_MODE_SHARD_PARTIAL_EXEC_COORD;
+        }
+        else if (aShardPartialExecType == ShardPartialExecType.SHARD_PARTIAL_EXEC_TYPE_QUERY)
+        {
+            sShardPartialExecType = CmOperation.PREPARE_MODE_SHARD_PARTIAL_EXEC_QUERY;
+        }
+        else
+        {
+            sShardPartialExecType = CmOperation.PREPARE_MODE_SHARD_PARTIAL_EXEC_NONE;
+        }
         long beforetime = System.currentTimeMillis();
         synchronized (aContext.channel())
         {
-            CmOperation.writePrepare(aContext.channel(), aCID, aSql, CmOperation.PREPARE_MODE_EXEC_PREPARE, sHoldability, sForKeySetDriven, aNliteralReplace);
+            CmOperation.writePrepare(aContext.channel(), aCID, aSql, CmOperation.PREPARE_MODE_EXEC_PREPARE, sHoldability, sForKeySetDriven, aNliteralReplace, sShardPartialExecType);
             CmOperation.writeGetColumn(aContext.channel(), aContext.getStatementId(), aContext.getResultSetId());
             // BUG-42424 deferred일 경우에는 prepare요청을 보내지 않고 로그만 남긴 후 메소드를 그냥 빠져나간다.
             if (aIsDeferred) 

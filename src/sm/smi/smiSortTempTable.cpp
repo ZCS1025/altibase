@@ -391,6 +391,8 @@ IDE_RC smiSortTempTable::create( idvSQL              * aStatistics,
     IDE_TEST( getColumnCount( sHeader,
                               aColumnList ) != IDE_SUCCESS );
 
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(smiTempColumn),sHeader->mColumnCount);
+
     /* smiTempTable_create_malloc_Columns.tc */
     IDU_FIT_POINT("smiSortTempTable::create::malloc::Columns");
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SMI,
@@ -1335,8 +1337,7 @@ void smiSortTempTable::getDisplayInfo( void  * aTable,
     // 이 상황에서 getDisplayInfo 의 return 값은 중요치 않으므로 FATAL 이 발생하지 않도록 한다.
     if ( sWASegment != NULL )
     {
-        *aPageCount = sdtSortSegment::getNExtentCount( sWASegment )
-            * SDT_WAEXTENT_PAGECOUNT ;
+        *aPageCount = sdtSortSegment::getNExtentCount( sWASegment ) * sWASegment->mExtPageCount;
     }
     else
     {
@@ -1378,13 +1379,11 @@ void smiSortTempTable::generateSortStats( smiTempTableHeader * aHeader,
 
     if( sWASegment != NULL )
     {
-        sStats->mMaxWorkAreaSize   =
-            sdtSortSegment::getMaxWAPageCount( sWASegment ) * SD_PAGE_SIZE;
-        sStats->mUsedWorkAreaSize =
-            sdtSortSegment::getWASegmentUsedPageCount( sWASegment ) * SD_PAGE_SIZE;
-        sStats->mNormalAreaSize = sdtSortSegment::getNExtentCount( sWASegment )
-            * SDT_WAEXTENT_PAGECOUNT
-            * SD_PAGE_SIZE;
+        sStats->mMaxWorkAreaSize  = sdtSortSegment::getMaxWAPageCount( sWASegment ) * SD_PAGE_SIZE;
+        sStats->mUsedWorkAreaSize = sdtSortSegment::getWASegmentUsedPageCount( sWASegment ) * SD_PAGE_SIZE;
+        sStats->mNormalAreaSize   = sdtSortSegment::getNExtentCount( sWASegment )
+                                    * sWASegment->mExtPageCount
+                                    * SD_PAGE_SIZE;
     }
     sStats->mRecordLength     = aHeader->mRowSize;
     sStats->mRecordCount      = aHeader->mRowCount;

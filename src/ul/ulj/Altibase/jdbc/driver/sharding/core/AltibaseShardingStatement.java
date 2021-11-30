@@ -737,4 +737,14 @@ public class AltibaseShardingStatement extends WrapperAdapter implements Stateme
         return ( sStmtType == CmPrepareResult.STATEMENT_TYPE_COMMIT || 
                  sStmtType == CmPrepareResult.STATEMENT_TYPE_ROLLBACK );
     }
+
+    public String getExplainPlan() throws SQLException
+    {
+        if (!mShardStmtCtx.getShardAnalyzeResult().isCoordQuery())
+        {
+            Error.throwSQLException(ErrorDef.UNSUPPORTED_FEATURE,
+                    "getExplainPlan is not supported in client-side query.");
+        }
+        return ((AltibasePreparedStatement)mServerSideStmt).getExplainPlan();            
+    }
 }

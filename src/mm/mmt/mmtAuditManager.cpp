@@ -525,6 +525,9 @@ void mmtAuditManager::auditByAccess( mmcStatement     *aStatement,
     IDE_TEST_CONT( isAuditStarted() != ID_TRUE, AUDIT_NOT_STARTED );
 
     sQciStmt          = aStatement->getQciStmt();
+    sAuditObjects     = aStatement->getAuditObjects();
+    sAuditObjectCount = aStatement->getAuditObjectCount();
+    sAuditTrail       = aStatement->getAuditTrail();
     sStat             = aStatement->getStatistics();
     sSessInfo         = aStatement->getSession()->getInfo();
     sQueryString      = aStatement->getQueryString();
@@ -533,12 +536,6 @@ void mmtAuditManager::auditByAccess( mmcStatement     *aStatement,
 
     lockAuditMetaRead();
     sNeedUnlock = ID_TRUE;
-
-    /* BUG-49194 [mm-altiaudit] INC-45592 방어코드 추가 
-     * audit 관련 변수를 lock 이후에 가져온다 */
-    sAuditObjects     = aStatement->getAuditObjects();
-    sAuditObjectCount = aStatement->getAuditObjectCount();
-    sAuditTrail       = aStatement->getAuditTrail();
 
     IDE_TEST_CONT( isAuditStarted() != ID_TRUE, AUDIT_NOT_STARTED );
 
@@ -610,10 +607,11 @@ void mmtAuditManager::auditBySession( mmcStatement *aStatement )
     idBool             sNeedUnlock = ID_FALSE;
     UInt               sIdx;
 
-    UInt               sRefObjectCount = 0;
-
     IDE_TEST_CONT( isAuditStarted() != ID_TRUE, AUDIT_NOT_STARTED );
 
+    sAuditObjects     = aStatement->getAuditObjects();
+    sAuditObjectCount = aStatement->getAuditObjectCount();
+    sAuditTrail       = aStatement->getAuditTrail();
     sStat             = aStatement->getStatistics();
     sSessInfo         = aStatement->getSession()->getInfo();
     sQueryString      = aStatement->getQueryString();
@@ -624,9 +622,7 @@ void mmtAuditManager::auditBySession( mmcStatement *aStatement )
 
     /* BUG-49194 [mm-altiaudit] INC-45592 방어코드 추가 
      * audit 관련 변수를 lock 이후에 가져온다 */
-    sAuditObjects     = aStatement->getAuditObjects();
-    sAuditObjectCount = aStatement->getAuditObjectCount();
-    sAuditTrail       = aStatement->getAuditTrail();
+    
 
     IDE_TEST_CONT( isAuditStarted() != ID_TRUE, AUDIT_NOT_STARTED );
 
@@ -640,12 +636,6 @@ void mmtAuditManager::auditBySession( mmcStatement *aStatement )
                                                  sAuditTrail->mActionCode,
                                                  sStat );
     }
-
-    /* BUG-49194 [mm-altiaudit] INC-45592 방어코드 추가 
-     * auditObjectCount와 refObjectCount 를 비교하여 
-     * 잘못된 sAuditObjects 메모리 접근을 방어한다. */
-    qci::getAllRefObjectCount( aStatement->getQciStmt(), &sRefObjectCount );
-    IDE_TEST_RAISE( sRefObjectCount != sAuditObjectCount, invalidAuditObjectCount );
 
     /* object auditing */
     for( sIdx = 0;
@@ -683,21 +673,6 @@ void mmtAuditManager::auditBySession( mmcStatement *aStatement )
     {
         unlockAuditMeta();
     }
-
-    return;
-
-    IDE_EXCEPTION (invalidAuditObjectCount)
-    {
-        ideLog::log( IDE_ERR_0, "invalid auditObjectCount : auditObjectCount(%d) != sRefObjectCount(%d)", sAuditObjectCount, sRefObjectCount );
-    }
-    IDE_EXCEPTION_END;
-
-    if ( sNeedUnlock == ID_TRUE )
-    {
-        unlockAuditMeta();
-    }
-
-    return;
 }
 
 /* BUG-41986 User connection info can be audited.

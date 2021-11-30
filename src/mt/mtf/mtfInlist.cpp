@@ -34,6 +34,7 @@ extern mtdModule mtdChar;
 extern mtdModule mtdFloat;
 extern mtdModule mtdNumeric;
 extern mtdModule mtdList;
+extern mtdModule mtdNibble;
 
 static mtcName mtfInlistFunctionName[1] = {
     { NULL, 6, (void*)"INLIST" }
@@ -154,10 +155,17 @@ IDE_RC mtfInlistEstimate( mtcNode*     aNode,
 
         if ( aStack[2].column->module == &mtdChar )
         {
-            IDE_TEST( mtf::getComparisonModule( &sTarget,
-                                                aStack[1].column->module->no,
-                                                mtdChar.no )
-                      != IDE_SUCCESS );
+            if ( aStack[1].column->module == &mtdNibble )
+            {
+                sTarget = &mtdNibble;
+            }
+            else
+            {
+                IDE_TEST( mtf::getComparisonModule( &sTarget,
+                                                    aStack[1].column->module->no,
+                                                    mtdChar.no )
+                          != IDE_SUCCESS );
+            }
 
             IDE_TEST_RAISE( sTarget == NULL,
                             ERR_CONVERSION_NOT_APPLICABLE );
@@ -187,10 +195,17 @@ IDE_RC mtfInlistEstimate( mtcNode*     aNode,
         {
             if ( aStack[2].column->module == &mtdVarchar )
             {
-                IDE_TEST( mtf::getComparisonModule( &sTarget,
-                                                    aStack[1].column->module->no,
-                                                    mtdVarchar.no )
-                          != IDE_SUCCESS );
+                if ( aStack[1].column->module == &mtdNibble )
+                {
+                    sTarget = &mtdNibble;
+                }
+                else
+                {
+                    IDE_TEST( mtf::getComparisonModule( &sTarget,
+                                                        aStack[1].column->module->no,
+                                                        mtdVarchar.no )
+                              != IDE_SUCCESS );
+                }
 
                 IDE_TEST_RAISE( sTarget == NULL,
                                 ERR_CONVERSION_NOT_APPLICABLE );
@@ -218,11 +233,18 @@ IDE_RC mtfInlistEstimate( mtcNode*     aNode,
             }
             else
             {
-                /*char varchar 가 아닌 경우 강제로 varchar 로 conversion */
-                IDE_TEST( mtf::getComparisonModule( &sTarget,
-                                                    aStack[1].column->module->no,
-                                                    mtdVarchar.no )
-                          != IDE_SUCCESS );
+                if ( aStack[1].column->module == &mtdNibble )
+                {
+                    sTarget = &mtdNibble;
+                }
+                else
+                {
+                    /*char varchar 가 아닌 경우 강제로 varchar 로 conversion */
+                    IDE_TEST( mtf::getComparisonModule( &sTarget,
+                                                        aStack[1].column->module->no,
+                                                        mtdVarchar.no )
+                              != IDE_SUCCESS );
+                }
 
                 IDE_TEST_RAISE( sTarget == NULL,
                                 ERR_CONVERSION_NOT_APPLICABLE );

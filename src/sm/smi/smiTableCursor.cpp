@@ -16,7 +16,7 @@
  
 
 /*******************************************************************************
- * $Id: smiTableCursor.cpp 91859 2021-10-17 22:37:22Z emlee $
+ * $Id: smiTableCursor.cpp 92135 2021-11-24 11:42:25Z justin.kwon $
  ******************************************************************************/
 
 #include <idl.h>
@@ -4160,6 +4160,7 @@ IDE_RC smiTableCursor::makeFullUpdateMRDB( smiTableCursor  * aCursor,
     IDU_FIT_POINT( "smiTableCursor::makeFullUpdateMRDB::calloc" );
 
     // new value column을 정렬하기 위해 메모리 할당
+    MUL_OVERFLOW_CHECK( sUpdateColumnCount, ID_SIZEOF(smiUpdateColumnList) );
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMI,
                                  sUpdateColumnCount,
                                  ID_SIZEOF(smiUpdateColumnList),
@@ -4241,6 +4242,7 @@ IDE_RC smiTableCursor::makeFullUpdateMRDB( smiTableCursor  * aCursor,
         // new column list alloc
         /* smiTableCursor_makeFullUpdateMRDB_calloc_NewColumnList.tc */
         IDU_FIT_POINT("smiTableCursor::makeFullUpdateMRDB::calloc::NewColumnList");
+        MUL_OVERFLOW_CHECK( sColumnCount,ID_SIZEOF(smiColumnList) );
         IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMI,
                                      sColumnCount,
                                      ID_SIZEOF(smiColumnList),
@@ -4251,6 +4253,7 @@ IDE_RC smiTableCursor::makeFullUpdateMRDB( smiTableCursor  * aCursor,
         // new value list alloc
         /* smiTableCursor_makeFullUpdateMRDB_calloc_NewValueList.tc */
         IDU_FIT_POINT("smiTableCursor::makeFullUpdateMRDB::calloc::NewValueList");
+        MUL_OVERFLOW_CHECK( sColumnCount,ID_SIZEOF(smiValue) );
         IDE_TEST( iduMemMgr::calloc ( IDU_MEM_SM_SMI,
                                       sColumnCount,
                                       ID_SIZEOF(smiValue),
@@ -4264,6 +4267,7 @@ IDE_RC smiTableCursor::makeFullUpdateMRDB( smiTableCursor  * aCursor,
             // before column value 저장용 버퍼
             /* smiTableCursor_makeFullUpdateMRDB_calloc_OldValueBuffer.tc */
             IDU_FIT_POINT("smiTableCursor::makeFullUpdateMRDB::calloc::OldValueBuffer");
+            MUL_OVERFLOW_CHECK( sOldValueBufferSize,ID_SIZEOF(SChar) );
             IDE_TEST( iduMemMgr::calloc ( IDU_MEM_SM_SMI,
                                           sOldValueBufferSize,
                                           ID_SIZEOF(SChar),
@@ -5369,6 +5373,7 @@ IDE_RC smiTableCursor::makeFullUpdateDRDB( smiTableCursor    * aCursor,
 
     /* smiTableCursor_makeFullUpdateDRDB_calloc_FetchColumnList.tc */
     IDU_FIT_POINT("smiTableCursor::makeFullUpdateDRDB::calloc::FetchColumnList");
+    MUL_OVERFLOW_CHECK( sTableHeader->mColumnCount, ID_SIZEOF(smiFetchColumnList) );
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMI,
                                  sTableHeader->mColumnCount,
                                  ID_SIZEOF(smiFetchColumnList),
@@ -5394,6 +5399,7 @@ IDE_RC smiTableCursor::makeFullUpdateDRDB( smiTableCursor    * aCursor,
         /* need to read a before image and make new column and value list */
         /* smiTableCursor_makeFullUpdateDRDB_calloc_NewColumnList.tc */
         IDU_FIT_POINT("smiTableCursor::makeFullUpdateDRDB::calloc::NewColumnList");
+        MUL_OVERFLOW_CHECK( sTableHeader->mColumnCount,ID_SIZEOF(smiColumnList) );
         IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMI,
                                      sTableHeader->mColumnCount,
                                      ID_SIZEOF(smiColumnList),
@@ -5403,6 +5409,7 @@ IDE_RC smiTableCursor::makeFullUpdateDRDB( smiTableCursor    * aCursor,
 
         /* smiTableCursor_makeFullUpdateDRDB_calloc_NewValueList.tc */
         IDU_FIT_POINT("smiTableCursor::makeFullUpdateDRDB::calloc::NewValueList");
+        MUL_OVERFLOW_CHECK( sTableHeader->mColumnCount,ID_SIZEOF(smiValue) );
         IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMI,
                                      sTableHeader->mColumnCount,
                                      ID_SIZEOF(smiValue),
@@ -5412,6 +5419,7 @@ IDE_RC smiTableCursor::makeFullUpdateDRDB( smiTableCursor    * aCursor,
 
         /* smiTableCursor_makeFullUpdateDRDB_calloc_OldValueBuffer.tc */
         IDU_FIT_POINT("smiTableCursor::makeFullUpdateDRDB::calloc::OldValueBuffer");
+        ADD_OVERFLOW_CHECK( sMaxRowSize,ID_SIZEOF(ULong) );
         IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMI,
                                      1,
                                      sMaxRowSize + ID_SIZEOF(ULong), // for align

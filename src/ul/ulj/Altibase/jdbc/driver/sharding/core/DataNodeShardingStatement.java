@@ -51,6 +51,7 @@ public abstract class DataNodeShardingStatement implements InternalShardingState
     private SQLWarning                 mSqlwarning;
     private int                        mFetchSize;
     private StatementExecutor          mStmtExecutor;
+    boolean                            mStmtExecSeqIncreased = false;  // TASK-7219 Non-shard DML
 
     DataNodeShardingStatement(AltibaseShardingConnection aMetaConn,
                               int aResultSetType, int aResultSetConcurrency,
@@ -91,7 +92,6 @@ public abstract class DataNodeShardingStatement implements InternalShardingState
         catch (SQLException aEx)
         {
             processExecuteError(sStatements, aEx);
-            getNodeSqlWarnings(true);
             throw aEx;
         }
         finally
@@ -123,7 +123,6 @@ public abstract class DataNodeShardingStatement implements InternalShardingState
         catch (SQLException aEx)
         {
             processExecuteError(sStatementUnits, aEx);
-            getNodeSqlWarnings(true);
             throw aEx;
         }
         setOneNodeTransactionInfo(mRouteResult);
@@ -241,7 +240,6 @@ public abstract class DataNodeShardingStatement implements InternalShardingState
         catch (SQLException aEx)
         {
             processExecuteError(sStatementUnits, aEx);
-            getNodeSqlWarnings(true);
             throw aEx;
         }
         finally
@@ -415,7 +413,6 @@ public abstract class DataNodeShardingStatement implements InternalShardingState
         catch (SQLException aEx)
         {
             processExecuteError(sStatementUnits, aEx);
-            getNodeSqlWarnings(true);
             throw aEx;
         }
         finally
@@ -448,7 +445,6 @@ public abstract class DataNodeShardingStatement implements InternalShardingState
         catch (SQLException aEx)
         {
             processExecuteError(sStatementUnits, aEx);
-            getNodeSqlWarnings(true);
             throw aEx;
         }
         finally
@@ -506,25 +502,46 @@ public abstract class DataNodeShardingStatement implements InternalShardingState
             touchNodes();
         }
 
-        calcDistTxInfo(sResults);
+        calcDistTxInfoAndIncreaseStmtExecSeq(sResults);
 
         return sResults;
     }
     
-    void calcDistTxInfo(List<Statement> aResults)
+    void calcDistTxInfoAndIncreaseStmtExecSeq(List<Statement> aResults) throws SQLException
     {
         AltibaseStatement sStatement;
-        short sExecuteNodeCnt = (short)aResults.size();
+        short             sExecuteNodeCnt        = (short)aResults.size();
+        short             sNodeIndex;
+        int               sStmtExecSeqForShardTx = 0;
+        
         // CalcDistTxInfoForDataNode에서 sExecuteNodeCnt=1일때만 DistTxInfo.mBeforeExecutedNodeId과 sNodeIndex를 비교하므로, sNodeIndex에 첫번째 노드의 id만 저장하면 됨.
         // 참고로 일반 execute일 때는 mRouteResult에 처리할 모든 노드가 저장되지만, batch의 경우 마지막 addBatch의 route 결과만 저장되어 있음.
         // addBatch 때마다 route 결과가 mRouteResult에 overwrite됨.
-        short sNodeIndex = (short)mRouteResult.get(0).getNodeId();
+        sNodeIndex = (short)mRouteResult.get(0).getNodeId();
         mMetaConn.getMetaConnection().getDistTxInfo().calcDistTxInfoForDataNode(mMetaConn, sExecuteNodeCnt, sNodeIndex);
+
+        // TASK-7219 Non-shard DML
+        if (!mMetaConn.getMetaConnection().getAutoCommit())
+        {
+            mMetaConn.getMetaConnection().increaseStmtExecSeqForShardTx();
+            mStmtExecSeqIncreased = true;
+            sStmtExecSeqForShardTx = mMetaConn.getMetaConnection().getStmtExecSeqForShardTx();
+            if (sStmtExecSeqForShardTx > AltibaseConnection.SHARD_STMT_EXEC_SEQ_MAX)
+            {
+                Error.throwSQLException(ErrorDef.SHARD_STMT_SEQUENCE_OVERFLOW);
+            }
+        }
 
         for (int i = 0; i < sExecuteNodeCnt; i++)
         {
             sStatement = (AltibaseStatement)aResults.get(i);
             sStatement.getProtocolContext().getDistTxInfo().propagateDistTxInfoToNode(mMetaConn.getMetaConnection().getDistTxInfo());
+            
+            // TASK-7219 Non-shard DML
+            if (!mMetaConn.getMetaConnection().getAutoCommit())
+            {
+                sStatement.getProtocolContext().setStmtExecSeqForShardTx(sStmtExecSeqForShardTx);
+            }
         }
 
         mMetaConn.getMetaConnection().setDistTxInfoForVerify();
@@ -784,6 +801,21 @@ public abstract class DataNodeShardingStatement implements InternalShardingState
 
     void processExecuteError(List<Statement> aStatementUnits, SQLException aEx) throws SQLException
     {
+        /* TASK-7219 Non-shard DML
+         * SHARD_STMT_SEQUENCE_OVERFLOW 일때는 partial rollback을 수행할 필요가 없음.
+         * mStmtExecSeqIncreased 상태에서 exception 발생하면 decreaseStmtExecSeqForShardTx 해준다. 
+         */
+        if (aEx.getErrorCode() == ErrorDef.SHARD_STMT_SEQUENCE_OVERFLOW)
+        {
+            if (mStmtExecSeqIncreased)
+            {
+                mMetaConn.getMetaConnection().decreaseStmtExecSeqForShardTx();
+            }
+            getNodeSqlWarnings(true);
+            
+            return;
+        }
+
         // BUG-46785 : 에러가 하나라도 있으면 partial rollback 처리
 
         // one node 수행시에는 partial rollback 불필요.
@@ -879,6 +911,14 @@ public abstract class DataNodeShardingStatement implements InternalShardingState
             }
             
             ShardError.throwSQLExceptionIfExists(sExceptionList);
+        }
+        finally
+        {
+            if (mStmtExecSeqIncreased)
+            {
+                mMetaConn.getMetaConnection().decreaseStmtExecSeqForShardTx();
+            }
+            getNodeSqlWarnings(true);
         }
     }
 

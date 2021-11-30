@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdnbModule.cpp 91766 2021-09-29 08:07:37Z justin.kwon $
+ * $Id: sdnbModule.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 /*********************************************************************
@@ -1079,6 +1079,8 @@ IDE_RC sdnbBTree::create( idvSQL              * aStatistics,
     IDU_FIT_POINT_RAISE( "sdnbBTree::create::malloc2",
                           insufficient_memory );
 
+    MUL_OVERFLOW_CHECK(ID_SIZEOF(sdnbColumn),(aIndex->mColumnCount));
+
     // Header의 Column 영역 동적 할당
     // fix bug-22840
     IDE_TEST_RAISE (iduMemMgr::malloc( IDU_MEM_SM_SDN,
@@ -1090,6 +1092,8 @@ IDE_RC sdnbBTree::create( idvSQL              * aStatistics,
     /* TC/Server/LimitEnv/sm/sdn/sdnb/sdnbBTree_create_malloc3.sql */
     IDU_FIT_POINT_RAISE( "sdnbBTree::create::malloc3",
                           insufficient_memory );
+
+    MUL_OVERFLOW_CHECK(ID_SIZEOF(smiFetchColumnList),(aIndex->mColumnCount));
 
     /* BUG-22946
      * index key를 insert하려면 row로부터 index key column value를 fetch해와야
@@ -1720,6 +1724,8 @@ IDE_RC sdnbBTree::buildDRTopDown(idvSQL          * aStatistics,
     /* sdnbBTree_buildDRTopDown_malloc_Threads.tc */
     IDU_FIT_POINT( "sdnbBTree::buildDRTopDown::malloc::Threads",
                     idERR_ABORT_InsufficientMemory );
+
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(sdnbTDBuild),sThreadCnt);
 
     IDE_TEST(iduMemMgr::malloc(IDU_MEM_SM_SDN,
                                (ULong)ID_SIZEOF(sdnbTDBuild)*sThreadCnt,
@@ -2567,6 +2573,9 @@ retry:
                      aIndex->mTableOID,
                      aIndex->mIndexID );
 
+    
+        //this checking must be false,then ignore...
+        //MUL_OVERFLOW_CHECK(ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT);
         if ( iduMemMgr::calloc( IDU_MEM_SM_SDN, 
                                 1,    
                                 ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
@@ -4056,6 +4065,8 @@ IDE_RC sdnbBTree::logAndMakeUnchainedKeys( idvSQL        * aStatistics,
 
     sSlotDirPtr = sdpPhyPage::getSlotDirStartPtr( (UChar *)aPage );
     sSlotCount  = sdpSlotDirectory::getCount( sSlotDirPtr );
+
+    MUL_OVERFLOW_CHECK(ID_SIZEOF(UChar)*4,sSlotCount);
 
     /* SlotNum(UShort) + CreateCTS(UChar) + LimitCTS(UChar) */
     /* sdnbBTree_logAndMakeUnchainedKeys_malloc_UnchainedKey.tc */
@@ -11437,6 +11448,8 @@ IDE_RC sdnbBTree::makeKeyArray( sdnbHeader    * aIndex,
     IDU_FIT_POINT_RAISE( "sdnbBTree::makeKeyArray::malloc::KeyArray",
                          insufficient_memory );
 
+    MUL_OVERFLOW_CHECK(ID_SIZEOF(sdnbKeyArray),*aAllKeyCount);
+
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SDN,
                                        ID_SIZEOF(sdnbKeyArray) * *aAllKeyCount,
                                        (void **)&sKeyArray,
@@ -16526,6 +16539,8 @@ retraverse:
                                        sHeader,
                                        NULL );
 
+        //this checking must be false,then ignore...
+        //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT);
         if ( iduMemMgr::calloc( IDU_MEM_SM_SDN, 
                                 1,
                                 ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
@@ -17442,6 +17457,8 @@ retraverse:
                                    sHeader,
                                    NULL );
 
+    //this checking must be false,then ignore...
+    //MUL_OVERFLOW_CHECK(ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT);
     if ( iduMemMgr::calloc( IDU_MEM_SM_SDN, 
                             1,
                             ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
@@ -17665,7 +17682,9 @@ IDE_RC sdnbBTree::deleteKeyRollback( idvSQL  * aStatistics,
     dumpHeadersAndIteratorToSMTrc( (smnIndexHeader*)aIndex,
                                    sHeader,
                                    NULL );
-
+  
+    //this checking must be false.
+    //MUL_OVERFLOW_CHECK(ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT);
     if ( iduMemMgr::calloc( IDU_MEM_SM_SDN, 
                             1,
                             ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
@@ -18820,6 +18839,7 @@ IDE_RC sdnbBTree::gatherStat( idvSQL         * aStatistics,
     /* Degree 만큼 병렬로 수행함 */
     /* sdnbBTree_gatherStat_calloc_StatArgument.tc */
     IDU_FIT_POINT("sdnbBTree::gatherStat::calloc::StatArgument");
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF( sdnbStatArgument ),aDegree);
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SDN, 
                                  1,
                                  (ULong)ID_SIZEOF( sdnbStatArgument ) * aDegree,
@@ -19219,6 +19239,7 @@ void sdnbBTree::gatherStatParallel( void   * aJob )
                     if ( sNodeHdr->mState == SDNB_IN_INIT )
                     {
 
+                        //MUL_OVERFLOW_CHECK(ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT);
                         IDE_TEST( iduMemMgr::calloc( IDU_MEM_ID, 
                                                      1,
                                                      ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
@@ -22407,6 +22428,8 @@ IDE_RC sdnbBTree::makeNextRowCacheBackward(sdnbIterator *aIterator,
                                            aIndex,
                                            aIterator );
 
+            //this checking must be false.
+            //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
             if ( iduMemMgr::calloc( IDU_MEM_SM_SDN, 
                                     1,
                                     ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
@@ -25673,6 +25696,8 @@ void sdnbBTree::dumpHeadersAndIteratorToSMTrc(
         /* nothing to do */
     }
 
+    //this checking must be false.
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT);
     if ( iduMemMgr::calloc( IDU_MEM_SM_SDN, 
                             1,
                             ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
@@ -25962,6 +25987,8 @@ IDE_RC sdnbBTree::dumpIterator( sdnbIterator * aIterator,
     }
 
 
+    //this checking must be false.
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     if ( iduMemMgr::calloc( IDU_MEM_SM_SDN, 
                             1,
                             ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,

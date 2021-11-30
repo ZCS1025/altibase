@@ -45,6 +45,8 @@ IDE_RC sdbDWRecoveryMgr::recoverCorruptedPages()
     UInt            sDwFileNamePrefixLen;
     idBool          sFound = ID_FALSE;
 
+    ADD_OVERFLOW_CHECK(ID_SIZEOF(struct dirent) ,SM_MAX_FILE_NAME);
+
     /* sdbDWRecoveryMgr_recoverCorruptedPages_malloc_DirEnt.tc */
     IDU_FIT_POINT("sdbDWRecoveryMgr::recoverCorruptedPages::malloc::DirEnt");
     IDE_TEST(iduMemMgr::malloc(IDU_MEM_SM_SDB,
@@ -180,6 +182,8 @@ IDE_RC sdbDWRecoveryMgr::recoverDWFile(sddDWFile *aDWFile)
     /* TC/FIT/Limit/sm/sdbDWRecoveryMgr_recoverDWFile_malloc.sql */
     IDU_FIT_POINT_RAISE( "sdbDWRecoveryMgr::recoverDWFile::malloc",
                           insufficient_memory );
+
+    MUL_OVERFLOW_CHECK(aDWFile->getPageSize(),3);
 
     IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_SM_SDB,
                                      aDWFile->getPageSize() * 3,
