@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smapManager.cpp 90259 2021-03-19 01:22:22Z emlee $
+ * $Id: smapManager.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <ide.h>
@@ -130,6 +130,7 @@ IDE_RC smapChildMgr::initialize( SInt aThreadCount)
 
     /* smapChildMgr_initialize_calloc_ChildArray.tc */
     IDU_FIT_POINT("smapChildMgr::initialize::calloc::ChildArray");
+    MUL_OVERFLOW_CHECK(aThreadCount,ID_SIZEOF(smapChild *));
     IDE_TEST(iduMemMgr::calloc(IDU_MEM_SM_SMA,
                                aThreadCount,
                                ID_SIZEOF(smapChild *),

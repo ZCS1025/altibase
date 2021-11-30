@@ -731,8 +731,15 @@ IDE_RC sdpFT::buildRecordForSegment(idvSQL              * /*aStatistics*/,
                             continue;
                         }
 
+                        /* BUG-49434 disable 된 index 는 볼수 없음 */
+                        if( ( sIndexHeaderCursor->mModule == NULL ) ||
+                            ( sIndexHeaderCursor->mHeader == NULL ) )
+                        {
+                            continue;
+                        }
+
                         sSegHandle = sdpSegDescMgr::getSegHandle(
-                            &((sdnRuntimeHeader*)sIndexHeaderCursor->mHeader)->mSegmentDesc );
+                                     &((sdnRuntimeHeader*)sIndexHeaderCursor->mHeader)->mSegmentDesc );
                         sSegCache  = (sdpSegCCache*)sSegHandle->mCache;
 
                         //----------------------------

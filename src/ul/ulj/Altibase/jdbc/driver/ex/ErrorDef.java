@@ -232,7 +232,8 @@ public class ErrorDef
     public static final int       SHARD_INTERNAL_ERROR                              = 0x51A99;
     public static final int       INVALID_METHOD_WITH_THIS_SQL                      = 0x51A9A;
     public static final int       THIS_METHOD_NOT_SUPPORTED_IN_SHARDJDBC            = 0x51A9B;
-    private static final int      LAST_ERROR_CODE                                   = 0x51A9B;
+    public static final int       SHARD_STMT_SEQUENCE_OVERFLOW                      = 0x51A9C;
+    private static final int      LAST_ERROR_CODE                                   = 0x51A9C;
     
     // #endregion
 
@@ -372,6 +373,7 @@ public class ErrorDef
         register(SHARD_INTERNAL_ERROR                              , "HY000" , "Shard internal error: %s" );
         register(INVALID_METHOD_WITH_THIS_SQL                      , "HY000" , "Commit, rollback and DDL cannot be executed with this method." );
         register(THIS_METHOD_NOT_SUPPORTED_IN_SHARDJDBC            , "HY000" , "%s not supported in shardjdbc" );
+        register(SHARD_STMT_SEQUENCE_OVERFLOW                      , "HY000" , "Shard statement execution sequence overflow" );
     }
 
     private static void register(int aErrorCode, String aSQLState, String aMessageForm)

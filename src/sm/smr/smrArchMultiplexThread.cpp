@@ -61,6 +61,7 @@ IDE_RC smrArchMultiplexThread::initialize(
     /* smrArchMultiplexThread_initialize_calloc_ArchMultiplexThread.tc */
     IDU_FIT_POINT("smrArchMultiplexThread::initialize::calloc::ArchMultiplexThread");
     IDU_FIT_POINT("BUG-45313@smrArchMultiplexThread::initialize::calloc");
+    MUL_OVERFLOW_CHECK( (ULong)ID_SIZEOF( smrArchMultiplexThread ),aMultiplexCnt );
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMR,
                                  1,
                                  (ULong)ID_SIZEOF( smrArchMultiplexThread ) * aMultiplexCnt,

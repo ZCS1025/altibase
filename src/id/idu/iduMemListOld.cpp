@@ -492,6 +492,8 @@ IDE_RC iduMemListOld::alloc(void **aMem)
     
     if( mAlignByte > ID_SIZEOF(void*) )
     {
+        MUL_OVERFLOW_CHECK(mElemSize,2);
+        ADD_OVERFLOW_CHECK((mElemSize*2),ID_SIZEOF(void*));
         *aMem = (void *)idlOS::malloc((mElemSize * 2) + ID_SIZEOF(void*));
         sStartPtr = *aMem;
 
@@ -503,6 +505,7 @@ IDE_RC iduMemListOld::alloc(void **aMem)
     }
     else
     {
+        ADD_OVERFLOW_CHECK(mElemSize,ID_SIZEOF(void*));
         *aMem = (void *)idlOS::malloc(mElemSize + ID_SIZEOF(void*));
         IDE_ASSERT(*aMem != NULL);
         *((void**)*aMem) = *aMem;

@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smrRecoveryMgr.cpp 91673 2021-09-13 04:15:58Z justin.kwon $
+ * $Id: smrRecoveryMgr.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <smErrorCode.h>
@@ -5023,6 +5023,8 @@ IDE_RC smrRecoveryMgr::deleteLogFiles( SChar   * aDirPath,
     /* smrRecoveryMgr_deleteLogFiles.tc */
     IDU_FIT_POINT_RAISE( "smrRecoveryMgr::deleteLogFiles::malloc::DirEnt",
                          insufficient_memory );
+    ADD_OVERFLOW_CHECK(ID_SIZEOF(struct dirent),SM_MAX_FILE_NAME);
+
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMR,
                                        ID_SIZEOF(struct dirent) + SM_MAX_FILE_NAME,
                                        (void**)&sDirEnt,
@@ -5182,6 +5184,8 @@ IDE_RC smrRecoveryMgr::identifyLogFiles()
     /* smrRecoveryMgr_identifyLogFiles.tc */
     IDU_FIT_POINT_RAISE( "smrRecoveryMgr::identifyLogFiles::malloc::DirEnt",
                          insufficient_memory );
+    ADD_OVERFLOW_CHECK(ID_SIZEOF(struct dirent),SM_MAX_FILE_NAME);
+
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMR,
                                        ID_SIZEOF(struct dirent) + SM_MAX_FILE_NAME,
                                        (void**)&sDirEnt,

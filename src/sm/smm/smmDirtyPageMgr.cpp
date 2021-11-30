@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smmDirtyPageMgr.cpp 90085 2021-02-26 02:14:29Z et16 $
+ * $Id: smmDirtyPageMgr.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -44,6 +44,8 @@ IDE_RC smmDirtyPageMgr::initialize(scSpaceID aSpaceID , SInt a_listCount)
     /* TC/FIT/Limit/sm/smm/smmDirtyPageMgr_initialize_malloc.sql */
     IDU_FIT_POINT_RAISE( "smmDirtyPageMgr::initialize::malloc",
                           insufficient_memory );
+
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(smmDirtyPageList),m_listCount);
 
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMM,
                                  (ULong)ID_SIZEOF(smmDirtyPageList) * m_listCount,

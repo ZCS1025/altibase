@@ -99,7 +99,6 @@ static IDE_RC dkifCalculateFunction( mtcNode * aNode,
     IDE_TEST( dkifUtilCheckNullColumn( aStack, 1 ) != IDE_SUCCESS );
     IDE_TEST( dkifUtilCheckNullColumn( aStack, 2 ) != IDE_SUCCESS );
     IDE_TEST( dkifUtilCheckNullColumn( aStack, 3 ) != IDE_SUCCESS );
-    IDE_TEST( dkifUtilCheckNullColumn( aStack, 4 ) != IDE_SUCCESS );
 
     IDE_TEST( dkifUtilCopyDblinkName( (mtdCharType *)aStack[1].value,
                                       sDblinkName )

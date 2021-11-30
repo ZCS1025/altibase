@@ -4011,6 +4011,8 @@ IDE_RC qciMisc::backupDDLTargetOldTableInfo( smiTrans               * aTrans,
                                          ID_FALSE )
               != IDE_SUCCESS );
 
+        IDU_FIT_POINT( "qciMisc::backupDDLTargetOldTableInfo::makeAndSetQcmTableInfo::sNewTableInfo",
+                       idERR_ABORT_InsufficientMemory );
         IDE_TEST( makeAndSetQcmTableInfo( &sSmiStatement,
                                           sTableInfo->tableID,
                                           sTableInfo->tableOID )
@@ -4068,6 +4070,8 @@ IDE_RC qciMisc::backupDDLTargetOldTableInfo( smiTrans               * aTrans,
                                                                    NULL )
                           != IDE_SUCCESS );
 
+                IDU_FIT_POINT( "qciMisc::backupDDLTargetOldTableInfo::makeAndSetQcmPartitionInfo::sNewTableInfo",
+                               idERR_ABORT_InsufficientMemory );
                 IDE_TEST( makeAndSetQcmPartitionInfo( &sSmiStatement,
                                                       sPartInfo->partitionID,
                                                       sPartInfo->tableOID,
@@ -4107,6 +4111,8 @@ IDE_RC qciMisc::backupDDLTargetOldTableInfo( smiTrans               * aTrans,
                                                                    NULL )
                           != IDE_SUCCESS );
 
+                IDU_FIT_POINT( "qciMisc::backupDDLTargetOldTableInfo::makeAndSetQcmPartitionInfo::sNewTableInfo",
+                               idERR_ABORT_InsufficientMemory );
                 IDE_TEST( makeAndSetQcmPartitionInfo( &sSmiStatement,
                                                       sPartInfo->partitionID,
                                                       sPartInfo->tableOID,

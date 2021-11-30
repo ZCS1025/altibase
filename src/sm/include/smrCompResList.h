@@ -22,12 +22,7 @@
 #ifndef _O_SMR_COMP_RES_LIST_H_
 #define _O_SMR_COMP_RES_LIST_H_ 1
 
-#include <idl.h>
-#include <iduMemPool.h>
-#include <iduMutex.h>
-#include <smDef.h>
 #include <smrDef.h>
-#include <smuList.h>
 #include <smuSynchroList.h>
 
 /*

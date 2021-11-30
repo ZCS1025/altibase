@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmnCountAsterisk.cpp 91019 2021-06-18 01:25:54Z donovan.seo $
+ * $Id: qmnCountAsterisk.cpp 92000 2021-11-08 06:30:03Z donovan.seo $
  *
  * Description :
  *     CoUNT (*) Plan Node
@@ -1202,7 +1202,10 @@ IDE_RC qmnCUNT::getCountByFixedTable( qcTemplate * aTemplate,
         {
             /* Nothing to do */
         }
-        if ( sSmiTrans != NULL )
+        /* BUG-48756 */
+        if ( ( sSmiTrans != NULL ) &&
+             ( ( aTemplate->stmt->myPlan->parseTree->stmtKind & QCI_STMT_MASK_MASK )
+               != QCI_STMT_MASK_DCL ) )
         {
             aDataPlan->fixedTableProperty.mTrans = sSmiTrans->mTrans;
         }
@@ -1257,7 +1260,10 @@ IDE_RC qmnCUNT::getCountByFixedTable( qcTemplate * aTemplate,
         {
             /* Nothing to do */
         }
-        if ( sSmiTrans != NULL )
+        /* BUG-48756 */
+        if ( ( sSmiTrans != NULL ) &&
+             ( ( aTemplate->stmt->myPlan->parseTree->stmtKind & QCI_STMT_MASK_MASK )
+               != QCI_STMT_MASK_DCL ) )
         {
             aDataPlan->fixedTableProperty.mTrans = sSmiTrans->mTrans;
         }

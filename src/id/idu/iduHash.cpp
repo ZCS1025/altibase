@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduHash.cpp 35244 2009-09-02 23:52:47Z orc $
+ * $Id: iduHash.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -42,6 +42,7 @@ IDE_RC iduHash::initialize(iduMemoryClientIndex aIndex,
     mFreeBucketCount = aInitFreeBucketCount;
     mCashBucketCount = aInitFreeBucketCount;
     
+    MUL_OVERFLOW_CHECK( sizeof(iduHashBucket),aHashTableSize );
     IDE_TEST(iduMemMgr::malloc(mIndex,
                                sizeof(iduHashBucket) * aHashTableSize,
                                (void**)&mHashTable)

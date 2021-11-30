@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smrDirtyPageList.cpp 90522 2021-04-09 01:29:20Z emlee $
+ * $Id: smrDirtyPageList.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <smErrorCode.h>
@@ -94,6 +94,8 @@ IDE_RC smrDirtyPageList::initialize( scSpaceID aSpaceID )
     /* TC/FIT/Limit/sm/smr/smrDirtyPageList_initialize_malloc.sql */
     IDU_FIT_POINT_RAISE( "smrDirtyPageList::initialize::malloc",
                           insufficient_memory );
+
+    MUL_OVERFLOW_CHECK(ID_SIZEOF(scGRID), mMaxDirtyPageCnt);
 
     IDE_TEST_RAISE( iduMemMgr::malloc(IDU_MEM_SM_SMR,
                                 ID_SIZEOF(scGRID) * mMaxDirtyPageCnt,

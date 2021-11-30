@@ -88,6 +88,8 @@ IDE_RC svmFPLManager::initialize( svmTBSNode * aTBSNode )
     // 각 Free Page List의 Mutex를 초기화
     /* svmFPLManager_initialize_malloc_ArrFPLMutex.tc */
     IDU_FIT_POINT("svmFPLManager::initialize::malloc::ArrFPLMutex");
+
+    MUL_OVERFLOW_CHECK(ID_SIZEOF(iduMutex),SVM_FREE_PAGE_LIST_COUNT);
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SVM,
                                  ID_SIZEOF(iduMutex) *
                                  SVM_FREE_PAGE_LIST_COUNT,
@@ -99,6 +101,7 @@ IDE_RC svmFPLManager::initialize( svmTBSNode * aTBSNode )
     aTBSNode->mArrPageReservation = NULL;
     /* svmFPLManager_initialize_malloc_ArrPageReservation.tc */
     IDU_FIT_POINT("svmFPLManager::initialize::malloc::ArrPageReservation");
+    MUL_OVERFLOW_CHECK(ID_SIZEOF(svmPageReservation),SVM_FREE_PAGE_LIST_COUNT);
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SVM,
                                  ID_SIZEOF( svmPageReservation ) *
                                  SVM_FREE_PAGE_LIST_COUNT,
@@ -1324,6 +1327,7 @@ void svmFPLManager::dumpPageReservation(
 {
     SChar          * sTempBuffer;
 
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     if( iduMemMgr::calloc( IDU_MEM_SM_SVM,
                            1,
                            ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,

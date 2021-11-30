@@ -91,6 +91,7 @@ IDE_RC processHashDump()
 {
     SChar  * sTempBuf = NULL;
 
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMU,
                                  1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
@@ -174,6 +175,7 @@ IDE_RC processSortDump()
     UChar  * sPagePtr;
     SChar  * sTempBuf = NULL;
 
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMU,
                                  1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,

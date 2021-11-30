@@ -73,6 +73,8 @@ IDE_RC iddRBHash::initialize(const SChar*               aName,
             != IDE_SUCCESS );
     sState = 1;
 
+    MUL_OVERFLOW_CHECK(sizeof(bucket),mBucketCount);
+
     IDE_TEST( iduMemMgr::malloc(mIndex,
                                 sizeof(bucket) * mBucketCount,
                                 (void**)&mBuckets) != IDE_SUCCESS );

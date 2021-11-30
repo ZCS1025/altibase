@@ -29,6 +29,7 @@ import java.sql.Types;
 import java.util.List;
 
 import static Altibase.jdbc.driver.sharding.core.ShardValueType.*;
+import static Altibase.jdbc.driver.cm.CmProtocolContextShardStmt.ShardPartialExecType;
 import static Altibase.jdbc.driver.sharding.util.ShardingTraceLogger.shard_log;
 
 public class CmShardOperation extends CmOperationDef
@@ -205,7 +206,7 @@ public class CmShardOperation extends CmOperationDef
     private void makeCoordinateInfo(CmProtocolContextShardStmt aShardContextStmt)
     {
         CmShardAnalyzeResult sShardAnalyzeResult = aShardContextStmt.getShardAnalyzeResult();
-        if (!sShardAnalyzeResult.canMerge())
+        if (!sShardAnalyzeResult.IsShardQuery())
         {
             sShardAnalyzeResult.setShardCoordinate(true);
         }
@@ -246,6 +247,20 @@ public class CmShardOperation extends CmOperationDef
                     }
                 }
             }
+        }
+        
+        /* TASK-7219 Non-shard DML */
+        if ( sShardAnalyzeResult.getIsPartialCoordExecNeeded() == 1 )
+        {
+            aShardContextStmt.setShardPartialExecType(ShardPartialExecType.SHARD_PARTIAL_EXEC_TYPE_COORD);
+        }
+        else if ( sShardAnalyzeResult.getIsPartialCoordExecNeeded() == 2 )
+        {
+            aShardContextStmt.setShardPartialExecType(ShardPartialExecType.SHARD_PARTIAL_EXEC_TYPE_QUERY);
+        }
+        else
+        {
+            aShardContextStmt.setShardPartialExecType(ShardPartialExecType.SHARD_PARTIAL_EXEC_TYPE_NONE);
         }
     }
 
@@ -404,8 +419,8 @@ public class CmShardOperation extends CmOperationDef
     private void makeShardAnalyzeResult(CmShardAnalyzeResult aShardAnalyzeResult) throws SQLException
     {
         aShardAnalyzeResult.setShardSplitMethod(ShardSplitMethod.get(mChannel.readByte()));
-        // TASK-7219 Non-shard DML TEMPCODE (mmtCmsShard.cpp:685)
-        mChannel.readByte();
+        // TASK-7219 Non-shard DML
+        aShardAnalyzeResult.setIsPartialCoordExecNeeded(mChannel.readByte());
         aShardAnalyzeResult.setShardKeyDataType(ShardKeyDataType.get(mChannel.readInt()));
         aShardAnalyzeResult.setShardSubKeyExists(mChannel.readByte());
 
@@ -416,7 +431,7 @@ public class CmShardOperation extends CmOperationDef
         }
 
         aShardAnalyzeResult.setShardDefaultNodeID(mChannel.readInt());
-        aShardAnalyzeResult.setShardCanMerge(mChannel.readByte());
+        aShardAnalyzeResult.setIsShardQuery(mChannel.readByte());
         aShardAnalyzeResult.setShardValueCount(mChannel.readShort());
 
         if (aShardAnalyzeResult.isShardSubKeyExists())

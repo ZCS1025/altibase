@@ -458,12 +458,25 @@ IDE_RC rpsSQLExecutor::addtionalBindParamInfoforUpdate( qciStatement     * aQciS
 
     if ( aLocalMetaItem->mTsFlag != NULL )
     {
-        IDE_TEST( setBindParamInfo( aQciStatement,
-                                    aLocalMetaItem->mTsFlag,
-                                    sId,
-                                    aXLog->mACols[sId].length )
-                  != IDE_SUCCESS );
-        sId++;
+        for ( i = 0; i < aXLog->mColCnt; i++ )
+        {
+            if ( ( aXLog->mCIDs[i] & SMI_COLUMN_ID_MASK ) == 
+                 ( ( aLocalMetaItem->mTsFlag->column.id ) & SMI_COLUMN_ID_MASK ) )
+            {
+                IDE_TEST( setBindParamInfo( aQciStatement,
+                                            aLocalMetaItem->mTsFlag,
+                                            sId,
+                                            aXLog->mACols[i].length )
+                          != IDE_SUCCESS );
+
+                sId++;
+                break;
+            }
+            else
+            {
+                /* do nothing */
+            }
+        }
     }
     else
     {

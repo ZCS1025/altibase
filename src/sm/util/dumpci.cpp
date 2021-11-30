@@ -548,6 +548,7 @@ IDE_RC dumpCatalog()
     SChar          * sTempBuffer;
     UInt             sState = 0;
 
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMC,
                            1,
                            ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
@@ -676,6 +677,7 @@ IDE_RC dumpPage( scPageID aPid )
      * Stack에 선언할 경우, 이 함수를 통해 서버가 종료될 수 있으므로
      * Heap에 할당을 시도한 후, 성공하면 기록, 성공하지 않으면 그냥
      * return합니다. */
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_ID, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )
@@ -738,6 +740,7 @@ IDE_RC dumpTHWithOID()
     UInt             sState = 0;
     smcTableHeader * sHeader;
 
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMC,
                            1,
                            ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
@@ -1047,6 +1050,8 @@ IDE_RC nextOIDall( smcTableHeader    * aCatTblHdr,
 IDE_RC allocPages(scPageID aPageCount)
 {
     UInt y;
+
+    MUL_OVERFLOW_CHECK((size_t)ID_SIZEOF(UChar *),aPageCount);
 
     gPages = (UChar **)idlOS::malloc( (size_t)ID_SIZEOF(UChar *) * aPageCount );
     IDE_TEST_RAISE( gPages == NULL, malloc_error );

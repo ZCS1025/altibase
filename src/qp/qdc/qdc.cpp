@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qdc.cpp 91627 2021-09-08 01:47:35Z ahra.cho $
+ * $Id: qdc.cpp 92160 2021-11-30 04:29:26Z ahra.cho $
  **********************************************************************/
 
 #include <idl.h>
@@ -70,7 +70,7 @@
 //           value 를 하나만 갖는 property 기준으로 단순하게 구현함.
 //------------------------------------------------------------------------
 
-#define QDC_OPTIMIZER_FEATURE_CNT   (38)
+#define QDC_OPTIMIZER_FEATURE_CNT   (39)
 
 static qdcFeatureProperty gFeatureProperty[QDC_OPTIMIZER_FEATURE_CNT] =
 {
@@ -315,8 +315,14 @@ static qdcFeatureProperty gFeatureProperty[QDC_OPTIMIZER_FEATURE_CNT] =
       (SChar *)"1",
       (SChar *)"3",
       QDC_OPTIMIZER_FEATURE_VERSION_NONE,
+      QDC_OPTIMIZER_FEATURE_VERSION_7_2_0_0_0,
+      PLAN_PROPERTY_OPTIMIZER_WITH_VIEW },
+    { (SChar *)"__OPTIMIZER_SET",                        // 39
+      (SChar *)"1",
+      (SChar *)"1",
+      QDC_OPTIMIZER_FEATURE_VERSION_NONE,
       QDC_OPTIMIZER_FEATURE_VERSION_MAX,
-      PLAN_PROPERTY_OPTIMIZER_WITH_VIEW }
+      PLAN_PROPERTY_OPTIMIZER_SET }
     };
 
 

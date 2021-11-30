@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qmgSet.cpp 89426 2020-12-04 00:47:19Z donovan.seo $
+ * $Id: qmgSet.cpp 91978 2021-11-05 05:37:19Z donovan.seo $
  *
  * Description :
  *     SET Graph를 위한 수행 함수
@@ -328,7 +328,16 @@ qmgSet::optimize( qcStatement * aStatement, qmgGraph * aGraph )
     }
     else
     {
-        // Nothing to do.
+        /* BUG-49330 */
+        if ( sMyGraph->graph.left->type == QMG_PROJECTION )
+        {
+            if ( ( sMyGraph->graph.left->left->flag & QMG_PARALLEL_EXEC_MASK )
+                 == QMG_PARALLEL_EXEC_TRUE )
+            {
+                sMyGraph->graph.flag &= ~QMG_PARALLEL_EXEC_MASK;
+                sMyGraph->graph.flag |= QMG_PARALLEL_EXEC_TRUE;
+            }
+        }
     }
 
     return IDE_SUCCESS;
@@ -537,8 +546,10 @@ qmgSet::makeUnion( qcStatement * aStatement,
     //---------------------------------------------------
     // Parent가 SET인 경우 PROJ를 생성한다.
     //---------------------------------------------------
-    if ( (aMyGraph->graph.flag & QMG_SET_PARENT_TYPE_SET_MASK) ==
-         QMG_SET_PARENT_TYPE_SET_TRUE )
+    if ( ( (aMyGraph->graph.flag & QMG_SET_PARENT_TYPE_SET_MASK) ==
+           QMG_SET_PARENT_TYPE_SET_TRUE ) &&
+         ( (aMyGraph->graph.flag & QMG_SET_OPTIMIZE_MASK) ==
+           QMG_SET_OPTIMIZE_FALSE ) )
     {
         //-----------------------
         // init PROJ 
@@ -555,7 +566,7 @@ qmgSet::makeUnion( qcStatement * aStatement,
         // nothing to do
     }
 
-    if( aIsUnionAll == ID_FALSE )
+    if ( aIsUnionAll == ID_FALSE )
     {
         //-----------------------
         // init HSDS
@@ -568,21 +579,19 @@ qmgSet::makeUnion( qcStatement * aStatement,
                                            &sHSDS ) != IDE_SUCCESS);
         aMyGraph->graph.myPlan = sHSDS;
     }
-    else
+
+    if ( (aMyGraph->graph.flag & QMG_SET_OPTIMIZE_MASK) ==
+         QMG_SET_OPTIMIZE_FALSE )
     {
-        // nothing to do
+        //-----------------------
+        // init VIEW
+        //-----------------------
+        IDE_TEST( qmoOneNonPlan::initVIEW( aStatement,
+                                           aMyGraph->graph.myQuerySet ,
+                                           aMyGraph->graph.myPlan ,
+                                           &sVIEW ) != IDE_SUCCESS);
+        aMyGraph->graph.myPlan = sVIEW;
     }
-
-    //-----------------------
-    // init VIEW
-    //-----------------------
-
-    IDE_TEST( qmoOneNonPlan::initVIEW( aStatement,
-                                       aMyGraph->graph.myQuerySet ,
-                                       aMyGraph->graph.myPlan ,
-                                       &sVIEW ) != IDE_SUCCESS);
-    aMyGraph->graph.myPlan = sVIEW;
-
     //-----------------------
     // init MultiBUNI
     //-----------------------
@@ -628,21 +637,25 @@ qmgSet::makeUnion( qcStatement * aStatement,
     // make VIEW
     //-----------------------
 
-    sFlag = 0;
-    sFlag &= ~QMO_MAKEVIEW_FROM_MASK;
-    sFlag |= QMO_MAKEVIEW_FROM_SET;
+    if ( (aMyGraph->graph.flag & QMG_SET_OPTIMIZE_MASK) ==
+         QMG_SET_OPTIMIZE_FALSE )
+    {
+        sFlag = 0;
+        sFlag &= ~QMO_MAKEVIEW_FROM_MASK;
+        sFlag |= QMO_MAKEVIEW_FROM_SET;
 
-    IDE_TEST( qmoOneNonPlan::makeVIEW( aStatement ,
-                                       aMyGraph->graph.myQuerySet ,
-                                       aMyGraph->graph.myFrom ,
-                                       sFlag ,
-                                       aMyGraph->graph.myPlan ,
-                                       sVIEW ) != IDE_SUCCESS);
-    aMyGraph->graph.myPlan = sVIEW;
+        IDE_TEST( qmoOneNonPlan::makeVIEW( aStatement ,
+                                           aMyGraph->graph.myQuerySet ,
+                                           aMyGraph->graph.myFrom ,
+                                           sFlag ,
+                                           aMyGraph->graph.myPlan ,
+                                           sVIEW ) != IDE_SUCCESS);
+        aMyGraph->graph.myPlan = sVIEW;
 
-    qmg::setPlanInfo( aStatement, sVIEW, &(aMyGraph->graph) );
+        qmg::setPlanInfo( aStatement, sVIEW, &(aMyGraph->graph) );
+    }
 
-    if( aIsUnionAll == ID_FALSE )
+    if ( aIsUnionAll == ID_FALSE )
     {
         //-----------------------
         // make HSDS
@@ -675,13 +688,11 @@ qmgSet::makeUnion( qcStatement * aStatement,
 
         qmg::setPlanInfo( aStatement, sHSDS, &(aMyGraph->graph) );
     }
-    else
-    {
-        // Nothing to do.
-    }
 
-    if ( (aMyGraph->graph.flag & QMG_SET_PARENT_TYPE_SET_MASK) ==
-         QMG_SET_PARENT_TYPE_SET_TRUE )
+    if ( ( (aMyGraph->graph.flag & QMG_SET_PARENT_TYPE_SET_MASK) ==
+           QMG_SET_PARENT_TYPE_SET_TRUE ) &&
+         ( (aMyGraph->graph.flag & QMG_SET_OPTIMIZE_MASK) ==
+           QMG_SET_OPTIMIZE_FALSE ) )
     {
         //-----------------------
         // init PROJ 
@@ -748,11 +759,13 @@ qmgSet::makeIntersect( qcStatement * aStatement,
     //---------------------------------------------------
     // Parent가 SET인 경우 PROJ를 생성한다.
     //---------------------------------------------------
-    if ( (aMyGraph->graph.flag & QMG_SET_PARENT_TYPE_SET_MASK) ==
-         QMG_SET_PARENT_TYPE_SET_TRUE )
+    if ( ( (aMyGraph->graph.flag & QMG_SET_PARENT_TYPE_SET_MASK) ==
+         QMG_SET_PARENT_TYPE_SET_TRUE ) &&
+         ( (aMyGraph->graph.flag & QMG_SET_OPTIMIZE_MASK) ==
+           QMG_SET_OPTIMIZE_FALSE ) )
     {
         //-----------------------
-        // init PROJ 
+        // init PROJ
         //-----------------------
 
         IDE_TEST( qmoOneNonPlan::initPROJ( aStatement ,
@@ -766,15 +779,19 @@ qmgSet::makeIntersect( qcStatement * aStatement,
         // nothing to do
     }
 
-    //-----------------------
-    // init VIEW
-    //-----------------------
+    if ( (aMyGraph->graph.flag & QMG_SET_OPTIMIZE_MASK) ==
+         QMG_SET_OPTIMIZE_FALSE )
+    {
+        //-----------------------
+        // init VIEW
+        //-----------------------
 
-    IDE_TEST( qmoOneNonPlan::initVIEW( aStatement,
-                                       aMyGraph->graph.myQuerySet ,
-                                       aMyGraph->graph.myPlan ,
-                                       &sVIEW ) != IDE_SUCCESS);
-    aMyGraph->graph.myPlan = sVIEW;
+        IDE_TEST( qmoOneNonPlan::initVIEW( aStatement,
+                                           aMyGraph->graph.myQuerySet ,
+                                           aMyGraph->graph.myPlan ,
+                                           &sVIEW ) != IDE_SUCCESS);
+        aMyGraph->graph.myPlan = sVIEW;
+    }
     //-----------------------
     // init SITS
     //-----------------------
@@ -829,26 +846,31 @@ qmgSet::makeIntersect( qcStatement * aStatement,
     //-----------------------
     // make VIEW
     //-----------------------
+    if ( (aMyGraph->graph.flag & QMG_SET_OPTIMIZE_MASK) ==
+         QMG_SET_OPTIMIZE_FALSE )
+    {
+        sFlag = 0;
+        sFlag &= ~QMO_MAKEVIEW_FROM_MASK;
+        sFlag |= QMO_MAKEVIEW_FROM_SET;
 
-    sFlag = 0;
-    sFlag &= ~QMO_MAKEVIEW_FROM_MASK;
-    sFlag |= QMO_MAKEVIEW_FROM_SET;
+        IDE_TEST( qmoOneNonPlan::makeVIEW( aStatement ,
+                                           aMyGraph->graph.myQuerySet ,
+                                           aMyGraph->graph.myFrom ,
+                                           sFlag ,
+                                           aMyGraph->graph.myPlan ,
+                                           sVIEW ) != IDE_SUCCESS);
+        aMyGraph->graph.myPlan = sVIEW;
 
-    IDE_TEST( qmoOneNonPlan::makeVIEW( aStatement ,
-                                       aMyGraph->graph.myQuerySet ,
-                                       aMyGraph->graph.myFrom ,
-                                       sFlag ,
-                                       aMyGraph->graph.myPlan ,
-                                       sVIEW ) != IDE_SUCCESS);
-    aMyGraph->graph.myPlan = sVIEW;
+        qmg::setPlanInfo( aStatement, sVIEW, &(aMyGraph->graph) );
+    }
 
-    qmg::setPlanInfo( aStatement, sVIEW, &(aMyGraph->graph) );
-
-    if ( (aMyGraph->graph.flag & QMG_SET_PARENT_TYPE_SET_MASK) ==
-         QMG_SET_PARENT_TYPE_SET_TRUE )
+    if ( ( (aMyGraph->graph.flag & QMG_SET_PARENT_TYPE_SET_MASK) ==
+           QMG_SET_PARENT_TYPE_SET_TRUE ) &&
+         ( (aMyGraph->graph.flag & QMG_SET_OPTIMIZE_MASK) ==
+           QMG_SET_OPTIMIZE_FALSE ) )
     {
         //-----------------------
-        // make PROJ 
+        // make PROJ
         //-----------------------
 
         sFlag = 0;
@@ -911,8 +933,10 @@ qmgSet::makeMinus( qcStatement * aStatement,
     //---------------------------------------------------
     // Parent가 SET인 경우 PROJ를 생성한다.
     //---------------------------------------------------
-    if ( (aMyGraph->graph.flag & QMG_SET_PARENT_TYPE_SET_MASK) ==
-         QMG_SET_PARENT_TYPE_SET_TRUE )
+    if ( ( (aMyGraph->graph.flag & QMG_SET_PARENT_TYPE_SET_MASK) ==
+           QMG_SET_PARENT_TYPE_SET_TRUE ) &&
+         ( (aMyGraph->graph.flag & QMG_SET_OPTIMIZE_MASK) ==
+           QMG_SET_OPTIMIZE_FALSE ) )
     {
         //-----------------------
         // init PROJ 
@@ -929,15 +953,18 @@ qmgSet::makeMinus( qcStatement * aStatement,
         // nothing to do
     }
 
-    //-----------------------
-    // init VIEW
-    //-----------------------
-
-    IDE_TEST( qmoOneNonPlan::initVIEW( aStatement,
-                                       aMyGraph->graph.myQuerySet ,
-                                       aMyGraph->graph.myPlan ,
-                                       &sVIEW ) != IDE_SUCCESS);
-    aMyGraph->graph.myPlan = sVIEW;
+    if ( (aMyGraph->graph.flag & QMG_SET_OPTIMIZE_MASK) ==
+         QMG_SET_OPTIMIZE_FALSE )
+    {
+        //-----------------------
+        // init VIEW
+        //-----------------------
+        IDE_TEST( qmoOneNonPlan::initVIEW( aStatement,
+                                           aMyGraph->graph.myQuerySet ,
+                                           aMyGraph->graph.myPlan ,
+                                           &sVIEW ) != IDE_SUCCESS);
+        aMyGraph->graph.myPlan = sVIEW;
+    }
 
     //-----------------------
     // init SDIF
@@ -993,26 +1020,31 @@ qmgSet::makeMinus( qcStatement * aStatement,
     //-----------------------
     // make VIEW
     //-----------------------
+    if ( (aMyGraph->graph.flag & QMG_SET_OPTIMIZE_MASK) ==
+         QMG_SET_OPTIMIZE_FALSE )
+    {
+        sFlag = 0;
+        sFlag &= ~QMO_MAKEVIEW_FROM_MASK;
+        sFlag |= QMO_MAKEVIEW_FROM_SET;
 
-    sFlag = 0;
-    sFlag &= ~QMO_MAKEVIEW_FROM_MASK;
-    sFlag |= QMO_MAKEVIEW_FROM_SET;
+        IDE_TEST( qmoOneNonPlan::makeVIEW( aStatement ,
+                                           aMyGraph->graph.myQuerySet ,
+                                           aMyGraph->graph.myFrom ,
+                                           sFlag ,
+                                           aMyGraph->graph.myPlan ,
+                                           sVIEW ) != IDE_SUCCESS);
+        aMyGraph->graph.myPlan = sVIEW;
 
-    IDE_TEST( qmoOneNonPlan::makeVIEW( aStatement ,
-                                       aMyGraph->graph.myQuerySet ,
-                                       aMyGraph->graph.myFrom ,
-                                       sFlag ,
-                                       aMyGraph->graph.myPlan ,
-                                       sVIEW ) != IDE_SUCCESS);
-    aMyGraph->graph.myPlan = sVIEW;
+        qmg::setPlanInfo( aStatement, sVIEW, &(aMyGraph->graph) );
+    }
 
-    qmg::setPlanInfo( aStatement, sVIEW, &(aMyGraph->graph) );
-
-    if ( (aMyGraph->graph.flag & QMG_SET_PARENT_TYPE_SET_MASK) ==
-         QMG_SET_PARENT_TYPE_SET_TRUE )
+    if ( ( (aMyGraph->graph.flag & QMG_SET_PARENT_TYPE_SET_MASK) ==
+           QMG_SET_PARENT_TYPE_SET_TRUE ) &&
+         ( (aMyGraph->graph.flag & QMG_SET_OPTIMIZE_MASK) ==
+           QMG_SET_OPTIMIZE_FALSE ) )
     {
         //-----------------------
-        // make PROJ 
+        // make PROJ
         //-----------------------
 
         sFlag = 0;
@@ -1219,6 +1251,17 @@ qmgSet::optMultiBagUnion( qcStatement * aStatement,
                                                sCurTarget->targetColumn,
                                                sChildTarget->targetColumn )
                 != IDE_SUCCESS );
+        }
+
+        /* BUG-49330 */
+        if ( sChildren->childGraph->type == QMG_PROJECTION )
+        {
+            if ( ( sChildren->childGraph->left->flag & QMG_PARALLEL_EXEC_MASK )
+                 == QMG_PARALLEL_EXEC_TRUE )
+            {
+                aSETGraph->graph.flag &= ~QMG_PARALLEL_EXEC_MASK;
+                aSETGraph->graph.flag |= QMG_PARALLEL_EXEC_TRUE;
+            }
         }
     }
 

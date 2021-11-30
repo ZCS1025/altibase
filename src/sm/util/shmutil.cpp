@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: shmutil.cpp 85760 2019-06-28 07:19:23Z et16 $
+ * $Id: shmutil.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <smuUtility.h>
@@ -520,6 +520,7 @@ IDE_RC writeAllPage(smmTBSNode * aTBSNode, SChar *aDBPath )
     sCurrentDB = smmManager::getCurrentDB(aTBSNode);
     sDbFileCount = smmManager::getDbFileCount(aTBSNode, sCurrentDB);
 
+    MUL_OVERFLOW_CHECK( sDbFileCount, ID_SIZEOF(smmDatabaseFile *));
     sDatabaseFile = (smmDatabaseFile **)idlOS::calloc(sDbFileCount,
                                                       ID_SIZEOF(smmDatabaseFile *));
 

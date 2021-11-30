@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smmUpdate.cpp 90522 2021-04-09 01:29:20Z emlee $
+ * $Id: smmUpdate.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -629,6 +629,7 @@ IDE_RC smmUpdate::redo_SMM_UPDATE_MRDB_CREATE_TBS( idvSQL     * /*aStatistics*/,
                 // Check point path 용 메모리 할당
                 /* smmUpdate_redo_SMM_UPDATE_MRDB_CREATE_TBS_calloc_ChkptPathList.tc */
                 IDU_FIT_POINT("smmUpdate::redo_SMM_UPDATE_MRDB_CREATE_TBS::calloc::ChkptPathList");
+                MUL_OVERFLOW_CHECK(sChkptPathCount,ID_SIZEOF(smiChkptPathAttrList));
                 IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMM,
                                              sChkptPathCount,
                                              ID_SIZEOF(smiChkptPathAttrList),

@@ -467,7 +467,7 @@ public class CmOperation extends CmOperationDef
         }
     }
 
-    static void writePrepare(CmChannel aChannel, int aCID, String aSql, byte aExecMode, byte aHoldMode, byte aKeySetDrivenMode, boolean aNliteralReplace) throws SQLException
+    static void writePrepare(CmChannel aChannel, int aCID, String aSql, byte aExecMode, byte aHoldMode, byte aKeySetDrivenMode, boolean aNliteralReplace, byte aShardPartialExecType) throws SQLException
     {
         // BUG-45156 encoding시 예외가 발생할수도 있기 때문에 버퍼에 write하기 전에 encoding 먼저 수행한다.
         int sWriteStringMode = aNliteralReplace ? WRITE_STRING_MODE_NLITERAL : WRITE_STRING_MODE_DB;
@@ -476,7 +476,7 @@ public class CmOperation extends CmOperationDef
         aChannel.checkWritable(27);
         aChannel.writeOp(DB_OP_PREPARE_BY_CID_V3);
         aChannel.writeInt(aCID); // client에서 만든 session statement id
-        aChannel.writeByte((byte)(aExecMode | aHoldMode | aKeySetDrivenMode));
+        aChannel.writeByte((byte)(aExecMode | aHoldMode | aKeySetDrivenMode | aShardPartialExecType));
         // BUG-48775 Reserved 17 bytes
         aChannel.writeLong(0);  
         aChannel.writeLong(0);
@@ -497,7 +497,8 @@ public class CmOperation extends CmOperationDef
 
     static void writeExecuteV3(CmChannel aChannel, int aStatementId, int aRowNumber, byte aMode, CmProtocolContext aContext) throws SQLException
     {
-        short sClientTouchedNodeCount = aContext.getClientTouchedNodeCount();
+        CmProtocolContextDirExec sContext = (CmProtocolContextDirExec)aContext;
+        short sClientTouchedNodeCount = sContext.getClientTouchedNodeCount();
         aChannel.checkWritable( 41 + (sClientTouchedNodeCount * 4) );
         aChannel.writeOp(DB_OP_EXECUTE_V3);
         aChannel.writeInt(aStatementId);
@@ -505,13 +506,13 @@ public class CmOperation extends CmOperationDef
         aChannel.writeByte(aMode);
 
         // TASK-7220 고성능 분산공유트랜잭션 정합성
-        aChannel.writeLong(aContext.getDistTxInfo().getSCN());
-        aChannel.writeLong(aContext.getDistTxInfo().getTxFirstStmtSCN());
-        aChannel.writeLong(aContext.getDistTxInfo().getTxFirstStmtTime());
-        aChannel.writeByte(aContext.getDistTxInfo().getDistLevel());
-        aChannel.writeInt(0);                             /* TASK-7219 Non-shard DML */
-        aChannel.writeShort(sClientTouchedNodeCount);     /* BUG-49296 : BUG-48315 */
-        for (Integer sNodeId : aContext.getClientTouchNodes())
+        aChannel.writeLong(sContext.getDistTxInfo().getSCN());
+        aChannel.writeLong(sContext.getDistTxInfo().getTxFirstStmtSCN());
+        aChannel.writeLong(sContext.getDistTxInfo().getTxFirstStmtTime());
+        aChannel.writeByte(sContext.getDistTxInfo().getDistLevel());
+        aChannel.writeInt(sContext.getStmtExecSeqForShardTx());  /* TASK-7219 Non-shard DML */
+        aChannel.writeShort(sClientTouchedNodeCount);            /* BUG-49296 : BUG-48315 */
+        for (Integer sNodeId : sContext.getClientTouchNodes())
         {
             aChannel.writeInt(sNodeId);
         }
@@ -880,7 +881,8 @@ public class CmOperation extends CmOperationDef
                                            boolean aIsArray,
                                            CmProtocolContext aContext) throws SQLException
     {
-        short sClientTouchedNodeCount = aContext.getClientTouchedNodeCount();
+        CmProtocolContextDirExec sContext = (CmProtocolContextDirExec)aContext;
+        short sClientTouchedNodeCount = sContext.getClientTouchedNodeCount();
         aChannel.checkWritable( 53 + (sClientTouchedNodeCount * 4) );
         aChannel.writeOp(DB_OP_PARAM_DATA_IN_LIST_V3);
         aChannel.writeInt(aStatementId);
@@ -899,13 +901,13 @@ public class CmOperation extends CmOperationDef
         }
 
         // TASK-7220 고성능 분산공유트랜잭션 정합성
-        aChannel.writeLong(aContext.getDistTxInfo().getSCN());
-        aChannel.writeLong(aContext.getDistTxInfo().getTxFirstStmtSCN());
-        aChannel.writeLong(aContext.getDistTxInfo().getTxFirstStmtTime());
-        aChannel.writeByte(aContext.getDistTxInfo().getDistLevel());
-        aChannel.writeInt(0);                             /* TASK-7219 Non-shard DML */
-        aChannel.writeShort(sClientTouchedNodeCount);     /* BUG-49296 : BUG-48315 */
-        for (Integer sNodeId : aContext.getClientTouchNodes())
+        aChannel.writeLong(sContext.getDistTxInfo().getSCN());
+        aChannel.writeLong(sContext.getDistTxInfo().getTxFirstStmtSCN());
+        aChannel.writeLong(sContext.getDistTxInfo().getTxFirstStmtTime());
+        aChannel.writeByte(sContext.getDistTxInfo().getDistLevel());
+        aChannel.writeInt(sContext.getStmtExecSeqForShardTx());  /* TASK-7219 Non-shard DML */
+        aChannel.writeShort(sClientTouchedNodeCount);            /* BUG-49296 : BUG-48315 */
+        for (Integer sNodeId : sContext.getClientTouchNodes())
         {
             aChannel.writeInt(sNodeId);
         }

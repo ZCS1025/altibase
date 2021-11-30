@@ -1562,6 +1562,7 @@ IDE_RC smcLob::allocLPCH( void*              aTrans,
     {
         /* smcLob_allocLPCH_calloc_NewLPCH.tc */
         IDU_FIT_POINT("smcLob::allocLPCH::calloc::NewLPCH");
+        MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(smcLPCH),aNewLPCHCnt);
         IDE_TEST( iduMemMgr::calloc(IDU_MEM_SM_SMC,
                                     1,
                                     (ULong)ID_SIZEOF(smcLPCH) * aNewLPCHCnt,
@@ -1677,6 +1678,9 @@ IDE_RC smcLob::rebuildLPCH( smOID       /*aTableOID*/,
             {
                 /* smcLob_rebuildLPCH_malloc_NewLPCH.tc */
                 IDU_FIT_POINT("smcLob::rebuildLPCH::malloc::NewLPCH");
+
+                MUL_OVERFLOW_CHECK(ID_SIZEOF(smcLPCH),sLobDesc->mLPCHCount);
+
                 IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SMC,
                                              ID_SIZEOF(smcLPCH) * sLobDesc->mLPCHCount,
                                              (void**)&sNewLPCH )

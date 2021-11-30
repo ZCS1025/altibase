@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smcTable.cpp 90259 2021-03-19 01:22:22Z emlee $
+ * $Id: smcTable.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -2128,6 +2128,10 @@ IDE_RC smcTable::freeColumns(idvSQL          *aStatistics,
 
     /* smcTable_freeColumns_malloc_Arr.tc */
     IDU_FIT_POINT("smcTable::freeColumns::malloc::Arr");
+
+    MUL_OVERFLOW_CHECK(ID_SIZEOF(smOID),
+                            getMaxColumnVarSlotCnt(aTableHeader->mColumnSize));
+
     IDE_TEST( iduMemMgr::malloc(
                   IDU_MEM_SM_SMC,
                   ID_SIZEOF(smOID) * getMaxColumnVarSlotCnt(aTableHeader->mColumnSize),
@@ -5242,6 +5246,9 @@ IDE_RC smcTable::deleteAllTableBackup()
     /* smcTable_deleteAllTableBackup.tc */
     IDU_FIT_POINT_RAISE( "smcTable::deleteAllTableBackup::malloc::DirEnt",
                           insufficient_memory );
+
+    ADD_OVERFLOW_CHECK(ID_SIZEOF(struct dirent),SM_MAX_FILE_NAME);
+
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMC,
                                        ID_SIZEOF(struct dirent) + SM_MAX_FILE_NAME,
                                        (void**)&(sDirEnt),
@@ -5381,6 +5388,8 @@ IDE_RC smcTable::copyAllTableBackup(SChar      * aSrcDir,
     SChar              sStrFullFileName[SM_MAX_FILE_NAME];
     SChar              sFileName[SM_MAX_FILE_NAME];
     SInt               sRC;
+
+    ADD_OVERFLOW_CHECK(ID_SIZEOF(struct dirent),SM_MAX_FILE_NAME);
 
     /* smcTable_copyAllTableBackup_malloc_DirEnt.tc */
     IDU_FIT_POINT("smcTable::copyAllTableBackup::malloc::DirEnt");
@@ -6577,6 +6586,13 @@ IDE_RC smcTable::initRowTemplate( idvSQL         * /*aStatistics*/,
 
     /* smcTable_initRowTemplate_calloc_AllocMemPtr.tc */
     IDU_FIT_POINT("smcTable::initRowTemplate::calloc::AllocMemPtr");
+
+    MUL_OVERFLOW_CHECK(ID_SIZEOF(smcColTemplate),sColumnCount);
+    MUL_OVERFLOW_CHECK(ID_SIZEOF(UShort),sColumnCount);
+    ADD_OVERFLOW_CHECK(ID_SIZEOF(smcRowTemplate),
+                           (ID_SIZEOF(smcColTemplate) * sColumnCount));
+    ADD_OVERFLOW_CHECK(ID_SIZEOF(smcRowTemplate)+(ID_SIZEOF(smcColTemplate) * sColumnCount),
+                           (ID_SIZEOF(UShort) * sColumnCount));
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMC,
                                  1,
                                  ID_SIZEOF(smcRowTemplate) 
@@ -6901,6 +6917,8 @@ IDE_RC smcTable::makeLobColumnList(
 
     if( sLobColumnCnt != 0 )
     {
+        MUL_OVERFLOW_CHECK((ULong)sLobColumnCnt,ID_SIZEOF(smiColumn*));
+
         /* smcTable_makeLobColumnList_malloc_ArrLobColumn.tc */
         IDU_FIT_POINT("smcTable::makeLobColumnList::malloc::ArrLobColumn");
         IDE_TEST(iduMemMgr::malloc(
@@ -7202,6 +7220,7 @@ void  smcTable::dumpTableHeader( smcTableHeader * aTable )
 
     IDE_ASSERT( aTable != NULL );
 
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     if( iduMemMgr::calloc( IDU_MEM_SM_SMC,
                            1,
                            ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,

@@ -22,11 +22,7 @@
 #ifndef _O_SMR_COMP_RES_POOL_H_
 #define _O_SMR_COMP_RES_POOL_H_ 1
 
-#include <idl.h>
-#include <smDef.h>
-#include <smrDef.h>
 #include <smrCompResList.h>
-#include <iduMemoryHandle.h>
 
 /*
    Log Compression¿ª ¿ß«— Resource Pool

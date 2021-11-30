@@ -17,7 +17,7 @@
 
 /***********************************************************************
 
-* $Id: rpcManager.cpp 91576 2021-09-02 06:39:41Z donghyun1 $
+* $Id: rpcManager.cpp 92064 2021-11-12 07:10:10Z yoonhee.kim $
 
 ***********************************************************************/
 
@@ -4004,7 +4004,10 @@ IDE_RC rpcManager::alterReplicationAddTable( void        * aQcStatement )
     idlOS::memset( &sReplications, 0, ID_SIZEOF(rpdReplications) );
     // replication name
     QCI_STR_COPY( sReplications.mRepName, sParseTree->replName );
-    
+
+    /* 
+     * BUG-49420 SYS_REPL_TABLE_OID_IN_USE_ disable   
+     *
     IDE_TEST( rpdCatalog::getReplTableOIDInUseCount( sSmiStmt,
                                                      sReplications.mRepName,
                                                      sTableInfo->tableOID,
@@ -4012,7 +4015,8 @@ IDE_RC rpcManager::alterReplicationAddTable( void        * aQcStatement )
             != IDE_SUCCESS );
     
     IDE_TEST_RAISE( sTableOIDInUseCount != 0, ERR_TABLEOID_IN_USE_EXIST );
-    
+    */
+
     /* 
      * PROJ-2453
      * DeadLock 걸리는 문제로 TableLock을 먼저 걸고 SendLock을 걸어야  함

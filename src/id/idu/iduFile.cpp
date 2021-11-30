@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduFile.cpp 90315 2021-03-25 02:04:41Z jiwon.kim $
+ * $Id: iduFile.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -1282,6 +1282,7 @@ IDE_RC iduFile::copy(idvSQL  * aStatSQL,
 
     s_nPageSize  = idlOS::getpagesize();
 
+    ADD_OVERFLOW_CHECK( IDU_FILE_COPY_BUFFER,s_nPageSize - 1 );
     IDE_TEST(iduMemMgr::malloc(mIndex,
                                IDU_FILE_COPY_BUFFER + s_nPageSize - 1,
                                (void**)&sBufferPtr,

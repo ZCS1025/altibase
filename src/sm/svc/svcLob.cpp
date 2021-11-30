@@ -1273,6 +1273,7 @@ IDE_RC svcLob::allocLPCH(void*              aTrans,
         IDU_FIT_POINT( "svcLob::allocLPCH::malloc::NewLPCH",
                         idERR_ABORT_InsufficientMemory );
 
+        MUL_OVERFLOW_CHECK( (ULong)ID_SIZEOF(smcLPCH),aNewLPCHCnt );
         IDE_TEST( iduMemMgr::calloc(IDU_MEM_SM_SMC,
                                     1,
                                     (ULong)ID_SIZEOF(smcLPCH) * aNewLPCHCnt,
@@ -1385,6 +1386,8 @@ IDE_RC svcLob::rebuildLPCH( smiColumn ** aArrLobColumn,
             /* trim으로 인해 mLPCHCount가 0일 수 있다. */
             if( sLobDesc->mLPCHCount > 0 )
             {
+                MUL_OVERFLOW_CHECK(ID_SIZEOF(smcLPCH),sLobDesc->mLPCHCount);
+
                 IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SMC,
                                              ID_SIZEOF(smcLPCH) * sLobDesc->mLPCHCount,
                                              (void**)&sNewLPCH)

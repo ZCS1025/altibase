@@ -932,6 +932,8 @@ IDE_RC getPersPagePtr( scSpaceID    aSpaceID,
     /* 置段税 PCH Array 持失 */
     if( gPCH[ aSpaceID ] == NULL )
     {
+        MUL_OVERFLOW_CHECK( smuProperty::getMaxDBSize() / SM_PAGE_SIZE,
+                                ID_SIZEOF(smmPCH *) );
         IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMU,
                                      smuProperty::getMaxDBSize() 
                                         / SM_PAGE_SIZE,
@@ -1615,6 +1617,7 @@ void dumpMemPage( scSpaceID aSID, scPageID aPID )
     UInt               sFixedSlotSize;
     UInt               i;
 
+    //MUL_OVERFLOW_CHECK_ASSERT( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     IDE_ASSERT( iduMemMgr::calloc( IDU_MEM_ID, 1,
                                    ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                    (void**)&sTempBuf )
@@ -1731,7 +1734,7 @@ void dumpDiskPage( scSpaceID aSID, scPageID aPID )
     smiFetchColumnList * sFetchColumnList;
     UInt                 sMaxRowSize = 0;
 
-
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     IDE_ASSERT( iduMemMgr::calloc( IDU_MEM_ID, 1,
                                    ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                    (void**)&sTempBuf )

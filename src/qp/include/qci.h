@@ -1831,10 +1831,6 @@ public:
             qciCatalogReplicationCallback     aCatalogCallback,
             qciManageReplicationCallback      aManageCallback );
 
-    /* BUG-49194 [mm-altiaudit] INC-45592 방어코드 추가 */
-    static void getAllRefObjectCount( qciStatement      * aStatement, 
-                                      UInt              * aRefObjectCount );
-
     // PROJ-2223 audit
     static void getAllRefObjects( qciStatement       * aStatement,
                                   qciAuditRefObject ** aRefObjects,

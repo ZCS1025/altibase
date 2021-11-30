@@ -43,6 +43,9 @@ IDE_RC sdbBufferPoolStat::initialize(sdbBufferPool *aBufferPool)
     IDU_FIT_POINT_RAISE( "sdbBufferPoolStat::initialize::malloc",
                           insufficient_memory );
 
+    MUL_OVERFLOW_CHECK(ID_SIZEOF(sdbPageTypeStatData) ,mPageTypeCount);
+    MUL_OVERFLOW_CHECK(ID_SIZEOF(sdbPageTypeStatData)*mPageTypeCount,IDV_OWNER_MAX);
+
     IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_SM_SDB,
                                      ID_SIZEOF(sdbPageTypeStatData) *
                                      mPageTypeCount * IDV_OWNER_MAX,

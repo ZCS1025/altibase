@@ -4,7 +4,7 @@
  ****************************************************************************/
 
 /*****************************************************************************
- * $Id: iduQueueLockFree.cpp 26440 2008-06-10 04:02:48Z jdlee $
+ * $Id: iduQueueLockFree.cpp 92066 2021-11-12 07:46:00Z kclee $
  ****************************************************************************/
 
 /*****************************************************************************
@@ -41,6 +41,8 @@ IDE_RC iduQueueInitializeLockFree(iduQueue *aQueue, iduMemoryClientIndex aClient
 
     aQueue->mCapacity += 2;
 
+    MUL_OVERFLOW_CHECK(ID_SIZEOF(void *),aQueue->mCapacity);
+    ADD_OVERFLOW_CHECK(ID_SIZEOF(iduQueueLockFree),ID_SIZEOF(void *) * aQueue->mCapacity);
     IDE_TEST(iduMemMgr::malloc(aClientIndex,
                                ID_SIZEOF(iduQueueLockFree) + ID_SIZEOF(void *) * aQueue->mCapacity,
                                (void **)&sQueue,

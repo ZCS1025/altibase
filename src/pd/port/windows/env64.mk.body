@@ -32,7 +32,7 @@ CCFLAGS=$(CFLAGS)
 
 ARFLAGS=
 
-INCLUDE_LIST="$(DEV_DIR)/src/pd/port/windows/include" "$(CORE_DIR)/include" "$(PD_DIR)/makeinclude" "$(PD_DIR)/include" "$(ID_DIR)" "$(ID_DIR)/include"
+INCLUDE_LIST="$(DEV_DIR)/src/pd/port/windows/include" "$(CORE_DIR)/include" "$(CORE_EXT_DIR)/include" "$(PD_DIR)/makeinclude" "$(PD_DIR)/include" "$(ID_DIR)" "$(ID_DIR)/include"
 LIB_LIST="$(ALTI_HOME)/lib" "$(PD_DIR)/lib" "$(ID_DIR)/lib" "$(SM_DIR)/lib" "$(MT_DIR)/lib" "$(QP_DIR)/lib" "$(RP_DIR)/lib" "$(MM_DIR)/lib"
 
 DEFINES=$(foreach i,$(DEFINE_LIST),/D$(i))

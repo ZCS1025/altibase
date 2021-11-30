@@ -20,7 +20,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: qcuProperty.cpp 91627 2021-09-08 01:47:35Z ahra.cho $
+ * $Id: qcuProperty.cpp 91978 2021-11-05 05:37:19Z donovan.seo $
  *
  * QP 및 MM에서 사용할 System Property에 대한 정의
  * A4에서 제공하는 Property 관리자를 이용하여 관리한다.
@@ -880,6 +880,10 @@ IDE_RC qcuProperty::load()
     IDE_ASSERT( idp::read( "__OPTIMIZER_WITH_VIEW",
                            &QCU_PROPERTY(mOptimizerWithView) ) == IDE_SUCCESS );
 
+    /* BUG-49330 */
+    IDE_ASSERT( idp::read( "__OPTIMIZER_SET",
+                           &QCU_PROPERTY(mOptimizerSet) ) == IDE_SUCCESS );
+
     return IDE_SUCCESS;
 
     IDE_EXCEPTION(err_fatal_invalid_ttl_size);
@@ -1600,6 +1604,11 @@ IDE_RC qcuProperty::setupUpdateCallback()
     /* PROJ-2749 */
     IDE_TEST( idp::setupAfterUpdateCallback( "__OPTIMIZER_WITH_VIEW",
                                              qcuProperty::changeOPTIMIZER_WITH_VIEW )
+              != IDE_SUCCESS );
+
+    /* BUG-49930*/
+    IDE_TEST( idp::setupAfterUpdateCallback( "__OPTIMIZER_SET",
+                                             qcuProperty::changeOPTIMIZER_SET )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
@@ -3829,6 +3838,19 @@ IDE_RC qcuProperty::changeOPTIMIZER_WITH_VIEW( idvSQL* /* aStatistics */,
                                                void  * /* aArg */ )
 {
     idlOS::memcpy( &QCU_PROPERTY(mOptimizerWithView),
+                   aNewValue,
+                   ID_SIZEOF(UInt) );
+
+    return IDE_SUCCESS;
+}
+
+IDE_RC qcuProperty::changeOPTIMIZER_SET( idvSQL * /* aStatistics */,
+                                         SChar  * /* aName */,
+                                         void   * /* aOldValue */,
+                                         void   * aNewValue,
+                                         void   * /* aArg */ )
+{
+    idlOS::memcpy( &QCU_PROPERTY(mOptimizerSet),
                    aNewValue,
                    ID_SIZEOF(UInt) );
 

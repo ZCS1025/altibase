@@ -51,6 +51,8 @@ IDE_RC sdbBufferPool::initPrepareList()
     IDU_FIT_POINT_RAISE( "sdbBufferPool::initPrepareList::malloc", 
                           insufficient_memory );
 
+    MUL_OVERFLOW_CHECK(ID_SIZEOF(sdbPrepareList) ,mPrepareListCnt);
+
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SDB,
                                        (ULong)ID_SIZEOF( sdbPrepareList ) * mPrepareListCnt,
                                        (void**)&mPrepareList ) != IDE_SUCCESS,
@@ -96,6 +98,8 @@ IDE_RC sdbBufferPool::initLRUList()
     /* TC/FIT/Limit/sm/sdb/sdbBufferPool_initLRUList_malloc.sql */
     IDU_FIT_POINT_RAISE( "sdbBufferPool::initLRUList::malloc", 
                           insufficient_memory );
+
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF( sdbLRUList ) ,mLRUListCnt);
 
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SDB,
                                        (ULong)ID_SIZEOF( sdbLRUList ) * mLRUListCnt,
@@ -144,6 +148,8 @@ IDE_RC sdbBufferPool::initFlushList()
     IDU_FIT_POINT_RAISE( "sdbBufferPool::initFlushList::malloc", 
                           insufficient_memory );
 
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(sdbFlushList) ,mFlushListCnt);
+
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SDB,
                                        (ULong)ID_SIZEOF( sdbFlushList ) * mFlushListCnt,
                                        (void**)&mFlushList ) != IDE_SUCCESS,
@@ -163,6 +169,9 @@ IDE_RC sdbBufferPool::initFlushList()
     /* TC/FIT/Limit/sm/sdb/sdbBufferPool_initFlushList_delayedFlushList_malloc.sql */
     IDU_FIT_POINT_RAISE( "sdbBufferPool::initFlushList::delayedFlushList_malloc", 
                           insufficient_memory );
+
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF( sdbFlushList ) ,mFlushListCnt);
+
     /* PROJ-2669
      * Delayed flush list 생성
      * Normal Flush list 와 동일한 갯수로 생성한다 */

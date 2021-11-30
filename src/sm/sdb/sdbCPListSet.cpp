@@ -79,6 +79,8 @@ IDE_RC sdbCPListSet::initialize( UInt aListCount, sdLayerState aType )
     IDU_FIT_POINT_RAISE( "sdbCPListSet::initialize::malloc1",
                           insufficient_memory );
 
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(smuList) ,mListCount);
+
     IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_SM_SDB,
                                      (ULong)ID_SIZEOF(smuList) * mListCount,
                                      (void**)&mBase) != IDE_SUCCESS,
@@ -89,6 +91,8 @@ IDE_RC sdbCPListSet::initialize( UInt aListCount, sdLayerState aType )
     IDU_FIT_POINT_RAISE( "sdbCPListSet::initialize::malloc2",
                           insufficient_memory );
 
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(UInt) ,mListCount);
+
     IDE_TEST_RAISE( iduMemMgr::malloc(IDU_MEM_SM_SDB,
                                       (ULong)ID_SIZEOF(UInt) * mListCount,
                                       (void**)&mListLength)!= IDE_SUCCESS,
@@ -98,6 +102,8 @@ IDE_RC sdbCPListSet::initialize( UInt aListCount, sdLayerState aType )
     /* TC/FIT/Limit/sm/sdb/sdbCPListSet_initialize_malloc3.sql */
     IDU_FIT_POINT_RAISE( "sdbCPListSet::initialize::malloc3",
                           insufficient_memory );
+
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(iduMutex) ,mListCount);
 
     IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_SM_SDB,
                                      (ULong)ID_SIZEOF(iduMutex) * mListCount,

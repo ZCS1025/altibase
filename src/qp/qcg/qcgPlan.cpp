@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qcgPlan.cpp 91627 2021-09-08 01:47:35Z ahra.cho $
+ * $Id: qcgPlan.cpp 91978 2021-11-05 05:37:19Z donovan.seo $
  **********************************************************************/
 
 #include <qc.h>
@@ -844,6 +844,11 @@ void qcgPlan::registerPlanProperty( qcStatement        * aStatement,
                 QCG_REGISTER_PLAN_PROPERTY( mOptimizerWithViewRef,
                                             mOptimizerWithView,
                                             QCU_OPTIMIZER_WITH_VIEW );
+                break;
+            case PLAN_PROPERTY_OPTIMIZER_SET: /* BUG-49330 */
+                QCG_REGISTER_PLAN_PROPERTY( mOptimizerSetRef,
+                                            mOptimizerSet,
+                                            QCU_OPTIMIZER_SET );
                 break;
             default:
                 IDE_DASSERT( 0 );
@@ -2118,6 +2123,11 @@ IDE_RC qcgPlan::isMatchedPlanProperty( qcStatement    * aStatement,
                                mOptimizerWithView,
                                QCU_OPTIMIZER_WITH_VIEW );
 
+    /* BUG-49330 */
+    QCG_MATCHED_PLAN_PROPERTY( mOptimizerSetRef,
+                               mOptimizerSet,
+                               QCU_OPTIMIZER_SET );
+
     ////////////////////////////////////////////////////////////////////
     // QCG_MATCHED_PLAN_PROPERTY 매크로로 체크할수 없는 경우
     ////////////////////////////////////////////////////////////////////
@@ -2699,6 +2709,11 @@ IDE_RC qcgPlan::rebuildPlanProperty( qcStatement    * aStatement,
     QCG_REBUILD_PLAN_PROPERTY( mOptimizerWithViewRef,
                                mOptimizerWithView,
                                QCU_OPTIMIZER_WITH_VIEW );
+
+    /* BUG-49330 */
+    QCG_REBUILD_PLAN_PROPERTY( mOptimizerSetRef,
+                               mOptimizerSet,
+                               QCU_OPTIMIZER_SET );
 
     ////////////////////////////////////////////////////////////////////
     // QCG_REBUILD_PLAN_PROPERTY 매크로로 체크할수 없는 경우

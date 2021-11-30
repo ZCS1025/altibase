@@ -23,6 +23,7 @@ START ?/packages/dbms_concurrent_exec.sql
 START ?/packages/dbms_recyclebin.sql
 START ?/packages/dbms_utility.sql
 START ?/packages/dbms_sql_plan_cache.sql
+START ?/packages/dbms_metadata.sql
 
 START ?/packages/dbms_application_info.plb
 START ?/packages/dbms_lock.plb
@@ -35,6 +36,7 @@ START ?/packages/dbms_concurrent_exec.plb
 START ?/packages/dbms_recyclebin.plb
 START ?/packages/dbms_utility.plb
 START ?/packages/dbms_sql_plan_cache.plb
+START ?/packages/dbms_metadata.plb
 
 -- utility package
 START ?/packages/utl_file.sql
@@ -67,7 +69,6 @@ START ?/packages/dbms_shard_get_diagnostics.sql
 START ?/packages/dbms_shard.plb
 START ?/packages/dbms_shard_get_diagnositcs.plb
 
--- BUG-47355
+-- sys_context function
 START ?/packages/sys_context.sql
-START ?/packages/dbms_metadata.sql
-START ?/packages/dbms_metadata_body.sql
+START ?/packages/sys_context.plb

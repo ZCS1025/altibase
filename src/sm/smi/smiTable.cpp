@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smiTable.cpp 90302 2021-03-24 01:21:41Z emlee $
+ * $Id: smiTable.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 /**************************************************************
  * FILE DESCRIPTION : smiTable.cpp                            *
@@ -1585,6 +1585,9 @@ IDE_RC  smiTable::restoreTableByAbort( void         * aTrans,
     /* Abort시에는 Column 정보 및 Value를 저장할 Array가 없기에
      * 할당해줍니다. */
     sArrValue = NULL;
+
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(smiValue),sColumnCnt);
+
     IDE_TEST( iduMemMgr::malloc(IDU_MEM_SM_SMI,
                                 (ULong)ID_SIZEOF(smiValue) * sColumnCnt,
                                 (void**)&sArrValue,
@@ -1594,6 +1597,9 @@ IDE_RC  smiTable::restoreTableByAbort( void         * aTrans,
 
 
     sColumnList = NULL;
+
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(smiColumnList),sColumnCnt);
+
     IDE_TEST( iduMemMgr::malloc(IDU_MEM_SM_SMI,
                                 (ULong)ID_SIZEOF(smiColumnList) * sColumnCnt,
                                 (void**)&sColumnList,
@@ -2356,6 +2362,8 @@ IDE_RC smiTable::rebuildAllIndex( smiStatement  * aStatement,
     sIndexCnt = smcTable::getIndexCount( sTableHeader );
 
     IDU_FIT_POINT( "smiTable::rebuildAllIndex::malloc" );
+
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(smnIndexHeader),sIndexCnt);
 
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SMI,
                                  (ULong)ID_SIZEOF(smnIndexHeader) * sIndexCnt,

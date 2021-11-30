@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: qc.h 91655 2021-09-09 23:52:25Z bethy $
+ * $Id: qc.h 91978 2021-11-05 05:37:19Z donovan.seo $
  **********************************************************************/
 
 #ifndef _O_QC_H_
@@ -1853,6 +1853,7 @@ enum qcPlanPropertyKind
     PLAN_PROPERTY_LEFT_OUTER_SKIP_RIGHT_ENABLE, /* PROJ-2750 */
     PLAN_PROPERTY_GLOBAL_TRANSACTION_LEVEL, /* BUG-49093 */
     PLAN_PROPERTY_OPTIMIZER_WITH_VIEW, /* PROJ-2749 */
+    PLAN_PROPERTY_OPTIMIZER_SET, /* BUG-49330 */
     PLAN_PROPERTY_MAX
 };
 
@@ -2162,6 +2163,9 @@ typedef struct qcPlanProperty
     idBool mOptimizerWithViewRef;
     UInt   mOptimizerWithView;
 
+    /* BUG-49330 */
+    idBool mOptimizerSetRef;
+    UInt   mOptimizerSet;
 } qcPlanProperty;
 
 typedef struct qcTemplate

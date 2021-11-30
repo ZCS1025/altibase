@@ -68,6 +68,8 @@ IDE_RC iduFileIOVec::initialize(SInt aCount, ...)
     SInt    i;
 
     sSize = (aCount == 0)? IDU_MINLEN : idlOS::align8(aCount);
+
+    MUL_OVERFLOW_CHECK( sizeof(struct iovec),sSize );
     IDE_TEST( iduMemMgr::malloc(IDU_MEM_ID_IDU,
                                 sizeof(struct iovec) * sSize,
                                 (void**)&mIOVec)
@@ -110,6 +112,8 @@ IDE_RC iduFileIOVec::initialize(SInt aCount, void** aPtr, size_t* aLen)
     SInt    i;
 
     sSize = idlOS::align8(aCount);
+
+    MUL_OVERFLOW_CHECK( sizeof(struct iovec),sSize );
     IDE_TEST( iduMemMgr::malloc(IDU_MEM_ID_IDU,
                                 sizeof(struct iovec) * sSize,
                                 (void**)&mIOVec)

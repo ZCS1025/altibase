@@ -1756,6 +1756,9 @@ IDE_RC smiVolTableBackup::makeColumnList4Res(const void                * aDstTab
     {
         /* smiVolTableBackup_makeColumnList4Res_malloc_ArrColumnInfo.tc */
         IDU_FIT_POINT("smiVolTableBackup::makeColumnList4Res::malloc::ArrColumnInfo");
+
+        MUL_OVERFLOW_CHECK((ULong)sColumnCnt,ID_SIZEOF(smiTableBackupColumnInfo));
+
         IDE_TEST(iduMemMgr::malloc(
                      IDU_MEM_SM_SMC,
                      (ULong)sColumnCnt *
@@ -1770,6 +1773,9 @@ IDE_RC smiVolTableBackup::makeColumnList4Res(const void                * aDstTab
     {
         /* smiVolTableBackup_makeColumnList4Res_malloc_ArrLobColumnInfo */
         IDU_FIT_POINT("smiVolTableBackup::makeColumnList4Res::malloc::ArrLobColumnInfo");
+
+        MUL_OVERFLOW_CHECK((ULong)sLobColumnCnt,ID_SIZEOF(smiTableBackupColumnInfo));
+
         IDE_TEST(iduMemMgr::malloc(
                      IDU_MEM_SM_SMC,
                      (ULong)sLobColumnCnt *
@@ -1969,6 +1975,8 @@ IDE_RC smiVolTableBackup::dump(SChar *aFilename)
     IDE_ASSERT(sFile.read( sOffset, &sColumnCnt, ID_SIZEOF(UInt))
                == IDE_SUCCESS);
     sOffset += ID_SIZEOF(UInt);
+
+    MUL_OVERFLOW_CHECK_ASSERT((ULong)ID_SIZEOF(smiColumn),sColumnCnt);
 
     IDE_ASSERT(iduMemMgr::malloc(
                    IDU_MEM_SM_SMI,

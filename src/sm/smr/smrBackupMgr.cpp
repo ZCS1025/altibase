@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smrBackupMgr.cpp 86343 2019-11-11 01:28:10Z jiwon.kim $
+ * $Id: smrBackupMgr.cpp 92066 2021-11-12 07:46:00Z kclee $
  *
  * Description :
  *
@@ -149,6 +149,8 @@ IDE_RC smrBackupMgr::unlinkChkptImages( SChar* aPathName,
     /* smrBackupMgr_unlinkChkptImages_malloc_DirEnt.tc */
     IDU_FIT_POINT_RAISE( "smrBackupMgr::unlinkChkptImages::malloc::DirEnt",
                          insufficient_memory );
+    ADD_OVERFLOW_CHECK(ID_SIZEOF(struct dirent),SM_MAX_FILE_NAME);
+
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMR,
                                        ID_SIZEOF(struct dirent) + SM_MAX_FILE_NAME,
                                        (void**)&sDirEnt,
@@ -353,6 +355,8 @@ IDE_RC smrBackupMgr::unlinkAllLogFiles( SChar* aPathName )
     /* smrBackupMgr_unlinkAllLogFiles_malloc_DirEnt.tc */
     IDU_FIT_POINT_RAISE( "smrBackupMgr::unlinkAllLogFiles::malloc::DirEnt",
                          insufficient_memory );
+    ADD_OVERFLOW_CHECK(ID_SIZEOF(struct dirent),SM_MAX_FILE_NAME);
+
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SMR,
                                        ID_SIZEOF(struct dirent) + SM_MAX_FILE_NAME,
                                        (void**)&sDirEnt,

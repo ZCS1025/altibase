@@ -283,7 +283,12 @@ abstract public class CmOperationDef
     static final byte             PREPARE_MODE_KEYSET_MASK               = 0x04;
     static final byte             PREPARE_MODE_KEYSET_OFF                = 0x00;
     static final byte             PREPARE_MODE_KEYSET_ON                 = 0x04;
-
+    /* TASK-7219 Non-shard DML */
+    static final byte             PREPARE_MODE_SHARD_PARTIAL_EXEC_MASK   = 0x30;
+    static final byte             PREPARE_MODE_SHARD_PARTIAL_EXEC_NONE   = 0x00; /* default */
+    static final byte             PREPARE_MODE_SHARD_PARTIAL_EXEC_COORD  = 0x10;
+    static final byte             PREPARE_MODE_SHARD_PARTIAL_EXEC_QUERY  = 0x20;
+    
     static final byte             COLUMN_INFO_FLAG_NULLABLE              = 0x01;
     static final byte             COLUMN_INFO_FLAG_UPDATABLE             = 0x02;
 

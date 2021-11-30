@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idxProc.cpp 91777 2021-10-01 04:39:29Z donovan.seo $
+ * $Id: idxProc.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 /***********************************************************************
@@ -49,6 +49,7 @@ idxProc::initializeStatic()
                  + iduProperty::getConcExecDegreeMax()
                  + 2;
 
+    MUL_OVERFLOW_CHECK_ASSERT(sListCount, ID_SIZEOF(idxAgentProc));
     IDE_ASSERT( iduMemMgr::calloc( IDU_MEM_ID_EXTPROC,
                                    sListCount,
                                    ID_SIZEOF(idxAgentProc),
@@ -56,6 +57,8 @@ idxProc::initializeStatic()
                                    IDU_MEM_IMMEDIATE )
                 == IDE_SUCCESS );
 
+    MUL_OVERFLOW_CHECK( idlOS::align8(ID_SIZEOF(UInt)),sListCount );
+    ADD_OVERFLOW_CHECK( idlOS::align8(ID_SIZEOF(UInt))*sListCount,8);//8:align8
     IDE_ASSERT( iduMemMgr::malloc( IDU_MEM_ID_EXTPROC,
                                    idlOS::align8(ID_SIZEOF(UInt)) * sListCount,
                                    (void**)&mTempBuffer)

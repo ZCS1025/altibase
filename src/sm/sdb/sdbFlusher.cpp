@@ -213,6 +213,9 @@ IDE_RC sdbFlusher::initialize(UInt          aFlusherID,
     IDU_FIT_POINT_RAISE( "sdbFlusher::initialize::malloc1",
                           insufficient_memory );
 
+    ADD_OVERFLOW_CHECK(mIOBPageCount,1);
+    MUL_OVERFLOW_CHECK((ULong)mPageSize,(mIOBPageCount + 1));
+
     // IOB √ ±‚»≠
     IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_SM_SDB,
                                      (ULong)mPageSize * (mIOBPageCount + 1),
@@ -228,6 +231,8 @@ IDE_RC sdbFlusher::initialize(UInt          aFlusherID,
     IDU_FIT_POINT_RAISE( "sdbFlusher::initialize::malloc2",
                           insufficient_memory );
 
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(UChar*),mIOBPageCount);
+
     IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_SM_SDB,
                                      (ULong)ID_SIZEOF(UChar*) * mIOBPageCount,
                                      (void**)&mIOBPtr) != IDE_SUCCESS,
@@ -238,6 +243,8 @@ IDE_RC sdbFlusher::initialize(UInt          aFlusherID,
     IDU_FIT_POINT_RAISE( "sdbFlusher::initialize::malloc3",
                           insufficient_memory );
 
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(sdbBCB*),mIOBPageCount);
+
     IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_SM_SDB,
                                      (ULong)ID_SIZEOF(sdbBCB*) * mIOBPageCount,
                                      (void**)&mIOBBCBArray) != IDE_SUCCESS,
@@ -247,6 +254,8 @@ IDE_RC sdbFlusher::initialize(UInt          aFlusherID,
     /* TC/FIT/Limit/sm/sdbFlusher_initialize_malloc4.sql */
     IDU_FIT_POINT_RAISE( "sdbFlusher::initialize::malloc4",
                           insufficient_memory );
+
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(sdbSyncFileInfo),mIOBPageCount);
 
     IDE_TEST_RAISE( iduMemMgr::malloc( IDU_MEM_SM_SDB,
                                        (ULong)ID_SIZEOF(sdbSyncFileInfo) * mIOBPageCount,

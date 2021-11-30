@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: dumplf.cpp 91859 2021-10-17 22:37:22Z emlee $
+ * $Id: dumplf.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -333,6 +333,7 @@ IDE_RC dumpLogBody( UInt          aLogType,
      * Stack에 선언할 경우, 이 함수를 통해 서버가 종료될 수 있으므로
      * Heap에 할당을 시도한 후, 성공하면 기록, 성공하지 않으면 그냥
      * return합니다. */
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_ID, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )
@@ -1166,6 +1167,7 @@ void dumpDiskLog( SChar         * aLogBuffer,
      * Stack에 선언할 경우, 이 함수를 통해 서버가 종료될 수 있으므로
      * Heap에 할당을 시도한 후, 성공하면 기록, 성공하지 않으면 그냥
      * return합니다. */
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_ID, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )
@@ -1994,6 +1996,7 @@ IDE_RC makeTargetFileList( fdEntry  ** aEntries )
     SInt               sRC;
     ULong              sAllocSize = 512;
 
+    //ADD_OVERFLOW_CHECK( ID_SIZEOF(struct dirent),SM_MAX_FILE_NAME );
     IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_SM_SMU,
                                        1,
                                        ID_SIZEOF(struct dirent) + SM_MAX_FILE_NAME,
@@ -2007,6 +2010,7 @@ IDE_RC makeTargetFileList( fdEntry  ** aEntries )
     sRC = idf::readdir_r(sDIR, sDirEnt, &sResDirEnt) ;
     IDE_TEST_RAISE( (sRC != 0) && (errno != 0), err_read_dir );
 
+    MUL_OVERFLOW_CHECK( ID_SIZEOF(fdEntry),sAllocSize );
     IDE_TEST_RAISE( iduMemMgr::calloc( IDU_MEM_SM_SMU,
                                        1,
                                        ID_SIZEOF(fdEntry) * sAllocSize,
@@ -2075,6 +2079,7 @@ IDE_RC makeTargetFileList( fdEntry  ** aEntries )
                 {
                     // fdEntry 가 부족하면 sAllocSize씩 추가
                     sAllocSize = (gFileIdx + sAllocSize);
+                    MUL_OVERFLOW_CHECK(ID_SIZEOF(fdEntry),sAllocSize);
                     IDE_TEST_RAISE( iduMemMgr::realloc( IDU_MEM_SM_SMU,
                                                         ID_SIZEOF(fdEntry) * sAllocSize,
                                                         (void**)aEntries )

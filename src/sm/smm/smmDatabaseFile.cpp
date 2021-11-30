@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smmDatabaseFile.cpp 85837 2019-07-14 23:44:48Z emlee $
+ * $Id: smmDatabaseFile.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -1204,6 +1204,8 @@ IDE_RC smmDatabaseFile::readPagesAIO( PDL_OFF_T   aWhere,
     sOffset   = 0;
     sStartPos = aWhere + SM_DBFILE_METAHDR_PAGE_SIZE;
     aAIOCount = IDL_MIN( aAIOCount, SMM_MAX_AIO_COUNT_PER_FILE );
+
+    MUL_OVERFLOW_CHECK((ULong)ID_SIZEOF(iduFileAIO),aAIOCount);
 
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SMM,
                                  (ULong)ID_SIZEOF(iduFileAIO) * aAIOCount,
@@ -2478,6 +2480,9 @@ IDE_RC smmDatabaseFile::chkExistDBFile( const SChar * aTBSName,
 
     /* smmDatabaseFile_chkExistDBFile_malloc_DirEnt.tc */
     IDU_FIT_POINT("smmDatabaseFile::chkExistDBFile::malloc::DirEnt");
+
+    ADD_OVERFLOW_CHECK(ID_SIZEOF(struct dirent),SM_MAX_FILE_NAME);
+
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_SMM,
                                  ID_SIZEOF(struct dirent) + SM_MAX_FILE_NAME,
                                  (void**)&sDirEnt,

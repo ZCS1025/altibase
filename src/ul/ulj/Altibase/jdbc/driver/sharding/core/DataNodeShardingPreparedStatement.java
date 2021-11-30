@@ -17,8 +17,10 @@
 
 package Altibase.jdbc.driver.sharding.core;
 
+import Altibase.jdbc.driver.AltibaseConnection;
 import Altibase.jdbc.driver.AltibasePreparedStatement;
 import Altibase.jdbc.driver.cm.CmProtocolContextShardStmt;
+import Altibase.jdbc.driver.cm.CmProtocolContextShardStmt.ShardPartialExecType;
 import Altibase.jdbc.driver.datatype.Column;
 import Altibase.jdbc.driver.ex.Error;
 import Altibase.jdbc.driver.ex.ErrorDef;
@@ -45,6 +47,7 @@ public class DataNodeShardingPreparedStatement extends DataNodeShardingStatement
     private Map<DataNode, BatchPreparedStatementUnit> mBatchStmtUnitMap;
     private PreparedStatementExecutor                 mPreparedStmtExecutor;
     private List<Statement>                           mPStmtUnit;
+    private ShardPartialExecType                      mShardPartialExecType;    // TASK-7219 Non-shard DML
 
     DataNodeShardingPreparedStatement(AltibaseShardingConnection aShardCon, String aSql, int aResultSetType,
                                       int aResultSetConcurrency, int aResultSetHoldability,
@@ -55,6 +58,7 @@ public class DataNodeShardingPreparedStatement extends DataNodeShardingStatement
         mBatchStmtUnitMap = new LinkedHashMap<DataNode, BatchPreparedStatementUnit>();
         mRoutingEngine = createRoutingEngine();
         mPreparedStmtExecutor = new PreparedStatementExecutor(mMetaConn.getExecutorEngine());
+        mShardPartialExecType = mShardStmtCtx.getShardPartialExecType();
         // BUG-47145 shard_lazy_connect가 false일때는 바로 range의 전 노드에 prepare를 수행한다.
         if (!aShardCon.isLazyNodeConnect())
         {
@@ -101,9 +105,10 @@ public class DataNodeShardingPreparedStatement extends DataNodeShardingStatement
             {
                 DataNode sDefaultNode = mMetaConn.getShardNodeConfig().getNode(sDefaultNodeId);
                 Connection sNodeConn = sNodeConnMap.get(sDefaultNode);
-                PreparedStatement sPstmt = sNodeConn.prepareStatement(mSql, mResultSetType,
+                PreparedStatement sPstmt = ((AltibaseConnection)sNodeConn).prepareStatement(mSql, mResultSetType,
                                                                       mResultSetConcurrency,
-                                                                      mResultSetHoldability);
+                                                                      mResultSetHoldability,
+                                                                      mShardPartialExecType);
                 mRoutedStatementMap.put(sDefaultNode, sPstmt);
             }
         }
@@ -125,9 +130,10 @@ public class DataNodeShardingPreparedStatement extends DataNodeShardingStatement
                               public PreparedStatement generate(DataNode aNode) throws SQLException
                               {
                                   Connection sNodeCon = mMetaConn.getNodeConnection(aNode);
-                                  PreparedStatement sStmt = sNodeCon.prepareStatement(mSql, mResultSetType,
+                                  PreparedStatement sStmt = ((AltibaseConnection)sNodeCon).prepareStatement(mSql, mResultSetType,
                                                                     mResultSetConcurrency,
-                                                                    mResultSetHoldability);
+                                                                    mResultSetHoldability,
+                                                                    mShardPartialExecType);
                                   shard_log("(NODE PREPARE) {0}", sStmt);
                                   // BUG-46513 Meta 커넥션에 있는 SMN값을 셋팅한다.
                                   mShardStmt.setShardMetaNumber(mMetaConn.getShardMetaNumber());
@@ -177,7 +183,6 @@ public class DataNodeShardingPreparedStatement extends DataNodeShardingStatement
         catch (SQLException aEx)
         {
             processExecuteError(sStatements, aEx);
-            getNodeSqlWarnings(true);
             throw aEx;
         }
     }
@@ -211,7 +216,6 @@ public class DataNodeShardingPreparedStatement extends DataNodeShardingStatement
         catch (SQLException aEx)
         {
             processExecuteError(sStatements, aEx);
-            getNodeSqlWarnings(true);
             throw aEx;
         }
     }
@@ -225,7 +229,7 @@ public class DataNodeShardingPreparedStatement extends DataNodeShardingStatement
             sStatements.add(sEach.getStatement());
         }
 
-        calcDistTxInfo(sStatements);
+        calcDistTxInfoAndIncreaseStmtExecSeq(sStatements);
 
         try
         {
@@ -244,7 +248,6 @@ public class DataNodeShardingPreparedStatement extends DataNodeShardingStatement
         catch (SQLException aEx)
         {
             processExecuteError(sStatements, aEx);
-            getNodeSqlWarnings(true);
             throw aEx;
         }
         finally
@@ -293,7 +296,6 @@ public class DataNodeShardingPreparedStatement extends DataNodeShardingStatement
         catch (SQLException aEx)
         {
             processExecuteError(sStatements, aEx);
-            getNodeSqlWarnings(true);
             throw aEx;
         }
     }
@@ -687,8 +689,7 @@ public class DataNodeShardingPreparedStatement extends DataNodeShardingStatement
         {
             Error.throwSQLException(ErrorDef.SHARD_MULTIPLE_LOB_OPERATION_NOT_SUPPORTED);
         }
-        
-        calcDistTxInfo(mPStmtUnit);
+        calcDistTxInfoAndIncreaseStmtExecSeq(mPStmtUnit);
 
         return mPStmtUnit;
     }
@@ -754,7 +755,7 @@ public class DataNodeShardingPreparedStatement extends DataNodeShardingStatement
         PreparedStatement sStmt = (PreparedStatement)mRoutedStatementMap.get(aNode);
         if (sStmt != null) return sStmt;
 
-        sStmt = aConn.prepareStatement(mSql, mResultSetType, mResultSetConcurrency, mResultSetHoldability);
+        sStmt = ((AltibaseConnection)aConn).prepareStatement(mSql, mResultSetType, mResultSetConcurrency, mResultSetHoldability, mShardPartialExecType);
         shard_log("(NODE PREPARE) {0}", sStmt);
         // BUG-46513 Meta 커넥션에 있는 SMN값을 셋팅한다.
         mShardStmt.setShardMetaNumber(mMetaConn.getShardMetaNumber());

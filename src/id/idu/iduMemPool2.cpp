@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: iduMemPool2.cpp 66405 2014-08-13 07:15:26Z djin $
+ * $Id: iduMemPool2.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -52,6 +52,7 @@ IDE_RC iduMemPool2::initialize( iduMemoryClientIndex aIndex,
 
     if( aChildCnt > 1 )
     {
+        MUL_OVERFLOW_CHECK( ID_SIZEOF(iduMemPool2),(aChildCnt - 1) );
         IDE_TEST( iduMemMgr::malloc( aIndex,
                                      ID_SIZEOF( iduMemPool2 ) * ( aChildCnt - 1 ),
                                      (void**)&mMemMgrList )

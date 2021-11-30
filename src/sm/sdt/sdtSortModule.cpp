@@ -225,8 +225,8 @@ IDE_RC sdtSortModule::calcEstimatedStats( smiTempTableHeader * aHeader )
     UInt                sRunPageCount;   /* RunÀÇ Page Å©±â */
 
     sStatsPtr      = aHeader->mStatsPtr;
-    sDataPageCount = ( SDT_TR_HEADER_SIZE_FULL + aHeader->mRowSize )
-        * aHeader->mRowCount / SD_PAGE_SIZE;
+    sDataPageCount = ( SDT_SORT_TR_HEADER_SIZE_FULL + aHeader->mRowSize )
+                     * aHeader->mRowCount / SD_PAGE_SIZE;
     sRowPageCount  = ( aHeader->mRowSize / SD_PAGE_SIZE ) + 2;
     sRunPageCount  = sRowPageCount * 2;
 
@@ -1203,7 +1203,7 @@ IDE_RC sdtSortModule::fetchScan( smiSortTempCursor* aCursor,
     scPageID           * sScanPos;
     UInt                 sIdx;
 
-    IDE_ASSERT( aCursor != NULL );
+    IDE_ERROR( aCursor != NULL );
 
     sHeader = (smiTempTableHeader *)aCursor->mTTHeader;
     sWASeg  = (sdtSortSegHdr*)sHeader->mWASegment;
@@ -4219,6 +4219,10 @@ IDE_RC sdtSortModule::makeScanPosition( smiTempTableHeader  * aHeader,
 
     /* sdtSortModule_makeScanPosition_malloc_ScanPos.tc */
     IDU_FIT_POINT("sdtSortModule::makeScanPosition::malloc::ScanPos");
+
+    MUL_OVERFLOW_CHECK(ID_SIZEOF( sdtTempScanPos ),
+                            SDT_TEMP_SCANPOS_SIZE( sRunCnt ));
+
     IDE_TEST( iduMemMgr::malloc( IDU_MEM_SM_TEMP,
                                  ID_SIZEOF( sdtTempScanPos ) *
                                  SDT_TEMP_SCANPOS_SIZE( sRunCnt ),

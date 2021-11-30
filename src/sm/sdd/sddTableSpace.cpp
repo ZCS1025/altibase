@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sddTableSpace.cpp 91197 2021-07-12 01:15:29Z emlee $
+ * $Id: sddTableSpace.cpp 92066 2021-11-12 07:46:00Z kclee $
  *
  * Description :
  *
@@ -240,6 +240,7 @@ IDE_RC sddTableSpace::createDataFiles(
 
     /* sddTableSpace_createDataFiles_calloc_FileNodeArray.tc */
     IDU_FIT_POINT("sddTableSpace::createDataFiles::calloc::FileNodeArray");
+    MUL_OVERFLOW_CHECK(aFileAttrCnt,ID_SIZEOF(sddDataFileNode *));
     IDE_TEST( iduMemMgr::calloc(IDU_MEM_SM_SDD,
                                 aFileAttrCnt,
                                 ID_SIZEOF(sddDataFileNode *),
@@ -250,6 +251,7 @@ IDE_RC sddTableSpace::createDataFiles(
 
     /* sddTableSpace_createDataFiles_calloc_FileArray.tc */
     IDU_FIT_POINT("sddTableSpace::createDataFiles::calloc::FileArray");
+    MUL_OVERFLOW_CHECK(aFileAttrCnt,ID_SIZEOF(idBool));
     IDE_TEST( iduMemMgr::calloc(IDU_MEM_SM_SDD,
                                 aFileAttrCnt,
                                 ID_SIZEOF(idBool),

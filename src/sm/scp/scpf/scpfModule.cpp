@@ -1720,12 +1720,16 @@ static IDE_RC scpfInit4Export( idvSQL                * /*aStatistics*/,
               != IDE_SUCCESS );
     sState = 3;
 
+    ADD_OVERFLOW_CHECK(sBlockSize,ID_MAX_DIO_PAGE_SIZE);
+
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SCP, 
                                  1,
                                  sBlockSize + ID_MAX_DIO_PAGE_SIZE,
                                  (void**)&(sHandle->mAllocatedBlock) )
               != IDE_SUCCESS );
     sState = 4;
+
+    MUL_OVERFLOW_CHECK(ID_SIZEOF(UInt),aCommonHeader->mColumnCount);
 
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SCP, 
                                  ID_SIZEOF( UInt  ),
@@ -2976,6 +2980,7 @@ static IDE_RC scpfInit4Import( idvSQL                * aStatistics,
     sAllocatedBlockInfoCount = sHandle->mFileHeader.mBlockInfoCount;
     sBlockSize               = sHandle->mFileHeader.mBlockSize;
 
+    MUL_OVERFLOW_CHECK(sAllocatedBlockInfoCount,ID_SIZEOF(scpfBlockInfo));
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SCP, 
                                  sAllocatedBlockInfoCount,
                                  ID_SIZEOF(scpfBlockInfo),
@@ -2983,6 +2988,7 @@ static IDE_RC scpfInit4Import( idvSQL                * aStatistics,
               != IDE_SUCCESS );
     sState = 2;
 
+    MUL_OVERFLOW_CHECK(sAllocatedBlockInfoCount,ID_SIZEOF(scpfBlockInfo*));
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SCP, 
                                  sAllocatedBlockInfoCount,
                                  ID_SIZEOF(scpfBlockInfo*),
@@ -2990,18 +2996,25 @@ static IDE_RC scpfInit4Import( idvSQL                * aStatistics,
               != IDE_SUCCESS );
     sState = 3;
 
+    MUL_OVERFLOW_CHECK((ULong)sAllocatedBlockInfoCount,sBlockSize);
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SCP, 1,
                                  (ULong)sAllocatedBlockInfoCount * sBlockSize,
                                  (void**)&(sHandle->mChainedSlotBuffer) )
               != IDE_SUCCESS );
     sState = 4;
 
+    MUL_OVERFLOW_CHECK(ID_SIZEOF( smiRow4DP ),sHandle->mFileHeader.mMaxRowCountInBlock);
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SCP, 
                                  ID_SIZEOF( smiRow4DP ),
                                  sHandle->mFileHeader.mMaxRowCountInBlock,
                                  (void**)&(sHandle->mRowList) )
               != IDE_SUCCESS );
     sState = 5;
+
+    MUL_OVERFLOW_CHECK(aCommonHeader->mColumnCount,sHandle->mFileHeader.mMaxRowCountInBlock);
+    MUL_OVERFLOW_CHECK(
+          ID_SIZEOF(smiValue),
+          aCommonHeader->mColumnCount*sHandle->mFileHeader.mMaxRowCountInBlock);
 
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SCP, 
                                  ID_SIZEOF( smiValue ),
@@ -3011,6 +3024,8 @@ static IDE_RC scpfInit4Import( idvSQL                * aStatistics,
               != IDE_SUCCESS );
     sState = 6;
 
+    MUL_OVERFLOW_CHECK(sAllocatedBlockInfoCount,sBlockSize);
+    ADD_OVERFLOW_CHECK(sAllocatedBlockInfoCount*sBlockSize,ID_MAX_DIO_PAGE_SIZE);
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SCP, 
                                  1,
                                  sAllocatedBlockInfoCount * sBlockSize 
@@ -3023,6 +3038,7 @@ static IDE_RC scpfInit4Import( idvSQL                * aStatistics,
     sAlignedBlockPtr = (UChar*)idlOS::align( sHandle->mAllocatedBlock,
                                              ID_MAX_DIO_PAGE_SIZE );
 
+    MUL_OVERFLOW_CHECK(ID_SIZEOF(UInt),aCommonHeader->mColumnCount);
 
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SCP, 
                                  ID_SIZEOF( UInt  ),
@@ -3511,6 +3527,10 @@ static IDE_RC scpfReadHeader( idvSQL                    * aStatistics,
     sTableHeader =  aCommonHeader->mTableHeader;
     sState = 1;
 
+    MUL_OVERFLOW_CHECK(sColumnCount,
+                           smiDataPort::getHeaderSize(
+                               sColumnHeaderDesc,
+                               sVersion ));
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SCP, 
                                  sColumnCount,
                                  smiDataPort::getHeaderSize( 
@@ -3521,6 +3541,10 @@ static IDE_RC scpfReadHeader( idvSQL                    * aStatistics,
     sColumnHeader = aCommonHeader->mColumnHeader;
     sState = 2;
 
+    MUL_OVERFLOW_CHECK(sPartitionCount,
+                           smiDataPort::getHeaderSize( 
+                               sPartitionHeaderDesc,
+                               sVersion ));
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SCP, 
                                  sPartitionCount,
                                  smiDataPort::getHeaderSize( 
@@ -4555,9 +4579,8 @@ IDE_RC scpfDumpBlocks( idvSQL         * aStatistics,
         aFirstBlock = aLastBlock-1;
     }
 
-
-
     /* Block 내부를 Dump한 결과값을 저장할 버퍼를 확보합니다. */
+    //MUL_OVERFLOW_CHECK(ID_SIZEOF(SChar),IDE_DUMP_DEST_LIMIT);
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SCP, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )
@@ -4672,6 +4695,7 @@ IDE_RC scpfDumpHeader( scpfHandle     * aHandle,
     IDE_DASSERT( aHandle != NULL     );
 
     /* Dump할 Buffer 확보 */
+    //MUL_OVERFLOW_CHECK(ID_SIZEOF(SChar),IDE_DUMP_DEST_LIMIT);
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SCP, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )
@@ -4806,6 +4830,7 @@ IDE_RC scpfDumpBlockBody( scpfBlockInfo  * aBlockInfo,
     IDE_DASSERT( aOutBuf    != NULL );
 
     /* Block 내부를 Dump한 결과값을 저장할 버퍼를 확보합니다. */
+    //MUL_OVERFLOW_CHECK(ID_SIZEOF(SChar),IDE_DUMP_DEST_LIMIT);
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SCP, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )
@@ -4877,6 +4902,7 @@ IDE_RC scpfDumpRows( idvSQL         * aStatistics,
     sLobColumnCount    = aHandle->mCommonHandle.mHeader->mLobColumnCount;
 
     /* Row를 Dump할 Buffer 확보 */
+    //MUL_OVERFLOW_CHECK(ID_SIZEOF(SChar),IDE_DUMP_DEST_LIMIT);
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SCP, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )

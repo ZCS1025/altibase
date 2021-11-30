@@ -32,8 +32,9 @@ typedef struct sdtHashSlot
 {
     scPageID  mPageID;
     scOffset  mOffset;
-    UShort    mHashSet;
-    ULong     mRowPtrOrHashSet;
+    UShort    mHashSet;         /* In-Memory 일때는 Hash Set1, Out-Memory 일때는 Hash Set2 */
+    ULong     mRowPtrOrHashSet; /* In-Memory 일때는 Rowptr
+                                   Out-Memory 일때는 Hash Set2, single row의 hash value */
 }sdtHashSlot;
 
 typedef struct sdtSubHashKey
@@ -82,7 +83,7 @@ typedef struct sdtSubHash
     (( 0 == ((aHashSlot)->mRowPtrOrHashSet & ((ULong)(0x0000000000000001) <<  ((aHashValue) >> 26 )))) || \
      ( 0 == ( (aHashSlot)->mHashSet        & ((UShort)(0x00000001) << (((aHashValue) >> 22 ) & 0x0000000F )))))
 
-/* Sub Hash에 저장된 상위 2Byte정보로 확인 */
+/* SubHash에 저장된 상위 2Byte정보로 확인 */
 #define SDT_ADD_LARGE_HASHSET( aHashSlot, aHashHigh )                                               \
     (aHashSlot)->mRowPtrOrHashSet |= ((ULong)(0x0000000000000001) << ( (aHashHigh) >> 10 ));        \
     (aHashSlot)->mHashSet         |= ((UShort)(0x00000001) << (((aHashHigh) >> 6 ) & 0x0000000F ));
@@ -92,7 +93,7 @@ typedef struct sdtSubHash
 #define SDT_MAKE_HASH_LOW( aHashValue )                 \
     (UChar)( ((aHashValue) & 0x0000FF00 ) >> 8 )
 
-/* Sub Hash에는 상위 2Byte정보만 저장 되어 있다.*/
+/* SubHash에는 상위 2Byte정보만 저장 되어 있다.*/
 #define SDT_MAKE_HASH_HIGH( aHashValue )        \
     (UShort)( (aHashValue) >> 16 )
 
@@ -189,8 +190,9 @@ public:
 
     static UInt getWASegmentUsedPageCount(sdtHashSegHdr* aWASegment )
     {
-        return ( aWASegment->mAllocWAPageCount + SDT_WAEXTENT_PAGECOUNT - 1 )
-            / SDT_WAEXTENT_PAGECOUNT * SDT_WAEXTENT_PAGECOUNT;
+        return ( ( aWASegment->mAllocWAPageCount + SDT_WAEXTENT_PAGECOUNT - 1 )
+                 / SDT_WAEXTENT_PAGECOUNT ) 
+               * SDT_WAEXTENT_PAGECOUNT;
     };
     static UInt   getNExtentCount( sdtHashSegHdr* aWASegment )
     {
@@ -386,7 +388,7 @@ private:
 
     static UInt calcWAPageCount( ULong aHashAreaSize )
     {
-        return calcWAExtentCount( aHashAreaSize) * SDT_WAEXTENT_PAGECOUNT ;
+        return calcWAExtentCount( aHashAreaSize ) * SDT_WAEXTENT_PAGECOUNT ;
     }
     static ULong getWASegmentSize()
     {
@@ -695,7 +697,7 @@ IDE_RC sdtHashModule::insert( smiTempTableHeader  * aHeader,
     aHeader->mRowCount++;
     *aResult = ID_TRUE;
 
-    sTRPInfo4Insert.mTRPHeader.mTRFlag      = SDT_TRFLAG_CHILDGRID;
+    sTRPInfo4Insert.mTRPHeader.mTRFlag      = 0;
     sTRPInfo4Insert.mTRPHeader.mIsRow       = SDT_HASH_ROW_HEADER;
     sTRPInfo4Insert.mTRPHeader.mHitSequence = 0;
     sTRPInfo4Insert.mTRPHeader.mValueLength = 0; /* append하면서 설정됨 */
@@ -718,6 +720,11 @@ IDE_RC sdtHashModule::insert( smiTempTableHeader  * aHeader,
                       &sTRPInfo4Insert,
                       &sTRInsertResult )
               != IDE_SUCCESS );
+
+
+    IDE_DASSERT( sTRInsertResult.mHeadPageID != SC_NULL_PID );
+    IDE_DASSERT( SM_IS_FLAG_ON( ((sdtHashTRPHdr*)(sTRInsertResult.mHeadRowpiecePtr))->mTRFlag, SDT_TRFLAG_HEAD ) );
+    IDE_DASSERT( ((sdtHashTRPHdr*)(sTRInsertResult.mHeadRowpiecePtr))->mIsRow == SDT_HASH_ROW_HEADER );
 
     IDE_ERROR( sTRInsertResult.mComplete == ID_TRUE );
     IDE_DASSERT( sTRPInfo4Insert.mTRPHeader.mChildRowPtr == (sdtHashTRPHdr*)sHashSlot->mRowPtrOrHashSet );
@@ -793,6 +800,8 @@ idBool sdtHashModule::checkHashSlot( smiHashTempCursor* aHashCursor,
     }
     else
     {
+        IDE_DASSERT( aHashCursor->mIsInMemory == SDT_WORKAREA_OUT_MEMORY );
+
         if ( SDT_IS_SINGLE_ROW( sHashSlot->mOffset ) )
         {
             /* Single Row일 경우 Hash value확인 */
@@ -839,6 +848,10 @@ idBool sdtHashModule::checkUpdateHashSlot( smiHashTempCursor* aHashCursor,
     sdtHashSlot * sHashSlot;
     UInt          sMapIdx;
 
+#ifdef DEBUG
+    sdtHashTRPHdr * sTRPHeader;
+#endif
+
     sMapIdx = SDT_GET_HASH_MAP_IDX( aHashValue,
                                     aHashCursor->mHashSlotCount );
 
@@ -859,6 +872,42 @@ idBool sdtHashModule::checkUpdateHashSlot( smiHashTempCursor* aHashCursor,
              * 따로 빼 둔것인데, insert for update 에서는 fetch도중에 변경 될 수 있어서
              * 어쩔수 없이 여기에서 세팅한다.*/
             aHashCursor->mIsInMemory = ((sdtHashSegHdr*)aHashCursor->mWASegment)->mIsInMemory;
+            
+#ifdef DEBUG
+            if ( aHashCursor->mIsInMemory == SDT_WORKAREA_IN_MEMORY )
+            {
+                sTRPHeader = (sdtHashTRPHdr*)sHashSlot->mRowPtrOrHashSet;
+
+                IDE_DASSERT( SM_IS_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_HEAD ) );
+                IDE_DASSERT( sTRPHeader->mIsRow == SDT_HASH_ROW_HEADER );
+            }
+            else
+            {
+                IDE_DASSERT( aHashCursor->mIsInMemory == SDT_WORKAREA_OUT_MEMORY );
+
+                if ( SDT_IS_SINGLE_ROW( sHashSlot->mOffset ) )
+                {
+                    /* single row 인데 hash value 가 다른 single row */
+                }
+                else
+                {
+                    if ( sHashSlot->mRowPtrOrHashSet == (ULong)NULL )
+                    {
+                        /* 지금 메모리에 해당 row 가 없을수 있다. 
+                           SubHash 에는 있어야 하고 
+                           small hash set을 보고 넘어왔으니, null 일수 없다 */                        
+                        IDE_DASSERT( sHashSlot->mPageID != SD_NULL_PID );
+                    }
+                    else
+                    {
+                        sTRPHeader = (sdtHashTRPHdr*)sHashSlot->mRowPtrOrHashSet;
+
+                        IDE_DASSERT( SM_IS_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_HEAD ) );
+                        IDE_DASSERT( sTRPHeader->mIsRow == SDT_HASH_ROW_HEADER );
+                    }
+                }
+            }
+#endif
 
             /* offset이 single row로 나오면 hash value를 비교해본다.
              * single row 가 아니면 open cursor에서 확인한다. */
@@ -934,6 +983,8 @@ IDE_RC sdtHashModule::openHashCursor( smiHashTempCursor  * aCursor,
     }
     else
     {
+        IDE_DASSERT( aCursor->mIsInMemory == SDT_WORKAREA_OUT_MEMORY );
+
         /* Out Memory 상태이다, ChildPageID, Offset으로 탐색한다. */
         if ( SDT_IS_SINGLE_ROW( sHashSlot->mOffset ) )
         {
@@ -954,7 +1005,7 @@ IDE_RC sdtHashModule::openHashCursor( smiHashTempCursor  * aCursor,
         }
         else
         {
-            /* Sub Hash를 기준으로 탐색한다. */
+            /* SubHash를 기준으로 탐색한다. */
             IDE_DASSERT( SDT_EXIST_LARGE_HASHSET( sHashSlot, aCursor->mHashValue ) );
 
             aCursor->mSubHashPtr = NULL;
@@ -972,7 +1023,7 @@ IDE_RC sdtHashModule::openHashCursor( smiHashTempCursor  * aCursor,
 
 /***************************************************************************
  * Description : Update용 hash scan이다. Hash Cursor와는 다르게 fetch,
- *               update, Insert가 교대로 함께 동작하므로 Pointer, Sub Hash,
+ *               update, Insert가 교대로 함께 동작하므로 Pointer, SubHash,
  *               Single Row 등을 모두 연속적으로 탐색해야 하며
  *               Cursor open시에 Work Area의 구성이 변경되지 않는다.
  *               주로 Group By등에 사용된다.
@@ -1043,7 +1094,7 @@ IDE_RC sdtHashModule::fetchHashNext( smiHashTempCursor * aCursor,
      * In Memory Row의 마지막 row에서 Disk에 저장 된 Next Row를
      * 가리킬 경우에 존재한다.
      * 일반 적인 Hash Scan에서는 alloc cursor 시점에
-     * In Memory Row를 남기지 않고 모두 Sub Hash로 만들어 버렸고
+     * In Memory Row를 남기지 않고 모두 SubHash로 만들어 버렸고
      * 또 Fetch First에서 Hash Slot에서 가리키는 Row 는 이미 읽었다.
      * 그러므로 Fetch Next에서는 Single Row는 나오지 않는다. */
 }
@@ -1079,8 +1130,9 @@ IDE_RC sdtHashModule::fetchHashScanInternalPtr( smiHashTempCursor * aCursor,
     do
     {
         sLoop++;
-        IDE_DASSERT( SM_IS_FLAG_ON( aTRPHeader->mTRFlag, SDT_TRFLAG_CHILDGRID ) );
+
         IDE_DASSERT( SM_IS_FLAG_ON( aTRPHeader->mTRFlag, SDT_TRFLAG_HEAD ) );
+        IDE_DASSERT( aTRPHeader->mIsRow == SDT_HASH_ROW_HEADER );
 
         if ( aTRPHeader->mHashValue == aCursor->mHashValue )
         {
@@ -1185,8 +1237,9 @@ IDE_RC sdtHashModule::fetchHashUpdate( smiHashTempCursor * aCursor,
         do
         {
             sLoop++;
-            IDE_DASSERT( SM_IS_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_CHILDGRID ) );
+
             IDE_DASSERT( SM_IS_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_HEAD ) );
+            IDE_DASSERT( sTRPHeader->mIsRow == SDT_HASH_ROW_HEADER );
 
             if ( sTRPHeader->mHashValue == aCursor->mHashValue )
             {
@@ -1265,8 +1318,8 @@ IDE_RC sdtHashModule::fetchHashUpdate( smiHashTempCursor * aCursor,
     }
     else
     {
-        /* single row를 확인해야 하는 경우 이거나
-         * sub hash에서 뒤져야 하는 경우 */
+        /* 1.single row를 확인해야 하는 경우 이거나
+         * 2.SubHash에서 뒤져야 하는 경우 */
         aCursor->mChildPageID = sHashSlot->mPageID;
         aCursor->mChildOffset = sHashSlot->mOffset;
     }
@@ -1383,7 +1436,7 @@ IDE_RC sdtHashModule::fetchFullNext( smiHashTempCursor * aCursor,
                                         ID_SIZEOF( sdtHashTRPHdr ) +
                                         sTRPHeaderPtr->mValueLength );
 
-            if ( SM_IS_FLAG_OFF( sTRPHeaderPtr->mTRFlag, ( SDT_TRFLAG_HEAD | SDT_TRFLAG_CHILDGRID ) ) )
+            if ( SM_IS_FLAG_OFF( sTRPHeaderPtr->mTRFlag, SDT_TRFLAG_HEAD ) )
             {
                 /* Header Row Piece가 아니면 제외한다. */
                 continue;

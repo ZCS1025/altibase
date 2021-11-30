@@ -205,14 +205,11 @@ IDE_RC sdtSortSegment::createSortSegment( smiTempTableHeader * aHeader,
 
     idlOS::memset( (UChar*)sWASeg, 0, SDT_SORT_SEGMENT_HEADER_SIZE );
 
-    sWASeg->mNPageHashBucketCnt = sNPageHashBucketCnt;
-    sWASeg->mNPageHashPtr       = sNPageHashPtr;
-    sWASeg->mMaxWAExtentCount   = sMaxWAExtentCount;
 
 #ifdef DEBUG
     for( i = 0 ; i < sWASeg->mNPageHashBucketCnt ; i++ )
     {
-        IDE_ASSERT( sNPageHashPtr[i] == NULL );
+        IDE_DASSERT( sNPageHashPtr[i] == NULL );
     }
 #endif
 
@@ -241,31 +238,23 @@ IDE_RC sdtSortSegment::createSortSegment( smiTempTableHeader * aHeader,
     }
 
     /***************************** initialize ******************************/
-    sWASeg->mSpaceID          = aHeader->mSpaceID;
-    sWASeg->mWorkType         = SDT_WORK_TYPE_SORT;
-    sWASeg->mStatsPtr         = aHeader->mStatsPtr;
-    sWASeg->mNPageCount       = 0;
-    sWASeg->mIsInMemory       = SDT_WORKAREA_IN_MEMORY;
-    sWASeg->mStatistics       = aHeader->mStatistics;
-    sWASeg->mAllocWAPageCount = 0;
-    sWASeg->mUsedWCBPtr       = SDT_USED_PAGE_PTR_TERMINATED;
-    sWASeg->mNExtFstPIDList.mPageSeqInLFE = SDT_WAEXTENT_PAGECOUNT;
+    sWASeg->mWorkType   = SDT_WORK_TYPE_SORT;
+    sWASeg->mIsInMemory = SDT_WORKAREA_IN_MEMORY;
+    sWASeg->mSpaceID    = aHeader->mSpaceID;
 
-    sWASeg->mStatsPtr->mRuntimeMemSize += mWASegmentPool.getNodeSize((UChar*) sWASeg );
-    sWASeg->mStatsPtr->mRuntimeMemSize += mNHashMapPool.getNodeSize((UChar*) sNPageHashPtr );
+    sWASeg->mMaxWAExtentCount   = sMaxWAExtentCount;
 
-    IDE_TEST( sdtWAExtentMgr::initWAExtents( sWASeg->mStatistics,
-                                             sWASeg->mStatsPtr,
-                                             &sWASeg->mWAExtentInfo,
-                                             sInitWAExtentCount )
-              != IDE_SUCCESS );
-    sState = 3;
+    /***************************** NPageMgr *********************************/
+    sWASeg->mNPageHashBucketCnt = sNPageHashBucketCnt;
+    sWASeg->mNPageHashPtr       = sNPageHashPtr;
+    sWASeg->mNPageCount         = 0;
+    sWASeg->mExtPageCount       = 0;
+    sWASeg->mNExtFstPIDList.mPageSeqInLFE = 0;
 
-    sWASeg->mCurFreeWAExtent = sWASeg->mWAExtentInfo.mHead;
-    sWASeg->mCurrFreePageIdx = 0;
 
+    sWASeg->mUsedWCBPtr = SDT_USED_PAGE_PTR_TERMINATED;
     sWASeg->mHintWCBPtr = getWCBWithLnk( sWASeg, 1 );
-    sState = 4;
+    sState = 3;
 
     /***************************** InitGroup *******************************/
     for( i = 0 ; i< SDT_WAGROUPID_MAX ; i++ )
@@ -285,16 +274,42 @@ IDE_RC sdtSortSegment::createSortSegment( smiTempTableHeader * aHeader,
     sInitGrpInfo->mReuseWPIDTop = SC_NULL_PID;
     sInitGrpInfo->mReuseWPIDBot = SC_NULL_PID;
 
-    /***************************** NPageMgr *********************************/
+
+    sWASeg->mStatistics = aHeader->mStatistics;
+    sWASeg->mStatsPtr   = aHeader->mStatsPtr;
+    sWASeg->mStatsPtr->mRuntimeMemSize += mWASegmentPool.getNodeSize((UChar*) sWASeg );
+    sWASeg->mStatsPtr->mRuntimeMemSize += mNHashMapPool.getNodeSize((UChar*) sNPageHashPtr );
+
+    /***************************** initWAExtent ******************************/
+    IDE_TEST( sdtWAExtentMgr::initWAExtents( sWASeg->mStatistics,
+                                             sWASeg->mStatsPtr,
+                                             &sWASeg->mWAExtentInfo,
+                                             sInitWAExtentCount )
+              != IDE_SUCCESS );
+    sState = 4;
+
+    sWASeg->mCurFreeWAExtent  = sWASeg->mWAExtentInfo.mHead;
+    sWASeg->mCurrFreePageIdx  = 0;
+    sWASeg->mAllocWAPageCount = 0;
+
+ 
     IDE_TEST( sWASeg->mFreeNPageStack.initialize( IDU_MEM_SM_TEMP,
                                                   ID_SIZEOF( scPageID ) )
               != IDE_SUCCESS );
     sState = 5;
 
+
     aHeader->mWASegment = sWASeg;
 
-    return IDE_SUCCESS;
+    IDU_FIT_POINT_RAISE( "BUG-49429@sdtSortSegment::createSortSegment", err_ART );
 
+    return IDE_SUCCESS;
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION( err_ART );
+    {
+        IDE_SET(ideSetErrorCode(smERR_ABORT_ART));
+    }
+#endif
     IDE_EXCEPTION_END;
 
     if ( sIsLock == ID_FALSE )
@@ -307,9 +322,9 @@ IDE_RC sdtSortSegment::createSortSegment( smiTempTableHeader * aHeader,
         case 5:
             sWASeg->mFreeNPageStack.destroy();
         case 4:
-            clearAllWCB( sWASeg );
-        case 3:
             (void)sdtWAExtentMgr::freeWAExtents( &sWASeg->mWAExtentInfo );
+        case 3:
+            clearAllWCB( sWASeg );
         case 2:
             (void)mNHashMapPool.push( (UChar*)sNPageHashPtr );
         case 1:
@@ -368,6 +383,7 @@ IDE_RC sdtSortSegment::clearSortSegment( sdtSortSegHdr* aWASegment )
 
         sState = 2;
         IDE_TEST( sdtWAExtentMgr::freeWAExtents( &aWASegment->mWAExtentInfo ) != IDE_SUCCESS );
+        IDU_FIT_POINT_RAISE( "BUG-49429@sdtSortSegment::clearSortSegment", err_ART );
 
         sState = 3;
         IDE_TEST( sdtWAExtentMgr::freeAllNExtents( aWASegment->mSpaceID,
@@ -390,7 +406,14 @@ IDE_RC sdtSortSegment::clearSortSegment( sdtSortSegHdr* aWASegment )
         sIsLock = ID_FALSE;
         unlock();
     }
+
     return IDE_SUCCESS;
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION(err_ART);
+    {
+        IDE_SET(ideSetErrorCode(smERR_ABORT_ART));
+    }
+#endif
 
     IDE_EXCEPTION_END;
 
@@ -399,6 +422,7 @@ IDE_RC sdtSortSegment::clearSortSegment( sdtSortSegHdr* aWASegment )
         /* BUG-42751 종료 단계에서 예외가 발생하면 해당 자원이 정리되기를 기다리면서
            server stop 시 HANG이 발생할수 있으므로 정리해줘야 함. */
         case 1:
+            aWASegment->mNExtFstPIDList.mLastFreeExtFstPID = SM_NULL_PID;
             clearAllWCB( aWASegment );
             (void)sdtWAExtentMgr::freeWAExtents( &aWASegment->mWAExtentInfo );
         case 2:
@@ -411,6 +435,9 @@ IDE_RC sdtSortSegment::clearSortSegment( sdtSortSegHdr* aWASegment )
                 sIsLock = ID_TRUE;
             }
             (void)mNHashMapPool.push( (UChar*)(aWASegment->mNPageHashPtr) );
+
+            aWASegment->mNPageHashPtr       = NULL;
+            aWASegment->mNPageHashBucketCnt = 0;
         case 4:
             if ( sIsLock == ID_FALSE )
             {
@@ -848,6 +875,7 @@ IDE_RC sdtSortSegment::getFreeWAPageINMEMORY( sdtSortSegHdr* aWASegment,
     sdtWCB * sWCBPtr;
     scPageID sMapEndPID;
 
+    IDU_FIT_POINT_RAISE( "BUG-49378@sdtSortSegment::getFreeWAPageINMEMORY",err_ART );
     /* sort area , hash group */
     IDE_ERROR( aGrpInfo->mSortMapHdr != NULL );
     IDE_DASSERT( aGrpInfo->mPolicy == SDT_WA_REUSE_INMEMORY );
@@ -865,7 +893,7 @@ IDE_RC sdtSortSegment::getFreeWAPageINMEMORY( sdtSortSegHdr* aWASegment,
     }
     else
     {
-        IDE_ASSERT( aGrpInfo->mReuseWPIDSeq != SD_NULL_PID );
+        IDE_ERROR( aGrpInfo->mReuseWPIDSeq != SD_NULL_PID );
 
         sWCBPtr = getWCBWithLnk( aWASegment,
                                  aGrpInfo->mReuseWPIDSeq );
@@ -873,7 +901,7 @@ IDE_RC sdtSortSegment::getFreeWAPageINMEMORY( sdtSortSegHdr* aWASegment,
         if ( sWCBPtr->mWAPagePtr == NULL )
         {
             IDE_TEST( setWAPagePtr(aWASegment, sWCBPtr) != IDE_SUCCESS );
-            IDE_ASSERT( sWCBPtr->mWAPagePtr != NULL );
+            IDE_ERROR( sWCBPtr->mWAPagePtr != NULL );
         }
 
         aGrpInfo->mReuseWPIDSeq--;
@@ -888,7 +916,12 @@ IDE_RC sdtSortSegment::getFreeWAPageINMEMORY( sdtSortSegHdr* aWASegment,
     }
 
     return IDE_SUCCESS;
-
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION(err_ART);
+    {
+        IDE_SET(ideSetErrorCode(smERR_ABORT_ART));
+    }
+#endif
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -934,7 +967,8 @@ IDE_RC sdtSortSegment::getFreeWAPageFIFO( sdtSortSegHdr* aWASegment,
             IDE_TEST( setWAPagePtr( aWASegment,
                                     sWCBPtr ) != IDE_SUCCESS );
 
-            IDE_ASSERT( isFixedPage( sWCBPtr ) == ID_FALSE );
+            IDU_FIT_POINT_RAISE( "BUG-49378@sdtSortSegment::getFreeWAPageFIFO",err_ART );
+            IDE_ERROR( isFixedPage( sWCBPtr ) == ID_FALSE );
             break;
         }
 
@@ -972,7 +1006,12 @@ IDE_RC sdtSortSegment::getFreeWAPageFIFO( sdtSortSegHdr* aWASegment,
     (*aWCBPtr) = sWCBPtr;
 
     return IDE_SUCCESS;
-
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION(err_ART);
+    {
+        IDE_SET(ideSetErrorCode(smERR_ABORT_ART));
+    }
+#endif
     IDE_EXCEPTION_END;
 
     return IDE_FAILURE;
@@ -1586,7 +1625,6 @@ IDE_RC sdtSortSegment::allocAndAssignNPage(sdtSortSegHdr* aWASegment,
                                                (void*) &sFreeNPID,
                                                &sIsEmpty )
               != IDE_SUCCESS );
-
     if ( sIsEmpty == ID_TRUE )
     {
         if ( aWASegment->mNExtFstPIDList.mLastFreeExtFstPID == SM_NULL_PID )
@@ -1595,28 +1633,38 @@ IDE_RC sdtSortSegment::allocAndAssignNPage(sdtSortSegHdr* aWASegment,
             IDE_TEST( sdtWAExtentMgr::allocFreeNExtent( aWASegment->mStatistics,
                                                         aWASegment->mStatsPtr,
                                                         aWASegment->mSpaceID,
+                                                        &aWASegment->mExtPageCount,
                                                         &aWASegment->mNExtFstPIDList )
                       != IDE_SUCCESS );
+
+            IDE_DASSERT( aWASegment->mExtPageCount != 0 );
+            IDE_DASSERT( aWASegment->mNExtFstPIDList.mCount != 0 );
+            IDE_DASSERT( aWASegment->mNExtFstPIDList.mPageSeqInLFE == 0 );
+            IDE_DASSERT( aWASegment->mNExtFstPIDList.mLastFreeExtFstPID != SC_NULL_PID ); 
         }
         else
         {
-            if ( aWASegment->mNExtFstPIDList.mPageSeqInLFE == SDT_WAEXTENT_PAGECOUNT )
+            if ( aWASegment->mNExtFstPIDList.mPageSeqInLFE == aWASegment->mExtPageCount )
             {
                 /* 마지막 NExtent를 다썼음 */
                 IDE_TEST( sdtWAExtentMgr::allocFreeNExtent( aWASegment->mStatistics,
                                                             aWASegment->mStatsPtr,
                                                             aWASegment->mSpaceID,
+                                                            &aWASegment->mExtPageCount,
                                                             &aWASegment->mNExtFstPIDList )
                           != IDE_SUCCESS );
+
+                IDE_DASSERT( aWASegment->mExtPageCount != 0 );
+                IDE_DASSERT( aWASegment->mNExtFstPIDList.mCount != 0 );
+                IDE_DASSERT( aWASegment->mNExtFstPIDList.mPageSeqInLFE == 0 );
+                IDE_DASSERT( aWASegment->mNExtFstPIDList.mLastFreeExtFstPID != SC_NULL_PID ); 
             }
             else
             {
                 /* 기존에 할당해둔 Extent에서 가져옴 */
             }
         }
-
-        sFreeNPID = aWASegment->mNExtFstPIDList.mLastFreeExtFstPID
-            + aWASegment->mNExtFstPIDList.mPageSeqInLFE;
+        sFreeNPID = aWASegment->mNExtFstPIDList.mLastFreeExtFstPID + aWASegment->mNExtFstPIDList.mPageSeqInLFE;
         aWASegment->mNExtFstPIDList.mPageSeqInLFE++;
         aWASegment->mNPageCount++;
     }
@@ -1664,7 +1712,7 @@ void sdtSortSegment::clearAllWCB( sdtSortSegHdr* aWASegment )
              i< getMaxWAPageCount( aWASegment ) ;
              i++ , sCurWCBPtr++ )
         {
-            IDE_ASSERT( sCurWCBPtr->mFix >= 0 );
+            IDE_DASSERT( sCurWCBPtr->mFix >= 0 );
         }
 #endif
         sCurWCBPtr = aWASegment->mUsedWCBPtr;
@@ -1694,20 +1742,21 @@ void sdtSortSegment::clearAllWCB( sdtSortSegHdr* aWASegment )
         }
 
         aWASegment->mUsedWCBPtr = SDT_USED_PAGE_PTR_TERMINATED;
-        IDE_DASSERT( aWASegment->mHintWCBPtr == NULL );
 #ifdef DEBUG
+        IDE_DASSERT( aWASegment->mHintWCBPtr == NULL );
+
         sCurWCBPtr = aWASegment->mWCBMap;
         for( i = 0 ;
              i< getMaxWAPageCount( aWASegment ) ;
              i++ , sCurWCBPtr++ )
         {
-            IDE_ASSERT( sCurWCBPtr->mWPState == SDT_WA_PAGESTATE_INIT );
-            IDE_ASSERT( sCurWCBPtr->mFix     == 0 );
-            IDE_ASSERT( sCurWCBPtr->mBookedFree == ID_FALSE );
-            IDE_ASSERT( sCurWCBPtr->mNPageID    == SM_NULL_PID );
-            IDE_ASSERT( sCurWCBPtr->mNextWCB4Hash  == NULL );
-            IDE_ASSERT( sCurWCBPtr->mNxtUsedWCBPtr == NULL );
-            IDE_ASSERT( sCurWCBPtr->mWAPagePtr     == NULL );
+            IDE_DASSERT( sCurWCBPtr->mWPState == SDT_WA_PAGESTATE_INIT );
+            IDE_DASSERT( sCurWCBPtr->mFix     == 0 );
+            IDE_DASSERT( sCurWCBPtr->mBookedFree == ID_FALSE );
+            IDE_DASSERT( sCurWCBPtr->mNPageID    == SM_NULL_PID );
+            IDE_DASSERT( sCurWCBPtr->mNextWCB4Hash  == NULL );
+            IDE_DASSERT( sCurWCBPtr->mNxtUsedWCBPtr == NULL );
+            IDE_DASSERT( sCurWCBPtr->mWAPagePtr     == NULL );
         }
 #endif
     }
@@ -1759,7 +1808,21 @@ void sdtSortSegment::moveLRUListToTopInternal( sdtSortSegHdr* aWASegment,
     if ( sNextPID == SD_NULL_PID )
     {
         /* 자신이 마지막 Page였을 경우 */
-        IDE_ASSERT( aGrpInfo->mReuseWPIDBot == sCurWPID );
+        IDE_ASSERT_MSG( aGrpInfo->mReuseWPIDBot == sCurWPID,
+                        "Policy : %-4"ID_UINT32_FMT
+                        "(0:None, 1:InMemory, 2:FIFO, 3:LRU, 4:HASH),  "
+                        "Range  : %"ID_UINT32_FMT" ~ %"ID_UINT32_FMT","
+                        "ReuseSeq : %"ID_UINT32_FMT", "
+                        "ReuseTop : %"ID_UINT32_FMT", "
+                        "ReuseBot : %"ID_UINT32_FMT","
+                        "sCurWPID : %"ID_INT32_FMT,
+                        aGrpInfo->mPolicy,
+                        aGrpInfo->mBeginWPID,
+                        aGrpInfo->mEndWPID,
+                        aGrpInfo->mReuseWPIDSeq,
+                        aGrpInfo->mReuseWPIDTop,
+                        aGrpInfo->mReuseWPIDBot,
+                        sCurWPID );
         aGrpInfo->mReuseWPIDBot = sPrevPID;
     }
     else
@@ -1807,16 +1870,16 @@ IDE_RC sdtSortSegment::validateLRUList( sdtSortSegHdr* aWASegment,
         {
             sWCBPtr = getWCBInternal( aWASegment, sNextWPID );
 
-            IDE_ASSERT( sWCBPtr != NULL );
-            IDE_ASSERT( sWCBPtr->mLRUPrevPID == sPrevWPID );
+            IDE_DASSERT( sWCBPtr != NULL );
+            IDE_DASSERT( sWCBPtr->mLRUPrevPID == sPrevWPID );
 
             sPrevWPID = sNextWPID;
             sNextWPID = sWCBPtr->mLRUNextPID;
 
             sPageCount++;
         }
-        IDE_ASSERT( sPrevWPID == aGrpInfo->mReuseWPIDBot );
-        IDE_ASSERT( sNextWPID == SC_NULL_PID );
+        IDE_DASSERT( sPrevWPID == aGrpInfo->mReuseWPIDBot );
+        IDE_DASSERT( sNextWPID == SC_NULL_PID );
     }
     return IDE_SUCCESS;
 }
@@ -1918,14 +1981,18 @@ IDE_RC sdtSortSegment::expandFreeWAExtent( sdtSortSegHdr* aWASeg )
 IDE_RC sdtSortSegment::setWAPagePtr( sdtSortSegHdr * aWASegment,
                                      sdtWCB        * aWCBPtr  )
 {
-    IDE_ASSERT( aWCBPtr->mWAPagePtr == NULL );
+    IDE_ERROR( aWCBPtr->mWAPagePtr == NULL );
     IDE_DASSERT( aWCBPtr->mNxtUsedWCBPtr != NULL );
 
     if ( aWASegment->mCurrFreePageIdx >= SDT_WAEXTENT_PAGECOUNT )
     {
         if ( aWASegment->mCurFreeWAExtent->mNextExtent == NULL )
         {
-            IDE_ERROR( aWASegment->mMaxWAExtentCount > aWASegment->mWAExtentInfo.mCount );
+            IDE_ERROR_MSG( aWASegment->mMaxWAExtentCount > aWASegment->mWAExtentInfo.mCount,
+                           "mMaxWAExtentCount : %"ID_INT32_FMT", "
+                           "mCount : %"ID_INT32_FMT,
+                           aWASegment->mMaxWAExtentCount,
+                           aWASegment->mWAExtentInfo.mCount );
 
             IDE_TEST( expandFreeWAExtent( aWASegment ) != IDE_SUCCESS );
             IDE_DASSERT( aWASegment->mCurFreeWAExtent->mNextExtent != NULL );
@@ -1941,6 +2008,13 @@ IDE_RC sdtSortSegment::setWAPagePtr( sdtSortSegHdr * aWASegment,
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+    
+    if ( smuProperty::getTempDumpLevel() == SMU_DISK_TEMP_TABLE_DUMP_LEVEL_1 )
+    {
+        smuUtility::dumpFuncWithBuffer( IDE_DUMP_0,  
+                                        sdtSortSegment::dumpWASegment, 
+                                        aWASegment );
+    }
 
     return IDE_FAILURE;
 }
@@ -1955,8 +2029,9 @@ IDE_RC sdtSortSegment::setWAPagePtr( sdtSortSegHdr * aWASegment,
  ***************************************************************************/
 UInt sdtSortSegment::getAllocableWAGroupPageCount( sdtSortGroup * aGrpInfo )
 {
-    return aGrpInfo->mEndWPID - aGrpInfo->mBeginWPID
-        - sdtWASortMap::getWPageCount( aGrpInfo->mSortMapHdr );
+    return aGrpInfo->mEndWPID 
+            - aGrpInfo->mBeginWPID
+            - sdtWASortMap::getWPageCount( aGrpInfo->mSortMapHdr );
 }
 
 /**************************************************************************

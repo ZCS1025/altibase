@@ -4,7 +4,7 @@
  **********************************************************************/
 
 /***********************************************************************
- * $Id: idpDescResource.cpp 91841 2021-10-15 00:59:27Z seulki $
+ * $Id: idpDescResource.cpp 92098 2021-11-17 06:06:01Z donovan.seo $
  *
  * Description:
  *
@@ -5391,8 +5391,16 @@ IDE_RC registProperties()
      * PROJ-1671 Bitmap-based Tablespace And Segment Space Management
      *
      * 이 property는 테스트를 위하여만 사용한다.
+     * 사용법 : tbs 생성 전에 선언하고, 테스트후 reset 
+     *
+     * ALTER SYSTEM SET DEFAULT_EXTENT_CNT_FOR_EXTENT_GROUP = 40;
+     * CREATE DISK DATA TABLESPACE TBS_1 DATAFILE 'USER_DBF' SIZE 30M EXTENTSIZE 256K SEGMENT MANAGEMENT MANUAL;
+     * CREATE TABLE T1( I1 INTEGER, I2 CHAR(7000) VARIABLE ) TABLESPACE TBS_1 STORAGE( INITEXTENTS 1 NEXTEXTENTS 1 MINEXTENTS 1 MAXEXTENTS UNLIMITED );
+     * ALTER TABLE T1 ALLOCATE EXTENT ( SIZE 10M );
+     * DROP TABLE T1;
+     * ALTER SYSTEM SET DEFAULT_EXTENT_CNT_FOR_EXTENT_GROUP = 0;
      */
-    IDP_DEF(UInt, "DEFAULT_EXTENT_CNT_FOR_EXTENT_GROUP",
+    IDP_DEF(UInt, "__DEFAULT_EXTENT_CNT_FOR_EXTENT_GROUP_TEST",
             IDP_ATTR_SL_ALL |
             IDP_ATTR_SH_ALL |
             IDP_ATTR_IU_ANY |
@@ -12774,7 +12782,7 @@ IDP_ATTR_SH_ALL |
              IDP_ATTR_RD_READONLY |
              IDP_ATTR_ML_JUSTONE  |
              IDP_ATTR_CK_CHECK,
-             0, 1, 1 );
+             0, 3, 3 );
 
     /* Subquery Unnest에 관한 하위버전 호환 프로퍼티
         0   : 새로 추가 또는 변경된 SU에 관한 기능이 모두 수행된다.
@@ -13007,6 +13015,17 @@ IDP_ATTR_SH_ALL |
              IDP_ATTR_ML_JUSTONE  |
              IDP_ATTR_CK_CHECK,
              0, 5, 3 );
+
+    /* BUG-49330 */
+    IDP_DEF( UInt, "__OPTIMIZER_SET",
+             IDP_ATTR_SL_ALL |
+             IDP_ATTR_IU_ANY |
+             IDP_ATTR_MS_ANY |
+             IDP_ATTR_LC_INTERNAL |
+             IDP_ATTR_RD_WRITABLE |
+             IDP_ATTR_ML_JUSTONE  |
+             IDP_ATTR_CK_CHECK,
+             0, 1, 1 );
 
     return IDE_SUCCESS;
 

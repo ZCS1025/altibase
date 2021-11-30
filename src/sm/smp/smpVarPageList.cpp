@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smpVarPageList.cpp 88917 2020-10-15 04:54:02Z et16 $
+ * $Id: smpVarPageList.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <idl.h>
@@ -2057,6 +2057,7 @@ void smpVarPageList::dumpVarPage( scSpaceID         aSpaceID,
                                             (void**)&sPagePtr )
                 == IDE_SUCCESS );
 
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     if( iduMemMgr::calloc( IDU_MEM_SM_SMC, 
                            1,
                            ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,

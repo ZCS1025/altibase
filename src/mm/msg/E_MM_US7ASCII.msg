@@ -23,7 +23,7 @@
 # 반드시 main trunk에서 번호를 할당받은 후 브랜치에서 사용하셔야 합니다.
 # 의문 사항이 있으시면 AK팀 혹은 QP(품질본부)팀에 문의 부탁드립니다.
 
-# Last Number = 266
+# Last Number = 267
 
 SECTION = 4
 
@@ -877,6 +877,11 @@ SECTION = 4
 266,mmERR_ABORT_MMC_CANT_LOCK_PSM_IN_AUTOCOMMIT_MODE = Unable to execute LOCK PSM statement while the system is in auto-commit mode.
 # *Cause: The system tried to execute a LOCK PSM statement while the system was in auto-commit mode.
 # *Action: When the system is in auto-commit mode, Remove the LOCK PSM statement.
+
+267,mmERR_ABORT_STILL_OPEN_STATEMENT = Commit failed. Statements that are still open exist.
+# *Cause: Statements that are still open exist.
+# *Action: Contact Altibase's Support Center (http://support.altibase.com).
+
 
 INTERNAL_TRACE_MESSAGE_BEGIN
 

@@ -40,7 +40,7 @@ public:
 
     static IDE_RC allocTmpExt( idvSQL      * aStatistics,
                                scSpaceID     aSpaceID,
-                               sdpExtDesc  * aExtSlot );
+                               sdpExtDesc  * aExtDesc );
 
     /* ExtDir 페이지를 할당한다. */
     static IDE_RC tryAllocExtDir( idvSQL             * aStatistics,

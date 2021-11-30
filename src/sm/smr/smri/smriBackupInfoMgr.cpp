@@ -891,6 +891,8 @@ IDE_RC smriBackupInfoMgr::processRestBackupFile( SChar   * aBackupPath,
     SInt                sBackupFileExtLen;
     UInt                sState = 0;
 
+    ADD_OVERFLOW_CHECK(ID_SIZEOF(struct dirent),SM_MAX_FILE_NAME);
+
     IDE_TEST(iduMemMgr::malloc(IDU_MEM_SM_SMC,
                        ID_SIZEOF(struct dirent) + SM_MAX_FILE_NAME,
                        (void**)&(sDirEnt),

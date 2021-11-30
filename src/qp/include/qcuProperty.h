@@ -16,7 +16,7 @@
  
 
 /*****************************************************************************
- * $Id: qcuProperty.h 91627 2021-09-08 01:47:35Z ahra.cho $
+ * $Id: qcuProperty.h 91978 2021-11-05 05:37:19Z donovan.seo $
  *
  * QP에서 사용하는 System Property에 대한 정의
  * A4에서 제공하는 Property 관리자를 이용하여 처리한다.
@@ -470,6 +470,9 @@
 
 /* PROJ-2749 */
 #define QCU_OPTIMIZER_WITH_VIEW          ( QCU_PROPERTY(mOptimizerWithView) )
+
+/* BUG-49330 */
+#define QCU_OPTIMIZER_SET ( QCU_PROPERTY(mOptimizerSet) )
 
 // 참조 : mmuPropertyArgument
 typedef struct qcuPropertyArgument
@@ -940,6 +943,9 @@ typedef struct qcuProperties
 
     /* PROJ-2749 */
     UInt  mOptimizerWithView;
+
+    /* BUG-49330 */
+    UInt  mOptimizerSet;
 } qcuProperties;
 
 class qcuProperty
@@ -1887,6 +1893,12 @@ public:
                                              void  * aOldValue,
                                              void  * aNewValue,
                                              void  * aArg );
+    /* BUG-49330 */
+    static IDE_RC changeOPTIMIZER_SET( idvSQL * /* aStatistics */,
+                                       SChar  * aName,
+                                       void   * aOldValue,
+                                       void   * aNewValue,
+                                       void   * aArg );
 };
 
 #endif /* _O_QCU_PROPERTY_H_ */

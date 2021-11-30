@@ -131,15 +131,17 @@ IDE_RC sdtTempRow::allocNewPage( sdtSortSegHdr    * aWASegment,
 
             if ( aPrevWCBPtr != NULL )
             {
+                IDE_ERROR( aPrevWCBPtr->mWPState != SDT_WA_PAGESTATE_INIT );
+
                 /* 이전페이지와 링크를 연결함 */
                 sPrevPID   = sdtSortSegment::getNPID( aPrevWCBPtr );
                 sWAPagePtr = sdtSortSegment::getWAPagePtr( aWASegment,
                                                            aWAGroupID,
                                                            aPrevWCBPtr );
+
                 sdtTempPage::setNextPID( sWAPagePtr,
                                          sTargetNPID );
 
-                IDE_ASSERT( aPrevWCBPtr->mWPState != SDT_WA_PAGESTATE_INIT );
                 aPrevWCBPtr->mWPState = SDT_WA_PAGESTATE_DIRTY;
 
                 (*aRowPageCount) ++;
@@ -203,7 +205,7 @@ IDE_RC sdtTempRow::fetchByGRID( sdtSortSegHdr   * aWASegment,
     {
         sdtWCB * sWCBPtr = sdtSortSegment::findWCB( aWASegment, SC_MAKE_PID( aGRID ) );
 
-        IDE_ASSERT( sdtSortSegment::isFixedPage( sWCBPtr ) == ID_TRUE );
+        IDE_DASSERT( sdtSortSegment::isFixedPage( sWCBPtr ) == ID_TRUE );
     }
 #endif
     aTRPInfo->mFetchEndOffset = aValueLength;
@@ -253,7 +255,7 @@ IDE_RC sdtTempRow::fetchChainedRowPiece( sdtSortSegHdr        * aWASegment,
 
     sTRPHeader     = aTRPInfo->mTRPHeader;
     sFlag          = sTRPHeader->mTRFlag;
-    sTRPHeaderSize = SDT_TR_HEADER_SIZE( sFlag );
+    sTRPHeaderSize = SDT_SORT_TR_HEADER_SIZE( sFlag );
 
     sCursor = ((UChar*)sTRPHeader) + sTRPHeaderSize;
 
@@ -286,7 +288,7 @@ IDE_RC sdtTempRow::fetchChainedRowPiece( sdtSortSegHdr        * aWASegment,
                   != IDE_SUCCESS );
         sTRPHeader = (sdtSortTRPHdr*)sCursor;
         sFlag      = sTRPHeader->mTRFlag;
-        sCursor   += SDT_TR_HEADER_SIZE( sFlag );
+        sCursor   += SDT_SORT_TR_HEADER_SIZE( sFlag );
 
         idlOS::memcpy( aRowBuffer + sRowBufferOffset,
                        sCursor,
@@ -297,9 +299,9 @@ IDE_RC sdtTempRow::fetchChainedRowPiece( sdtSortSegHdr        * aWASegment,
     }
 
 #ifdef DEBUG
-    IDE_ASSERT( idlOS::memcmp( &sTRPHeaderBuffer,
-                               aTRPInfo->mTRPHeader,
-                               sTRPHeaderSize ) == 0 );
+    IDE_DASSERT( idlOS::memcmp( &sTRPHeaderBuffer,
+                                aTRPInfo->mTRPHeader,
+                                sTRPHeaderSize ) == 0 );
 #endif
     return IDE_SUCCESS;
 
@@ -370,7 +372,7 @@ IDE_RC sdtTempRow::updateChainedRowPiece( smiSortTempCursor* aTempCursor,
         sTRPHeader = (sdtSortTRPHdr*)sRowPos;
         sEndOffset = sBeginOffset + sTRPHeader->mValueLength;
 
-        sRowPos   += SDT_TR_HEADER_SIZE( sTRPHeader->mTRFlag );
+        sRowPos   += SDT_SORT_TR_HEADER_SIZE( sTRPHeader->mTRFlag );
 
         sUpdateColumn = aTempCursor->mUpdateColumns;
         sValueList    = aValueList;
@@ -423,7 +425,7 @@ IDE_RC sdtTempRow::updateChainedRowPiece( smiSortTempCursor* aTempCursor,
             sWCBPtr = sdtSortSegment::findWCB( (sdtSortSegHdr*)aTempCursor->mWASegment,
                                                SC_MAKE_PID( sGRID ));
             IDE_ERROR( sWCBPtr != NULL );
-            IDE_ASSERT( sWCBPtr->mWPState != SDT_WA_PAGESTATE_INIT );
+            IDE_ERROR( sWCBPtr->mWPState != SDT_WA_PAGESTATE_INIT );
 
             sWCBPtr->mWPState = SDT_WA_PAGESTATE_DIRTY;
         }
@@ -472,7 +474,7 @@ void sdtTempRow::dumpTempTRPHeader( void       * aTRPHeader,
                                sTRPHeader->mHitSequence,
                                sTRPHeader->mValueLength );
 
-    if ( SDT_TR_HEADER_SIZE( sTRPHeader->mTRFlag ) == SDT_TR_HEADER_SIZE_FULL )
+    if ( SDT_SORT_TR_HEADER_SIZE( sTRPHeader->mTRFlag ) == SDT_SORT_TR_HEADER_SIZE_FULL )
     {
         (void)idlVA::appendFormat( aOutBuf,
                                    aOutSize,
@@ -563,7 +565,7 @@ void sdtTempRow::dumpTempPageByRow( void  * aPagePtr,
         sRowPtr = sPagePtr + sSlotValue;
 
         sTRPHeader = (sdtSortTRPHdr*)(sRowPtr);
-        sValuePtr  = sRowPtr + SDT_TR_HEADER_SIZE( sTRPHeader->mTRFlag );
+        sValuePtr  = sRowPtr + SDT_SORT_TR_HEADER_SIZE( sTRPHeader->mTRFlag );
 
         (void)idlVA::appendFormat( aOutBuf,
                                    aOutSize,
@@ -650,7 +652,7 @@ void sdtTempRow::dumpRowWithCursor( void   * aTempCursor,
         sTRPHeader = (sdtSortTRPHdr*)sRowPos;
         sEndOffset = sBeginOffset + sTRPHeader->mValueLength;
 
-        sRowPos   += SDT_TR_HEADER_SIZE( sTRPHeader->mTRFlag );
+        sRowPos   += SDT_SORT_TR_HEADER_SIZE( sTRPHeader->mTRFlag );
 
         sUpdateColumn = sCursor->mUpdateColumns;
 

@@ -5990,6 +5990,9 @@ IDE_RC sdcLob::initLobColBuffer( sdcLobColBuffer * aLobColBuf,
     {
         /* sdcLob_initLobColBuffer_malloc_Buffer.tc */
         IDU_FIT_POINT_RAISE("sdcLob::initLobColBuffer::malloc::Buffer",insufficient_memory);
+
+        MUL_OVERFLOW_CHECK((ULong)aLength , ID_SIZEOF(UChar));
+
         IDE_TEST_RAISE( iduMemMgr::malloc(
                             IDU_MEM_SM_SDC,
                             (ULong)aLength * ID_SIZEOF(UChar),

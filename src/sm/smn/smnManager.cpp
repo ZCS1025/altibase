@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smnManager.cpp 90259 2021-03-19 01:22:22Z emlee $
+ * $Id: smnManager.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #include <ide.h>
@@ -459,6 +459,7 @@ IDE_RC smnManager::removeAllIndexFile()
     IDU_FIT_POINT_RAISE( "smnManager::removeAllIndexFile::malloc",
                           insufficient_memory );
 
+    //ADD_OVERFLOW_CHECK(ID_SIZEOF(struct dirent),SM_MAX_FILE_NAME);
     IDE_TEST_RAISE(iduMemMgr::malloc(IDU_MEM_SM_SMN,
                                ID_SIZEOF(struct dirent) + SM_MAX_FILE_NAME,
                                (void**)&s_pDirEnt) != IDE_SUCCESS,
@@ -2561,6 +2562,7 @@ void  smnManager::setIsConsistentOfIndexHeader ( void   * aIndexHeader,
     sIndexTypeID = sHeader->mType;
     sTableTypeID = SMN_GET_BASE_TABLE_TYPE_ID(sTableHeader->mFlag);
 
+    //MUL_OVERFLOW_CHECK(ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT);
     /* Inconsistent해지는 Index 정보 dump */
     if ( iduMemMgr::calloc( IDU_MEM_SM_SMN, 
                             1,
@@ -3002,6 +3004,7 @@ void smnManager::logCommonHeader( smnIndexHeader * aHeader )
 
     if ( aHeader != NULL )
     {
+        //MUL_OVERFLOW_CHECK(ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT);
         if ( iduMemMgr::calloc( IDU_MEM_SM_SMN, 1,
                                 ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                 (void**)&sOutBuffer4Dump )

@@ -2817,7 +2817,14 @@ static IDE_RC dkmBindVariable( void           *aQcStatement,
     /*
        4. Execute bind
      */
-    sBindVarLen  = idlOS::strlen( aValue );
+    if ( aValue != NULL )
+    {
+        sBindVarLen  = idlOS::strlen( aValue );
+    }
+    else
+    {
+        sBindVarLen = 0;
+    }
     sBindVarType = DKP_COL_TYPE_VARCHAR;
 
     IDE_TEST( sRemoteStmt->bind( &sSession->mSession, 

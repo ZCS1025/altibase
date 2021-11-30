@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: smuUtility.h 85333 2019-04-26 02:34:41Z et16 $
+ * $Id: smuUtility.h 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 #ifndef _O_SMU_UTILITY_H_
@@ -263,6 +263,8 @@ IDE_RC smuUtility::allocAlignedBuf( iduMemoryClientIndex aAllocIndex,
 
     aAllocPtr->mAlignPtr = NULL;
     aAllocPtr->mFreePtr  = NULL;
+
+    ADD_OVERFLOW_CHECK(aAlignSize,aAllocSize);
 
     IDE_TEST( iduMemMgr::calloc( aAllocIndex, 1,
                                  aAlignSize + aAllocSize,

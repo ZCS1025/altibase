@@ -553,6 +553,20 @@ IDE_RC mmtServiceThread::prepareByCIDProtocol(cmiProtocolContext *aProtocolConte
         sStatement->setKeysetMode(MMC_STMT_KEYSETMODE_OFF);
     }
 
+    /* TASK-7219 Non-shard DML */
+    if ( (sMode & CMP_DB_PREPARE_MODE_SHARD_PARTIAL_EXEC_MASK) == CMP_DB_PREPARE_MODE_SHARD_PARTIAL_EXEC_COORD )
+    {
+        sStatement->setShardPartialExecType( SDI_SHARD_PARTIAL_EXEC_TYPE_COORD );
+    }
+    else if ( (sMode & CMP_DB_PREPARE_MODE_SHARD_PARTIAL_EXEC_MASK) == CMP_DB_PREPARE_MODE_SHARD_PARTIAL_EXEC_QUERY )
+    {
+        sStatement->setShardPartialExecType( SDI_SHARD_PARTIAL_EXEC_TYPE_QUERY );
+    }
+    else
+    {
+        sStatement->setShardPartialExecType( SDI_SHARD_PARTIAL_EXEC_TYPE_NONE );
+    }
+
     IDE_TEST(sStatement->prepare(sQuery, sStatementStringLen) != IDE_SUCCESS);
 
     IDE_TEST( answerPrepareResult(aProtocolContext, sStatement) != IDE_SUCCESS );

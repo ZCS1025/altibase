@@ -36,13 +36,13 @@
  * aSpaceID    - [IN] TableSpace ID
  * aOrgNrExts  - [IN] 할당을 요청할 Extent 갯수
  *
- * aExtSlot    - [OUT] 할당된 Extent Desc Array Ptr
+ * aExtDesc    - [OUT] 할당된 Extent Desc Array Ptr
  ***********************************************************************/
 IDE_RC sdptbExtent::allocExts( idvSQL          * aStatistics,
                                sdrMtxStartInfo * aStartInfo,
                                scSpaceID         aSpaceID,
                                UInt              aOrgNrExts,
-                               sdpExtDesc      * aExtSlot )
+                               sdpExtDesc      * aExtDesc )
 {
     UInt                sNrExts; //할당해야하는 ext의 갯수를 관리한다.
     sdptbSpaceCache   * sSpaceCache;
@@ -132,11 +132,11 @@ IDE_RC sdptbExtent::allocExts( idvSQL          * aStatistics,
                    aSpaceID,
                    sNrExts );
 
-    //할당받은 extent의 첫번째 PID를 인자로받은 aExtSlot에 저장한다.
+    //할당받은 extent의 첫번째 PID를 인자로받은 aExtDesc에 저장한다.
     for( i=0 ; i < aOrgNrExts ; i++ )
     {
-        aExtSlot[i].mExtFstPID = sExtFstPID[i];
-        aExtSlot[i].mLength    = sSpaceCache->mCommon.mPagesPerExt;
+        aExtDesc[i].mExtFstPID = sExtFstPID[i];
+        aExtDesc[i].mLength    = sSpaceCache->mCommon.mPagesPerExt;
     }
 
     return IDE_SUCCESS;
@@ -793,11 +793,11 @@ IDE_RC sdptbExtent::prepareCachedFreeExts( idvSQL           * aStatistics,
  *
  * aStatistics - [IN] 통계정보
  * aSpaceID    - [IN] TableSpace ID
- * aExtSlot    - [OUT] 할당된 Extent Desc Array Ptr
+ * aExtDesc    - [OUT] 할당된 Extent Desc Array Ptr
  ***********************************************************************/
 IDE_RC sdptbExtent::allocTmpExt( idvSQL          * aStatistics,
                                  scSpaceID         aSpaceID,
-                                 sdpExtDesc      * aExtSlot )
+                                 sdpExtDesc      * aExtDesc )
 {
     sdptbSpaceCache * sSpaceCache;
     sdrMtxStartInfo   sStartInfo;
@@ -809,13 +809,13 @@ IDE_RC sdptbExtent::allocTmpExt( idvSQL          * aStatistics,
     IDE_ASSERT( sSpaceCache != NULL );
 
     IDE_TEST( sSpaceCache->mFreeExtPool.pop( ID_TRUE, /* Lock */
-                                             (void*)&(aExtSlot->mExtFstPID),
+                                             (void*)&(aExtDesc->mExtFstPID),
                                              &sIsEmpty )
               != IDE_SUCCESS );
 
     if( sIsEmpty == ID_FALSE )
     {
-        aExtSlot->mLength = sSpaceCache->mCommon.mPagesPerExt;
+        aExtDesc->mLength = sSpaceCache->mCommon.mPagesPerExt;
     }
     else
     {
@@ -826,7 +826,7 @@ IDE_RC sdptbExtent::allocTmpExt( idvSQL          * aStatistics,
                              &sStartInfo,
                              aSpaceID,
                              1, /*need extent count */
-                             aExtSlot ) != IDE_SUCCESS );
+                             aExtDesc ) != IDE_SUCCESS );
     }
 
     return IDE_SUCCESS;

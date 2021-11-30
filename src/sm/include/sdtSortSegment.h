@@ -98,8 +98,9 @@ public:
 
     static UInt getWASegmentUsedPageCount(sdtSortSegHdr* aWASegment )
     {
-        return (( aWASegment->mAllocWAPageCount + SDT_WAEXTENT_PAGECOUNT - 1 )
-                / SDT_WAEXTENT_PAGECOUNT ) * SDT_WAEXTENT_PAGECOUNT;
+        return ( ( aWASegment->mAllocWAPageCount + SDT_WAEXTENT_PAGECOUNT - 1 )
+                 / SDT_WAEXTENT_PAGECOUNT ) 
+               * SDT_WAEXTENT_PAGECOUNT;
     };
 
     static IDE_RC dropSortSegment(sdtSortSegHdr* aWASegment );

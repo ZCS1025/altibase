@@ -75,6 +75,7 @@ IDE_RC sdptbVerifyAndDump::dump( scSpaceID   aSpaceID,
      * Dump한 결과값을 저장할 버퍼를 확보합니다. Stack에 선언할 경우,
      * 이 함수를 통해 서버가 종료될 수 있으므로 Heap에 할당을 시도한 
      * 후, 성공하면 기록, 성공하지 않으면 그냥 return합니다. */
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_ID, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )
@@ -421,6 +422,7 @@ IDE_RC sdptbVerifyAndDump::printLGsCore( sdrMtx     *aMtx,
      * Dump한 결과값을 저장할 버퍼를 확보합니다. Stack에 선언할 경우,
      * 이 함수를 통해 서버가 종료될 수 있으므로 Heap에 할당을 시도한 
      * 후, 성공하면 기록, 성공하지 않으면 그냥 return합니다. */
+    //MUL_OVERFLOW_CHECK( ID_SIZEOF( SChar ),IDE_DUMP_DEST_LIMIT );
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_ID, 1,
                                  ID_SIZEOF( SChar ) * IDE_DUMP_DEST_LIMIT,
                                  (void**)&sTempBuf )

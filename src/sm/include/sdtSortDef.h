@@ -309,18 +309,25 @@ typedef struct sdtWASortMapHdr
 typedef struct sdtSortSegHdr
 {
     UChar                mWorkType;
-    UChar                mIsInMemory;    /*쫓겨난 Page가 있는가?*/
+    UChar                mIsInMemory; /*쫓겨난 Page가 있는가?*/
     scSpaceID            mSpaceID;
-
-/* 마지막으로 접근한 WAPage. Hint 및 Dump하기 위해 사용됨 */
-    /* getNPageToWCB, getWAPagePtr, getWCB 용 Hint */
-    sdtWCB             * mHintWCBPtr;
 
     UInt                 mNPageHashBucketCnt;
     sdtWCB            ** mNPageHashPtr;
+
+    UInt                 mNPageCount;     /*할당한 NPage의 개수*/
+    UInt                 mExtPageCount;   /*Extent의 크기(extent내 page count)*/
+
+    sdtNExtFstPIDList    mNExtFstPIDList; /*NormalExtent들을 보관하는 Map*/
+
     sdtWCB            *  mUsedWCBPtr;
+    /* 마지막으로 접근한 WAPage. Hint 및 Dump하기 위해 사용됨 */
+    /* getNPageToWCB, getWAPagePtr, getWCB 용 Hint */
+    sdtWCB             * mHintWCBPtr;
 
     sdtWASortMapHdr      mSortMapHdr; /*KeyMap, Heap, PIDList등의 Map */
+
+    sdtSortGroup         mGroup[ SDT_WAGROUPID_MAX ];  /*WAGroup에 대한 정보*/
 
     sdtWAExtentInfo      mWAExtentInfo;
     UInt                 mMaxWAExtentCount;
@@ -328,11 +335,7 @@ typedef struct sdtSortSegHdr
     UInt                 mCurrFreePageIdx;
     UInt                 mAllocWAPageCount;
 
-    sdtNExtFstPIDList    mNExtFstPIDList;  /*NormalExtent들을 보관하는 Map*/
-    UInt                 mNPageCount;     /*할당한 NPage의 개수 */
-
-    sdtSortGroup         mGroup[ SDT_WAGROUPID_MAX ];  /*WAGroup에 대한 정보*/
-    iduStackMgr          mFreeNPageStack; /*FreenPage를 재활용용 */
+    iduStackMgr          mFreeNPageStack; /*FreeNPage를 재활용*/
 
     idvSQL             * mStatistics;
     smiTempTableStats  * mStatsPtr;
@@ -346,20 +349,19 @@ typedef struct sdtSortSegHdr
 
 typedef struct sdtSortPageHdr
 {
-    /* 하위 13bit를 FreeOffset, 상위 3bit를 Type으로 사용함 */
     scPageID mSelfPID;
-    UShort   mTypeAndFreeOffset;
+    UShort   mTypeAndFreeOffset; /* 하위 13bit를 FreeOffset, 상위 3bit를 Type으로 사용함 */
     UShort   mSlotCount;
     scPageID mPrevPID;
     scPageID mNextPID;
-    scOffset mSlotDir[2]; // padding으로 인한 계산 때문에 2개로 넣는다.
+    scOffset mSlotDir[2];        /* padding으로 인한 계산 때문에 2개로 넣는다. */
 } sdtSortPageHdr;
 
 #define SDT_SORT_PAGE_HEADER_SIZE (ID_SIZEOF(sdtSortPageHdr) - (ID_SIZEOF(scOffset)*2) )
 
 
 /**************************************************************************
- * TempRowPiece는 다음과 같이 구성된다.
+ * SortTempRowPiece는 다음과 같이 구성된다.
  *
  * +-------------------------------+.+---------+--------+.-------------------------+
  * + RowPieceHeader                |.|GRID HEADER       |. ColumnValues.(mtdValues)|
@@ -368,9 +370,9 @@ typedef struct sdtSortPageHdr
  * +----+-----+------+---------+---+.+---------+--------+.-------------------------+
  * <----------   BASE    ----------> <------Option------>
  *
- * Base는 모든 rowPiece가 가진다.
+ * Base는 모든 rowPiece를 가진다.
  * NextGRID와 ChildGRID는 필요에 따라 가질 수 있다.
- * (하지만 논리적인 이유로, ChildGRID는 FirstRowPiece만 소유한다. *
+ * (하지만 논리적인 이유로, ChildGRID는 FirstRowPiece만 소유한다.
  **************************************************************************/
 
 /* TRPInfo(TempRowPieceInfo)는 Runtime구조체로 Runtime상황에서 사용되며
@@ -399,7 +401,7 @@ typedef struct sdtSortTRPHdr
 
 typedef struct sdtSortInsertInfo
 {
-    sdtSortTRPHdr  mTRPHeader;
+    sdtSortTRPHdr   mTRPHeader;
 
     UInt            mColumnCount;  /* Column개수 */
     smiTempColumn * mColumns;      /* Column정보 */
@@ -427,16 +429,15 @@ typedef struct sdtSortScanInfo
 /* 반드시 기록되야 하는 항목들. ( sdtSortTRPHdr참조 )
  * mTRFlag, mValueLength, mHashValue, mHitSequence,
  * (1) + (1) + (2) + (4) = 8 */
-#define SDT_TR_HEADER_SIZE_BASE ( 8 )
+#define SDT_SORT_TR_HEADER_SIZE_BASE ( 8 )
 
 /* 추가로 옵셔널한 항목들 ( sdtSortTRPHdr참조 )
  * Base + mNextGRID + mChildGRID
  * (8) + ( 8 + 8 ) */
-#define SDT_TR_HEADER_SIZE_FULL ( SDT_TR_HEADER_SIZE_BASE + 16 )
+#define SDT_SORT_TR_HEADER_SIZE_FULL ( SDT_SORT_TR_HEADER_SIZE_BASE + 16 )
 
 /* RID가 있으면 24 Byte */
-#define SDT_TR_HEADER_SIZE(aFlag)  ( ( (aFlag) & SDT_TRFLAG_GRID )  ?                           \
-                                     SDT_TR_HEADER_SIZE_FULL : SDT_TR_HEADER_SIZE_BASE )
-
+#define SDT_SORT_TR_HEADER_SIZE(aFlag)  ( ( (aFlag) & SDT_TRFLAG_GRID )  ?                           \
+                                          SDT_SORT_TR_HEADER_SIZE_FULL : SDT_SORT_TR_HEADER_SIZE_BASE )
 
 #endif /* _O_SDT_SORT_DEF_H_ */

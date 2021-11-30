@@ -50,6 +50,7 @@ IDE_RC smuWorkerThread::initialize( smuWorkerThreadFunc    aThreadFunc,
     {
         /* smuWorkerThread_initialize_calloc_JobQueue.tc */
         IDU_FIT_POINT("smuWorkerThread::initialize::calloc::JobQueue");
+        MUL_OVERFLOW_CHECK( aQueueSize,ID_SIZEOF( void* ) );
         IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMU,
                                      aQueueSize,
                                      ID_SIZEOF( void* ),
@@ -61,6 +62,7 @@ IDE_RC smuWorkerThread::initialize( smuWorkerThreadFunc    aThreadFunc,
 
         /* smuWorkerThread_initialize_calloc_ThreadArray.tc */
         IDU_FIT_POINT("smuWorkerThread::initialize::calloc::ThreadArray");
+        MUL_OVERFLOW_CHECK( (ULong)ID_SIZEOF( smuWorkerThread ),aThreadCnt );
         IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SMU, 1,
                                      (ULong)ID_SIZEOF( smuWorkerThread ) * aThreadCnt,
                                      (void**)&(aThreadMgr->mThreadArray) )

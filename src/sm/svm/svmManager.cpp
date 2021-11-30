@@ -1583,6 +1583,8 @@ IDE_RC svmManager::allocPageAlignedPtr( UInt    a_nSize,
 
     s_pMem = NULL;
 
+    ADD_OVERFLOW_CHECK(a_nSize,s_nPageSize - 1);
+
     IDE_TEST(iduMemMgr::malloc(IDU_MEM_SM_SVM,
                                a_nSize + s_nPageSize - 1,
                                &s_pMem)

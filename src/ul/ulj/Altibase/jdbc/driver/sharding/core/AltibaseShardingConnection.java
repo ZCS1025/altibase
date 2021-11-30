@@ -81,10 +81,6 @@ public class AltibaseShardingConnection extends AbstractConnection
         mProps = mMetaConnection.getProp();
         mCmShardProtocol = new CmShardProtocol(mShardContextConnect);
         mOpenStatements = new LinkedList<Statement>();
-        // mMetaConnection.mDistTxInfo를 mShardContextConnect.mDistTxInfo에 주입한다.
-        // mShardContextConnect 생성 시점에 아직 mMetaConnection이 생성되지 않아서 이후에 setDistTxInfo를 별도로 수행해준다.
-        mShardContextConnect.setDistTxInfo(mMetaConnection.getDistTxInfo());
-        mMetaConnection.setDistTxInfoForVerify();
         // TCP, SSL, IB
         mShardContextConnect.setShardConnType(mProps.isSet(PROP_SHARD_CONNTYPE) ?
                                               CmConnType.toConnType(mProps.getShardConnType()) :
@@ -243,8 +239,11 @@ public class AltibaseShardingConnection extends AbstractConnection
 
             // PROJ-2733
             // commit 성공 시, 메타노드의 DistTxInfo를 초기화 해준다. 데이터노드의 DistTxInfo는 매 사용전마다 PropagateDistTxInfoToNode에 의해 overwrite 되기 때문에 초기화 불필요.
-            mMetaConnection.getDistTxInfo().initDistTxInfo();
+            mMetaConnection.initDistTxInfo();
             mMetaConnection.setDistTxInfoForVerify();
+            
+            // TASK-7219 Non-shard DML
+            mMetaConnection.initStmtExecSeqForShardTx();
         }
 
         getNodeSqlWarnings(aIsCommit, mShardContextConnect.needToDisconnect());

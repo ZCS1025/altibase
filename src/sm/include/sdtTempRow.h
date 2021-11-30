@@ -142,14 +142,14 @@ IDE_RC sdtTempRow::append( sdtSortSegHdr     * aWASegment,
     sdtSortGroup  * sGroupInfo = sdtSortSegment::getWAGroupInfo( aWASegment,
                                                                  aWAGroupID );
 
-    IDE_DASSERT( SDT_TR_HEADER_SIZE_BASE ==
+    IDE_DASSERT( SDT_SORT_TR_HEADER_SIZE_BASE ==
                  ( IDU_FT_SIZEOF( sdtSortTRPHdr, mTRFlag )
                    + IDU_FT_SIZEOF( sdtSortTRPHdr, mDummy )
                    + IDU_FT_SIZEOF( sdtSortTRPHdr, mHitSequence )
                    + IDU_FT_SIZEOF( sdtSortTRPHdr, mValueLength ) ) );
 
-    IDE_DASSERT( SDT_TR_HEADER_SIZE_FULL ==
-                 ( SDT_TR_HEADER_SIZE_BASE +
+    IDE_DASSERT( SDT_SORT_TR_HEADER_SIZE_FULL ==
+                 ( SDT_SORT_TR_HEADER_SIZE_BASE +
                    + IDU_FT_SIZEOF( sdtSortTRPHdr, mNextGRID )
                    + IDU_FT_SIZEOF( sdtSortTRPHdr, mChildGRID )) );
 
@@ -256,7 +256,7 @@ IDE_RC sdtTempRow::appendRowPiece( sdtSortSegHdr     * aWASegment,
 
     sWPID = sdtSortSegment::getWPageID(aWASegment, aWCBPtr);
     /* FreeSpace°è»ê */
-    sRowPieceHeaderSize = SDT_TR_HEADER_SIZE( aTRPInfo->mTRPHeader.mTRFlag );
+    sRowPieceHeaderSize = SDT_SORT_TR_HEADER_SIZE( aTRPInfo->mTRPHeader.mTRFlag );
     sRowPieceSize       = sRowPieceHeaderSize + aTRPInfo->mValueLength;
 
     IDE_ERROR_MSG( aCuttingOffset < sRowPieceSize,
@@ -376,9 +376,9 @@ IDE_RC sdtTempRow::appendRowPiece( sdtSortSegHdr     * aWASegment,
                       sSlotNo );
 
         sdtSortSegment::convertFromWGRIDToNGRID(
-            aWASegment,
-            aTRInsertResult->mHeadRowpieceGRID,
-            &aTRInsertResult->mHeadRowpieceGRID );
+                                            aWASegment,
+                                            aTRInsertResult->mHeadRowpieceGRID,
+                                            &aTRInsertResult->mHeadRowpieceGRID );
 
         if ( SM_IS_FLAG_ON( aTRPInfo->mTRPHeader.mTRFlag, SDT_TRFLAG_NEXTGRID ) )
         {
@@ -436,7 +436,7 @@ IDE_RC sdtTempRow::update( smiSortTempCursor * aTempCursor,
 
     if ( sTRPHeader->mValueLength >= aTempCursor->mUpdateEndOffset )
     {
-        sRowPos = aTempCursor->mRowPtr + SDT_TR_HEADER_SIZE( sTRPHeader->mTRFlag ) ;
+        sRowPos = aTempCursor->mRowPtr + SDT_SORT_TR_HEADER_SIZE( sTRPHeader->mTRFlag ) ;
         sUpdateColumn = aTempCursor->mUpdateColumns;
 
         while( sUpdateColumn != NULL )
@@ -523,7 +523,7 @@ IDE_RC sdtTempRow::fetch( sdtSortSegHdr        * aWASegment,
     }
     else
     {
-        aTRPInfo->mValuePtr    = ((UChar*)aTRPInfo->mTRPHeader) + SDT_TR_HEADER_SIZE( sFlag );
+        aTRPInfo->mValuePtr    = ((UChar*)aTRPInfo->mTRPHeader) + SDT_SORT_TR_HEADER_SIZE( sFlag );
         aTRPInfo->mValueLength = aTRPInfo->mTRPHeader->mValueLength;
     }
 

@@ -106,14 +106,14 @@ void sdtHashModule::destroyStatic()
 void sdtHashModule::resetTempHashGroupPageCount()
 {
     mHashSlotPageCount = SDT_WAEXTENT_PAGECOUNT *
-        calcTempHashGroupExtentCount( getMaxWAExtentCount() );
+                         calcTempHashGroupExtentCount( getMaxWAExtentCount() );
 }
 
 /**************************************************************************
  * Description : Hash Group Extent Count를 계산 한다.
  *               HashSlot의 수는 65535의 배수가 되어야 한다. 이렇게 하면,
  *               Hash Value 4Byte 중 하위 2Byte는 서로 일치하게 된다.
- *               그럼 Sub Hash는 남은 상위 2Byte만으로 서로 구분 가능하게 된다.
+ *               그럼 SubHash는 남은 상위 2Byte만으로 서로 구분 가능하게 된다.
  ***************************************************************************/
 UInt sdtHashModule::calcTempHashGroupExtentCount( UInt    aMaxWAExtentCount )
 {
@@ -147,16 +147,16 @@ UInt sdtHashModule::calcTempHashGroupExtentCount( UInt    aMaxWAExtentCount )
 }
 
 /**************************************************************************
- * Description : Sub Hash Group Page Count를 초기화 한다.
+ * Description : SubHash Group Page Count를 초기화 한다.
  ***************************************************************************/
 void sdtHashModule::resetTempSubHashGroupPageCount()
 {
     mSubHashPageCount = SDT_WAEXTENT_PAGECOUNT *
-        calcTempSubHashGroupExtentCount( getMaxWAExtentCount() ) ;
+                        calcTempSubHashGroupExtentCount( getMaxWAExtentCount() ) ;
 }
 
 /**************************************************************************
- * Description : Sub Hash Group Extent Count를 계산 한다.
+ * Description : SubHash Group Extent Count를 계산 한다.
  ***************************************************************************/
 UInt sdtHashModule::calcTempSubHashGroupExtentCount( UInt    aMaxWAExtentCount )
 {
@@ -234,15 +234,15 @@ ULong sdtHashModule::calcSubOptimalWorkAreaSizeByRowCnt( ULong aRowCount )
 }
 
 /**************************************************************************
- * Description : Sub Hash의 NExtent Count 를 기준으로
+ * Description : SubHash의 NExtent Count 를 기준으로
  *               적정한 Work Area Size 를 계산하여 반환
- *               onepass 가 되려면 Sub Hash는 한번에 load가능해야 한다.
+ *               onepass 가 되려면 SubHash는 한번에 load가능해야 한다.
  *               Hash Group은 6%이고 Key가 16Byte인데 반해서
- *               Sub Hash는 Fetch 할 때 Row Area 의 90%까지 확장되고,
- *               Sub Hash Key는 8Byte이다,
- *               Hash Slot 보다 더 많은 Sub Hash Key를 담을 수 있다.
+ *               SubHash는 Fetch 할 때 Row Area 의 90%까지 확장되고,
+ *               SubHash Key는 8Byte이다,
+ *               Hash Slot 보다 더 많은 SubHash Key를 담을 수 있다.
  *               Hash Group에서 모두 커버 가능 할 경우는 In Memory나 다름없다.
- *               그래서 Sub Hash 기준으로 계산한다.
+ *               그래서 SubHash 기준으로 계산한다.
  ***************************************************************************/
 ULong sdtHashModule::calcSubOptimalWorkAreaSizeBySubHashExtCnt( UInt aSubHashExtentCount )
 {
@@ -410,12 +410,13 @@ void sdtHashModule::initHashGrp( sdtHashSegHdr   * aWASeg )
     aWASeg->mFetchGrp.mReuseSeqWPID = aWASeg->mEndWPID;
     aWASeg->mFetchGrp.mEndWPID      = aWASeg->mEndWPID;
 
-    /* 후방에 Sub Hash구축을 위한 공간을 남겨둔다.*/
+    /* 후방에 SubHash구축을 위한 공간을 남겨둔다.*/
     aWASeg->mSubHashGrp.mBeginWPID    = aWASeg->mEndWPID - aWASeg->mSubHashPageCount;
     aWASeg->mSubHashGrp.mReuseSeqWPID = aWASeg->mEndWPID - aWASeg->mSubHashPageCount;
     aWASeg->mSubHashGrp.mEndWPID      = aWASeg->mEndWPID;
 
     IDE_DASSERT( aWASeg->mInsertGrp.mEndWPID  > aWASeg->mInsertGrp.mBeginWPID );
+    IDE_DASSERT( aWASeg->mInsertGrp.mEndWPID == aWASeg->mSubHashGrp.mBeginWPID );
     IDE_DASSERT( aWASeg->mSubHashGrp.mEndWPID > aWASeg->mSubHashGrp.mBeginWPID );
 
     return ;
@@ -461,7 +462,6 @@ IDE_RC sdtHashModule::createHashSegment( smiTempTableHeader * aHeader,
 
     idlOS::memset( (UChar*)sWASeg, 0, SDT_HASH_SEGMENT_HEADER_SIZE );
 
-    sWASeg->mMaxWAExtentCount = sMaxWAExtentCount ;
 
     if ( aInitWorkAreaSize == 0 )
     {
@@ -488,25 +488,30 @@ IDE_RC sdtHashModule::createHashSegment( smiTempTableHeader * aHeader,
     }
 
     /***************************** initialize ******************************/
-    sWASeg->mSpaceID           = aHeader->mSpaceID;
-    sWASeg->mWorkType          = SDT_WORK_TYPE_HASH;
-    sWASeg->mStatsPtr          = aHeader->mStatsPtr;
-    sWASeg->mNPageCount        = 0;
-    sWASeg->mIsInMemory        = SDT_WORKAREA_IN_MEMORY;
-    sWASeg->mStatistics        = aHeader->mStatistics;
-    sWASeg->mAllocWAPageCount  = 0;
-    sWASeg->mUsedWCBPtr        = SDT_USED_PAGE_PTR_TERMINATED;
-    sWASeg->mEndWPID           = sMaxWAPageCount;
-    sWASeg->mSubHashPageCount  = sSubHashPageCount;
-    sWASeg->mHashSlotPageCount = sHashSlotPageCount;
-    sWASeg->mNExtFstPIDList4Row.mPageSeqInLFE     = SDT_WAEXTENT_PAGECOUNT;
-    sWASeg->mNExtFstPIDList4SubHash.mPageSeqInLFE = SDT_WAEXTENT_PAGECOUNT;
+    sWASeg->mWorkType   = SDT_WORK_TYPE_HASH;
+    sWASeg->mIsInMemory = SDT_WORKAREA_IN_MEMORY;
+    sWASeg->mSpaceID    = aHeader->mSpaceID;
 
-    sWASeg->mHashSlotCount = sWASeg->mHashSlotPageCount * (SD_PAGE_SIZE/ID_SIZEOF(sdtHashSlot));
+    sWASeg->mHashSlotCount = sHashSlotPageCount * (SD_PAGE_SIZE/ID_SIZEOF(sdtHashSlot));
     IDE_DASSERT( sWASeg->mHashSlotCount % (ID_USHORT_MAX+1) == 0 );
 
+    sWASeg->mEndWPID    = sMaxWAPageCount;
+
+    sWASeg->mMaxWAExtentCount = sMaxWAExtentCount ;
+
+    /***************************** NPageMgr *********************************/
+    sWASeg->mNPageCount   = 0;
+    sWASeg->mExtPageCount = 0;
+    sWASeg->mNExtFstPIDList4Row.mPageSeqInLFE     = 0;
+    sWASeg->mNExtFstPIDList4SubHash.mPageSeqInLFE = 0;
+
+    sWASeg->mUsedWCBPtr = SDT_USED_PAGE_PTR_TERMINATED;
+
+    sWASeg->mStatistics = aHeader->mStatistics;
+    sWASeg->mStatsPtr   = aHeader->mStatsPtr;
     sWASeg->mStatsPtr->mRuntimeMemSize += mWASegmentPool.getNodeSize((UChar*) sWASeg );
 
+    /***************************** initWAExtent ******************************/
     IDE_TEST( sdtWAExtentMgr::initWAExtents( sWASeg->mStatistics,
                                              sWASeg->mStatsPtr,
                                              &sWASeg->mWAExtentInfo,
@@ -514,9 +519,14 @@ IDE_RC sdtHashModule::createHashSegment( smiTempTableHeader * aHeader,
               != IDE_SUCCESS );
     sState = 2;
 
-    sWASeg->mCurFreeWAExtent = sWASeg->mWAExtentInfo.mHead;
-    sWASeg->mCurrFreePageIdx = 0;
-    sWASeg->mNxtFreeWAExtent = sWASeg->mCurFreeWAExtent->mNextExtent;
+    sWASeg->mCurFreeWAExtent  = sWASeg->mWAExtentInfo.mHead;
+    sWASeg->mCurrFreePageIdx  = 0;
+    sWASeg->mNxtFreeWAExtent  = sWASeg->mCurFreeWAExtent->mNextExtent;
+    sWASeg->mAllocWAPageCount = 0;
+
+    sWASeg->mSubHashPageCount  = sSubHashPageCount;
+    sWASeg->mHashSlotPageCount = sHashSlotPageCount;
+
 
     aHeader->mWASegment = sWASeg;
 
@@ -608,7 +618,7 @@ IDE_RC sdtHashModule::clearHashSegment( sdtHashSegHdr* aWASegment )
 #ifdef DEBUG
             for( UInt i = 0 ; i < aWASegment->mNPageHashBucketCnt ; i++ )
             {
-                IDE_ASSERT( aWASegment->mNPageHashPtr[i] == NULL );
+                IDE_DASSERT( aWASegment->mNPageHashPtr[i] == NULL );
             }
 #endif
             IDE_TEST( mNHashMapPool.push( (UChar*)(aWASegment->mNPageHashPtr) )
@@ -722,9 +732,13 @@ void sdtHashModule::clearAllWCBs( sdtHashSegHdr* aWASegment )
             IDE_DASSERT( sCurWCBPtr->mNxtUsedWCBPtr == NULL );
             IDE_DASSERT( sCurWCBPtr->mWAPagePtr     == NULL );
         }
-        for( i = 0 ; i < aWASegment->mNPageHashBucketCnt ; i++ )
+
+        if ( aWASegment->mNPageHashPtr != NULL )
         {
-            IDE_ASSERT( aWASegment->mNPageHashPtr[i] == NULL );
+            for( i = 0 ; i < aWASegment->mNPageHashBucketCnt ; i++ )
+            {
+                IDE_DASSERT( aWASegment->mNPageHashPtr[i] == NULL );
+            }
         }
 #endif
     }
@@ -770,7 +784,7 @@ IDE_RC sdtHashModule::truncateHashSegment( sdtHashSegHdr* aWASegment )
     {
         for( UInt i = 0 ; i < aWASegment->mNPageHashBucketCnt ; i++ )
         {
-            IDE_ASSERT( aWASegment->mNPageHashPtr[i] == NULL );
+            IDE_DASSERT( aWASegment->mNPageHashPtr[i] == NULL );
         }
     }
 #endif
@@ -807,43 +821,51 @@ void sdtHashModule::estimateHashSize( smiTempTableHeader * aHeader )
     if ( aHeader->mRowCount > 0 )
     {
         sWASegment = (sdtHashSegHdr*)aHeader->mWASegment;
-
-        IDE_DASSERT( sWASegment->mNPageCount > 0 );
-
-        /* 종료되면서 예측 통계치를 계산한다. */
-        /* Optimal(InMemory)은 모든 데이터가 HashArea에 담길 크기면 된다. */
-        sStatsPtr->mEstimatedOptimalSize = calcOptimalWorkAreaSize( sWASegment->mNPageCount );
-
-        /* Onepass 는 HashSlot을 한번에 Load 할 수 있는 크기이다.
-         * Row Area는 Disk에서 읽어야 한다.*/
-        if ( sWASegment->mNExtFstPIDList4SubHash.mCount > 0 )
+        
+        if( sWASegment->mNPageCount > 0 )
         {
-            /* Out Memory, 계산값은 지금 Size보다 작다. In Memory 로 하기에는 공간이 부족했다. */
-            /* Unique Insert에서는 추가 필요한 부분이 Fetch여서 Size계산에서 별도로 크게는 신경 안써도 된다. */
-            sStatsPtr->mEstimatedSubOptimalSize =
-                calcSubOptimalWorkAreaSizeBySubHashExtCnt( sWASegment->mNExtFstPIDList4SubHash.mCount );
-        }
-        else
-        {
-            if ( sStatsPtr->mEstimatedOptimalSize == SDT_MIN_HASH_SIZE )
+            /* 종료되면서 예측 통계치를 계산한다. */
+            /* Optimal(InMemory)은 모든 데이터가 HashArea에 담길 크기면 된다. */
+            sStatsPtr->mEstimatedOptimalSize = calcOptimalWorkAreaSize( sWASegment->mNPageCount );
+
+            /* Onepass 는 HashSlot을 한번에 Load 할 수 있는 크기이다.
+             * Row Area는 Disk에서 읽어야 한다.*/
+            if ( sWASegment->mNExtFstPIDList4SubHash.mCount > 0 )
             {
-                /* optimal 이 min값이면 계산 필요없다.*/
-                sStatsPtr->mEstimatedSubOptimalSize = SDT_MIN_HASH_SIZE ;
+                /* Out Memory, 계산값은 지금 Size보다 작다. In Memory 로 하기에는 공간이 부족했다. */
+                /* Unique Insert에서는 추가 필요한 부분이 Fetch여서 Size계산에서 별도로 크게는 신경 안써도 된다. */
+                sStatsPtr->mEstimatedSubOptimalSize =
+                    calcSubOptimalWorkAreaSizeBySubHashExtCnt( sWASegment->mNExtFstPIDList4SubHash.mCount );
             }
             else
             {
-                /* In Memory, 계산값은 지금 Size보다 작다. 공간이 넉넉했다. */
-                /* Sub Hash가 할당되지 않았었다고 해서 없는것은 아니다.
-                 * Row Count를 기준으로 적당히 만들어낸다. */
-                sStatsPtr->mEstimatedSubOptimalSize = calcSubOptimalWorkAreaSizeByRowCnt( aHeader->mRowCount );            
+                if ( sStatsPtr->mEstimatedOptimalSize == SDT_MIN_HASH_SIZE )
+                {
+                    /* optimal 이 min값이면 계산 필요없다.*/
+                    sStatsPtr->mEstimatedSubOptimalSize = SDT_MIN_HASH_SIZE ;
+                }
+                else
+                {
+                    /* In Memory, 계산값은 지금 Size보다 작다. 공간이 넉넉했다. */
+                    /* SubHash가 할당되지 않았었다고 해서 없는것은 아니다.
+                     * Row Count를 기준으로 적당히 만들어낸다. */
+                    sStatsPtr->mEstimatedSubOptimalSize = calcSubOptimalWorkAreaSizeByRowCnt( aHeader->mRowCount ); 
+                }
             }
+        }
+        else
+        {
+            IDE_DASSERT( sWASegment->mNPageCount == 0 );
+            /* 한 페이지도 할당받지 못한 테이블은 계산하지 않는다.  */
+            sStatsPtr->mEstimatedOptimalSize    = 0;
+            sStatsPtr->mEstimatedSubOptimalSize = 0;
         }
     }
     else
     {
         /* 사용한 적이 없는 테이블은 계산 하지 않는다. */
         IDE_DASSERT( aHeader->mRowCount == 0 );
-        sStatsPtr->mEstimatedOptimalSize = 0;
+        sStatsPtr->mEstimatedOptimalSize    = 0;
         sStatsPtr->mEstimatedSubOptimalSize = 0;
     }
 
@@ -855,7 +877,7 @@ void sdtHashModule::estimateHashSize( smiTempTableHeader * aHeader )
 /**************************************************************************
  * Description : unique violation 확인
  *               모두 inmemory에 있을 때 탐색 함수,
- *               sub hash등을 고려하지 않는다.
+ *               SubHash등을 고려하지 않는다.
  *               insert 4 update에서는 검증 하고 insert하므로
  *               충돌이 발생하면 안된다.
  *
@@ -884,6 +906,7 @@ IDE_RC sdtHashModule::chkUniqueInsertableInMem( smiTempTableHeader  * aHeader,
         sLoop++;
 
         IDE_DASSERT( SM_IS_FLAG_ON( aTRPHeader->mTRFlag, SDT_TRFLAG_HEAD ) );
+        IDE_DASSERT( aTRPHeader->mIsRow == SDT_HASH_ROW_HEADER );
 
         if ( aTRPHeader->mHashValue == aHashValue )
         {
@@ -904,6 +927,10 @@ IDE_RC sdtHashModule::chkUniqueInsertableInMem( smiTempTableHeader  * aHeader,
                 break;
             }
         }
+        else
+        {
+            /* hash value 가 다른건 필요없음 */
+        }
 
         /* to next */
         aTRPHeader = aTRPHeader->mChildRowPtr;
@@ -922,7 +949,7 @@ IDE_RC sdtHashModule::chkUniqueInsertableInMem( smiTempTableHeader  * aHeader,
 /**************************************************************************
  * Description : unique violation 확인
  *               hash area를 넘어서 out memory 일 때 탐색 함수,
- *               sub hash, single row등을 고려해야 한다.
+ *               SubHash, single row등을 고려해야 한다.
  *               insert 4 update에서는 검증 하고 insert하므로
  *               충돌이 발생하면 안된다.
  *
@@ -957,7 +984,7 @@ IDE_RC sdtHashModule::chkUniqueInsertableOutMem( smiTempTableHeader  * aHeader,
         if ( aHashSlot->mRowPtrOrHashSet == (ULong)NULL )
         {
             /* in memory row는 없다.
-             * 바로 sub hash탐색으로 넘어간다.
+             * 바로 SubHash탐색으로 넘어간다.
              * small hash set을 보고 넘어왔으니, null pid일 리는 없다.*/
             sSubHashPageID = aHashSlot->mPageID;
             sSubHashOffset = aHashSlot->mOffset;
@@ -975,6 +1002,7 @@ IDE_RC sdtHashModule::chkUniqueInsertableOutMem( smiTempTableHeader  * aHeader,
                 sLoop++;
 
                 IDE_DASSERT( SM_IS_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_HEAD ) );
+                IDE_DASSERT( sTRPHeader->mIsRow == SDT_HASH_ROW_HEADER );
 
                 if ( sTRPHeader->mHashValue == aHashValue )
                 {
@@ -997,6 +1025,10 @@ IDE_RC sdtHashModule::chkUniqueInsertableOutMem( smiTempTableHeader  * aHeader,
                         IDE_CONT( CONT_COMPLETE );
                     }
                 }
+                else
+                {
+                    /* hash value 가 다른건 필요없음 */
+                }
 
                 sPrvTRPHeader = sTRPHeader;
                 sTRPHeader    = sPrvTRPHeader->mChildRowPtr ;
@@ -1009,6 +1041,7 @@ IDE_RC sdtHashModule::chkUniqueInsertableOutMem( smiTempTableHeader  * aHeader,
                     break;
                 }
 
+            /* to next */
             } while( sTRPHeader != NULL );
 
             if ( SDT_IS_SINGLE_ROW( sPrvTRPHeader->mChildOffset ) )
@@ -1029,13 +1062,13 @@ IDE_RC sdtHashModule::chkUniqueInsertableOutMem( smiTempTableHeader  * aHeader,
             }
             else
             {
-                /* Single row는 아니다. 설정되는 값은 sub hash 이거나 null pid 이다. */
+                /* Single row는 아니다. 설정되는 값은 SubHash 이거나 null pid 이다. */
                 sSubHashPageID = sPrvTRPHeader->mChildPageID;
                 sSubHashOffset = sPrvTRPHeader->mChildOffset;
             }
         }
     }
-    else
+    else // SINGLE_ROW
     {
         if ( (UInt)aHashSlot->mRowPtrOrHashSet == aHashValue )
         {
@@ -1122,10 +1155,10 @@ IDE_RC sdtHashModule::chkUniqueInsertableSingleRow( smiTempTableHeader  * aHeade
                           &sWCBPtr )
               != IDE_SUCCESS );
 
-    IDE_DASSERT( (sTRPInfo.mTRPHeader)->mIsRow == SDT_HASH_ROW_HEADER );
-    IDE_DASSERT( SM_IS_FLAG_ON( (sTRPInfo.mTRPHeader)->mTRFlag, SDT_TRFLAG_CHILDGRID ) );
     IDE_DASSERT( SM_IS_FLAG_ON( (sTRPInfo.mTRPHeader)->mTRFlag, SDT_TRFLAG_HEAD ) );
-    IDE_DASSERT( (sTRPInfo.mTRPHeader)->mChildPageID == SM_NULL_PID );
+    IDE_DASSERT( sTRPInfo.mTRPHeader->mIsRow == SDT_HASH_ROW_HEADER );
+    IDE_DASSERT( sTRPInfo.mTRPHeader->mChildPageID == SM_NULL_PID );
+    IDE_DASSERT( sTRPInfo.mTRPHeader->mChildRowPtr == NULL);
 
     fixWAPage( sWCBPtr );
     sIsFixedPage = ID_TRUE;
@@ -1167,8 +1200,8 @@ IDE_RC sdtHashModule::chkUniqueInsertableSingleRow( smiTempTableHeader  * aHeade
  * aWASegment     - [IN] Hash Segment
  * aValueList     - [IN] 중복 키 검증 할 Value
  * aHashValue     - [IN] 중복 키 검증 할 HashValue
- * aSubHashPageID - [IN] 확인 할 Sub Hash의 page ID
- * aSubHashOffset - [IN] 확인 할 Sub Hash의 Offset
+ * aSubHashPageID - [IN] 확인 할 SubHash의 page ID
+ * aSubHashOffset - [IN] 확인 할 SubHash의 Offset
  * aResult        - [OUT] insert가능하면 IDE_TRUE, 충돌이 있으면 ID_FALSE
  ***************************************************************************/
 IDE_RC sdtHashModule::chkUniqueInsertableSubHash( smiTempTableHeader  * aHeader,
@@ -1189,7 +1222,7 @@ IDE_RC sdtHashModule::chkUniqueInsertableSubHash( smiTempTableHeader  * aHeader,
 
     sTRPInfo.mFetchEndOffset = aHeader->mKeyEndOffset;
 
-    /* Sub Hash에는 상위 2Byte정보만 저장 되어 있다.
+    /* SubHash에는 상위 2Byte정보만 저장 되어 있다.
      * 상위 2Byte정보값으로 비교 한다.*/
     sHashHigh = SDT_MAKE_HASH_HIGH( aHashValue );
 
@@ -1197,7 +1230,7 @@ IDE_RC sdtHashModule::chkUniqueInsertableSubHash( smiTempTableHeader  * aHeader,
     {
         sLoop++;
 
-        /* Read Sub hash*/
+        /* Read SubHash */
         IDE_TEST( getSlotPtr( aWASegment,
                               &aWASegment->mFetchGrp,
                               aSubHashPageID,
@@ -1206,7 +1239,9 @@ IDE_RC sdtHashModule::chkUniqueInsertableSubHash( smiTempTableHeader  * aHeader,
                               &sWCBPtr )
                   != IDE_SUCCESS );
 
-        IDE_DASSERT( ((sdtHashTRPHdr*)sSubHash)->mIsRow != SDT_HASH_ROW_HEADER );
+        /* Row Page 일수 없다. 
+         * SubHash 가 구축되었으니 keyCount는 1 이상 이어야 한다. */
+        IDE_DASSERT( sSubHash->mKeyCount != 0 );
         IDE_DASSERT( sSubHash->mHashLow == SDT_MAKE_HASH_LOW( aHashValue ) );
 
         for( i = 0 ; i < sSubHash->mKeyCount ; i++ )
@@ -1224,7 +1259,6 @@ IDE_RC sdtHashModule::chkUniqueInsertableSubHash( smiTempTableHeader  * aHeader,
                                       &sWCBPtr )
                           != IDE_SUCCESS );
 
-                IDE_DASSERT( SM_IS_FLAG_ON( sTRPInfo.mTRPHeader->mTRFlag, SDT_TRFLAG_CHILDGRID ) );
                 IDE_DASSERT( SM_IS_FLAG_ON( sTRPInfo.mTRPHeader->mTRFlag, SDT_TRFLAG_HEAD ) );
                 IDE_DASSERT( sTRPInfo.mTRPHeader->mIsRow == SDT_HASH_ROW_HEADER );
                 IDE_DASSERT( sTRPInfo.mTRPHeader->mHashValue == aHashValue );
@@ -1255,7 +1289,7 @@ IDE_RC sdtHashModule::chkUniqueInsertableSubHash( smiTempTableHeader  * aHeader,
 
         IDE_DASSERT( ( i+1 ) >= sSubHash->mKeyCount );
 
-        /* sub hash에서 찾지 못했거나, 마지막 key에서 hit한 경우 */
+        /* SubHash에서 찾지 못했거나, 마지막 key에서 hit한 경우 */
         aSubHashPageID = sSubHash->mNextPageID;
         aSubHashOffset = sSubHash->mNextOffset;
     } while( aSubHashPageID != SM_NULL_PID );
@@ -1299,8 +1333,16 @@ idBool sdtHashModule::compareRowAndValue( smiTempTableHeader * aHeader,
 
     while( sKeyColumn != NULL )
     {
-        IDE_ASSERT( ++sColumnCount <= aHeader->mColumnCount );
-        IDE_ASSERT( sKeyColumn->mIdx < aHeader->mColumnCount );
+        IDE_ASSERT_MSG( ++sColumnCount <= aHeader->mColumnCount,
+                        "sColumnCount : %"ID_INT32_FMT", "
+                        "mColumnCount : %"ID_INT32_FMT,
+                        sColumnCount,
+                        aHeader->mColumnCount );
+        IDE_ASSERT_MSG( sKeyColumn->mIdx < aHeader->mColumnCount,
+                        "mIdx : %"ID_INT32_FMT", "
+                        "mColumnCount : %"ID_INT32_FMT,
+                        sKeyColumn->mIdx,
+                        aHeader->mColumnCount );
 
         /* PROJ-2180 valueForModule
            SMI_OFFSET_USELESS 로 비교하는 컬럼은 mBlankColumn 을 사용해야 한다.
@@ -1400,8 +1442,8 @@ IDE_RC sdtHashModule::append( sdtHashSegHdr        * aWASegment,
                                 &sWCBPtr )
                   != IDE_SUCCESS );
 
-        /* 최초 삽입이면, 반드시 존재해야 한다. */
-        IDE_ASSERT( sWCBPtr != NULL );
+        /* 반드시 존재해야 한다. */
+        IDE_ERROR( sWCBPtr != NULL );
     }
     IDE_TEST( appendRowPiece( sWCBPtr,
                               aTRPInfo,
@@ -1415,7 +1457,7 @@ IDE_RC sdtHashModule::append( sdtHashSegHdr        * aWASegment,
                                 &sWCBPtr )
                   != IDE_SUCCESS );
 
-        IDE_ASSERT( sWCBPtr != NULL );
+        IDE_ERROR( sWCBPtr != NULL );
 
         IDE_TEST( appendRowPiece( sWCBPtr,
                                   aTRPInfo,
@@ -1462,7 +1504,13 @@ IDE_RC sdtHashModule::allocNewPage( sdtHashSegHdr    * aWASegment,
 
     aWASegment->mInsertGrp.mReuseSeqWPID++;
 
-    IDE_ASSERT( SDT_IS_NOT_FIXED_PAGE( sTargetWCBPtr ) );
+    IDE_ERROR_MSG( SDT_IS_NOT_FIXED_PAGE( sTargetWCBPtr ),
+                   "mFix : %"ID_INT32_FMT", "
+                   "mWPState : %"ID_UINT32_FMT", "
+                   "mNPageID : %"ID_UINT32_FMT,
+                   sTargetWCBPtr->mFix,
+                   sTargetWCBPtr->mWPState,
+                   sTargetWCBPtr->mNPageID );
 
     /* update 중에 dirty page 가 발생 할 수 있다.
      * 새로 가져가려는 page가 dirty이면 Write한다. */
@@ -1503,6 +1551,12 @@ IDE_RC sdtHashModule::allocNewPage( sdtHashSegHdr    * aWASegment,
 
     IDE_EXCEPTION_END;
 
+    if ( smuProperty::getTempDumpLevel() == SMU_DISK_TEMP_TABLE_DUMP_LEVEL_1 )
+    {
+        smuUtility::dumpFuncWithBuffer( IDE_DUMP_0,
+                                        dumpTempTRPInfo4Insert,
+                                        aTRPInfo );
+    }
     return IDE_FAILURE;
 }
 
@@ -1525,8 +1579,9 @@ IDE_RC sdtHashModule::writeNPage( sdtHashSegHdr* aWASegment,
     IDE_DASSERT( aWCBPtr->mWPState == SDT_WA_PAGESTATE_DIRTY );
 
     /* 첫번째 위치는 무조건 self PID */
-    IDE_ASSERT_MSG( aWCBPtr->mNPageID == ((sdtHashPageHdr*)aWCBPtr->mWAPagePtr)->mSelfNPID,
-                    "%"ID_UINT32_FMT" != %"ID_UINT32_FMT"\n",
+    IDE_ERROR_MSG( aWCBPtr->mNPageID == ((sdtHashPageHdr*)aWCBPtr->mWAPagePtr)->mSelfNPID,
+                   "mNPageID : %"ID_UINT32_FMT", "
+                   "mSelfNPID : %"ID_UINT32_FMT"\n",
                     aWCBPtr->mNPageID,
                     ((sdtHashPageHdr*)aWCBPtr->mWAPagePtr)->mSelfNPID );
 
@@ -1560,7 +1615,7 @@ IDE_RC sdtHashModule::writeNPage( sdtHashSegHdr* aWASegment,
     aWASegment->mStatsPtr->mWritePageCount += sPageCount;
 
     return IDE_SUCCESS;
-    
+
     IDE_EXCEPTION_END;
 
     /* sPageCount 만큼 Dirty -> Clean으로 세팅 되었다.
@@ -1574,15 +1629,17 @@ IDE_RC sdtHashModule::writeNPage( sdtHashSegHdr* aWASegment,
         sCurWCBPtr->mWPState = SDT_WA_PAGESTATE_DIRTY;
     }
 
-    ideLog::log( IDE_DUMP_0,
-                 "Hash Temp WriteNPage Error\n"
-                 "write page count : %"ID_UINT32_FMT"\n",
-                 sPageCount );
+    if ( smuProperty::getTempDumpLevel() == SMU_DISK_TEMP_TABLE_DUMP_LEVEL_1 )
+    {
+        ideLog::log( IDE_DUMP_0,
+                     "Hash Temp WriteNPage Error\n"
+                     "write page count : %"ID_UINT32_FMT"\n",
+                     sPageCount );
 
-    smuUtility::dumpFuncWithBuffer( IDE_DUMP_0,
-                                    sdtHashModule::dumpWCB,
-                                    aWCBPtr );
-
+        smuUtility::dumpFuncWithBuffer( IDE_DUMP_0,
+                                        sdtHashModule::dumpWCB,
+                                        aWCBPtr );
+    }
     return IDE_FAILURE;
 }
 
@@ -1638,14 +1695,13 @@ IDE_RC sdtHashModule::appendRowPiece( sdtWCB              * aWCBPtr,
         /* Cutting할 것도 없고, 그냥 전부 Copy하면 됨 */
 
         /* 마지막에 기록되는 것이 Row Header이다. */
-        SM_SET_FLAG_ON( sTRPHeader->mTRFlag,
-                         SDT_TRFLAG_HEAD );
+        SM_SET_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_HEAD );
 
         sTRPHeader->mValueLength = aTRPInfo->mValueLength;
 
         /* 원본 Row의 시작 위치 */
         sRowPtr = ((UChar*)aTRPInfo->mValueList[ 0 ].value)
-            - aTRPInfo->mColumns[ 0 ].mColumn.offset;
+                   - aTRPInfo->mColumns[ 0 ].mColumn.offset;
 
         /* 삽입 완료함 */
         aTRInsertResult->mComplete = ID_TRUE;
@@ -1655,7 +1711,11 @@ IDE_RC sdtHashModule::appendRowPiece( sdtWCB              * aWCBPtr,
         IDE_DASSERT( sRowPieceSize > sSlotSize );
         sBeginOffset = sRowPieceSize - sSlotSize; /* 요구량이 부족한 만큼
                                                    * 기록하는 OffsetRange를 계산함 */
-        IDE_ERROR( aTRPInfo->mValueLength > sBeginOffset );
+        IDE_ERROR_MSG( aTRPInfo->mValueLength > sBeginOffset,
+                       "mValueLength : %"ID_UINT32_FMT", "
+                       "sBeginOffset : %"ID_UINT32_FMT,
+                       aTRPInfo->mValueLength,
+                       sBeginOffset );
         sTRPHeader->mValueLength = aTRPInfo->mValueLength - sBeginOffset;
 
         /* 남은 앞쪽 부분이 남아는 있으면,
@@ -1665,7 +1725,7 @@ IDE_RC sdtHashModule::appendRowPiece( sdtWCB              * aWCBPtr,
 
         /* 원본 Row의 시작 위치 */
         sRowPtr = ((UChar*)aTRPInfo->mValueList[ 0 ].value)
-            - aTRPInfo->mColumns[ 0 ].mColumn.offset + sBeginOffset;
+                    - aTRPInfo->mColumns[ 0 ].mColumn.offset + sBeginOffset;
 
         aTRPInfo->mValueLength -= sTRPHeader->mValueLength;
 
@@ -1748,7 +1808,7 @@ UInt sdtHashModule::allocSlot( sdtHashPageHdr  * aPageHdr,
 /**************************************************************************
  * Description : 새로운 WA Extent를 할당 하지 못하였을 때 필요한 동작을 모아둠
  *               1. OutMemory 로 변경
- *               2. sub hash를 build하고, TRPInfo 를 변경,
+ *               2. SubHash를 build하고, TRPInfo 를 변경,
  *               TOTAL WA가 부족한 경우는 일반적으로 잘 발생하지 않으므로
  *               때문에 따로 빼 두었다.
  *
@@ -1760,13 +1820,19 @@ IDE_RC sdtHashModule::lackTotalWAPage( sdtHashSegHdr    * aWASegment,
 {
     IDE_TEST( ideGetErrorCode() != smERR_ABORT_NOT_ENOUGH_WORKAREA );
 
-    IDE_ASSERT( aWASegment->mInsertGrp.mReuseSeqWPID >=
-                ( aWASegment->mInsertGrp.mBeginWPID + SDT_WAEXTENT_PAGECOUNT ) );
+    IDU_FIT_POINT_RAISE( "BUG-49378@sdtHashModule::lackTotalWAPage",err_ART );
+    IDE_ERROR_MSG( aWASegment->mInsertGrp.mReuseSeqWPID >=
+                   (aWASegment->mInsertGrp.mBeginWPID + SDT_WAEXTENT_PAGECOUNT),
+                   "mReuseSeqWPID : %"ID_UINT32_FMT", "
+                   "mBeginWPID : %"ID_UINT32_FMT"(%"ID_UINT32_FMT")",
+                   aWASegment->mInsertGrp.mReuseSeqWPID,
+                   aWASegment->mInsertGrp.mBeginWPID,
+                   (aWASegment->mInsertGrp.mBeginWPID + SDT_WAEXTENT_PAGECOUNT) );
 
     if ( aWASegment->mIsInMemory == SDT_WORKAREA_IN_MEMORY )
     {
-        if (( aWASegment->mNPageHashPtr == NULL ) &&
-            ( aWASegment->mUnique == SDT_HASH_UNIQUE ))
+        if ( (aWASegment->mNPageHashPtr == NULL)    &&
+             (aWASegment->mUnique == SDT_HASH_UNIQUE) )
         {
             /* Unique insert이거나 scan과 insert를 함께 하는 경우에는(이것도 unique)
              * 어느정도 차면 hash map을 만든다.반대로, unique가 아닌 normal insert 인 경우에는
@@ -1775,16 +1841,27 @@ IDE_RC sdtHashModule::lackTotalWAPage( sdtHashSegHdr    * aWASegment,
         }
     }
 
-    /* 더 할당 받지 못해서 첫 page로 돌아가기 전에 sub hash를 빌드 한다.
-     * Sub Hash는 마지막 page까지 모두 사용 된 뒤에 구축 해야 한다. */
+    /* 더 할당 받지 못해서 첫 page로 돌아가기 전에 SubHash를 빌드 한다.
+     * SubHash는 마지막 page까지 모두 사용 된 뒤에 구축 해야 한다. */
     IDE_TEST( buildSubHashAndResetInsertInfo( aWASegment,
                                               aTRPInfo )
               != IDE_SUCCESS );
 
     return IDE_SUCCESS;
-
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION(err_ART);
+    {
+        IDE_SET(ideSetErrorCode(smERR_ABORT_ART));
+    }
+#endif
     IDE_EXCEPTION_END;
 
+    if ( smuProperty::getTempDumpLevel() == SMU_DISK_TEMP_TABLE_DUMP_LEVEL_1 )
+    {
+        smuUtility::dumpFuncWithBuffer( IDE_DUMP_0,
+                                        dumpTempTRPInfo4Insert,
+                                        aTRPInfo );
+    }
     return IDE_FAILURE;
 }
 
@@ -1822,7 +1899,7 @@ IDE_RC sdtHashModule::checkExtentTerm4Insert( sdtHashSegHdr    * aWASegment,
     if ( sCurWPageID >= sEndWPageID )
     {
         /* insert group을 모두 사용하였다.
-         * sub hash를 구성하고, 변경된 hash slot에 따라 TRPInfo를 갱신한다.*/
+         * SubHash를 구성하고, 변경된 hash slot에 따라 TRPInfo를 갱신한다.*/
         IDE_TEST( buildSubHashAndResetInsertInfo( aWASegment,
                                                   aTRPInfo )
                   != IDE_SUCCESS );
@@ -1860,8 +1937,8 @@ IDE_RC sdtHashModule::checkExtentTerm4Insert( sdtHashSegHdr    * aWASegment,
 }
 
 /**************************************************************************
- * Description : sub hash를 만들고 insert info를 갱신한다.
- *               sub hash를 만들면 hash slot의 값이 변경되기 때문에
+ * Description : SubHash를 만들고 insert info를 갱신한다.
+ *               SubHash를 만들면 hash slot의 값이 변경되기 때문에
  *               insert info도 변경 해 줘야 한다.
  *               Unique Insert의 경우에는 work area구성이 변경된다.
  *
@@ -1889,17 +1966,32 @@ IDE_RC sdtHashModule::buildSubHashAndResetInsertInfo( sdtHashSegHdr    * aWASegm
                           / SDT_WAEXTENT_PAGECOUNT
                           * SDT_WAEXTENT_PAGECOUNT ); 
 
-            IDE_ASSERT( sPageCount % SDT_WAEXTENT_PAGECOUNT == 0 );
+            IDU_FIT_POINT_RAISE( "BUG-49378@sdtHashModule::buildSubHashAndResetInsertInfo", err_ART );
+            IDE_ERROR_MSG( sPageCount % SDT_WAEXTENT_PAGECOUNT == 0,
+                           "sPageCount : %"ID_UINT32_FMT,
+                           sPageCount );
 
             aWASegment->mFetchGrp.mBeginWPID = aWASegment->mInsertGrp.mBeginWPID + sPageCount;
             aWASegment->mFetchGrp.mEndWPID   = aWASegment->mSubHashGrp.mBeginWPID;
             aWASegment->mInsertGrp.mEndWPID  = aWASegment->mFetchGrp.mBeginWPID;
 
-            IDE_ASSERT( aWASegment->mInsertGrp.mBeginWPID  < aWASegment->mInsertGrp.mEndWPID );
-            IDE_ASSERT( aWASegment->mFetchGrp.mBeginWPID   < aWASegment->mFetchGrp.mEndWPID );
-            IDE_ASSERT( aWASegment->mSubHashGrp.mBeginWPID < aWASegment->mSubHashGrp.mEndWPID );
+            IDE_ERROR_MSG( aWASegment->mInsertGrp.mBeginWPID  < aWASegment->mInsertGrp.mEndWPID,
+                           "mInsertGrp.mBeginWPID : %"ID_UINT32_FMT", "
+                           "mInsertGrp.mEndWPID : %"ID_UINT32_FMT,
+                           aWASegment->mInsertGrp.mBeginWPID,
+                           aWASegment->mInsertGrp.mEndWPID );
+            IDE_ERROR_MSG( aWASegment->mFetchGrp.mBeginWPID   < aWASegment->mFetchGrp.mEndWPID,
+                           "mFetchGrp.mBeginWPID : %"ID_UINT32_FMT", "
+                           "mFetchGrp.mEndWPID : %"ID_UINT32_FMT,
+                           aWASegment->mFetchGrp.mBeginWPID,
+                           aWASegment->mFetchGrp.mEndWPID );
+            IDE_ERROR_MSG( aWASegment->mSubHashGrp.mBeginWPID < aWASegment->mSubHashGrp.mEndWPID,
+                           "mSubHashGrp.mBeginWPID : %"ID_UINT32_FMT", "
+                           "mSubHashGrp.mEndWPID : %"ID_UINT32_FMT,
+                           aWASegment->mSubHashGrp.mBeginWPID,
+                           aWASegment->mSubHashGrp.mEndWPID );
         }
-        /* 아직 sub hash는 구성된적이 없다.*/
+        /* 아직 SubHash는 구성된적이 없다.*/
         IDE_DASSERT( aWASegment->mSubHashBuildCount == 0 );
         IDE_DASSERT( aWASegment->mSubHashWCBPtr == NULL );
 
@@ -1907,8 +1999,8 @@ IDE_RC sdtHashModule::buildSubHashAndResetInsertInfo( sdtHashSegHdr    * aWASegm
     }
     aWASegment->mInsertGrp.mReuseSeqWPID = aWASegment->mInsertGrp.mBeginWPID;
 
-    /* 한번 모두 순환하면서 sub hash를 build한다.
-       Sub Hash는 마지막 page까지 모두 사용 된 뒤에 구축 해야 한다. */
+    /* 한번 모두 순환하면서 SubHash를 build한다.
+       SubHash는 마지막 page까지 모두 사용 된 뒤에 구축 해야 한다. */
     IDE_TEST( buildSubHash( aWASegment ) != IDE_SUCCESS );
 
     IDE_TEST( getHashSlotPtr( aWASegment,
@@ -1921,14 +2013,26 @@ IDE_RC sdtHashModule::buildSubHashAndResetInsertInfo( sdtHashSegHdr    * aWASegm
     aTRPInfo->mTRPHeader.mChildOffset = sHashSlot->mOffset;
 
     return IDE_SUCCESS;
-
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION(err_ART);
+    {
+        IDE_SET(ideSetErrorCode(smERR_ABORT_ART));
+    }
+#endif
     IDE_EXCEPTION_END;
+
+    if ( smuProperty::getTempDumpLevel() == SMU_DISK_TEMP_TABLE_DUMP_LEVEL_1 )
+    {
+        smuUtility::dumpFuncWithBuffer( IDE_DUMP_0,
+                                        dumpTempTRPInfo4Insert,
+                                        aTRPInfo );
+    }
 
     return IDE_FAILURE;
 }
 
 /****************************************************************************
- * Description : sub hash를 만든다.
+ * Description : SubHash를 만든다.
  *
  * aWASegment  - [IN] 대상 WASegment
  ***************************************************************************/
@@ -1999,7 +2103,7 @@ IDE_RC sdtHashModule::buildSubHash( sdtHashSegHdr * aWASegment )
             if (( sRowHdrPtr->mChildRowPtr == NULL ) &&
                 ( sRowHdrPtr->mChildPageID == SM_NULL_PID ))
             {
-                // 이번 텀에 Next 가 없는 1개의 Row가 있다.
+                // 이번 텀에 Child 가 없는 1개의 Row가 있다.
                 sHashSlot[i].mRowPtrOrHashSet = sRowHdrPtr->mHashValue;
                 SDT_SET_SINGLE_ROW( sHashSlot[i].mOffset );
                 continue;
@@ -2019,7 +2123,7 @@ IDE_RC sdtHashModule::buildSubHash( sdtHashSegHdr * aWASegment )
 
             IDE_DASSERT( sSlotMaxCount <= SDT_SUBHASH_MAX_KEYCOUNT );
 
-            // sub hash 설정
+            // SubHash 설정
 
             sSubHash->mKeyCount         = 1;
             sSubHash->mHashLow          = SDT_MAKE_HASH_LOW( sRowHdrPtr->mHashValue );
@@ -2062,7 +2166,7 @@ IDE_RC sdtHashModule::buildSubHash( sdtHashSegHdr * aWASegment )
                 {
                     /* 현재 page에서 밀려난 지난 텀의 row이다.
                      * child row ptr ( high_hash 0x0001 )
-                     * row가 하나 뿐이어서 sub hash를 만들지 않고 넘겼다. */
+                     * row가 하나 뿐이어서 SubHash를 만들지 않고 넘겼다. */
                     sSubHash->mKey[sSubHash->mKeyCount].mPageID = sRowHdrPtr->mChildPageID;
                     sSubHash->mKey[sSubHash->mKeyCount].mOffset = SDT_DEL_SINGLE_FLAG_IN_OFFSET( sRowHdrPtr->mChildOffset );
                     sSubHash->mKey[sSubHash->mKeyCount].mHashHigh = SDT_MAKE_HASH_HIGH( (ULong)sRowHdrPtr->mChildRowPtr );
@@ -2088,21 +2192,19 @@ IDE_RC sdtHashModule::buildSubHash( sdtHashSegHdr * aWASegment )
                 IDE_DASSERT( sSubHash->mHashLow == SDT_MAKE_HASH_LOW( sRowHdrPtr->mHashValue ) );
 
                 sSubHash->mKey[sSubHash->mKeyCount].mHashHigh = SDT_MAKE_HASH_HIGH( sRowHdrPtr->mHashValue );
-
                 IDE_DASSERT( sSubHash->mKeyCount < SDT_SUBHASH_MAX_KEYCOUNT );
                 sSubHash->mKeyCount++;
                 sLoop++;
             }
 
             addSubHashPageFreeOffset( aWASegment,
-                                      ( (sSubHash->mKeyCount * ID_SIZEOF(sdtSubHashKey)) +
-                                        SDT_SUB_HASH_SIZE) );
+                                      ( (sSubHash->mKeyCount * ID_SIZEOF(sdtSubHashKey)) + SDT_SUB_HASH_SIZE) );
 
-            if (( sRowHdrPtr->mChildPageID != SM_NULL_PID ) &&
-                ( SDT_IS_NOT_SINGLE_ROW( sRowHdrPtr->mChildOffset ) ))
+            if ( (sRowHdrPtr->mChildPageID != SM_NULL_PID)       &&
+                 (SDT_IS_NOT_SINGLE_ROW(sRowHdrPtr->mChildOffset)) )
             {
                 // ChildPointer는 NULL이고, ChildPageID는 있다.
-                // 지난 텀의 sub hash map 혹은 row의 주소다
+                // 지난 텀의 SubHash map 혹은 row의 주소다
                 sSubHash->mNextPageID = sRowHdrPtr->mChildPageID;
                 sSubHash->mNextOffset = sRowHdrPtr->mChildOffset ;
             }
@@ -2124,13 +2226,13 @@ IDE_RC sdtHashModule::buildSubHash( sdtHashSegHdr * aWASegment )
 }
 
 /****************************************************************************
- * Description : sub hash key array를 할당받아 온다.
+ * Description : SubHash key array를 할당받아 온다.
  *
  * aWASegment       - [IN] 대상 WASegment
  * aGroup           - [IN] 구축 할 Group
  * aReqMinSlotCount - [IN] 최소 요청 크기
  * aSubHashPtr      - [OUT] 반환 SubHashArray의 Pointer
- * aSlotMaxCount    - [OUT] 반환한 Sub Hash Array의 Slot갯수
+ * aSlotMaxCount    - [OUT] 반환한 SubHash Array의 Slot갯수
  * aPageID          - [OUT] SubHashArray가 포함된 PageID
  * aOffset          - [OUT] SubHashArray의 위치 Offset
  ***************************************************************************/
@@ -2149,7 +2251,10 @@ IDE_RC sdtHashModule::reserveSubHash( sdtHashSegHdr * aWASegment,
 
     sPageHdr = (sdtHashPageHdr*)aWASegment->mSubHashWCBPtr->mWAPagePtr;
 
-    IDE_ASSERT( sPageHdr->mFreeOffset <= SD_PAGE_SIZE );
+    IDU_FIT_POINT_RAISE( "BUG-49378@sdtHashModule::reserveSubHash",err_ART );
+    IDE_ERROR_MSG( sPageHdr->mFreeOffset <= SD_PAGE_SIZE,
+                   "mFreeOffset : %"ID_UINT32_FMT,
+                   sPageHdr->mFreeOffset );
     
     if ( aReqMinSlotCount > SDT_ALLOC_SUBHASH_MIN_KEYCOUNT )
     {
@@ -2205,16 +2310,38 @@ IDE_RC sdtHashModule::reserveSubHash( sdtHashSegHdr * aWASegment,
             *aSlotMaxCount = sSlotMaxCount;
         }
     }
-    IDE_ASSERT( aWASegment->mSubHashWCBPtr->mNPageID == *aPageID );
-    IDE_ASSERT( sPageHdr->mFreeOffset < SD_PAGE_SIZE );
-    IDE_ASSERT( *aSlotMaxCount <= SDT_SUBHASH_MAX_KEYCOUNT );
-    IDE_ASSERT(( sPageHdr->mFreeOffset + SDT_SUB_HASH_SIZE + (ID_SIZEOF(sdtSubHashKey)*(*aSlotMaxCount)) )
-               <= SD_PAGE_SIZE );
+    IDE_ERROR_MSG( aWASegment->mSubHashWCBPtr->mNPageID == *aPageID,
+                   "mNPageID : %"ID_UINT32_FMT", "
+                   "aPageID : %"ID_UINT32_FMT,
+                   aWASegment->mSubHashWCBPtr->mNPageID,
+                   *aPageID );
+
+    IDE_ERROR_MSG( sPageHdr->mFreeOffset < SD_PAGE_SIZE,
+                   "mFreeOffset : %"ID_UINT32_FMT,
+                   sPageHdr->mFreeOffset );
+
+    IDE_ERROR_MSG( *aSlotMaxCount <= SDT_SUBHASH_MAX_KEYCOUNT,
+                   "aSlotMaxCount : %"ID_UINT32_FMT,
+                   *aSlotMaxCount );
+
+    IDE_ERROR_MSG( (sPageHdr->mFreeOffset + SDT_SUB_HASH_SIZE + (ID_SIZEOF(sdtSubHashKey)*(*aSlotMaxCount)))
+                   <= SD_PAGE_SIZE,
+                   "mFreeOffset : %"ID_UINT32_FMT", "
+                   "aSlotMaxCount : %"ID_UINT32_FMT", "
+                   "PageSize : %"ID_UINT32_FMT,
+                   sPageHdr->mFreeOffset,
+                   *aSlotMaxCount,
+                   (sPageHdr->mFreeOffset + SDT_SUB_HASH_SIZE + (ID_SIZEOF(sdtSubHashKey)*(*aSlotMaxCount))) );
 
     *aSubHashPtr = (sdtSubHash*)((UChar*)sPageHdr + sPageHdr->mFreeOffset );
 
     return IDE_SUCCESS;
-
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION(err_ART);
+    {
+        IDE_SET(ideSetErrorCode(smERR_ABORT_ART));
+    }
+#endif
     IDE_EXCEPTION_END;
 
     if ( sIsFixedPage == ID_TRUE )
@@ -2226,7 +2353,7 @@ IDE_RC sdtHashModule::reserveSubHash( sdtHashSegHdr * aWASegment,
 }
 
 /****************************************************************************
- * Description : insert가 모두 완료 된 시점에 sub hash를 모아서 merge한다.
+ * Description : insert가 모두 완료 된 시점에 SubHash를 모아서 merge한다.
  *               hash slot의 hash set을 small hash set에서 large hash set으로
  *               재구축하여 정확도를 높인다.
  *
@@ -2253,7 +2380,9 @@ IDE_RC sdtHashModule::mergeSubHash( sdtHashSegHdr* aWASegment )
                    0,
                    ID_SIZEOF(sdtNExtFstPIDList));
 
-    aWASegment->mNExtFstPIDList4SubHash.mPageSeqInLFE = SDT_WAEXTENT_PAGECOUNT;
+    /* 이미 Row용 NPage 할당은 되어 있다.  */
+    IDE_DASSERT( aWASegment->mExtPageCount != 0 ); 
+    IDE_DASSERT( aWASegment->mNExtFstPIDList4SubHash.mPageSeqInLFE == 0 );
 
     IDE_TEST( getFreeWAPage( aWASegment,
                              &aWASegment->mInsertGrp,
@@ -2305,11 +2434,12 @@ IDE_RC sdtHashModule::mergeSubHash( sdtHashSegHdr* aWASegment )
     IDE_DASSERT( aWASegment->mSubHashWCBPtr->mWPState != SDT_WA_PAGESTATE_INIT );
     aWASegment->mSubHashWCBPtr->mWPState = SDT_WA_PAGESTATE_DIRTY;
 
-    // 정리한다. // 이전버전의 오래된 sub hash slot이다. 모두 버린다.
+    // 정리한다. // 이전버전의 오래된 SubHash slot이다. 모두 버린다.
     sWCBPtr    = getWCBPtr( aWASegment,
                             aWASegment->mSubHashGrp.mBeginWPID );
     sEndWCBPtr = getWCBPtr( aWASegment,
                             aWASegment->mSubHashGrp.mEndWPID - 1 );
+
     for( ; sWCBPtr <= sEndWCBPtr ; sWCBPtr++ )
     {
         if ( sWCBPtr->mWPState == SDT_WA_PAGESTATE_INIT )
@@ -2342,7 +2472,7 @@ IDE_RC sdtHashModule::mergeSubHash( sdtHashSegHdr* aWASegment )
     /* 아직 사용되지 않은 부분은 모두 INIT이어야 한다. */
     for( sWCBPtr++ ; sWCBPtr <= sEndWCBPtr ; sWCBPtr++ )
     {
-        IDE_ASSERT( sWCBPtr->mWPState == SDT_WA_PAGESTATE_INIT );
+        IDE_DASSERT( sWCBPtr->mWPState == SDT_WA_PAGESTATE_INIT );
     }
 #endif
 
@@ -2357,9 +2487,9 @@ IDE_RC sdtHashModule::mergeSubHash( sdtHashSegHdr* aWASegment )
 }
 
 /***************************************************************************
- * Description : sub hash를 정렬 (BUG-48235)
+ * Description : SubHash를 정렬 (BUG-48235)
  *
- * aSubHashArray  - [IN] Sub Hash Key Array
+ * aSubHashArray  - [IN] SubHash Key Array
  * aLeft          - [IN] quick sort left
  * aRight         - [IN] quick sort Right
  ***************************************************************************/
@@ -2407,7 +2537,7 @@ void sdtHashModule::quickSortSubHash( sdtSubHashKey aSubHashArray[], SInt aLeft,
 }
 
 /****************************************************************************
- * Description : 1개의 hash slot에 연결되어있는 sub hash 들을 merge 한다.
+ * Description : 1개의 hash slot에 연결되어있는 SubHash 들을 merge 한다.
  *
  * aWASegment - [IN] 대상 WASegment
  * aHashSlot  - [IN] 대상 HashSlot
@@ -2445,15 +2575,20 @@ IDE_RC sdtHashModule::mergeSubHashOneSlot( sdtHashSegHdr* aWASegment,
 
     sHashLow = sOldSubHash->mHashLow;
 
-    IDE_ASSERT_MSG( SDT_MAKE_HASH_LOW( aSlotIdx ) == sHashLow,
-                    "%"ID_UINT32_FMT" %"ID_UINT32_FMT" %"ID_UINT32_FMT", "
-                    "%"ID_UINT32_FMT" %"ID_UINT32_FMT" %"ID_UINT32_FMT"\n",     
-                    aSlotIdx,
-                    SDT_MAKE_HASH_LOW( aSlotIdx ),
-                    sHashLow,
-                    sOldSubHash->mKeyCount,
-                    sOldSubHash->mNextPageID,
-                    sOldSubHash->mNextOffset );
+    IDU_FIT_POINT_RAISE( "BUG-49378@sdtHashModule::mergeSubHashOneSlot",err_ART );
+    IDE_ERROR_MSG( SDT_MAKE_HASH_LOW( aSlotIdx ) == sHashLow,
+                   "aSlotIdx : %"ID_UINT32_FMT", "
+                   "aHashLow : %"ID_XINT32_FMT", "
+                   "OldHashLow : %"ID_XINT32_FMT", " 
+                   "OldKeyCount : %"ID_UINT32_FMT", "
+                   "OldPageID : %"ID_UINT32_FMT", "
+                   "OldOffset : %"ID_UINT32_FMT"\n",     
+                   aSlotIdx,
+                   SDT_MAKE_HASH_LOW( aSlotIdx ),
+                   sHashLow,
+                   sOldSubHash->mKeyCount,
+                   sOldSubHash->mNextPageID,
+                   sOldSubHash->mNextOffset );
 
     IDE_TEST( reserveSubHash( aWASegment,
                               &aWASegment->mInsertGrp,
@@ -2492,7 +2627,7 @@ IDE_RC sdtHashModule::mergeSubHashOneSlot( sdtHashSegHdr* aWASegment,
                 sNewSubHash->mKeyCount += sSlotMaxCount ;
                 sCopiedKeyCount        += sSlotMaxCount;
                 sRemainKeyCount        -= sSlotMaxCount;
-                // new sub hash의 key를 모두 사용하였다.
+                // new SubHash의 key를 모두 사용하였다.
                 // 새로 할당 받아서 채워 넣어야 한다.
 
                 if (( sRemainKeyCount > 0 ) ||
@@ -2542,16 +2677,21 @@ IDE_RC sdtHashModule::mergeSubHashOneSlot( sdtHashSegHdr* aWASegment,
         fixWAPage( sOldSubWCBPtr );
         sIsFixed = ID_TRUE;
 
-        IDE_ASSERT_MSG( sOldSubHash->mHashLow == sHashLow,
-                        "%"ID_UINT32_FMT" %"ID_UINT32_FMT" %"ID_UINT32_FMT", "
-                        "%"ID_UINT32_FMT" %"ID_UINT32_FMT" %"ID_UINT32_FMT" %"ID_UINT32_FMT"\n",
-                        aSlotIdx,
-                        SDT_MAKE_HASH_LOW( aSlotIdx ),
-                        sHashLow,
-                        sOldSubHash->mHashLow,
-                        sOldSubHash->mKeyCount,
-                        sOldSubHash->mNextPageID,
-                        sOldSubHash->mNextOffset );
+        IDE_ERROR_MSG( sOldSubHash->mHashLow == sHashLow,
+                       "aSlotIdx : %"ID_UINT32_FMT", "
+                       "aHashLow : %"ID_XINT32_FMT", "
+                       "sHashLow : %"ID_XINT32_FMT", "
+                       "OldHashLow : %"ID_XINT32_FMT", "
+                       "OldKeyCount : %"ID_UINT32_FMT", "
+                       "OldPageID : %"ID_UINT32_FMT", "
+                       "OldOffset : %"ID_UINT32_FMT"\n",
+                       aSlotIdx,
+                       SDT_MAKE_HASH_LOW( aSlotIdx ),
+                       sHashLow,
+                       sOldSubHash->mHashLow,
+                       sOldSubHash->mKeyCount,
+                       sOldSubHash->mNextPageID,
+                       sOldSubHash->mNextOffset );
 
         sCopiedKeyCount = 0;
         sRemainKeyCount = sOldSubHash->mKeyCount;
@@ -2563,8 +2703,13 @@ IDE_RC sdtHashModule::mergeSubHashOneSlot( sdtHashSegHdr* aWASegment,
     }
     quickSortSubHash( sNewSubHash->mKey, 0, sNewSubHash->mKeyCount -1 );
 
-    IDE_ASSERT( sRemainKeyCount == 0 );
-    IDE_ASSERT( sOldSubHash->mNextPageID == SM_NULL_PID );
+    IDE_ERROR_MSG( sRemainKeyCount == 0,
+                   "RemainKeyCount : %"ID_UINT32_FMT,
+                   sRemainKeyCount );
+
+    IDE_ERROR_MSG( sOldSubHash->mNextPageID == SM_NULL_PID,
+                   "OldPageID : %"ID_UINT32_FMT,
+                   sOldSubHash->mNextPageID );
 
     sIsFixed = ID_FALSE;
     unfixWAPage( sOldSubWCBPtr );
@@ -2576,7 +2721,12 @@ IDE_RC sdtHashModule::mergeSubHashOneSlot( sdtHashSegHdr* aWASegment,
     sNewSubHash->mNextOffset = 0;
 
     return IDE_SUCCESS;
-
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION(err_ART);
+    {
+        IDE_SET(ideSetErrorCode(smERR_ABORT_ART));
+    }
+#endif
     IDE_EXCEPTION_END;
 
     if ( sIsFixed == ID_TRUE )
@@ -2616,7 +2766,7 @@ IDE_RC sdtHashModule::buildNPageHashMap( sdtHashSegHdr* aWASegment )
         for( UInt i = 0 ; i < aWASegment->mNPageHashBucketCnt ; i++ )
         {
             /* 할당받은 NPageHashMap이 모두 Null인지 확인 */
-            IDE_ASSERT( aWASegment->mNPageHashPtr[i] == NULL );
+            IDE_DASSERT( aWASegment->mNPageHashPtr[i] == NULL );
         }
 #endif
         sWCBPtr    = getWCBPtr( aWASegment, aWASegment->mInsertGrp.mBeginWPID );
@@ -2665,8 +2815,10 @@ IDE_RC sdtHashModule::buildNPageHashMap( sdtHashSegHdr* aWASegment )
         idlOS::memset( aWASegment->mNPageHashPtr,
                        0,
                        aWASegment->mNPageHashBucketCnt * ID_SIZEOF(sdtWCB*) );
+
         IDE_ASSERT( mNHashMapPool.push( (UChar*)(aWASegment->mNPageHashPtr) )
                     != IDE_SUCCESS );
+
         aWASegment->mNPageHashPtr = NULL;
         aWASegment->mNPageHashBucketCnt = 0;
     }
@@ -2677,7 +2829,7 @@ IDE_RC sdtHashModule::buildNPageHashMap( sdtHashSegHdr* aWASegment )
 /***************************************************************************
  * Description : cursor alloc 시점에 Insert를 마무리 하는 작업을 한다.
  *               Insert End가 따로 없으므로, Fetch 시작 시점에 정리해준다.
- *               최초 cursor open 시에 sub hash 를 재구축 하거나,
+ *               최초 cursor open 시에 SubHash 를 재구축 하거나,
  *               Insert 후 남은 Dirty Page를 flush하거나,
  *               NPageHashMap이 없다면 구축하는 역할도 한다.
  *
@@ -2938,19 +3090,21 @@ IDE_RC sdtHashModule::openFullScanCursor( smiHashTempCursor  * aCursor,
     }
     else
     {
+        IDE_DASSERT( sWASegment->mExtPageCount != 0 ); 
+
         initToFullScan( sWASegment );
 
         aCursor->mSeq           = 0;
         aCursor->mChildPageID   = sWASegment->mNExtFstPIDList4Row.mHead->mMap[0];
         aCursor->mCurNExtentArr = sWASegment->mNExtFstPIDList4Row.mHead;
-        aCursor->mNExtLstPID    = aCursor->mChildPageID + SDT_WAEXTENT_PAGECOUNT - 1;
+        aCursor->mNExtLstPID    = aCursor->mChildPageID + sWASegment->mExtPageCount - 1;
         aCursor->mSeq++;
 
         aCursor->mWCBPtr = findWCB( sWASegment, aCursor->mChildPageID );
 
         if ( aCursor->mWCBPtr == NULL )
         {
-            /* Sub hash group등에 아직 할당받지 않은 wa page가 있을 수 있다. */
+            /* SubHash group등에 아직 할당받지 않은 wa page가 있을 수 있다. */
             IDE_TEST( getFreeWAPage( sWASegment,
                                      &sWASegment->mFetchGrp,
                                      (sdtWCB**)&(aCursor->mWCBPtr) )
@@ -2966,7 +3120,7 @@ IDE_RC sdtHashModule::openFullScanCursor( smiHashTempCursor  * aCursor,
 
         IDE_TEST( preReadNExtents( sWASegment,
                                    aCursor->mChildPageID,
-                                   SDT_WAEXTENT_PAGECOUNT )
+                                   sWASegment->mExtPageCount )
                   != IDE_SUCCESS );
     }
 
@@ -2984,6 +3138,7 @@ IDE_RC sdtHashModule::openFullScanCursor( smiHashTempCursor  * aCursor,
 /***************************************************************************
  * Description : HashScan Cursor의 ChildPageID를 기준으로 Row를 1개 가져온다..
  *               Single Row용으로 HashValue를 이미 확인 했다.
+ *               호출시 single Row flag 제거 했으니 확인하면 안된다. 
  *
  * aCursor   - [IN]  탐색에 사용중인 Hash Cursor
  * aRow      - [OUT] 찾은 Row
@@ -2994,24 +3149,38 @@ IDE_RC sdtHashModule::fetchHashScanInternalGRID( smiHashTempCursor * aCursor,
                                                  scGRID            * aRowGRID )
 {
     idBool           sResult = ID_FALSE;
-    sdtHashTRPHdr  * sTRPHeader;
-    sdtWCB         * sWCBPtr = NULL;
+    sdtHashTRPHdr  * sTRPHeader = NULL;
+    sdtWCB         * sWCBPtr    = NULL;
     idBool           sIsFixedPage = ID_FALSE;
 
     IDU_FIT_POINT( "BUG-49107@sdtHashModule::fetchHashScanInternalGRID" );
     IDE_TEST( getSlotPtr( (sdtHashSegHdr*)aCursor->mWASegment,
                           &((sdtHashSegHdr*)aCursor->mWASegment)->mFetchGrp,
-                          aCursor->mChildPageID ,
-                          aCursor->mChildOffset ,
+                          aCursor->mChildPageID,
+                          aCursor->mChildOffset,
                           (UChar**)&sTRPHeader,
                           &sWCBPtr )
               != IDE_SUCCESS );
+    
+    IDU_FIT_POINT_RAISE( "BUG-49378@sdtHashModule::fetchHashScanInternalGRID",err_ART );
 
-    IDE_ASSERT( sTRPHeader->mHashValue == aCursor->mHashValue );
+    /* read Row Page 
+     * SubHash 일수 없다 */
+    IDE_ERROR_MSG( sTRPHeader->mIsRow == SDT_HASH_ROW_HEADER,
+                   "mIsRow : %"ID_UINT32_FMT,
+                   sTRPHeader->mIsRow );
 
-    //  읽어온 값은 SubHash일 수도있고, row 일수도 있다.
-    IDE_ASSERT ( sTRPHeader->mIsRow == SDT_HASH_ROW_HEADER );
-    // Row를 읽어온 경우
+    IDE_ERROR_MSG( sTRPHeader->mHashValue == aCursor->mHashValue,
+                   "Header HashValue : %"ID_XINT32_FMT", " 
+                   "Cursor HashValue : %"ID_XINT32_FMT,
+                   sTRPHeader->mHashValue,
+                   aCursor->mHashValue );
+
+    IDE_DASSERT( SM_IS_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_HEAD ) );
+    IDE_DASSERT( sTRPHeader->mIsRow == SDT_HASH_ROW_HEADER );
+    IDE_DASSERT( sTRPHeader->mHashValue == aCursor->mHashValue );
+    IDE_DASSERT( sTRPHeader->mChildPageID == SM_NULL_PID );
+    IDE_DASSERT( sTRPHeader->mChildRowPtr == NULL);
 
     fixWAPage( sWCBPtr );
     sIsFixedPage = ID_TRUE;
@@ -3048,23 +3217,35 @@ IDE_RC sdtHashModule::fetchHashScanInternalGRID( smiHashTempCursor * aCursor,
     aCursor->mTTHeader->mStatsPtr->mExtraStat2 = IDL_MAX( aCursor->mTTHeader->mStatsPtr->mExtraStat2, 1 );
 
     return IDE_SUCCESS;
-
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION(err_ART);
+    {
+        IDE_SET(ideSetErrorCode(smERR_ABORT_ART));
+    }
+#endif
     IDE_EXCEPTION_END;
 
     if ( sIsFixedPage == ID_TRUE )
     {
         unfixWAPage( sWCBPtr );
     }
-
+    
+    if ( (sTRPHeader != NULL) && 
+         (smuProperty::getTempDumpLevel() == SMU_DISK_TEMP_TABLE_DUMP_LEVEL_1) )
+    {
+        smuUtility::dumpFuncWithBuffer( IDE_DUMP_0,
+                                        sdtHashModule::dumpTempTRPHeader,
+                                        (void*)sTRPHeader );
+    }
     smiTempTable::checkAndDump( aCursor->mTTHeader );
 
     return IDE_FAILURE;
 }
 
 /***************************************************************************
- * Description : sub hash에서 hash의 시작 부분을 탐색 (BUG-48235)
+ * Description : SubHash에서 hash의 시작 부분을 탐색 (BUG-48235)
  *
- * aSubHash   - [IN] Sub Hash Node
+ * aSubHash   - [IN] SubHash Node
  * aHashValue - [IN] 찾을 hash value
  ***************************************************************************/
 UInt sdtHashModule::bSearchSubHash( sdtSubHash * aSubHash, UInt aHashValue )
@@ -3078,8 +3259,8 @@ UInt sdtHashModule::bSearchSubHash( sdtSubHash * aSubHash, UInt aHashValue )
     {
         sMid = ( sFirst + sLast ) / 2;
 
-        if (( aHashValue == sSubHashArray[ sMid ].mHashHigh ) &&
-            (( sFirst == sMid ) || ( aHashValue != sSubHashArray[ sMid-1 ].mHashHigh )))
+        if ( ( aHashValue == sSubHashArray[ sMid ].mHashHigh ) &&
+             ( (sFirst == sMid) || (aHashValue != sSubHashArray[ sMid-1 ].mHashHigh) ) )
         {
             break;
         }
@@ -3112,8 +3293,8 @@ IDE_RC sdtHashModule::fetchHashScanInternalSubHash( smiHashTempCursor * aCursor,
 {
     idBool           sResult = ID_FALSE;
     idBool           sIsSorted = ((sdtHashSegHdr*)aCursor->mWASegment)->mUnique == ID_TRUE ? ID_FALSE : ID_TRUE;
-    sdtSubHash     * sSubHash;
-    sdtHashTRPHdr  * sTRPHeader;
+    sdtSubHash     * sSubHash = NULL;
+    sdtHashTRPHdr  * sTRPHeader = NULL;
     UInt             sLoop;
     UInt             i;
     UShort           sHashHigh;
@@ -3149,12 +3330,18 @@ IDE_RC sdtHashModule::fetchHashScanInternalSubHash( smiHashTempCursor * aCursor,
             sSubHash   = (sdtSubHash*)aCursor->mSubHashPtr;
             sSubWCBPtr = (sdtWCB*)aCursor->mSubHashWCBPtr4Fetch;
         }
+        
+        /* Row Page 일수 없다. 
+           SubHash 가 구축되었으니 keyCount는 1 이상 이어야 한다. */
+        IDE_ERROR_MSG( sSubHash->mKeyCount != 0,
+                       "mKeyCount : %"ID_UINT32_FMT,
+                       sSubHash->mKeyCount );
 
-        //  읽어온 값은 SubHash일 수도있고, row 일수도 있다.
-        IDE_ASSERT( ((sdtHashTRPHdr*)sSubHash)->mIsRow != SDT_HASH_ROW_HEADER );
-
-        // SubHash 를 읽은 경우
-        IDE_DASSERT( sSubHash->mHashLow ==  SDT_MAKE_HASH_LOW( aCursor->mHashValue ) );
+        IDE_ERROR_MSG( sSubHash->mHashLow == SDT_MAKE_HASH_LOW( aCursor->mHashValue ),
+                       "mHashLow : %"ID_XINT32_FMT", "
+                       "Cursor HashLow : %"ID_XINT32_FMT,
+                       sSubHash->mHashLow,
+                       SDT_MAKE_HASH_LOW( aCursor->mHashValue ) );
 
         sHashHigh = SDT_MAKE_HASH_HIGH( aCursor->mHashValue );
 
@@ -3188,6 +3375,7 @@ IDE_RC sdtHashModule::fetchHashScanInternalSubHash( smiHashTempCursor * aCursor,
             sLoop++;
 
             IDU_FIT_POINT( "BUG-49107@sdtHashModule::fetchHashScanInternalSubHash" );
+            IDU_FIT_POINT_RAISE( "BUG-49378@sdtHashModule::fetchHashScanInternalSubHash",err_ART );
             IDE_TEST( getSlotPtr( (sdtHashSegHdr*)aCursor->mWASegment,
                                   &((sdtHashSegHdr*)aCursor->mWASegment)->mFetchGrp,
                                   sSubHash->mKey[i].mPageID ,
@@ -3196,21 +3384,44 @@ IDE_RC sdtHashModule::fetchHashScanInternalSubHash( smiHashTempCursor * aCursor,
                                   &sRowWCBPtr )
                       != IDE_SUCCESS );
 
-            IDE_ASSERT_MSG(( ((sdtHashPageHdr*)sRowWCBPtr->mWAPagePtr)->mSelfNPID ==
+            IDE_ERROR_MSG( ( ((sdtHashPageHdr*)sRowWCBPtr->mWAPagePtr)->mSelfNPID ==
                              sSubHash->mKey[i].mPageID ),
-                           "%"ID_UINT32_FMT" != %"ID_UINT32_FMT" %"ID_UINT32_FMT"\n",
+                           "idx : %"ID_UINT32_FMT", "
+                           "mSelfNPID : %"ID_UINT32_FMT", "
+                           "mPageID : %"ID_UINT32_FMT", "
+                           "mNPageID : %"ID_UINT32_FMT"\n",
+                           i,
                            ((sdtHashPageHdr*)sRowWCBPtr->mWAPagePtr)->mSelfNPID ,
                            sSubHash->mKey[i].mPageID,
                            sRowWCBPtr->mNPageID );
-            IDE_ASSERT_MSG(( sRowWCBPtr->mNPageID == sSubHash->mKey[i].mPageID ),
-                           "%"ID_UINT32_FMT" != %"ID_UINT32_FMT"\n",
+
+            IDE_ERROR_MSG( ( sRowWCBPtr->mNPageID == sSubHash->mKey[i].mPageID ),
+                           "idx : %"ID_UINT32_FMT", "
+                           "mNPageID : %"ID_UINT32_FMT", "
+                           "mPageID : %"ID_UINT32_FMT"\n",
+                           i,
                            sRowWCBPtr->mNPageID ,
                            sSubHash->mKey[i].mPageID );
 
-            IDE_ASSERT( SM_IS_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_CHILDGRID ) );
-            IDE_ASSERT( SM_IS_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_HEAD ) );
-            IDE_ASSERT( sTRPHeader->mIsRow == SDT_HASH_ROW_HEADER );
-            IDE_ASSERT( sTRPHeader->mHashValue == aCursor->mHashValue );
+            IDE_ERROR_MSG( SM_IS_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_HEAD ),
+                           "idx : %"ID_UINT32_FMT", "
+                           "mTRFlag : %"ID_UINT32_FMT,
+                           i,
+                           sTRPHeader->mTRFlag );
+
+            IDE_ERROR_MSG( sTRPHeader->mIsRow == SDT_HASH_ROW_HEADER,
+                           "idx : %"ID_UINT32_FMT", "
+                           "mIsRow :%"ID_UINT32_FMT,
+                           i,
+                           sTRPHeader->mIsRow );
+
+            IDE_ERROR_MSG( sTRPHeader->mHashValue == aCursor->mHashValue,
+                           "idx : %"ID_UINT32_FMT", "
+                           "mHashValue : %"ID_XINT32_FMT", "
+                           "mHashValue : %"ID_XINT32_FMT,
+                            i,
+                           sTRPHeader->mHashValue,
+                           aCursor->mHashValue  );
 
             fixWAPage( sRowWCBPtr );
             sIsFixedRowPage = ID_TRUE;
@@ -3234,7 +3445,7 @@ IDE_RC sdtHashModule::fetchHashScanInternalSubHash( smiHashTempCursor * aCursor,
 
         if ( ( i+1 ) >= sSubHash->mKeyCount )
         {
-            // sub hash에서 찾지 못했거나, 마지막 key에서 hit한 경우
+            // SubHash에서 찾지 못했거나, 마지막 key에서 hit한 경우
             aCursor->mChildPageID = sSubHash->mNextPageID;
             aCursor->mChildOffset = sSubHash->mNextOffset;
             aCursor->mSubHashIdx  = 0;
@@ -3248,7 +3459,7 @@ IDE_RC sdtHashModule::fetchHashScanInternalSubHash( smiHashTempCursor * aCursor,
         }
         else
         {
-            IDE_ASSERT( sResult == ID_TRUE );
+            IDE_ERROR( sResult == ID_TRUE );
 
             // 찾은경우
             aCursor->mSubHashIdx    = i+1;
@@ -3280,7 +3491,12 @@ IDE_RC sdtHashModule::fetchHashScanInternalSubHash( smiHashTempCursor * aCursor,
     aCursor->mTTHeader->mStatsPtr->mExtraStat2 = IDL_MAX( aCursor->mTTHeader->mStatsPtr->mExtraStat2, sLoop );
 
     return IDE_SUCCESS;
-
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION(err_ART);
+    {
+        IDE_SET(ideSetErrorCode(smERR_ABORT_ART));
+    }
+#endif
     IDE_EXCEPTION_END;
 
     if ( sIsFixedSubHash == ID_TRUE )
@@ -3307,14 +3523,16 @@ IDE_RC sdtHashModule::fetchHashScanInternalSubHash( smiHashTempCursor * aCursor,
 IDE_RC sdtHashModule::getNextNPageForFullScan( smiHashTempCursor  * aCursor )
 {
     sdtHashSegHdr * sWASeg = (sdtHashSegHdr*)aCursor->mWASegment;
-    sdtWCB        * sWCBPtr;
+    sdtWCB        * sWCBPtr = (sdtWCB*)aCursor->mWCBPtr;
     scPageID        sNPageID;
 
     IDE_DASSERT( aCursor->mIsInMemory == SDT_WORKAREA_OUT_MEMORY );
+    
+    IDU_FIT_POINT_RAISE( "BUG-49378@sdtHashModule::getNextNPageForFullScan",err_ART );
+    IDE_ERROR_MSG( SDT_IS_FIXED_PAGE( sWCBPtr ),
+                   "mFix : %"ID_INT32_FMT,
+                   sWCBPtr->mFix );
 
-    sWCBPtr = (sdtWCB*)aCursor->mWCBPtr;
-
-    IDE_ASSERT( SDT_IS_FIXED_PAGE( sWCBPtr ) );
     unfixWAPage( sWCBPtr );
 
     /* 0. 이전 Page Write요청
@@ -3345,20 +3563,23 @@ IDE_RC sdtHashModule::getNextNPageForFullScan( smiHashTempCursor  * aCursor )
 
             if ( sNPageID != sWASeg->mNExtFstPIDList4Row.mLastFreeExtFstPID )
             {
-                aCursor->mNExtLstPID = sNPageID + SDT_WAEXTENT_PAGECOUNT - 1;
+                IDE_DASSERT( sWASeg->mExtPageCount != 0 );
+                aCursor->mNExtLstPID = sNPageID + sWASeg->mExtPageCount - 1;
 
                 IDE_TEST( preReadNExtents( sWASeg,
                                            sNPageID,
-                                           SDT_WAEXTENT_PAGECOUNT )
+                                           sWASeg->mExtPageCount )
                           != IDE_SUCCESS );
             }
             else
             {
+                IDE_DASSERT( sWASeg->mExtPageCount != 0 );
+                IDE_DASSERT( sWASeg->mNExtFstPIDList4Row.mPageSeqInLFE != 0 );
                 aCursor->mNExtLstPID = sNPageID + sWASeg->mNExtFstPIDList4Row.mPageSeqInLFE - 1;
 
                 IDE_TEST( preReadNExtents( sWASeg,
                                            sNPageID,
-                                           sWASeg->mNExtFstPIDList4Row.mPageSeqInLFE  )
+                                           sWASeg->mNExtFstPIDList4Row.mPageSeqInLFE )
                           != IDE_SUCCESS );
             }
 
@@ -3376,7 +3597,7 @@ IDE_RC sdtHashModule::getNextNPageForFullScan( smiHashTempCursor  * aCursor )
     }
 
     sWCBPtr = findWCB( sWASeg, sNPageID );
-    IDE_ASSERT( sWCBPtr != NULL );
+    IDE_ERROR( sWCBPtr != NULL );
 
     /* pre read extent로 미리 읽어 뒀는데 없을수도 있나?
      * 확인해봐야지 */
@@ -3401,9 +3622,21 @@ IDE_RC sdtHashModule::getNextNPageForFullScan( smiHashTempCursor  * aCursor )
     IDE_EXCEPTION_CONT( SKIP );
 
     return IDE_SUCCESS;
-
+#ifdef ALTIBASE_FIT_CHECK
+    IDE_EXCEPTION(err_ART);
+    {
+        IDE_SET(ideSetErrorCode(smERR_ABORT_ART));
+    }
+#endif
     IDE_EXCEPTION_END;
 
+    if ( (sWCBPtr != NULL) &&
+         (smuProperty::getTempDumpLevel() == SMU_DISK_TEMP_TABLE_DUMP_LEVEL_1) )
+    {
+        smuUtility::dumpFuncWithBuffer( IDE_DUMP_0, 
+                                        sdtHashModule::dumpWCB, 
+                                        sWCBPtr );
+    }
     return IDE_FAILURE;
 }
 
@@ -3432,6 +3665,7 @@ IDE_RC sdtHashModule::filteringAndFetch( smiHashTempCursor  * aTempCursor,
     sWASeg  = (sdtHashSegHdr*)aTempCursor->mWASegment;
 
     IDE_DASSERT( SM_IS_FLAG_ON( aTRPHeader->mTRFlag, SDT_TRFLAG_HEAD ) );
+    IDE_DASSERT( aTRPHeader->mIsRow == SDT_HASH_ROW_HEADER );
 
     sFlag = aTempCursor->mTCFlag;
 
@@ -3557,7 +3791,12 @@ IDE_RC sdtHashModule::fetchChainedRowPiece( sdtHashSegHdr   * aWASegment,
                    sCursor,
                    sTRPHeader->mValueLength );
 
-    IDE_ASSERT( sTRPHeader->mValueLength < SD_PAGE_SIZE );
+    IDE_ERROR_MSG( sTRPHeader->mValueLength < SD_PAGE_SIZE,
+                   "mValueLength : %"ID_UINT32_FMT,
+                   sTRPHeader->mValueLength );
+
+    IDE_DASSERT( SM_IS_FLAG_ON(sTRPHeader->mTRFlag, SDT_TRFLAG_HEAD) );
+    IDE_DASSERT( sTRPHeader->mIsRow == SDT_HASH_ROW_HEADER );
 
     sRowBufferOffset       = sTRPHeader->mValueLength;
     aTRPInfo->mValueLength = sTRPHeader->mValueLength;
@@ -3583,9 +3822,11 @@ IDE_RC sdtHashModule::fetchChainedRowPiece( sdtHashSegHdr   * aWASegment,
         sFlag      = ((sdtHashTRPHdr*)sCursor)->mTRFlag;
         sTRPHeader = (sdtHashTRPHdr*)sCursor;
 
-        IDE_ASSERT( sTRPHeader->mValueLength < SD_PAGE_SIZE );
+        IDE_ERROR_MSG( sTRPHeader->mValueLength < SD_PAGE_SIZE,
+                       "mValueLength : %"ID_UINT32_FMT,
+                       sTRPHeader->mValueLength );
 
-        sCursor   +=  SDT_HASH_TR_HEADER_SIZE_FULL ;
+        sCursor +=  SDT_HASH_TR_HEADER_SIZE_FULL ;
 
         IDE_DASSERT( sTRPHeaderBuffer.mHashValue == sTRPHeader->mHashValue );
 
@@ -3602,7 +3843,9 @@ IDE_RC sdtHashModule::fetchChainedRowPiece( sdtHashSegHdr   * aWASegment,
             break;
         }
 
-        IDE_ERROR ( SM_IS_FLAG_ON( sFlag, SDT_TRFLAG_NEXTGRID ) )
+        IDE_ERROR_MSG( SM_IS_FLAG_ON( sFlag, SDT_TRFLAG_NEXTGRID ),
+                       "sFlag : %"ID_UINT32_FMT,
+                       sFlag );
     }
     while( sTRPHeader->mNextPageID != SM_NULL_PID );
 
@@ -3713,7 +3956,9 @@ IDE_RC sdtHashModule::updateChainedRowPiece( smiHashTempCursor * aTempCursor,
             break;
         }
 
-        IDE_ASSERT( SM_IS_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_NEXTGRID ) );
+        IDE_ERROR_MSG( SM_IS_FLAG_ON( sTRPHeader->mTRFlag, SDT_TRFLAG_NEXTGRID ),
+                       "mTRFlag : %"ID_UINT32_FMT,
+                       sTRPHeader->mTRFlag );
 
         if ( aTempCursor->mIsInMemory == SDT_WORKAREA_OUT_MEMORY )
         {
@@ -3800,7 +4045,11 @@ IDE_RC sdtHashModule::getFreeWAPage( sdtHashSegHdr* aWASegment,
 {
     sdtWCB   * sWCBPtr;
 
-    IDE_ASSERT( aGroup->mBeginWPID < aGroup->mEndWPID );
+    IDE_ERROR_MSG( aGroup->mBeginWPID < aGroup->mEndWPID,
+                   "mBeginWPID : %"ID_UINT32_FMT", "
+                   "mEndWPID : %"ID_UINT32_FMT,
+                   aGroup->mBeginWPID,
+                   aGroup->mEndWPID );
 
     /* Group을 한번 전부 순회함 */
 
@@ -3987,7 +4236,7 @@ IDE_RC sdtHashModule::assignNPage(sdtHashSegHdr* aWASegment,
                                   sdtWCB       * aWCBPtr,
                                   scPageID       aNPageID)
 {
-    UInt             sHashValue;
+    UInt             sHashValue = 0;
 
     /* 검증. 이미 Hash이 매달린 것이 아니어야 함 */
     IDE_DASSERT( findWCB( aWASegment, aNPageID ) == NULL );
@@ -3995,7 +4244,9 @@ IDE_RC sdtHashModule::assignNPage(sdtHashSegHdr* aWASegment,
     IDE_DASSERT( getWPageID( aWASegment, aWCBPtr ) < getMaxWAPageCount( aWASegment ) );
 
     /* NPID 로 연결함 */
-    IDE_ERROR( aWCBPtr->mNPageID   == SC_NULL_PID );
+    IDE_ERROR_MSG( aWCBPtr->mNPageID == SC_NULL_PID,
+                   "mNPageIDPID : %"ID_UINT32_FMT,
+                   aWCBPtr->mNPageID );
     IDE_ERROR( aWCBPtr->mWAPagePtr != NULL );
 
     aWCBPtr->mNPageID = aNPageID;
@@ -4012,6 +4263,20 @@ IDE_RC sdtHashModule::assignNPage(sdtHashSegHdr* aWASegment,
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    ideLog::log( IDE_DUMP_0,
+                 "HASHVALUE : %"ID_XINT32_FMT"\n"
+                 "WPID      : %"ID_UINT32_FMT"\n",
+                 sHashValue,
+                 getWPageID( aWASegment, aWCBPtr ) );
+
+    if ( (aWCBPtr != NULL) &&
+         (smuProperty::getTempDumpLevel() == SMU_DISK_TEMP_TABLE_DUMP_LEVEL_1) )
+    {
+        smuUtility::dumpFuncWithBuffer( IDE_DUMP_0, 
+                                        sdtHashModule::dumpWCB, 
+                                        aWCBPtr );
+    }
 
     return IDE_FAILURE;
 }
@@ -4032,11 +4297,16 @@ IDE_RC sdtHashModule::unassignNPage( sdtHashSegHdr* aWASegment,
     sdtWCB         * sWCBPtr = aWCBPtr;
 
     /* Fix되어있지 않아야 함 */
-    IDE_ERROR( sWCBPtr->mFix == 0 );
+    IDE_ERROR_MSG( sWCBPtr->mFix == 0,
+                   "mFix : %"ID_INT32_FMT,
+                   sWCBPtr->mFix );
+
     IDE_ERROR( sWCBPtr->mNPageID  != SC_NULL_PID );
 
     /* CleanPage여야 함 */
-    IDE_ERROR( sWCBPtr->mWPState == SDT_WA_PAGESTATE_CLEAN );
+    IDE_ERROR_MSG( sWCBPtr->mWPState == SDT_WA_PAGESTATE_CLEAN,
+                   "mWPState  %"ID_UINT32_FMT,
+                   sWCBPtr->mWPState );
 
     /************************** Hash에서 때어내기 *********************/
     sTargetNPID  = sWCBPtr->mNPageID;
@@ -4067,10 +4337,16 @@ IDE_RC sdtHashModule::unassignNPage( sdtHashSegHdr* aWASegment,
     IDE_EXCEPTION_END;
 
     ideLog::log( IDE_DUMP_0,
-                 "HASHVALUE : %"ID_UINT32_FMT"\n"
+                 "HASHVALUE : %"ID_XINT32_FMT"\n"
                  "WPID      : %"ID_UINT32_FMT"\n",
                  sHashValue,
                  getWPageID( aWASegment, aWCBPtr ) );
+
+    if ( (aWCBPtr != NULL) &&
+         (smuProperty::getTempDumpLevel() == SMU_DISK_TEMP_TABLE_DUMP_LEVEL_1) )
+    {
+        smuUtility::dumpFuncWithBuffer( IDE_DUMP_0, dumpWCB, aWCBPtr );
+    }
 
     return IDE_FAILURE;
 }
@@ -4106,13 +4382,29 @@ IDE_RC sdtHashModule::readNPage( sdtHashSegHdr* aWASegment,
               != IDE_SUCCESS );
 
     // 첫번째 위치는 무조건 self PID
-    IDE_ASSERT( aNPageID == ((sdtHashPageHdr*)aWCBPtr->mWAPagePtr)->mSelfNPID );
+    IDE_ERROR_MSG( aNPageID == ((sdtHashPageHdr*)aWCBPtr->mWAPagePtr)->mSelfNPID,
+                   "NPageID : %"ID_UINT32_FMT", "
+                   "mSelfNPID : %"ID_UINT32_FMT", "
+                   "mType : %"ID_UINT32_FMT", "
+                   "mFreeOffset : %"ID_UINT32_FMT,
+                   aNPageID,
+                   ((sdtHashPageHdr*)aWCBPtr->mWAPagePtr)->mSelfNPID,
+                   ((sdtHashPageHdr*)aWCBPtr->mWAPagePtr)->mType,
+                   ((sdtHashPageHdr*)aWCBPtr->mWAPagePtr)->mFreeOffset );
 
     aWASegment->mStatsPtr->mReadCount++;
 
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    if ( (aWCBPtr != NULL) &&
+         (smuProperty::getTempDumpLevel() == SMU_DISK_TEMP_TABLE_DUMP_LEVEL_1) )
+    {
+        smuUtility::dumpFuncWithBuffer( IDE_DUMP_0, 
+                                        sdtHashModule::dumpWCB,
+                                        aWCBPtr );
+    }
 
     return IDE_FAILURE;
 }
@@ -4134,12 +4426,11 @@ IDE_RC sdtHashModule::readNPages( sdtHashSegHdr* aWASegment,
 {
     scPageID     sNPageID;
     scPageID     sLstNPageID;
-    sdtWCB     * sWCBPtr;
+    sdtWCB     * sWCBPtr = aFstWCBPtr;
     sdtWCB     * sNxtWCBPtr;
 
     IDE_DASSERT( aFstWCBPtr->mNxtUsedWCBPtr != NULL );
     IDE_DASSERT( aFstWCBPtr->mWAPagePtr     != NULL );
-    
     
     IDE_TEST( sddDiskMgr::read( aWASegment->mStatistics,
                                 aWASegment->mSpaceID,
@@ -4151,14 +4442,22 @@ IDE_RC sdtHashModule::readNPages( sdtHashSegHdr* aWASegment,
 
     aWASegment->mStatsPtr->mReadCount += aPageCount;
 
-    sWCBPtr = aFstWCBPtr;
     sLstNPageID = aFstNPageID + aPageCount;
 
     for( sNPageID = aFstNPageID ; sNPageID < sLstNPageID ; sNPageID++ )
     {
-        IDE_ASSERT( sWCBPtr != NULL );
-        IDE_ASSERT( sWCBPtr->mWAPagePtr != NULL );
-        IDE_ASSERT( sNPageID == ((sdtHashPageHdr*)sWCBPtr->mWAPagePtr)->mSelfNPID );
+        IDE_ERROR( sWCBPtr != NULL );
+        IDE_ERROR( sWCBPtr->mWAPagePtr != NULL );
+        // 첫번째 위치는 무조건 self PID
+        IDE_ERROR_MSG( sNPageID == ((sdtHashPageHdr*)sWCBPtr->mWAPagePtr)->mSelfNPID,
+                       "NPageID : %"ID_UINT32_FMT", "
+                       "mSelfNPID : %"ID_UINT32_FMT", "
+                       "mType : %"ID_UINT32_FMT", "
+                       "mFreeOffset : %"ID_UINT32_FMT,
+                       sNPageID,
+                       ((sdtHashPageHdr*)sWCBPtr->mWAPagePtr)->mSelfNPID,
+                       ((sdtHashPageHdr*)sWCBPtr->mWAPagePtr)->mType,
+                       ((sdtHashPageHdr*)sWCBPtr->mWAPagePtr)->mFreeOffset );
 
         sNxtWCBPtr = sWCBPtr->mNextWCB4Hash;
         sWCBPtr->mNextWCB4Hash = NULL;
@@ -4179,6 +4478,14 @@ IDE_RC sdtHashModule::readNPages( sdtHashSegHdr* aWASegment,
     return IDE_SUCCESS;
 
     IDE_EXCEPTION_END;
+
+    if ( (sWCBPtr != NULL) &&
+         (smuProperty::getTempDumpLevel() == SMU_DISK_TEMP_TABLE_DUMP_LEVEL_1) )
+    {
+        smuUtility::dumpFuncWithBuffer( IDE_DUMP_0, 
+                                        sdtHashModule::dumpWCB, 
+                                        sWCBPtr );
+    } 
 
     return IDE_FAILURE;
 }
@@ -4307,8 +4614,8 @@ IDE_RC sdtHashModule::preReadNExtents( sdtHashSegHdr * aWASegment,
                            sCurNPageID );
         if ( sWCBPtr != NULL )
         {
-            IDE_ASSERT(((sdtHashPageHdr*)sWCBPtr->mWAPagePtr)->mSelfNPID == sCurNPageID );
-            IDE_ASSERT( sWCBPtr->mNPageID == sCurNPageID );
+            IDE_DASSERT(((sdtHashPageHdr*)sWCBPtr->mWAPagePtr)->mSelfNPID == sCurNPageID );
+            IDE_DASSERT( sWCBPtr->mNPageID == sCurNPageID );
         }
     }
 #endif
@@ -4442,23 +4749,43 @@ IDE_RC sdtHashModule::allocAndAssignNPage( sdtHashSegHdr    * aWASegment,
 {
     scPageID sFreeNPID;
 
-    if ( aNExtFstPIDList->mPageSeqInLFE == SDT_WAEXTENT_PAGECOUNT )
+    if ( aNExtFstPIDList->mLastFreeExtFstPID == SC_NULL_PID )
     {
-        /* 마지막 NExtent를 다썼음 , 디스크 extent를 하나 할당 받아온다. */
+        /* 최초 할당 */
         IDE_TEST( sdtWAExtentMgr::allocFreeNExtent( aWASegment->mStatistics,
                                                     aWASegment->mStatsPtr,
                                                     aWASegment->mSpaceID,
+                                                    &aWASegment->mExtPageCount,
                                                     aNExtFstPIDList )!= IDE_SUCCESS );
-        
+        IDE_DASSERT( aWASegment->mExtPageCount != 0 );
+        IDE_DASSERT( aNExtFstPIDList->mCount != 0 );
+        IDE_DASSERT( aNExtFstPIDList->mPageSeqInLFE == 0 );
     }
     else
     {
-        /* 기존에 할당해둔 Extent에서 가져옴 */
+        if ( aNExtFstPIDList->mPageSeqInLFE == aWASegment->mExtPageCount )
+        {
+            /* 마지막 NExtent를 다썼음 , 디스크 extent를 하나 할당 받아온다. */
+            IDE_TEST( sdtWAExtentMgr::allocFreeNExtent( aWASegment->mStatistics,
+                                                        aWASegment->mStatsPtr,
+                                                        aWASegment->mSpaceID,
+                                                        &aWASegment->mExtPageCount,
+                                                        aNExtFstPIDList )!= IDE_SUCCESS );
+            IDE_DASSERT( aWASegment->mExtPageCount != 0 );
+            IDE_DASSERT( aNExtFstPIDList->mCount != 0 );
+            IDE_DASSERT( aNExtFstPIDList->mPageSeqInLFE == 0 );
+        }
+        else
+        {
+            /* 기존에 할당해둔 Extent에서 가져옴 */
+        }
     }
 
+    IDE_DASSERT( aNExtFstPIDList->mLastFreeExtFstPID != SC_NULL_PID ); 
     sFreeNPID = aNExtFstPIDList->mLastFreeExtFstPID + aNExtFstPIDList->mPageSeqInLFE;
     aNExtFstPIDList->mPageSeqInLFE++;
 
+    IDE_DASSERT( sFreeNPID != SC_NULL_PID );
     ((sdtHashPageHdr*)aTargetWCBPtr->mWAPagePtr)->mSelfNPID = sFreeNPID;
 
     if ( aWASegment->mNPageHashPtr == NULL )
@@ -4490,7 +4817,11 @@ IDE_RC sdtHashModule::expandFreeWAExtent( sdtHashSegHdr* aWASeg )
     SInt          sExtentCount;
     sdtWAExtent * sTailExtent;
 
-    IDE_ERROR( aWASeg->mMaxWAExtentCount > aWASeg->mWAExtentInfo.mCount );
+    IDE_ERROR_MSG( aWASeg->mMaxWAExtentCount > aWASeg->mWAExtentInfo.mCount,
+                   "mMaxWAExtentCount : %"ID_UINT32_FMT", " 
+                   "mCount : %"ID_UINT32_FMT,
+                   aWASeg->mMaxWAExtentCount,
+                   aWASeg->mWAExtentInfo.mCount );
 
     sExtentCount = smuProperty::getTmpAllocWAExtCnt();
 
@@ -4498,7 +4829,9 @@ IDE_RC sdtHashModule::expandFreeWAExtent( sdtHashSegHdr* aWASeg )
     {
         sExtentCount = aWASeg->mMaxWAExtentCount - aWASeg->mWAExtentInfo.mCount;
     }
-    IDE_ERROR( sExtentCount > 0 );
+    IDE_ERROR_MSG( sExtentCount > 0,
+                   "sExtentCount : %"ID_INT32_FMT,
+                   sExtentCount );
 
     sTailExtent = aWASeg->mWAExtentInfo.mTail;
 
@@ -4632,7 +4965,7 @@ void sdtHashModule::exportHashSegmentToFile( sdtHashSegHdr* aWASegment )
     sdtWCB    * sEndWCBPtr;
     sdtNExtentArr * sNExtentArr;
 
-    IDE_ASSERT( aWASegment != NULL );
+    IDE_ERROR( aWASegment != NULL );
 
     IDE_TEST( sFile.initialize( IDU_MEM_SM_TEMP,
                                 1, // Max Open FD Count
@@ -4850,7 +5183,7 @@ IDE_RC sdtHashModule::importHashSegmentFromFile( SChar         * aFileName,
     sMaxPageCount = getMaxWAPageCount( sWASegment ) ;
     sPtr += calcWASegmentSize( sMaxPageCount );
 
-    IDE_ERROR( (ULong)sPtr % ID_SIZEOF(ULong) == 0);
+    IDE_ERROR( (ULong)sPtr % ID_SIZEOF(ULong) == 0 );
 
     // 3. Normal page Hash Map
     if ( sWASegment->mNPageHashPtr != NULL )
@@ -4985,7 +5318,6 @@ IDE_RC sdtHashModule::resetWCBInfo4Dump( sdtHashSegHdr * aWASegment,
                                                 - aOldWASegPtr + (UChar*)aWASegment) ;
         }
 
-        // 6. wa page ( wapageID, page )
         if ( sWPageID == sNxtPageID )
         {
             sWCBPtr->mWAPagePtr = sPtr;
@@ -4994,8 +5326,11 @@ IDE_RC sdtHashModule::resetWCBInfo4Dump( sdtHashSegHdr * aWASegment,
             sNxtPageID = *(scPageID*)sPtr;
             sPtr += ID_SIZEOF(ULong);
 
-            IDE_ERROR(( sWPageID < sNxtPageID ) ||
-                      ( sNxtPageID == SM_NULL_PID ));
+            IDE_ERROR_MSG( (sWPageID < sNxtPageID) || (sNxtPageID == SM_NULL_PID),
+                           "sWPageID : %"ID_UINT32_FMT", "
+                           "sNxtPageID : %"ID_UINT32_FMT,
+                           sWPageID,
+                           sNxtPageID );
         }
         else
         {
@@ -5144,7 +5479,7 @@ void sdtHashModule::dumpTempTRPHeader( void     * aTRPHeader,
 }
 
 /***************************************************************************
- * Description : sub hash를 dump 한다.
+ * Description : SubHash를 dump 한다.
  *
  * aSubHash   - [IN] dump 대상 SubHash
  * aOutBuf    - [IN] dump한 정보를 담을 Buffer 
@@ -5186,7 +5521,7 @@ void sdtHashModule::dumpSubHash( sdtSubHash * aSubHash,
                                    i,
                                    aSubHash->mKey[i].mHashHigh,
                                    (((UInt)aSubHash->mKey[i].mHashHigh << 16) +
-                                    ( (UInt)aSubHash->mHashLow << 8 )),
+                                   ( (UInt)aSubHash->mHashLow << 8 )),
                                    aSubHash->mKey[i].mPageID,
                                    aSubHash->mKey[i].mOffset );
     }
@@ -5467,7 +5802,7 @@ void sdtHashModule::dumpHashRowPage( void   * aPagePtr,
                 (void)idlVA::appendFormat( aOutBuf,
                                            aOutSize,
                                            "TypeName    : SUB_HASH_PAGE\n\n"
-                                           "Sub Hash :\n" );
+                                           "SubHash :\n" );
 
                 while( sCurOffset < sPageHdr->mFreeOffset )
                 {
@@ -5534,7 +5869,7 @@ void sdtHashModule::dumpWAHashMap( sdtHashSegHdr * aWASeg,
                                    aWASeg->mHashSlotAllocPageCount );
 
         sWCBPtr          = aWASeg->mWCBMap;
-        sEndWCBPtr       = sWCBPtr +  aWASeg->mHashSlotPageCount;
+        sEndWCBPtr       = sWCBPtr + aWASeg->mHashSlotPageCount;
 
         for( sWAPageID = 0 ;
              sWCBPtr < sEndWCBPtr ;

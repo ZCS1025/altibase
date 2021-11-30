@@ -16,7 +16,7 @@
  
 
 /***********************************************************************
- * $Id: sdnnModule.cpp 91766 2021-09-29 08:07:37Z justin.kwon $
+ * $Id: sdnnModule.cpp 92066 2021-11-12 07:46:00Z kclee $
  **********************************************************************/
 
 /**************************************************************
@@ -2202,6 +2202,7 @@ IDE_RC sdnnGatherStat( idvSQL         * aStatistics,
 
     /* sdnnModule_sdnnGatherStat_calloc_RowBufferSource.tc */
     IDU_FIT_POINT("sdnnModule::sdnnGatherStat::calloc::RowBufferSource");
+    ADD_OVERFLOW_CHECK(sMaxRowSize,ID_SIZEOF(ULong));
     IDE_TEST( iduMemMgr::calloc( IDU_MEM_SM_SDN,
                                  1,
                                  sMaxRowSize + ID_SIZEOF(ULong),
