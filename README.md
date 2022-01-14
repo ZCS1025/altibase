@@ -6,7 +6,7 @@
 - For more detailed information about the product, please check the Altibase [website](https://altibase.com/en/product/enterprise.php)
 
 ### References
-![references](https://user-images.githubusercontent.com/32888619/149440193-c1e57d5b-4a16-4082-b0c4-9cbc7584a860.png)
+   ![references](https://user-images.githubusercontent.com/32888619/149440193-c1e57d5b-4a16-4082-b0c4-9cbc7584a860.png)
 
 ### Help
 - [Download](https://altibase.com/en/learn/download.php)
