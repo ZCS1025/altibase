@@ -5,15 +5,18 @@
 - Low cost: Open source costs with enterprise grade quality. Lower your TCO with flexible subscription fees. (Ref: http://altibase.com/product/low-cost-database/ )
 
 ### Help
-- http://altibase.com/resources/
-- http://altibase.com/services/support/
-- http://altibase.com/case-studies/
-- http://altibase.com/faqs/product/
-- http://support.altibase.com (Korean materials)
+- https://altibase.com/en/learn/download.php
+- https://altibase.com/en/learn/manuals.php
+- https://altibase.com/en/learn/release_notes.php
+- https://altibase.com/en/learn/case_list.php
+- Also The Korean version of the materials can be found at http://support.altibase.com and https://altibase.com/kr/learn/manuals.php 
 
 ### Q&A and Bug Reports
-- Q&A and bug reports regarding Altibase should be submitted at http://support.altibase.com
+- Q&A and bug reports regarding Altibase should be submitted at http://support.altibase.com/ or http://support.altibase.com/en/
 - The code for Altibase can be found at: https://github.com/Altibase
+
+### Downloads
+- Installation file can be downloaded at : https://altibase.com/data/file_upload/altibase-OE-server-7.1.0.5.1-LINUX-X86-64bit-release.run
 
 ### License
 - Altibase is an open source with GNU Affero General Public License version 3(GNU AGPLv3) for the Altibase server code and GNU Lesser General Public License version 3(GNU LGPLv3) for the Altibase client code. 
