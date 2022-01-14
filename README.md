@@ -6,8 +6,8 @@
 
 ### Help
 - [Download](https://altibase.com/en/learn/download.php)
-- [Manual(English)](https://altibase.com/en/learn/manuals.php) and [Manual(Korean)](https://altibase.com/en/learn/manuals.php)
-- [Release notes](https://altibase.com/en/learn/release_notes.php)
+- [Manual(English)](https://altibase.com/en/learn/manuals.php) and [Manual(Korean)](https://altibase.com/kr/learn/manuals.php)
+- [Release notes(English)](https://altibase.com/en/learn/release_notes.php) and [Release notes(Korean)](https://altibase.com/kr/learn/release_notes.php)
 - [Case study](https://altibase.com/en/learn/case_list.php)
 - Also The Korean version of the materials can be found at http://support.altibase.com and https://altibase.com/kr/learn/manuals.php 
 
