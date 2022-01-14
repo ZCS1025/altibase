@@ -1,15 +1,16 @@
 ### Altibase: Enterprise grade High performance Relational DBMS
-- Enterprise grade: 17 years of experience in servicing over 600 global enterprise clients including Samsung, HP, E-Trade, China Mobile and more. (Ref: http://altibase.com/product/enterprise-grade-database/ )
-- High performance: Accelerate the performance of your mission critical applications by over 10X with in-memory and on-disk hybrid architecture. (Ref: http://altibase.com/product/high-performance-database/ )
-- Relational DBMS: Function and feature rich with all the tools and relational capabilities expected and required by enterprise grade applications. Enjoy the benefits without radically changing your applications. (Ref: http://altibase.com/product/relational-database/ )
-- Low cost: Open source costs with enterprise grade quality. Lower your TCO with flexible subscription fees. (Ref: http://altibase.com/product/low-cost-database/ )
+- Enterprise grade: 17 years of experience in servicing over 600 global enterprise clients including Samsung, HP, E-Trade, China Mobile and more. 
+- High performance: Accelerate the performance of your mission critical applications by over 10X with in-memory and on-disk hybrid architecture. 
+- Relational DBMS: Function and feature rich with all the tools and relational capabilities expected and required by enterprise grade applications. Enjoy the benefits without radically changing your applications. 
+- Low cost: Open source costs with enterprise grade quality. Lower your TCO with flexible subscription fees.
+- For more information about produc, please check the Altibase [homepage](https://altibase.com/en/product/enterprise.php)
 
 ### Help
 - [Download](https://altibase.com/en/learn/download.php)
 - [Manual (English)](https://altibase.com/en/learn/manuals.php) and [Manual (Korean)](https://altibase.com/kr/learn/manuals.php)
 - [Release notes (English)](https://altibase.com/en/learn/release_notes.php) and [Release notes (Korean)](https://altibase.com/kr/learn/release_notes.php)
 - [Case study (English)](https://altibase.com/en/learn/case_list.php) and [Case study (Korean)](https://altibase.com/kr/learn/case_list.php)
-- Also The Korean version of the materials can be found at http://support.altibase.com and https://altibase.com/kr/learn/manuals.php 
+- Also the more Korean version of the materials can be found at http://support.altibase.com and https://altibase.com/kr/learn/manuals.php 
 
 ### Q&A and Bug Reports
 - Q&A and bug reports regarding Altibase should be submitted at http://support.altibase.com/ or http://support.altibase.com/en/
