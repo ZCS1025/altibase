@@ -8,15 +8,12 @@
 ### References
 - Altibase now has the richest installation base in the world with over 650 global enterprise clients and thousands of mission critical deployments.
 - The main customers are as follows.
-
-   ![references](https://user-images.githubusercontent.com/32888619/149440859-6bdab0df-1d63-4497-9aeb-e0557adf7f08.png)
+   ## ![references](https://user-images.githubusercontent.com/32888619/149440859-6bdab0df-1d63-4497-9aeb-e0557adf7f08.png)
 
 ### Performance test
 - Altibase is the fastest OLTP database. Secure memory technology enables fast and accurate data management.
 - Compared to traditional databases, there was a significant difference in performance as below
-
-   ![performance test](https://user-images.githubusercontent.com/32888619/149451424-80b8634d-b79c-414d-85e7-23350d62e832.png)
-
+   ## ![performance test](https://user-images.githubusercontent.com/32888619/149452456-92200a9f-5c11-47f8-b65f-43fb9a1eeaec.png)
 
 ### Help
 - [Download](https://altibase.com/en/learn/download.php)
