@@ -1,9 +1,9 @@
 ### Altibase: Enterprise grade High performance Relational DBMS
-- Enterprise grade: 17 years of experience in servicing over 600 global enterprise clients including Samsung, HP, E-Trade, China Mobile and more. 
-- High performance: Accelerate the performance of your mission critical applications by over 10X with in-memory and on-disk hybrid architecture. 
-- Relational DBMS: Function and feature rich with all the tools and relational capabilities expected and required by enterprise grade applications. Enjoy the benefits without radically changing your applications. 
+- Enterprise grade: 22 years of experience in servicing over 600 global enterprise clients including Samsung, HP, E-Trade, China Mobile and more.
+- HHigh performance: Accelerate the performance of your mission critical applications by over 10X with in-memory and on-disk hybrid architecture.
+- Relational DBMS: Rich Function and feature with all the tools and relational capabilities expected and required by enterprise grade applications. Enjoy the benefits of Altibase without radically changing your applications.
 - Low cost: Open source costs with enterprise grade quality. Lower your TCO with flexible subscription fees.
-- For more detailed information about the product, please check the Altibase [website](https://altibase.com/en/product/enterprise.php)
+- For more detailed information about the product, please refer to the Altibase [website.](https://altibase.com/en/product/enterprise.php)
 
 ### References
 - Altibase now has the richest installation base in the world with over 650 global enterprise clients and thousands of mission critical deployments.
