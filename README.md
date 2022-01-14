@@ -5,10 +5,10 @@
 - Low cost: Open source costs with enterprise grade quality. Lower your TCO with flexible subscription fees. (Ref: http://altibase.com/product/low-cost-database/ )
 
 ### Help
-- [Manual](https://altibase.com/en/learn/download.php)
-- https://altibase.com/en/learn/manuals.php
-- https://altibase.com/en/learn/release_notes.php
-- https://altibase.com/en/learn/case_list.php
+- [Download](https://altibase.com/en/learn/download.php)
+- [Manual]https://altibase.com/en/learn/manuals.php
+- [Release notes]https://altibase.com/en/learn/release_notes.php
+- [Case study] https://altibase.com/en/learn/case_list.php
 - Also The Korean version of the materials can be found at http://support.altibase.com and https://altibase.com/kr/learn/manuals.php 
 
 ### Q&A and Bug Reports
