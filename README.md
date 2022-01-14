@@ -6,6 +6,8 @@
 - For more detailed information about the product, please check the Altibase [website](https://altibase.com/en/product/enterprise.php)
 
 ### References
+- Altibase now has the richest installation base in the world with over 650 global enterprise clients and thousands of mission critical deployments.
+- The main customers are as follows.
    ![references](https://user-images.githubusercontent.com/32888619/149440859-6bdab0df-1d63-4497-9aeb-e0557adf7f08.png)
 
 ### Help
