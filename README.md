@@ -5,6 +5,9 @@
 - Low cost: Open source costs with enterprise grade quality. Lower your TCO with flexible subscription fees.
 - For more detailed information about the product, please check the Altibase [website](https://altibase.com/en/product/enterprise.php)
 
+### References
+![references](https://user-images.githubusercontent.com/32888619/149439121-1e047521-9504-421e-a155-5940e4c4a481.png)
+
 ### Help
 - [Download](https://altibase.com/en/learn/download.php)
 - [Manual (English)](https://altibase.com/en/learn/manuals.php) and [Manual (Korean)](https://altibase.com/kr/learn/manuals.php)
