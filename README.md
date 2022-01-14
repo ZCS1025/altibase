@@ -14,6 +14,7 @@
 ### Performance test
 - Altibase is the fastest OLTP database. Secure memory technology enables fast and accurate data management.
 - Compared to traditional databases, there was a significant difference in performance as below
+
    ![performance test](https://user-images.githubusercontent.com/32888619/149451424-80b8634d-b79c-414d-85e7-23350d62e832.png)
 
 
